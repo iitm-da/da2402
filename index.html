@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Curation and Visualization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A; --t-asr:#B02F3B;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{font-variant-ligatures:none;font-feature-settings:"liga" 0,"clig" 0,"calt" 0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);
+  -webkit-font-smoothing:antialiased;line-height:1.5;min-height:100vh;
+  display:flex;flex-direction:column}
+.bar{height:4px;background:var(--t-asr);width:100%}
+.wrap{width:100%;max-width:1000px;margin:0 auto;padding:44px 26px 26px;flex:1}
+
+header .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:10px;display:flex;gap:10px;align-items:center}
+header .eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1{font-family:var(--disp);font-weight:800;font-size:clamp(30px,5vw,44px);line-height:1.08;
+  letter-spacing:-.02em;margin-bottom:10px}
+header p.lede{font-size:15.5px;color:#31444F;max-width:70ch}
+header .who{font-family:var(--mono);font-size:12px;color:var(--soft);margin-top:14px;
+  padding-top:12px;border-top:1px solid var(--line)}
+
+section{margin-top:34px}
+section h2{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:11px;
+  display:flex;gap:10px;align-items:center}
+section h2::after{content:"";flex:1;height:1px;background:var(--line)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+a.item{display:block;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--t-cls);padding:13px 15px;text-decoration:none;color:inherit;
+  transition:border-color .14s ease,transform .14s ease,box-shadow .14s ease}
+a.item:hover{border-color:var(--line);border-left-color:var(--t-cls);
+  transform:translateY(-1px);box-shadow:0 4px 14px rgba(20,34,43,.09)}
+a.item.notebook{border-left-color:var(--t-grp)}
+a.item.pdf{border-left-color:var(--t-anc)}
+a.item .kind{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--t-cls)}
+a.item.notebook .kind{color:var(--t-grp)}
+a.item.pdf .kind{color:var(--t-anc)}
+a.item .title{font-family:var(--disp);font-weight:700;font-size:17px;line-height:1.2;
+  margin:5px 0 7px;letter-spacing:-.01em}
+a.item .meta{font-family:var(--mono);font-size:10.5px;color:var(--soft);
+  display:flex;gap:9px;flex-wrap:wrap}
+a.item .meta span::before{content:"·";margin-right:9px;color:var(--line)}
+a.item .meta span:first-child::before{content:"";margin:0}
+
+.note{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-anc);
+  background:#FFFBF2;padding:11px 15px;font-size:13.5px;margin-top:26px;line-height:1.46}
+.note b{font-weight:700}
+.note code{font-family:var(--mono);font-size:12.5px}
+
+#status{font-family:var(--mono);font-size:12px;color:var(--soft);padding:20px 0}
+#status.err{color:var(--t-asr)}
+
+footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 26px 26px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--soft);
+  display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between;
+  max-width:1000px;margin-left:auto;margin-right:auto;width:100%}
+footer a{color:var(--soft)}
+@media (max-width:520px){ .wrap{padding:30px 18px 20px} }
+</style>
+</head>
+<body>
+<div class="bar"></div>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">DA2402</div>
+    <h1>Data Curation and Visualization</h1>
+    <p class="lede">Lecture decks and notebooks. The decks are self-contained pages — arrow keys or
+    space to move, <b>F</b> for fullscreen, <b>P</b> to print, and <b>T</b> on any slide with a
+    <i>Trace</i> button to run its animation.</p>
+    <div class="who">Dr. Arun B Ayyar</div>
+  </header>
+
+  <div id="out"></div>
+  <div id="status">Loading course material…</div>
+
+  <div class="note">
+    <b>Notebooks open on GitHub</b>, which renders them in place — GitHub Pages would only hand you
+    the raw JSON. Everything else opens directly.
+  </div>
+</div>
+
+<footer>
+  <div>DA2402 · Data Curation and Visualization</div>
+  <div><a href="https://github.com/oldmonkABA/da2402">github.com/oldmonkABA/da2402</a></div>
+</footer>
+
+<script>
+/* The list is data, not markup. manifest.json is regenerated by
+   .github/workflows/manifest.yml on every push, so adding a deck to the repo
+   is all it takes for it to appear here. If the manifest is ever missing
+   (say, before the workflow has run once) we fall back to reading the repo
+   tree straight from the GitHub API. */
+const REPO   = 'oldmonkABA/da2402';
+const BRANCH = 'master';
+const KIND_LABEL = {deck:'Slides', notebook:'Notebook', pdf:'PDF'};
+const SECTION_TITLES = {
+  '.'            : 'Course-wide',
+  'intro'        : 'Introduction · pandas',
+  'data cleaning': 'Data cleaning · regular expressions',
+  'data-cleaning': 'Data cleaning · regular expressions'
+};
+
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                          .replace(/"/g,'&quot;');
+
+function prettify(name){
+  return name.replace(/\.[^.]+$/,'')
+             .replace(/[_-]+/g,' ')
+             .replace(/([a-z])(\d)/g, '$1 $2')   // part1 -> part 1, but DA2402 is left alone
+             .replace(/\b([a-z])/g, (m,c) => c.toUpperCase());
+}
+function kb(bytes){
+  if(!bytes) return '';
+  return bytes >= 1048576 ? (bytes/1048576).toFixed(1)+' MB' : Math.round(bytes/1024)+' KB';
+}
+function hrefFor(it){
+  const p = encodeURI(it.path);                       // the space in a folder name becomes %20
+  return it.kind === 'notebook'
+    ? `https://github.com/${REPO}/blob/${BRANCH}/${p}` // GitHub renders .ipynb; Pages would not
+    : p;
+}
+function sectionOf(it){
+  return it.section || SECTION_TITLES[it.folder] ||
+         (it.folder === '.' ? 'Course-wide'
+                            : it.folder.replace(/[-_]+/g,' ').replace(/\b([a-z])/g,(m,c)=>c.toUpperCase()));
+}
+
+function render(items, sourceNote){
+  const out = document.getElementById('out');
+  const status = document.getElementById('status');
+  if(!items.length){
+    status.textContent = 'No material published yet.';
+    return;
+  }
+  const order = ['Course-wide'];
+  const groups = new Map();
+  for(const it of items){
+    const s = sectionOf(it);
+    if(!groups.has(s)) groups.set(s, []);
+    groups.get(s).push(it);
+  }
+  const names = [...groups.keys()].sort((a,b) => {
+    const ia = order.indexOf(a), ib = order.indexOf(b);
+    if(ia !== ib) return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    return a.localeCompare(b);
+  });
+
+  out.innerHTML = names.map(name => {
+    const rows = groups.get(name)
+      .sort((a,b) => (a.kind === b.kind ? a.name.localeCompare(b.name)
+                                        : (a.kind === 'deck' ? -1 : 1)))
+      .map(it => {
+        const meta = [kb(it.size), it.updated]        // the badge already names the kind
+          .filter(Boolean).map(m => `<span>${esc(m)}</span>`).join('');
+        const ext = it.kind === 'notebook' ? ' target="_blank" rel="noopener"' : '';
+        return `<a class="item ${esc(it.kind)}" href="${esc(hrefFor(it))}"${ext}>
+          <div class="kind">${esc(KIND_LABEL[it.kind] || it.kind)}</div>
+          <div class="title">${esc(prettify(it.name))}</div>
+          <div class="meta">${meta}</div></a>`;
+      }).join('');
+    return `<section><h2>${esc(name)}</h2><div class="grid">${rows}</div></section>`;
+  }).join('');
+
+  status.textContent = sourceNote || '';
+  if(!sourceNote) status.style.display = 'none';
+}
+
+const KINDS = {html:'deck', ipynb:'notebook', pdf:'pdf'};
+
+async function fromApi(){
+  const r = await fetch(`https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`);
+  if(!r.ok) throw new Error('GitHub API ' + r.status);
+  const tree = (await r.json()).tree || [];
+  return tree.filter(n => n.type === 'blob')
+    .map(n => {
+      const name = n.path.split('/').pop();
+      const ext  = (name.split('.').pop() || '').toLowerCase();
+      if(!KINDS[ext] || name === 'index.html' || n.path.startsWith('.')) return null;
+      const folder = n.path.includes('/') ? n.path.slice(0, n.path.lastIndexOf('/')) : '.';
+      return {path:n.path, name, folder, kind:KINDS[ext], size:n.size, updated:''};
+    })
+    .filter(Boolean);
+}
+
+(async () => {
+  try{
+    const r = await fetch('manifest.json', {cache:'no-cache'});
+    if(!r.ok) throw new Error('no manifest');
+    const m = await r.json();
+    render(m.items || [], '');
+  }catch(e){
+    try{
+      render(await fromApi(), 'Listing read live from GitHub — the manifest workflow has not run yet.');
+    }catch(e2){
+      const s = document.getElementById('status');
+      s.className = 'err';
+      s.textContent = 'Could not load the file list (' + e2.message + '). ' +
+                      'Browse the repository directly: github.com/' + REPO;
+    }
+  }
+})();
+</script>
+</body>
+</html>

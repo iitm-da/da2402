@@ -1,0 +1,70 @@
+{
+ "repo": "",
+ "branch": "",
+ "generated": "2026-08-13 09:31 UTC",
+ "items": [
+  {
+   "path": "DA2402_intro.pdf",
+   "name": "DA2402_intro.pdf",
+   "folder": ".",
+   "section": "Course-wide",
+   "kind": "pdf",
+   "size": 1971217,
+   "updated": "2026-07-29"
+  },
+  {
+   "path": "data cleaning/regex_part1.html",
+   "name": "regex_part1.html",
+   "folder": "data cleaning",
+   "section": "Data cleaning \u00b7 regular expressions",
+   "kind": "deck",
+   "size": 108220,
+   "updated": "2026-08-12"
+  },
+  {
+   "path": "data cleaning/regex_part1.ipynb",
+   "name": "regex_part1.ipynb",
+   "folder": "data cleaning",
+   "section": "Data cleaning \u00b7 regular expressions",
+   "kind": "notebook",
+   "size": 68355,
+   "updated": "2026-08-12"
+  },
+  {
+   "path": "data cleaning/regex_part2.html",
+   "name": "regex_part2.html",
+   "folder": "data cleaning",
+   "section": "Data cleaning \u00b7 regular expressions",
+   "kind": "deck",
+   "size": 154290,
+   "updated": "2026-08-13"
+  },
+  {
+   "path": "data cleaning/regex_part2.ipynb",
+   "name": "regex_part2.ipynb",
+   "folder": "data cleaning",
+   "section": "Data cleaning \u00b7 regular expressions",
+   "kind": "notebook",
+   "size": 84603,
+   "updated": "2026-08-13"
+  },
+  {
+   "path": "intro/pandas1.ipynb",
+   "name": "pandas1.ipynb",
+   "folder": "intro",
+   "section": "Introduction \u00b7 pandas",
+   "kind": "notebook",
+   "size": 745037,
+   "updated": "2026-08-04"
+  },
+  {
+   "path": "intro/pandas2.ipynb",
+   "name": "pandas2.ipynb",
+   "folder": "intro",
+   "section": "Introduction \u00b7 pandas",
+   "kind": "notebook",
+   "size": 195263,
+   "updated": "2026-08-06"
+  }
+ ]
+}

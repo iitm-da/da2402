@@ -1,0 +1,36 @@
+name: Refresh manifest
+
+# Runs on every push except one that only touched manifest.json — that
+# paths-ignore is what stops this workflow re-triggering itself.
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - 'manifest.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # build_manifest.py reads git log for dates
+
+      - name: Build manifest.json
+        run: python3 .github/build_manifest.py
+
+      - name: Commit if it changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          if git diff --quiet --cached; then
+            echo "manifest unchanged"
+          else
+            git commit -m "chore: refresh manifest"
+            git push
+          fi
