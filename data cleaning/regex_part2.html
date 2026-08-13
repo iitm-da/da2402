@@ -1,0 +1,2883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Regular Expressions · Part 2: Advanced</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF everywhere: a regex deck must show (?<= not (?≤ */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+.eyebrow.alert{color:var(--t-asr)}
+.eyebrow.alert::after{background:var(--t-asr);opacity:.35}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.tight li{margin-bottom:5px}
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out b{color:var(--t-asr);font-weight:700}
+.out i{color:var(--t-grp);font-style:normal;font-weight:700}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+code.rx,code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.rx-cls{color:var(--t-cls);font-weight:500}
+.rx-qnt{color:var(--t-qnt);font-weight:700}
+.rx-grp{color:var(--t-grp);font-weight:500}
+.rx-anc{color:var(--t-anc);font-weight:700}
+.rx-asr{color:var(--t-asr);font-weight:700}
+.rx-alt{color:var(--t-alt);font-weight:700}
+.rx-dot{color:var(--t-dot);font-weight:700}
+.rx-ref{color:var(--t-ref);font-weight:700}
+.rx-lit{color:inherit}
+pre.code .rx-cls{color:#6FB6F0} pre.code .rx-qnt{color:#F58ACE}
+pre.code .rx-grp{color:#55D6A2} pre.code .rx-anc{color:#F0C46B}
+pre.code .rx-asr{color:#FF9090} pre.code .rx-alt{color:#A9B4E8}
+pre.code .rx-dot{color:#C0A6F5} pre.code .rx-ref{color:#55D6A2}
+pre.code .rx-lit{color:#E9F2F6}
+pre.code .py-kw{color:#8FB8FF} pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-num{color:#F58ACE}
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.free td:first-child{font-family:var(--body);white-space:normal}
+table.d td.c{text-align:center;font-family:var(--mono);font-weight:700;color:var(--t-cls)}
+table.d td.nm{font-family:var(--body);font-weight:600;white-space:nowrap}
+.tblnote{font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.5;padding-left:2px}
+.tblnote b{font-family:var(--mono);color:var(--t-asr);font-size:12px}
+table.d tr.hl td{background:#FFF3F3}
+table.d tr.ok td{background:#F3FBF7}
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout.sm{font-size:12.5px}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px;font-weight:500}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}.tag.o{color:var(--t-anc)}
+/* tape */
+.tapewrap{background:var(--card);border:1px solid var(--hair);padding:14px 16px 10px;position:relative}
+.tape{position:relative;display:inline-block}
+.tape .cells{display:grid;font-family:var(--mono);font-size:15px}
+.tape .cell{height:28px;display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid var(--line);position:relative}
+.tape .cell.sp::after{content:"·";color:#B9C6CD}
+.tape .band{height:19px;margin-top:5px;border-radius:2px;display:flex;align-items:center;
+  justify-content:center;font-family:var(--mono);font-size:10px;font-weight:500;color:#fff;
+  white-space:nowrap}
+.tape .band.match{background:#12556F} .tape .band.g1{background:#0E7A55}
+.tape .band.g2{background:#9B2C7E}    .tape .band.g3{background:#8F5D0A}
+.tape .band.miss{background:#B02F3B}  .tape .band.ghost{background:#A9B8C0}
+.tape .lbl{font-family:var(--mono);font-size:10.5px;color:var(--soft);
+  display:flex;align-items:center;height:19px;margin-top:5px;padding-left:9px;white-space:nowrap}
+.tape .lbl b{color:var(--t-asr)}
+.tape .pinlayer{position:absolute;left:0;top:0;height:28px;pointer-events:none}
+.tape .pin{position:absolute;top:-6px;height:40px;border-left:2px dashed var(--t-asr);
+  transform:translateX(-1px)}
+.tape .pin.ok{border-left-color:var(--t-grp)}
+.tape .pin b{position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.08em;
+  color:var(--t-asr);white-space:nowrap;background:var(--card);padding:0 4px}
+.tape .pin.ok b{color:var(--t-grp)}
+.tape .pin.hi b{top:-34px}
+.tapenote{font-size:12px;color:var(--soft);margin-top:8px;line-height:1.4}
+.tapenote code{font-family:var(--mono);font-size:11.5px}
+.tapepat{font-family:var(--mono);font-size:13.5px;margin-bottom:11px;
+  padding-bottom:8px;border-bottom:1px solid var(--hair)}
+.tapepat span.pl{color:var(--soft);font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;margin-right:9px;font-family:var(--mono)}
+/* tape — traced (animated) mode */
+.tapectl{position:absolute;right:14px;top:11px;display:flex;gap:6px}
+.tapectl button{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;
+  padding:4px 9px;border:1px solid var(--hair);background:var(--card);color:var(--soft);
+  cursor:pointer;border-radius:2px;line-height:1}
+.tapectl button:hover:not(:disabled){color:var(--ink);border-color:var(--soft)}
+.tapectl button:disabled{opacity:.35;cursor:default}
+.tape .cell{transition:background .16s ease,box-shadow .16s ease,color .16s ease}
+.tape .cell.probe{background:#FBF0D6;box-shadow:inset 0 0 0 1px #C08A00;color:#7A5700}
+.tape .cell.pass {background:#DCF0E6;box-shadow:inset 0 0 0 1px var(--t-grp);color:var(--t-grp)}
+.tape .cell.fail {background:#FADFE2;box-shadow:inset 0 0 0 1px var(--t-asr);color:var(--t-asr)}
+.tape .cell.eat  {background:#D5E6EF;box-shadow:inset 0 0 0 1px #12556F;color:#0B3B4E;font-weight:700}
+.tape.anim .band,.tape.anim .lbl,.tape.anim .pin{opacity:0;transition:opacity .22s ease}
+.tape.anim .band.show,.tape.anim .lbl.show,.tape.anim .pin.show{opacity:1}
+.tape .cur{position:absolute;top:-9px;height:46px;border-left:2px solid var(--ink);opacity:0;
+  transition:left .26s cubic-bezier(.4,0,.2,1),opacity .16s ease}
+.tape .cur.on{opacity:1}
+.tape .cur::before{content:"";position:absolute;left:-5px;top:-2px;
+  border:5px solid transparent;border-top-color:var(--ink)}
+.tapecap{font-family:var(--mono);font-size:11px;line-height:1.5;color:var(--ink);
+  min-height:33px;margin-top:11px;padding-left:9px;border-left:2px solid var(--hair);
+  transition:border-color .2s ease}
+.tapecap.asr{border-left-color:var(--t-asr)}
+.tapecap.ok{border-left-color:var(--t-grp)}
+.tapecap.eat{border-left-color:#12556F}
+.tapecap b{color:var(--t-asr);font-weight:700}
+.tapecap i{font-style:normal;color:var(--t-grp);font-weight:700}
+.tapecap u{text-decoration:none;color:#12556F;font-weight:700}
+/* playground */
+.pg{display:grid;grid-template-columns:1fr 340px;gap:14px;flex:1;min-height:0}
+.pgl{display:flex;flex-direction:column;gap:9px;min-height:0}
+.pgrow{display:flex;gap:8px;align-items:center}
+.pgrow label{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);width:52px;flex:none}
+input.pat,textarea.subj{font-family:var(--mono);font-size:13.5px;border:1px solid var(--line);
+  background:var(--card);padding:8px 10px;color:var(--ink);width:100%;resize:none;line-height:1.5}
+input.pat{font-size:14.5px;font-weight:500}
+input.pat:focus,textarea.subj:focus{outline:2px solid var(--t-cls);outline-offset:-1px;border-color:var(--t-cls)}
+input.pat.err{border-color:var(--t-asr);background:#FFF5F5}
+.flags{display:flex;gap:5px}
+.flags button{font-family:var(--mono);font-size:12px;width:27px;height:27px;cursor:pointer;
+  border:1px solid var(--line);background:var(--card);color:var(--soft);border-radius:2px}
+.flags button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.presets{display:flex;gap:6px;flex-wrap:wrap}
+.presets button{font-family:var(--mono);font-size:10.5px;padding:3px 8px;cursor:pointer;
+  border:1px solid var(--line);background:var(--card);color:var(--t-cls);border-radius:2px}
+.presets button:hover{background:#EAF4FA}
+.hlbox{flex:1;min-height:0;overflow:auto;background:var(--card);border:1px solid var(--hair);
+  font-family:var(--mono);font-size:13px;line-height:1.72;padding:10px 12px;white-space:pre-wrap;
+  word-break:break-word}
+.hlbox mark{background:#BFE3F2;color:var(--ink);border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hlbox mark.alt{background:#CDEFDD;box-shadow:0 1px 0 #0E7A55 inset,0 -2px 0 #0E7A55 inset}
+.hlbox mark.zero{background:none;border-left:2px solid var(--t-asr);margin-left:-1px;box-shadow:none}
+.pgr{display:flex;flex-direction:column;gap:8px;min-height:0}
+.pgr .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)}
+.mlist{flex:1;min-height:0;overflow:auto;background:var(--card);border:1px solid var(--hair);
+  font-family:var(--mono);font-size:11px;line-height:1.5}
+.mlist div.m{padding:5px 9px;border-bottom:1px solid var(--hair)}
+.mlist div.m b{color:#12556F} .mlist div.m i{color:var(--soft);font-style:normal}
+.mlist div.m em{color:var(--t-grp);font-style:normal}
+.pgnote{font-size:11.5px;line-height:1.4;color:var(--soft);background:#FFFBF2;
+  border-left:3px solid var(--t-anc);padding:7px 10px}
+.pgnote b{color:var(--ink)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px;vertical-align:7px}
+/* backtracking demo */
+.btwrap{background:var(--card);border:1px solid var(--hair);padding:14px 16px;flex:1;
+  display:flex;flex-direction:column;min-height:0}
+.btrows{flex:1;min-height:0;overflow:hidden;font-family:var(--mono);font-size:11.5px}
+.btrow{display:grid;grid-template-columns:74px 78px 1fr;align-items:center;gap:8px;height:21px}
+.btrow .n{color:var(--soft)} .btrow .t{text-align:right;font-weight:500}
+.btrow .bar{height:11px;background:var(--t-asr);border-radius:1px;min-width:1px;
+  transition:width .18s}
+.btrow.safe .bar{background:var(--t-grp)}
+.btgo{font-family:var(--mono);font-size:12px;padding:7px 16px;cursor:pointer;
+  border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:2px}
+.btgo:hover{background:#25404E}
+.btgo:disabled{opacity:.45;cursor:default}
+/* cover */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:30px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:400px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.5;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:14px;white-space:nowrap}
+/* rail */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500}
+.rail .b{max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:152px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+.deva{font-family:"Noto Sans Devanagari",var(--mono),sans-serif}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<!-- ============ 1 · COVER ============ -->
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat" id="cvp"></div>
+  <div class="kicker">DA2402 · Data Curation and Visualization</div>
+  <h1>Regular<br/>Expressions</h1>
+  <div class="pt">Part 2 — Advanced</div>
+  <div class="rule"></div>
+  <p class="sub">Zero-width assertions, backreferences, catastrophic backtracking and Unicode. Six of these
+  slides exist because the code did something other than what its comments claimed.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 · BTech DSAI</td></tr>
+    <tr><td>Prerequisite</td><td>Part 1 — Foundations</td></tr>
+    <tr><td>Part</td><td>2 of 2 · Advanced</td></tr>
+    <tr><td>Toolkit</td><td>Python <span style="font-family:var(--mono);text-transform:none">re</span> · 3.12</td></tr>
+  </table>
+</section>
+
+<!-- ============ 2 · MOTIVATION — THE SILENT ERROR ============ -->
+<section class="slide" data-sec="Motivation">
+  <div class="eyebrow alert">Motivation · 1 of 2</div>
+  <h1 class="t">The reconciliation is off by ₹31.32
+    <small>One invoice, one extractor, no errors, no warnings. The line-item total simply does not agree
+    with the payable line, and somebody has to find out why.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <div class="outlbl">The document</div>
+        <div class="out xs">Invoice INV-2231 dated 11.08.2026, raised by
+billing-service v2.10 on host 10.0.14.22
+  Line 1  Cable, 3 core XLPE      ₹12,450.00
+  Line 2  Anode assembly, MMO      ₹8,900.50
+  Line 3  Junction box             ₹1,275.00
+  GST @ 18.00% applied to all lines above.
+  Amount payable                  ₹22,625.50</div>
+        <div class="outlbl" style="margin-top:12px">The extractor</div>
+        <pre class="code sm">amounts = re.findall(r'[\d,]+\.\d{2}', doc)</pre>
+        <div class="callout sm" style="margin-top:10px">
+          A perfectly reasonable pattern: digits, optional thousands commas, a decimal point, two places.
+          It is the pattern almost everyone writes first.
+        </div>
+      </div>
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out xs">['<b>11.08</b>', '<b>2.10</b>', '<b>0.14</b>', '12,450.00',
+ '8,900.50', '1,275.00', '<b>18.00</b>', '22,625.50']
+
+line-item total  =  <b>₹22,656.82</b>
+amount payable   =  ₹22,625.50
+                    ─────────────
+discrepancy      =  <b>₹31.32</b></div>
+        <div class="callout bad" style="margin-top:12px">
+          <b>Four impostors got in.</b>
+          <code>11.08</code> is part of the <i>date</i>.
+          <code>2.10</code> is the <i>service version</i>.
+          <code>0.14</code> is a slice out of the <i>IP address</i>.
+          <code>18.00</code> is the <i>GST rate</i>.
+          Every one of them is genuinely "digits, dot, two digits". The pattern is doing exactly what it
+          was told; it was told the wrong thing.
+        </div>
+        <div class="callout good" style="margin-top:11px">
+          <b>The whole fix is four characters.</b>
+          <pre class="code sm" style="margin-top:8px">re.findall(r'(?&lt;=₹)[\d,]+\.\d{2}', doc)
+#  ['12,450.00', '8,900.50', '1,275.00', '22,625.50']
+#  line-item total = ₹22,625.50   ✓ agrees</pre>
+          <div style="margin-top:7px;font-size:12.5px">"…but only if it comes straight after a ₹." That
+          clause is what Part 2 is about.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · MOTIVATION — THE ROADMAP ============ -->
+<section class="slide" data-sec="Motivation">
+  <div class="eyebrow">Motivation · 2 of 2</div>
+  <h1 class="t">Seven jobs Part 1's toolkit cannot finish
+    <small>Each of these is an ordinary curation task. Each one needs exactly one thing you have not met
+    yet — and that is the running order for today.</small></h1>
+  <div class="wrap">
+    <div style="flex:none">
+      <table class="d sm free">
+        <tr><th style="width:32%">The task</th><th style="width:30%">Why a Part 1 pattern will not do it</th>
+            <th style="width:26%">What it needs</th><th style="width:60px">Slide</th></tr>
+        <tr><td>Pull the amount, leave the ₹ behind</td>
+            <td>capture the symbol and it lands in your data; drop it and you cannot tell an amount from a version number</td>
+            <td>positive lookbehind <code class="rx">(?&lt;=…)</code></td><td class="c">8</td></tr>
+        <tr class="hl"><td>Take numbers that are <i>not</i> preceded by ₹</td>
+            <td>"not preceded by" is not a character class — and the obvious attempt returns a wrong answer rather than none</td>
+            <td>negative lookbehind, and its trap</td><td class="c">9</td></tr>
+        <tr><td>Enforce four password rules in one pattern</td>
+            <td>the rules are independent, but a pattern runs left to right in one pass</td>
+            <td>stacked lookahead <code class="rx">(?=…)</code></td><td class="c">6</td></tr>
+        <tr><td>Find doubled words left by OCR</td>
+            <td>needs to compare the match against <i>itself</i>; no amount of <code class="rx">\w+</code> can do it</td>
+            <td>backreference <code class="rx">\1</code></td><td class="c">13</td></tr>
+        <tr><td>Check an opening tag against its closing tag</td>
+            <td>the second half of the match depends on what the first half captured</td>
+            <td>named backreference <code class="rx">(?P=x)</code></td><td class="c">14</td></tr>
+        <tr class="hl"><td>Parse a log file, not a log line</td>
+            <td>a working pattern returns <b>zero</b> matches, silently, and the dashboard reports no traffic</td>
+            <td>flags — <code>re.MULTILINE</code></td><td class="c">24</td></tr>
+        <tr class="hl"><td>Tokenise <span class="deva">नमस्ते</span> as one word</td>
+            <td><code class="rx">\w+</code> splits it in two and deletes a character on the way</td>
+            <td>Unicode categories</td><td class="c">21</td></tr>
+      </table>
+    </div>
+    <div class="callout warn" style="flex:none">
+      <b>Notice what the three highlighted rows have in common.</b> They do not crash. They return a
+      number, a list, a dataset — just the wrong one. Part 1's failures announce themselves; Part 2's
+      failures look like results. That is the whole reason this material is worth a lecture rather than a
+      cheatsheet.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4 · BRIDGE ============ -->
+<section class="slide" data-sec="Orientation">
+  <div class="eyebrow">Orientation</div>
+  <h1 class="t">Everything here is a way of saying "…but only if"
+    <small>Part 1 built patterns that describe a run of characters. Part 2 is about constraints that
+    describe a <i>context</i> — and about what it costs the engine to check them.</small></h1>
+  <div class="wrap">
+    <div class="cols3">
+      <div class="card" style="border-top-color:var(--t-asr)">
+        <h3>Assertions</h3>
+        <p>Match a position, not a character. Lookahead and lookbehind let a pattern inspect its
+        surroundings and then hand them back untouched.</p>
+      </div>
+      <div class="card" style="border-top-color:var(--t-grp)">
+        <h3>Backreferences</h3>
+        <p>Match against something you already matched. The one place where regex gets a memory —
+        and, formally, stops being a regular language at all.</p>
+      </div>
+      <div class="card" style="border-top-color:var(--t-qnt)">
+        <h3>Cost</h3>
+        <p>Every "but only if" is a decision point the engine may have to revisit. Enough of them nested
+        together, and a pattern that looks harmless runs for longer than the universe has existed.</p>
+      </div>
+    </div>
+    <div class="callout" style="flex:none">
+      <b>A note on how these slides were made.</b> Every output shown is the real output of running
+      <code>regex-2.ipynb</code> on Python 3.12. Where a notebook comment predicted one thing and the
+      interpreter did another, the slide says so and explains the mechanism. Those disagreements turned out
+      to be the most useful material in the notebook, and they are flagged
+      <span class="tag r">Gotcha</span> throughout.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · FOUR ASSERTIONS ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow">Lookaround · 1</div>
+  <h1 class="t">Four assertions, none of which consume anything</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <table class="d sm">
+          <tr><th style="width:62px">Form</th><th style="width:132px">Name</th>
+              <th>Asserts the position is…</th></tr>
+          <tr><td>(?=…)</td><td class="nm">Positive lookahead</td><td>followed by this</td></tr>
+          <tr><td>(?!…)</td><td class="nm">Negative lookahead</td><td><b>not</b> followed by this</td></tr>
+          <tr><td>(?&lt;=…)</td><td class="nm">Positive lookbehind</td><td>preceded by this</td></tr>
+          <tr><td>(?&lt;!…)</td><td class="nm">Negative lookbehind</td><td><b>not</b> preceded by this</td></tr>
+        </table>
+        <div class="tblnote"><b>&lt;</b> is the one that means <i>behind</i> — without it, ahead.
+        <b>!</b> is the one that means <i>not</i>. Everything else is spelling.</div>
+        <div class="callout sm" style="margin-top:12px">
+          <b>Zero-width means zero-width.</b> The engine tests the assertion, then returns the cursor to
+          exactly where it was. Nothing the assertion inspected appears in <code>.group()</code>, and the
+          next token starts from the same position.
+        </div>
+        <div class="callout warn sm" style="margin-top:10px">
+          <b>Lookbehind must be fixed width in Python's <code>re</code>.</b> To look back, the engine needs
+          to know how far back. <code class="rx">(?&lt;=ab)</code> is fine;
+          <code class="rx">(?&lt;=a+)</code> raises <code>re.error</code>. Lookahead has no such limit.
+        </div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp1play">▶ Trace</button>
+            <button id="tp1step">Step</button>
+            <button id="tp1reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Pattern</span><code class="rx">(?&lt;=\$)\d+(?=\.00\b)</code>
+            <span class="pl" style="margin-left:18px">Subject</span>
+            <span style="font-size:12px;color:var(--soft)">"pay $45.00 now"</span></div>
+          <div class="tape" id="tp1"></div>
+          <div class="tapecap" id="tp1cap"></div>
+          <div class="tapenote">Two needles, one match. The left one checks backwards for
+          <code>$</code>; the right one checks forwards for <code>.00</code>. Neither symbol is in the
+          result — <code>.group()</code> is just <code>'45'</code>.</div>
+        </div>
+        <div class="outlbl" style="margin-top:13px">The same four, on one string: "cat catalogue"</div>
+        <pre class="code sm">re.findall(r'cat(?=alogue)',  s)   # ['cat']     the second one
+re.findall(r'cat(?!alogue)',  s)   # ['cat']     the first one
+re.findall(r'(?&lt;=cat)\w+',    s)   # ['alogue']  after the second
+re.findall(r'\bcat\b',        s)   # ['cat']     no lookaround needed</pre>
+        <div class="callout sm" style="margin-top:11px">
+          Every one of these returns a different answer from the same six characters. The pattern is
+          identical; only the <i>condition on the surrounding text</i> changes.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3b · POSITIVE vs NEGATIVE LOOKAHEAD ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow">Lookaround · 2</div>
+  <h1 class="t">Positive and negative lookahead, side by side
+    <small>Thirteen characters, the same three literal letters, the same question asked at the same two
+    positions — and opposite answers. Press <b>t</b> to run both traces at once and watch them diverge.</small></h1>
+  <div class="wrap">
+    <div class="cols" style="flex:none">
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp4play">▶ Trace</button>
+            <button id="tp4step">Step</button>
+            <button id="tp4reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Positive</span><code class="rx">cat(?=alogue)</code></div>
+          <div class="tape" id="tp4"></div>
+          <div class="tapecap" id="tp4cap"></div>
+        </div>
+        <div class="callout good sm" style="margin-top:12px;flex:none">
+          <b>Keeps a match only where the context <i>is</i> there.</b> The <code>cat</code> at 0 is thrown
+          away and the one at 4 survives — so the answer is the <i>second</i> one.
+          <pre class="code sm" style="margin-top:8px">re.findall(r'cat(?=alogue)', s)  # ['cat']</pre>
+        </div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp5play">▶ Trace</button>
+            <button id="tp5step">Step</button>
+            <button id="tp5reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Negative</span><code class="rx">cat(?!alogue)</code></div>
+          <div class="tape" id="tp5"></div>
+          <div class="tapecap" id="tp5cap"></div>
+        </div>
+        <div class="callout bad sm" style="margin-top:12px;flex:none">
+          <b>Keeps a match only where the context is <i>absent</i>.</b> The same two attempts, the same two
+          verdicts — inverted. So the answer is the <i>first</i> one.
+          <pre class="code sm" style="margin-top:8px">re.findall(r'cat(?!alogue)', s)  # ['cat']</pre>
+        </div>
+      </div>
+    </div>
+    <div class="callout" style="flex:none">
+      <b>Both return <code>['cat']</code>, and they are not the same <code>cat</code>.</b> This is the
+      trap in miniature: the result <i>looks</i> identical, so a test that only checks the returned string
+      passes either way. What separates them is the position the match came from — which is exactly the
+      thing an assertion controls and the returned value does not record.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · NEGATIVE LOOKAHEAD ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow alert">Lookaround · 3 <span class="tag r" style="margin-left:8px">Gotcha</span></div>
+  <h1 class="t">Negative lookahead, and where the comment was wrong</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <pre class="code sm">pattern = r'file(?!\.txt)'      # 'file' not followed by '.txt'</pre>
+        <div class="outlbl" style="margin-top:12px">Actual output</div>
+        <div class="out">✓ 'file.doc'     -&gt; Match: 'file'
+✗ 'file.txt'     -&gt; No match
+✓ 'filename.txt' -&gt; Match: 'file'
+✓ 'file system'  -&gt; Match: 'file'
+<b>✗ 'profile.txt'  -&gt; No match</b></div>
+        <div class="callout bad" style="margin-top:12px">
+          The notebook predicts <code>profile.txt</code> will "match the 'file' part". It does not.
+        </div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp2play">▶ Trace</button>
+            <button id="tp2step">Step</button>
+            <button id="tp2reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Pattern</span><code class="rx">file(?!\.txt)</code>
+            <span class="pl" style="margin-left:18px">Subject</span>
+            <span style="font-size:12px;color:var(--soft)">"profile.txt"</span></div>
+          <div class="tape" id="tp2"></div>
+          <div class="tapecap" id="tp2cap"></div>
+        </div>
+        <div class="callout sm" style="margin-top:11px">
+          <b>Why.</b> The only place <code>file</code> occurs in <code>profile.txt</code> is at index 3 —
+          and it is followed by exactly <code>.txt</code>, so the assertion kills it. In
+          <code>filename.txt</code> the <code>file</code> at index 0 is followed by <code>name</code>,
+          so that one survives. The pattern is doing precisely what it says; the comment was written by
+          pattern-matching on the <i>filename</i> rather than on the string.
+        </div>
+        <div class="callout warn sm" style="margin-top:10px">
+          <b>The lesson.</b> A negative lookahead constrains only the position where it appears. Reason
+          about <i>every</i> position the engine will try, not the one you had in mind.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5b · POSITIVE vs NEGATIVE LOOKBEHIND ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow">Lookaround · 4</div>
+  <h1 class="t">Positive and negative lookbehind — the currency case
+    <small>One amount, two currencies, and a pattern that must tell them apart by what sits in front.
+    One difference from the lookahead pair decides everything on the next slide: the assertion now sits at
+    the <i>start</i>, so it is tested before a single character is consumed. Press <b>t</b> to run both.</small></h1>
+  <div class="wrap">
+    <div class="cols" style="flex:none">
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp6play">▶ Trace</button>
+            <button id="tp6step">Step</button>
+            <button id="tp6reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Positive</span><code class="rx">(?&lt;=USD )45\.00</code></div>
+          <div class="tape" id="tp6"></div>
+          <div class="tapecap" id="tp6cap"></div>
+        </div>
+        <div class="callout good sm" style="margin-top:12px;flex:none">
+          <b>Keeps the amount only where the currency code <i>is</i> in front of it.</b>
+          <pre class="code sm" style="margin-top:8px">re.findall(r'(?&lt;=USD )45\.00', s)  # ['45.00']  at 4</pre>
+        </div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp7play">▶ Trace</button>
+            <button id="tp7step">Step</button>
+            <button id="tp7reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Negative</span><code class="rx">(?&lt;!USD )45\.00</code></div>
+          <div class="tape" id="tp7"></div>
+          <div class="tapecap" id="tp7cap"></div>
+        </div>
+        <div class="callout bad sm" style="margin-top:12px;flex:none">
+          <b>Keeps the amount only where that currency code is <i>absent</i>.</b>
+          <pre class="code sm" style="margin-top:8px">re.findall(r'(?&lt;!USD )45\.00', s)  # ['45.00']  at 14</pre>
+        </div>
+      </div>
+    </div>
+    <div class="callout" style="flex:none">
+      <b>Watch the back-jump, because it is the whole story.</b> At every candidate position the engine
+      steps back <i>exactly four</i> cells — the width of <code>USD&nbsp;</code> — reads them, and returns.
+      It can only do that because it knows the number four before it starts, and that single requirement
+      is where the next slide begins. <span style="color:var(--soft)">The amount is spelled out as a
+      literal here on purpose: swap in <code class="rx">\d+\.\d{2}</code> and the negative panel stops
+      behaving, which is the gotcha three slides on.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5c · WHY LOOKBEHIND MUST BE FIXED WIDTH ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow">Lookaround · 5</div>
+  <h1 class="t">Why lookbehind must be fixed width — and lookahead need not
+    <small>Both assertions below are variable width. Only one is a problem — and not because going
+    backwards is hard, but because a regex engine can only match <i>forwards</i>.</small></h1>
+  <div class="wrap">
+    <div class="cols" style="flex:none">
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp8play">▶ Trace</button>
+            <button id="tp8step">Step</button>
+            <button id="tp8reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Fine</span><code class="rx">(?=b+)</code>
+            <span class="pl" style="margin-left:18px">at position 4</span></div>
+          <div class="tape" id="tp8"></div>
+          <div class="tapecap" id="tp8cap"></div>
+        </div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp9play">▶ Trace</button>
+            <button id="tp9step">Step</button>
+            <button id="tp9reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Rejected</span><code class="rx">(?&lt;=a+)</code>
+            <span class="pl" style="margin-left:18px">at position 4</span></div>
+          <div class="tape" id="tp9"></div>
+          <div class="tapecap" id="tp9cap"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols w4060" style="flex:none;margin-top:2px">
+      <div>
+        <div class="outlbl">Actual output · Python 3.12</div>
+        <div class="out">&gt;&gt;&gt; re.compile(r'(?&lt;=a+)x')
+<b>re.error: look-behind requires fixed-width pattern</b>
+<span style="color:#53666F">— raised at <i>compile</i> time, whatever the input.</span></div>
+        <div class="callout good sm" style="margin-top:10px">
+          <b>The way out is to stop asserting and start matching.</b> Consume the variable part for real
+          and keep only the group you want — or take the third-party <code>regex</code> module, which
+          allows variable-width lookbehind.
+          <pre class="code sm" style="margin-top:7px">re.findall(r'a+(x)', s)   # group 1 is the x</pre>
+        </div>
+      </div>
+      <div>
+        <table class="d sm">
+          <tr><th style="width:120px">Lookbehind</th><th style="width:96px">Width</th>
+              <th style="width:52px">re</th><th>Because</th></tr>
+          <tr class="ok"><td>(?&lt;=ab)</td><td>2</td><td>✓</td><td>one number</td></tr>
+          <tr class="ok"><td>(?&lt;=[$₹])</td><td>1</td><td>✓</td><td>a class is still one character</td></tr>
+          <tr class="ok"><td>(?&lt;=a{3})</td><td>3</td><td>✓</td><td>a counted repeat is a number</td></tr>
+          <tr class="ok"><td>(?&lt;=abc|xyz)</td><td>3 either way</td><td>✓</td><td>branches agree, so still one number</td></tr>
+          <tr class="hl"><td>(?&lt;=ab|xyz)</td><td>2 or 3</td><td>✗</td><td>branches disagree</td></tr>
+          <tr class="hl"><td>(?&lt;=a{1,3})</td><td>1 to 3</td><td>✗</td><td>a range, not a number — two is already too many</td></tr>
+          <tr class="hl"><td>(?&lt;=a+)</td><td>1 to ∞</td><td>✗</td><td>no bound at all</td></tr>
+        </table>
+        <div class="tblnote">Every one of these is legal after <b>(?=</b>. Lookahead needs no such table:
+        the start point is the cursor, and only the discarded <i>end</i> varies.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · POSITIVE LOOKBEHIND ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow">Lookaround · 6</div>
+  <h1 class="t">Positive lookbehind — the currency case</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <pre class="code sm">pattern = r'(?&lt;=[$₹])\d+\.\d{2}'</pre>
+        <div class="outlbl" style="margin-top:12px">Actual output</div>
+        <div class="out">✓ '$19.99'        -&gt; Match: '19.99'
+✗ '€19.99'        -&gt; No match
+✓ 'Price: ₹45.00' -&gt; Match: '45.00'
+<b>✗ 'Amount: ₹25'   -&gt; No match</b>
+✗ '19.99 dollars' -&gt; No match
+✓ 'Save $10.50!'  -&gt; Match: '10.50'</div>
+      </div>
+      <div>
+        <div class="callout" >
+          <b>The €19.99 rejection is the point.</b> The number is identical; only the character before it
+          differs. Nothing but a lookbehind can express "this number, because of what precedes it, without
+          including what precedes it".
+        </div>
+        <div class="callout warn" style="margin-top:11px">
+          <b>The ₹25 rejection is a design choice, not a bug.</b> <code class="rx">\d+\.\d{2}</code>
+          requires the decimal part. Real invoices write both <code>₹25</code> and <code>₹25.00</code>.
+          The notebook keeps the fix commented out one line below:
+          <pre class="code sm" style="margin-top:8px">r'(?&lt;=[$₹])\d+\.?(\d{2})?'   # decimals now optional</pre>
+        </div>
+        <div class="callout good sm" style="margin-top:10px">
+          <b>Character class inside the lookbehind is fine</b> — <code class="rx">[$₹]</code> is exactly
+          one character wide either way, so the fixed-width rule is satisfied.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 · ★ THE TRAP ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow alert">Lookaround · 7 <span class="tag r" style="margin-left:8px">Gotcha — the big one</span></div>
+  <h1 class="t">Negative lookbehind does not mean what you think
+    <small>The single most common way a regex silently returns the wrong answer.</small></h1>
+  <div class="wrap">
+    <div class="tapewrap">
+      <div class="tapectl">
+        <button id="tp3play">▶ Trace</button>
+        <button id="tp3step">Step</button>
+        <button id="tp3reset">Reset</button>
+      </div>
+      <div class="tapepat"><span class="pl">Pattern</span><code class="rx">(?&lt;!\$)\d+\.\d{2}</code>
+        <span class="pl" style="margin-left:22px">Subject</span>
+        <span style="font-size:12px;color:var(--soft)">"$19.99"</span>
+        <span class="pl" style="margin-left:22px">You expected</span>
+        <span style="font-size:12px;color:var(--soft)">no match</span></div>
+      <div class="tape" id="tp3"></div>
+      <div class="tapecap" id="tp3cap"></div>
+      <div class="tapenote">The assertion does its job perfectly at index 1 and blocks the match there.
+      Then the engine does what engines do: it shifts one character right and tries again. At index 2 the
+      preceding character is <code>1</code>, not <code>$</code> — so the assertion <i>passes</i>, and
+      <code class="rx">\d+\.\d{2}</code> happily matches <code>9.99</code>.</div>
+    </div>
+    <div class="cols" style="flex:none">
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out"><b>✓ '$19.99'      -&gt; Match: '9.99'</b>
+✓ '€19.99'          -&gt; Match: '19.99'
+✓ 'Temperature: 98.60' -&gt; Match: '98.60'
+<b>✓ 'Price $45.00' -&gt; Match: '5.00'</b>
+✓ 'Version 2.10'    -&gt; Match: '2.10'</div>
+      </div>
+      <div>
+        <div class="callout bad">
+          <b>Why this is dangerous.</b> It does not raise. It does not return nothing. It returns a
+          plausible-looking number that is quietly wrong — <code>9.99</code> instead of a rejection,
+          <code>5.00</code> instead of <code>45.00</code>. In a pipeline this becomes a bad row that nobody
+          notices for months.
+        </div>
+        <div class="callout good" style="margin-top:11px">
+          <b>The fix: pin the start of the number.</b> Add a word boundary so the match cannot begin in the
+          middle of a digit run.
+          <pre class="code sm" style="margin-top:8px">re.findall(r'(?&lt;!\$)\b\d+\.\d{2}', text)
+#  '$19.99 and 98.60'  ->  ['98.60']   ✓</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 · PLAYGROUND ============ -->
+<section class="slide" data-sec="Playground">
+  <div class="eyebrow">Playground · live</div>
+  <h1 class="t">Break it yourself <span class="jsbadge">JavaScript engine</span></h1>
+  <div class="wrap">
+    <div class="pg">
+      <div class="pgl">
+        <div class="pgrow"><label>Pattern</label>
+          <input class="pat" id="pg1p" value="(?&lt;!\$)\d+\.\d{2}" spellcheck="false"/>
+          <div class="flags" id="pg1f"><button data-f="g" class="on">g</button><button data-f="i">i</button><button data-f="m">m</button><button data-f="s">s</button></div>
+        </div>
+        <div class="pgrow"><label>Try</label>
+          <div class="presets" id="pg1pre">
+            <button data-p="(?&lt;!\$)\d+\.\d{2}">the trap</button>
+            <button data-p="(?&lt;!\$)\b\d+\.\d{2}">the fix</button>
+            <button data-p="(?&lt;=\$)\d+\.\d{2}">lookbehind</button>
+            <button data-p="\b(\w+)\s+\1\b">backreference</button>
+            <button data-p="^(?=.*\d)(?=.*[A-Z]).{8,}$">stacked</button>
+            <button data-p="&lt;(?P&lt;tag&gt;\w+)&gt;.*?&lt;/(?P=tag)&gt;">named backref</button>
+          </div>
+        </div>
+        <div class="pgrow" style="align-items:flex-start"><label>Subject</label>
+          <textarea class="subj" id="pg1s" rows="4" spellcheck="false">Price $19.99 and $45.00, temperature 98.60, version 2.10
+This is is a test of of repeated words
+&lt;div&gt;Content&lt;/div&gt; and &lt;p&gt;text&lt;/p&gt; and &lt;div&gt;Broken&lt;/span&gt;</textarea>
+        </div>
+        <div class="hlbox" id="pg1o"></div>
+      </div>
+      <div class="pgr">
+        <div class="hdr">Matches</div>
+        <div class="mlist" id="pg1m"></div>
+        <div class="pgnote">
+          <b>JavaScript, not Python.</b> Close enough for everything on this slide, with two differences
+          that matter: JS allows <i>variable-width</i> lookbehind, so
+          <code>(?&lt;!\b(?:a|an|the)\s)</code> runs here but raises in Python. And Python writes
+          <code>(?P&lt;x&gt;…)</code> / <code>(?P=x)</code> where JS writes
+          <code>(?&lt;x&gt;…)</code> / <code>\k&lt;x&gt;</code> — this box translates both for you.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8b · STACKED LOOKAHEAD (moved: pairs with the validator exercise) ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow">Lookaround · 8</div>
+  <h1 class="t">Stacking lookaheads = AND
+    <small>Four passes over the same eleven characters. Three of them leave no trace at all, and that is
+    the entire trick — press <b>t</b> and watch the cursor refuse to move.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060" style="flex:none">
+      <div>
+        <pre class="code sm">password_pattern = r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$'</pre>
+        <table class="d sm" style="margin-top:11px">
+          <tr><th style="width:96px">Part</th><th>Job</th><th style="width:74px">Consumes</th></tr>
+          <tr><td>^</td><td>pin everything to position 0</td><td>nothing</td></tr>
+          <tr><td>(?=.*\d)</td><td>a digit exists somewhere ahead</td><td>nothing</td></tr>
+          <tr><td>(?=.*[a-z])</td><td>a lowercase letter exists somewhere ahead</td><td>nothing</td></tr>
+          <tr><td>(?=.*[A-Z])</td><td>an uppercase letter exists somewhere ahead</td><td>nothing</td></tr>
+          <tr class="ok"><td>.{8,}</td><td>now actually take 8 or more characters</td><td><b>all of it</b></td></tr>
+          <tr><td>$</td><td>and that must reach the end</td><td>nothing</td></tr>
+        </table>
+        <div class="tblnote"><span style="color:var(--ink);font-weight:700">Why the trace stops at the 3,
+        not the 1.</span> <code class="rx">.*</code> is greedy: it takes all eleven characters first, then
+        hands them back one at a time <i>from the right</i> — so the first digit it ever <i>tests</i> is
+        the last one in the string. Write <code class="rx">.*?</code> and it stops at the 1 instead. Same
+        verdict either way: the assertion only asks <i>whether</i> a digit exists, never which one.</div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp10play">▶ Trace</button>
+            <button id="tp10step">Step</button>
+            <button id="tp10reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Subject</span>
+            <span style="font-size:12px;color:var(--soft)">"Password123"</span>
+            <span class="pl" style="margin-left:20px">Four passes, one position</span></div>
+          <div class="tape" id="tp10"></div>
+          <div class="tapecap" id="tp10cap"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols" style="flex:none">
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out">✓ 'Password123' -&gt; Match: 'Password123'
+✗ 'password123' -&gt; No match
+✗ 'PASSWORD123' -&gt; No match
+✗ 'Password'    -&gt; No match
+✗ 'Pass123'     -&gt; No match
+✓ 'MySecure1'   -&gt; Match: 'MySecure1'</div>
+      </div>
+      <div>
+        <div class="callout bad sm">
+          <b>Why every failure looks the same.</b> On <code>'password123'</code> the first two assertions
+          hold; the third scans all eleven characters, finds no capital, and fails. <code>^</code> allows
+          no other starting point, so the engine gives up on the spot — a flat <i>No match</i>, with no
+          way to say <i>which</i> rule broke.
+        </div>
+        <div class="callout warn sm" style="margin-top:10px">
+          <b>Compare with the Part 1 approach.</b> Exercise 3 checked the same rules as five separate
+          <code>re.search</code> calls — longer, but it can tell the user which rule failed. For a
+          validator that reports back to a human, prefer the boring one.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============ 9 · EMAIL VALIDATOR BUG ============ -->
+<section class="slide" data-sec="Lookaround">
+  <div class="eyebrow alert">Exercise · Email validation <span class="tag r" style="margin-left:8px">Gotcha</span></div>
+  <h1 class="t">Four rules, three of them enforced — and one guard that can never fire
+    <small>The brief: exactly one <code>@</code>; TLD in com/org/edu; username may not start or end with a
+    dot; no consecutive dots. Press <b>t</b> to watch the pattern accept an address it was written to
+    reject.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060" style="flex:none">
+      <div>
+        <pre class="code xs">email_pattern = (r'^(?!\.)(?!.*\.\.)(?!.*\.$)'
+                 r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|edu)$')</pre>
+        <div class="outlbl" style="margin-top:11px">Actual output</div>
+        <div class="out xs">✓ 'user@example.com'     -&gt; Match
+✗ '.user@example.com'    -&gt; No match
+<b>✓ 'user.@example.com'   -&gt; Match  ← should be invalid</b>
+✗ 'us..er@example.com'   -&gt; No match
+✗ 'user@example.net'     -&gt; No match
+✓ 'valid.email@test.org' -&gt; Match</div>
+        <div class="tblnote"><span style="color:var(--ink);font-weight:700">Rule 1 is enforced without a
+        guard.</span> Neither character class contains an <code>@</code>, so the only <code>@</code> that
+        can ever appear is the literal one. Structure doing the work of an assertion.</div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp11play">▶ Trace</button>
+            <button id="tp11step">Step</button>
+            <button id="tp11reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Subject</span>
+            <span style="font-size:12px;color:var(--soft)">"user.@example.com"</span>
+            <span class="pl" style="margin-left:18px">Should be rejected</span></div>
+          <div class="tape" id="tp11"></div>
+          <div class="tapecap" id="tp11cap"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols" style="flex:none">
+      <div>
+        <div class="callout bad sm">
+          <b>The third guard is not weak. It is dead.</b> <code class="rx">(?!.*\.$)</code> forbids a dot
+          at the end of the <i>whole string</i> — but <code class="rx">$</code> already demands the string
+          end in <code>com</code>, <code>org</code> or <code>edu</code>, and none of those is a dot. So
+          <code class="rx">.*\.$</code> can never hold for any address the rest of the pattern would
+          accept. <b>Delete the guard and not one verdict changes.</b> It costs a full scan of the string
+          and buys nothing.
+        </div>
+        <div class="callout warn sm" style="margin-top:10px">
+          <code class="rx">(com|org|edu)</code> is a <i>capturing</i> group — which is why the output
+          prints <code>Groups: ('com',)</code>. Make it <code class="rx">(?:…)</code> unless you want the
+          TLD back.
+        </div>
+      </div>
+      <div>
+        <div class="callout bad sm">
+          <b>The rule it was meant to enforce is still unenforced.</b> "Username may not end with a dot"
+          is about the character before the <code>@</code> — position 4 here. No guard is watching that
+          position, so <code>user.</code> walks straight through.
+        </div>
+        <div class="callout good sm" style="margin-top:10px">
+          <b>Fix by construction, not by assertion.</b> Require a good ending instead of forbidding a bad
+          one — the last username character comes from a class with no dot in it. Verified: rejects all
+          four bad addresses, still accepts <code>a@b.com</code>.
+          <pre class="code xs" style="margin-top:7px">r'^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]*[a-zA-Z0-9_%+-]'
+r'@[a-zA-Z0-9.-]+\.(?:com|org|edu)$'</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 · NAMED GROUPS ============ -->
+<section class="slide" data-sec="Groups">
+  <div class="eyebrow">Groups &amp; backreferences · 1</div>
+  <h1 class="t">Named groups turn a match into a record</h1>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <pre class="code sm">date_pattern = r'(?P&lt;year&gt;\d{4})-(?P&lt;month&gt;\d{2})-(?P&lt;day&gt;\d{2})'
+
+m = re.compile(date_pattern).search("2023-12-25")
+m.group('year')    # '2023'
+m.groupdict()      # {'year': …, 'month': …, 'day': …}</pre>
+        <div class="outlbl" style="margin-top:12px">Actual output</div>
+        <div class="out xs">Date: 2023-12-25
+  Year: 2023   Month: 12   Day: 25
+  Full match: 2023-12-25</div>
+      </div>
+      <div>
+        <table class="d sm">
+          <tr><th style="width:150px">Syntax</th><th>Where it is used</th></tr>
+          <tr><td>(?P&lt;name&gt;…)</td><td>define the group</td></tr>
+          <tr><td>(?P=name)</td><td>refer to it <b>inside the pattern</b></td></tr>
+          <tr><td>\g&lt;name&gt;</td><td>refer to it in a <code>sub()</code> replacement</td></tr>
+          <tr><td>m.group('name')</td><td>read it in Python</td></tr>
+          <tr><td>m.groupdict()</td><td>read them all, as a dict</td></tr>
+        </table>
+        <div class="callout good" style="margin-top:12px">
+          <b><code>groupdict()</code> is the reason to bother.</b> It hands you a dictionary keyed by field
+          name — one line from raw text to a record you can put in a DataFrame. Numbered groups make you
+          write that mapping by hand, and re-check it every time the pattern changes.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 · BACKREFERENCES ============ -->
+<section class="slide" data-sec="Groups">
+  <div class="eyebrow">Groups &amp; backreferences · 2</div>
+  <h1 class="t">A backreference matches <i>the same text again</i>
+    <small><code class="rx">\1</code> does not mean "another word". It means "the exact characters group 1
+    captured" — the one place a regex compares text against text it has already seen. Press <b>t</b>.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060" style="flex:none">
+      <div>
+        <pre class="code sm">repeated_word_pattern = r'\b(\w+)\s+\1\b'
+test_regex(repeated_word_pattern, sentences, re.IGNORECASE)</pre>
+        <div class="outlbl" style="margin-top:11px">Actual output</div>
+        <div class="out xs">✓ 'This is is a test'       -&gt; 'is is'
+✓ 'The the quick brown fox' -&gt; 'The the'
+✗ 'No repeated words here'  -&gt; No match
+<b>✓ 'Buffalo buffalo buffalo' -&gt; 'Buffalo buffalo'</b>
+✓ 'Hello world world!'      -&gt; 'world world'</div>
+        <div class="tblnote"><span style="color:var(--ink);font-weight:700">Why this needs a
+        backreference at all.</span> <code class="rx">\w+\s+\w+</code> would match <i>any</i> two words.
+        Only <code class="rx">\1</code> can say "and it must be the same one" — which is precisely the
+        thing a regular language cannot express.</div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp12play">▶ Trace</button>
+            <button id="tp12step">Step</button>
+            <button id="tp12reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Pattern</span><code class="rx">\b(\w+)\s+\1\b</code>
+            <span class="pl" style="margin-left:18px">Subject</span>
+            <span style="font-size:12px;color:var(--soft)">"This is is a test"</span></div>
+          <div class="tape" id="tp12"></div>
+          <div class="tapecap" id="tp12cap"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols" style="flex:none">
+      <div>
+        <div class="callout warn sm">
+          <b>The flag applies to the backreference too.</b> <code>Buffalo</code> and <code>buffalo</code>
+          differ in case yet still matched, because the call passes <code>re.IGNORECASE</code>. So
+          <code class="rx">\1</code> means "the same text <i>under the current flags</i>", which is not
+          the same as "identical".
+        </div>
+        <div class="outlbl" style="margin-top:10px">The same pattern with the flag removed</div>
+        <div class="out xs">'The the quick brown fox' -&gt; <b>No match</b>  (was 'The the')
+'Buffalo buffalo buffalo' -&gt; 'buffalo buffalo'  (one word later)
+'This is is a test'       -&gt; 'is is'  (unchanged)</div>
+      </div>
+      <div>
+        <div class="callout bad sm">
+          <b>The first line is the one that should worry you.</b> Dropping the flag does not shift that
+          answer, it <i>deletes</i> it — a doubled word that was being caught silently stops being caught.
+          A flag change at the call site quietly changes what your data-quality check finds.
+        </div>
+        <div class="callout good sm" style="margin-top:10px">
+          <b>A genuinely useful curation tool.</b> Doubled words are a common artefact of OCR,
+          speech-to-text and careless editing, and nothing but a backreference can find them.
+          <pre class="code sm" style="margin-top:7px">re.sub(r'\b(\w+)(\s+\1\b)+', r'\1', text,
+       flags=re.IGNORECASE)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · NAMED BACKREF / HTML ============ -->
+<section class="slide" data-sec="Groups">
+  <div class="eyebrow">Groups &amp; backreferences · 3</div>
+  <h1 class="t">Named backreferences, and a warning attached</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <pre class="code sm">html_tag_pattern = r'&lt;(?P&lt;tag&gt;\w+)&gt;.*?&lt;/(?P=tag)&gt;'</pre>
+        <div class="outlbl" style="margin-top:11px">Actual output</div>
+        <div class="out xs">✓ '&lt;div&gt;Content&lt;/div&gt;'    -&gt; Match
+✓ '&lt;p&gt;Paragraph&lt;/p&gt;'      -&gt; Match
+✗ '&lt;div&gt;Content&lt;/span&gt;'   -&gt; No match
+✓ '&lt;h1&gt;Title&lt;/h1&gt;'        -&gt; Match
+✗ '&lt;img src='test.jpg'&gt;'  -&gt; No match</div>
+        <div class="callout sm" style="margin-top:11px">
+          The closing tag is forced to repeat whatever the opening tag captured, so
+          <code>&lt;div&gt;…&lt;/span&gt;</code> is correctly rejected. Note the lazy
+          <code class="rx">.*?</code> — greedy would run to the last <code>&lt;/…&gt;</code> on the line.
+        </div>
+      </div>
+      <div>
+        <div class="callout bad">
+          <b>This still is not an HTML parser, and cannot become one.</b> It fails on
+          <code>&lt;div class="x"&gt;</code> (attributes), on <code>&lt;br&gt;</code> (void elements), and
+          — fatally — on <code>&lt;div&gt;&lt;div&gt;a&lt;/div&gt;&lt;/div&gt;</code>, where it pairs the
+          first opening tag with the first closing tag.
+        </div>
+        <div class="callout" style="margin-top:11px">
+          <b>The reason is not a missing feature.</b> Correctly pairing arbitrarily nested tags requires
+          counting depth, and counting to an unbounded number requires memory that a finite automaton does
+          not have. Balanced nesting is provably outside what regular expressions can describe. A
+          backreference bends this — it is what makes real-world regex non-regular — but it still only
+          remembers <i>one</i> captured string, not a stack.
+        </div>
+        <div class="callout good sm" style="margin-top:10px">
+          Use it as a <i>linting</i> tool over near-flat markup. Use <code>lxml</code> to parse.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 · CSV ALTERNATION ============ -->
+<section class="slide" data-sec="Groups">
+  <div class="eyebrow">Groups &amp; backreferences · 4</div>
+  <h1 class="t">Alternation with non-capturing groups: the CSV field
+    <small>Two groups, and neither is doing the obvious thing. Alternation here is <i>ordered</i>, not
+    longest-match — which is the only reason a comma can survive inside a field. Press <b>t</b>.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060" style="flex:none">
+      <div>
+        <pre class="code sm">csv_pattern = r'(?:^|,)("(?:[^"]|"")*"|[^,]*)'</pre>
+        <table class="d sm" style="margin-top:11px">
+          <tr><th style="width:118px">Part</th><th>Job</th></tr>
+          <tr><td>(?:^|,)</td><td>a field starts at the line start or after a comma</td></tr>
+          <tr><td>(…)</td><td>the one capturing group — the field itself</td></tr>
+          <tr><td>"(?:[^"]|"")*"</td><td>a quoted field: anything but a quote, or a doubled quote</td></tr>
+          <tr><td>|</td><td>tried only if the branch above <i>failed</i></td></tr>
+          <tr><td>[^,]*</td><td>an unquoted field: run until the next comma</td></tr>
+        </table>
+        <div class="tblnote"><span style="color:var(--ink);font-weight:700">Both non-capturing groups are
+        load-bearing.</span> Make <code class="rx">(?:^|,)</code> capturing and <code>findall</code>
+        returns <code>[('', 'a'), (',', 'b')]</code> — tuples, not fields.</div>
+      </div>
+      <div>
+        <div class="tapewrap">
+          <div class="tapectl">
+            <button id="tp13play">▶ Trace</button>
+            <button id="tp13step">Step</button>
+            <button id="tp13reset">Reset</button>
+          </div>
+          <div class="tapepat"><span class="pl">Subject</span>
+            <span style="font-size:12px;color:var(--soft)">"Smith, Jane",30,Boston</span>
+            <span class="pl" style="margin-left:16px">3 fields</span></div>
+          <div class="tape" id="tp13"></div>
+          <div class="tapecap" id="tp13cap"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols" style="flex:none">
+      <div>
+        <div class="outlbl">Actual output of <code>re.findall(csv_pattern, line)</code></div>
+        <div class="out xs">'name,age,city'           -&gt; ['name', 'age', 'city']
+'John,25,"New York"'      -&gt; ['John', '25', <b>'"New York"'</b>]
+'"Smith, Jane",30,Boston' -&gt; [<b>'"Smith, Jane"'</b>, '30', 'Boston']
+'a,,b'                    -&gt; ['a', '', 'b']
+<b>'"unterminated,a,b'       -&gt; ['"unterminated', 'a', 'b']</b></div>
+        <div class="tblnote"><span style="color:var(--ink);font-weight:700">The quotes come back with the
+        field.</span> The capture includes its own delimiters, and a doubled <code>""</code> stays
+        doubled. The tidy output in the notebook comes from a strip step that is <i>not</i> in the
+        pattern.</div>
+      </div>
+      <div>
+        <div class="callout warn sm">
+          <b>Ordered, not longest.</b> Python takes the first branch that succeeds, never the longest one.
+          Swap the two and <code>'"Smith, Jane",30,Boston'</code> yields <i>four</i> fields —
+          <code>['"Smith', ' Jane"', '30', 'Boston']</code> — because <code class="rx">[^,]*</code> would
+          stop at the comma before the quoted branch ever got a turn.
+        </div>
+        <div class="callout bad sm" style="margin-top:10px">
+          <b>The last output line is why you use <code>csv.reader</code>.</b> An unterminated quote makes
+          the quoted branch fail, so the engine falls through to <code class="rx">[^,]*</code> and splits
+          the row at the comma. No error, no warning — a malformed row parsed into plausible garbage.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 · PALINDROMES / LIMITS ============ -->
+<section class="slide" data-sec="Groups">
+  <div class="eyebrow">Groups &amp; backreferences · 5</div>
+  <h1 class="t">Palindromes: where the notebook quietly gives up
+    <small>And it is right to. This one is a theory lesson disguised as an exercise.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <pre class="code sm">#  fixed-length palindromes, up to 5 or 6 characters
+palindrome_pattern = r'^(\w)(\w)?(\w)?\3?\2?\1$'</pre>
+        <div class="callout sm" style="margin-top:11px">
+          Capture the first half, then demand it back in reverse order. It works — for exactly as many
+          characters as you wrote groups for. Six characters needs six groups; a hundred needs a hundred.
+        </div>
+        <pre class="code sm" style="margin-top:11px">#  so the notebook builds the pattern at runtime instead
+for i in range(length // 2):
+    pattern_parts.append(r'(\w)')
+if length % 2 == 1:
+    pattern_parts.append(r'\w?')
+for i in range(length // 2, 0, -1):
+    pattern_parts.append(f'\\{i}')</pre>
+      </div>
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out xs">'racecar' -&gt; Palindrome
+'level'   -&gt; Palindrome
+'hello'   -&gt; Not a palindrome
+'madam'   -&gt; Palindrome
+'python'  -&gt; Not a palindrome
+'A man a plan a canal Panama' -&gt; Palindrome</div>
+        <div class="callout bad" style="margin-top:11px">
+          <b>Read what that code actually does.</b> It measures the length in Python, then writes a
+          different regex for every input. That is not a regex solution — Python is doing the work, and
+          the pattern is just an unusual way of comparing characters.
+        </div>
+        <div class="callout" style="margin-top:11px">
+          <b>The real result.</b> Palindromes of unbounded length are not a regular language: recognising
+          them requires remembering an arbitrary amount of the input. No finite pattern can do it. When
+          you find yourself generating regex source code from data, that is the signal you have left the
+          tool's domain — <code>s == s[::-1]</code> is the answer here.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15 · GREEDY COST ============ -->
+<section class="slide" data-sec="Performance">
+  <div class="eyebrow">Performance · 1</div>
+  <h1 class="t">Greed has a price, and it is paid in backtracking</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <div class="outlbl">Actual output — text: &lt;div&gt;First&lt;/div&gt;&lt;div&gt;Second&lt;/div&gt;&lt;div&gt;Third&lt;/div&gt;</div>
+        <div class="out xs">Greedy   (&lt;div&gt;.*&lt;/div&gt;):
+  Match 1: &lt;div&gt;First&lt;/div&gt;&lt;div&gt;Second&lt;/div&gt;&lt;div&gt;Third&lt;/div&gt;
+
+Lazy     (&lt;div&gt;.*?&lt;/div&gt;):
+  Match 1: &lt;div&gt;First&lt;/div&gt;
+  Match 2: &lt;div&gt;Second&lt;/div&gt;
+  Match 3: &lt;div&gt;Third&lt;/div&gt;
+
+Specific (&lt;div&gt;[^&lt;]*&lt;/div&gt;):
+  Match 1: &lt;div&gt;First&lt;/div&gt;
+  Match 2: &lt;div&gt;Second&lt;/div&gt;
+  Match 3: &lt;div&gt;Third&lt;/div&gt;</div>
+      </div>
+      <div>
+        <table class="d sm free">
+          <tr><th style="width:96px">Pattern</th><th>How it gets there</th></tr>
+          <tr><td><code class="rx">.*</code></td><td>runs to end of line, then <b>gives back one character
+            at a time</b> until <code>&lt;/div&gt;</code> fits. Lots of retries.</td></tr>
+          <tr><td><code class="rx">.*?</code></td><td>takes nothing, then <b>adds one character at a
+            time</b> until it fits. Also retries, but stops early.</td></tr>
+          <tr class="ok"><td><code class="rx">[^&lt;]*</code></td><td>cannot cross a <code>&lt;</code> at
+            all, so it stops in the right place <b>the first time</b>. No backtracking.</td></tr>
+        </table>
+        <div class="callout good" style="margin-top:12px">
+          <b>Prefer a negated class to a lazy dot.</b> They give the same answer here, but
+          <code class="rx">[^&lt;]*</code> tells the engine where to stop instead of making it discover
+          the stopping point by trial and error. This is the single highest-value habit in regex
+          performance, and the next slide shows what happens without it.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16 · ★ CATASTROPHIC BACKTRACKING ============ -->
+<section class="slide" data-sec="Performance">
+  <div class="eyebrow alert">Performance · 2 <span class="tag r" style="margin-left:8px">Live</span></div>
+  <h1 class="t">Catastrophic backtracking
+    <small><code class="rx">(a+)+b</code> against a string of <code>a</code>s with no <code>b</code>.
+    Each extra character doubles the work. Press Run.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060" style="gap:16px">
+      <div class="btwrap">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <button class="btgo" id="btgo">Run <code style="font-family:var(--mono)">(a+)+b</code></button>
+          <div style="font-family:var(--mono);font-size:10.5px;color:var(--soft)" id="btstat">idle</div>
+        </div>
+        <div class="btrows" id="btrows"></div>
+      </div>
+      <div>
+        <div class="callout bad">
+          <b>Why it explodes.</b> A string of <i>n</i> a's can be split into groups in 2<sup>n−1</sup>
+          ways — <code>(aa)(aa)</code>, <code>(a)(aaa)</code>, <code>(aaa)(a)</code>, and so on. Both
+          quantifiers are greedy and neither is anchored to a unique answer, so when the final
+          <code>b</code> fails to appear the engine dutifully tries <b>every single split</b> before
+          admitting defeat.
+        </div>
+        <div class="callout warn" style="margin-top:11px">
+          <b>The shape to watch for</b> is a quantifier applied to a group that already contains a
+          quantifier over an overlapping character set:
+          <code class="rx">(a+)+</code>, <code class="rx">(\w+\s*)+</code>,
+          <code class="rx">(\d+|\w+)*</code>, <code class="rx">(.*)*</code>. If two parts of your pattern
+          can both claim the same character, the engine has to explore that ambiguity.
+        </div>
+        <div class="callout sm" style="margin-top:10px">
+          This is a real denial-of-service class — <b>ReDoS</b>. A regex applied to user-supplied input is
+          an execution budget you handed to a stranger.
+        </div>
+        <div class="callout good sm" style="margin-top:10px">
+          <b>The two green bars</b> at the end of the run are the same worst-case string measured against
+          <code class="rx">a+b</code> — the unambiguous rewrite — and against
+          <code class="rx">(?=(a+))\1b</code>, the portable trick that emulates an atomic group. Both
+          finish in a fraction of a millisecond. The next slide is about closing this properly.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17 · THE FIXES / CORRECTION ============ -->
+<section class="slide" data-sec="Performance">
+  <div class="eyebrow alert">Performance · 3 <span class="tag o" style="margin-left:8px">Correction to the notebook</span></div>
+  <h1 class="t">Atomic groups and possessive quantifiers <i>are</i> in Python now
+    <small>The notebook says: "Python's <code>re</code> module has limited support for atomic groups."
+    That was true until Python 3.11. It is not true on 3.12.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <table class="d sm free">
+          <tr><th style="width:110px">Syntax</th><th>Meaning</th><th style="width:64px">Python</th></tr>
+          <tr class="ok"><td><code class="rx">(?&gt;…)</code></td><td>atomic group — once it matches, it
+            never gives characters back</td><td>3.11+</td></tr>
+          <tr class="ok"><td><code class="rx">a*+ a++ a?+</code></td><td>possessive quantifiers — same
+            idea, applied to one token</td><td>3.11+</td></tr>
+          <tr class="ok"><td><code class="rx">(?(1)yes|no)</code></td><td>conditional on whether group 1
+            matched</td><td>all</td></tr>
+        </table>
+        <div class="outlbl" style="margin-top:12px">Measured on this machine, Python 3.12</div>
+        <div class="out xs">re.search(r'(a+)+b',    'a'*24)  →  <b>1.286 s</b>
+re.search(r'(?&gt;a+)+b', 'a'*24)  →  <i>0.000174 s</i>
+
+#  and the growth of the naive version:
+#   18 a's  →  0.025 s
+#   20 a's  →  0.087 s     ~4× per 2 chars
+#   22 a's  →  0.313 s
+#   24 a's  →  1.286 s</div>
+      </div>
+      <div>
+        <div class="callout good">
+          <b>What atomic means.</b> <code class="rx">(?&gt;a+)</code> matches as many a's as it can and
+          then <b>throws away the alternatives</b>. If the rest of the pattern fails, the engine does not
+          reconsider — it fails immediately instead of exploring 8 million splits. Seven thousand times
+          faster here, and the gap widens with every character.
+        </div>
+        <div class="callout" style="margin-top:11px">
+          <b>Order of preference when a pattern is slow:</b>
+          <ol style="margin:7px 0 0 18px;font-size:13px;line-height:1.55">
+            <li>Replace <code class="rx">.*</code> with a negated class that cannot overlap.</li>
+            <li>Remove the ambiguity — <code class="rx">(a+)+b</code> is just <code class="rx">a+b</code>.</li>
+            <li>Anchor the pattern so failure is detected early.</li>
+            <li>Only then reach for <code class="rx">(?&gt;…)</code> or <code class="rx">++</code>.</li>
+          </ol>
+        </div>
+        <div class="callout warn sm" style="margin-top:10px">
+          Check <code>sys.version</code> before relying on this. On 3.10 and earlier, both raise
+          <code>re.error</code> — and the emulation <code class="rx">(?=(a+))\1</code> is the portable
+          trick.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18 · CONDITIONALS ============ -->
+<section class="slide" data-sec="Advanced syntax">
+  <div class="eyebrow alert">Advanced syntax <span class="tag o" style="margin-left:8px">Correction to the notebook</span></div>
+  <h1 class="t">Conditionals work too</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <div class="callout bad">
+          The notebook says: "Python's <code>re</code> module has limited support for conditionals. We'll
+          show the concept and Python alternatives." In fact <code class="rx">(?(id)yes|no)</code> has
+          been in <code>re</code> for many years.
+        </div>
+        <pre class="code sm" style="margin-top:12px">#  an address may be bracketed — but if it opens
+#  with '&lt;' it must also close with '&gt;'
+p = re.compile(r'(&lt;)?\w+@\w+\.com(?(1)&gt;|)')
+
+p.fullmatch('&lt;u@x.com&gt;')   # matches
+p.fullmatch('u@x.com')     # matches
+p.fullmatch('&lt;u@x.com')    # None  ✓</pre>
+        <div class="callout sm" style="margin-top:11px">
+          Read <code class="rx">(?(1)&gt;|)</code> as: <i>if group 1 participated in the match, require
+          <code>&gt;</code> here; otherwise require nothing.</i>
+        </div>
+      </div>
+      <div>
+        <div class="callout warn">
+          <b>Knowing it exists is worth more than using it.</b> Conditionals are rare, unfamiliar to most
+          readers, and almost always replaceable by plain alternation:
+          <pre class="code sm" style="margin-top:8px">r'&lt;\w+@\w+\.com&gt;|\w+@\w+\.com'</pre>
+          <div style="margin-top:7px;font-size:12.5px">Longer, and every colleague can read it. Choose
+          that unless the branches are large enough that duplicating them is worse.</div>
+        </div>
+        <div class="callout" style="margin-top:11px">
+          <b>The notebook's own fallback is good advice.</b> <code>flexible_date_matcher</code> keeps a
+          list of <code>(pattern, description)</code> pairs and tries each in turn — four formats, four
+          simple patterns, and the code reports <i>which</i> format it found:
+          <div class="out xs" style="margin-top:8px">'2023-12-25'        -&gt; ISO format
+'12/25/2023'        -&gt; US format
+'25.12.2023'        -&gt; European format
+'December 25, 2023' -&gt; Long format
+'Invalid date format' -&gt; No match found</div>
+          <div style="margin-top:7px;font-size:12.5px">Several small labelled patterns beat one clever
+          pattern nearly every time.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19 · UNICODE ============ -->
+<section class="slide" data-sec="Unicode">
+  <div class="eyebrow alert">Unicode · 1 <span class="tag r" style="margin-left:8px">Gotcha</span></div>
+  <h1 class="t">What <code class="rx" style="font-size:28px">\w+</code> does to
+    <span class="deva" style="font-size:34px">नमस्ते</span>
+    <small>Python 3's <code class="rx">\w</code> is Unicode-aware, which is not the same as being
+    script-aware.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out xs">Text: Привет <span class="deva">नमस्ते</span> ! 123
+  ASCII letters:   []
+  Word characters: ['Привет', <b>'नमस', 'त'</b>, '123']
+  Non-ASCII:       ['Привет', '<span class="deva">नमस्ते</span>']
+
+Text: こんにちは世界！123
+  Word characters: ['こんにちは世界', '123']
+
+Text: café résumé naïve
+  Words: ['café', 'résumé', 'naïve']</div>
+        <div class="callout bad" style="margin-top:11px">
+          One Devanagari word came back as <b>two fragments with a character silently deleted</b>. Cyrillic
+          and Japanese were fine. French accents were fine.
+        </div>
+      </div>
+      <div>
+        <div class="callout">
+          <b>Why.</b> <code class="rx">\w</code> means "alphanumeric or underscore", and Python decides
+          alphanumeric with <code>str.isalnum()</code>. Take
+          <span class="deva">नमस्ते</span> apart:
+          <table class="d sm" style="margin-top:8px">
+            <tr><th style="width:36px"></th><th>Unicode name</th><th style="width:36px">Cat</th><th style="width:56px">isalnum</th></tr>
+            <tr><td class="deva">न म स</td><td>DEVANAGARI LETTER NA / MA / SA</td><td>Lo</td><td>True</td></tr>
+            <tr class="hl"><td class="deva">्</td><td>DEVANAGARI SIGN VIRAMA</td><td><b>Mn</b></td><td><b>False</b></td></tr>
+            <tr><td class="deva">त</td><td>DEVANAGARI LETTER TA</td><td>Lo</td><td>True</td></tr>
+            <tr class="hl"><td class="deva">े</td><td>DEVANAGARI VOWEL SIGN E</td><td><b>Mn</b></td><td><b>False</b></td></tr>
+          </table>
+          <div style="margin-top:8px;font-size:12.5px">The virama and the vowel sign are <i>combining
+          marks</i> — category Mn. They are not letters, so <code class="rx">\w</code> refuses them, the
+          run breaks, and the trailing mark is dropped entirely.</div>
+        </div>
+        <div class="callout good sm" style="margin-top:10px">
+          <b>Fix:</b> match marks explicitly — the third-party <code>regex</code> module supports
+          <code class="rx">\p{L}\p{M}*</code> and <code class="rx">\X</code> (a full grapheme cluster).
+          With stdlib <code>re</code>, add the mark ranges by hand:
+          <code class="rx">[\w\u0900-\u0903\u093A-\u094F]+</code> for Devanagari.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20 · BOUNDARIES ============ -->
+<section class="slide" data-sec="Unicode">
+  <div class="eyebrow">Unicode · 2</div>
+  <h1 class="t">Word boundaries inherit all of that</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <div class="outlbl">Actual output — re.findall(r'\b\w+\b', text)</div>
+        <div class="out xs">'The cat in the hat'  → ['The','cat','in','the','hat']
+'email@example.com'  → ['email','example','com']
+'file_name.txt'      → <b>['file_name', 'txt']</b>
+'hello-world'        → ['hello', 'world']
+'café résumé naïve'  → ['café','résumé','naïve']</div>
+        <div class="callout sm" style="margin-top:11px">
+          <b>Underscore is a word character; hyphen is not.</b> So <code>file_name</code> is one word and
+          <code>hello-world</code> is two. That asymmetry is inherited from C identifiers, and it surprises
+          people every time.
+        </div>
+      </div>
+      <div>
+        <table class="d sm free">
+          <tr><th style="width:52px">Token</th><th>Matches the position where…</th></tr>
+          <tr><td><code class="rx">\b</code></td><td>a <code class="rx">\w</code> is adjacent to a
+            <code class="rx">\W</code> or a string edge</td></tr>
+          <tr><td><code class="rx">\B</code></td><td>everywhere <code class="rx">\b</code> does not —
+            including inside a word, and inside a run of spaces</td></tr>
+        </table>
+        <div class="callout warn" style="margin-top:12px">
+          <b><code class="rx">\b</code> is defined in terms of <code class="rx">\w</code></b>, so
+          everything from the previous slide applies. On <span class="deva">नमस्ते</span> the engine finds
+          boundaries in the <i>middle</i> of the word, because the combining marks read as non-word
+          characters. Any "whole word" search you write is only as good as your definition of a word.
+        </div>
+        <div class="callout good sm" style="margin-top:10px">
+          <b>Test with your own data.</b> If the corpus for your project is Tamil, Hindi or code-mixed
+          text, run <code class="rx">\b\w+\b</code> over a sample and count the tokens before you trust it.
+          This is a five-minute check that prevents a silently truncated vocabulary.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21 · FLAGS ============ -->
+<section class="slide" data-sec="Flags">
+  <div class="eyebrow">Flags</div>
+  <h1 class="t">Six flags, and the one that will bite you</h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <table class="d sm free">
+        <tr><th style="width:150px">Flag</th><th>Short</th><th>Effect</th></tr>
+        <tr><td><code>re.IGNORECASE</code></td><td>re.I</td><td>case-insensitive — including backreferences</td></tr>
+        <tr class="hl"><td><code>re.MULTILINE</code></td><td>re.M</td><td><code class="rx">^</code> and
+          <code class="rx">$</code> match at every line break, not just the string edges</td></tr>
+        <tr><td><code>re.DOTALL</code></td><td>re.S</td><td><code class="rx">.</code> also matches newline</td></tr>
+        <tr><td><code>re.VERBOSE</code></td><td>re.X</td><td>whitespace and <code>#</code> comments allowed
+          inside the pattern</td></tr>
+        <tr><td><code>re.ASCII</code></td><td>re.A</td><td><code class="rx">\w \d \s</code> revert to their
+          narrow ASCII meanings</td></tr>
+        <tr><td><code>re.UNICODE</code></td><td>re.U</td><td>the default in Python 3 — you never need it</td></tr>
+      </table>
+      <div>
+        <div class="callout">
+          Combine with <code>|</code>, or set them inline at the start of a pattern with
+          <code class="rx">(?im)</code>.
+          <pre class="code sm" style="margin-top:8px">re.findall(p, s, re.MULTILINE | re.IGNORECASE)
+re.compile(r'(?mi)^error:')</pre>
+        </div>
+        <div class="callout bad" style="margin-top:11px">
+          <b>MULTILINE is the one to watch.</b> A pattern written with <code class="rx">^…$</code> to
+          describe <i>a line</i>, then applied to a whole <i>file</i>, matches nothing at all — because
+          without the flag those anchors mean the start and end of the entire string. Next slide.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22 · ★ MULTILINE BUG ============ -->
+<section class="slide" data-sec="Flags">
+  <div class="eyebrow alert">Flags · debug it live <span class="tag r" style="margin-left:8px">Gotcha</span></div>
+  <h1 class="t">The log analyser that finds nothing
+    <small>The final exercise of the notebook builds a <code>LogAnalyzer</code> class, feeds it four
+    perfectly good Apache lines, and gets nothing back.</small></h1>
+  <div class="wrap">
+    <div class="outlbl" style="flex:none">The input · every line of it valid</div>
+    <pre class="code xs" style="flex:none">sample_apache_log = """
+192.168.1.1 - - [25/Dec/2023:10:00:00 +0000] "GET /index.html HTTP/1.1" 200 1234
+10.0.0.1 - user [25/Dec/2023:10:01:00 +0000] "POST /api/login HTTP/1.1" 401 567
+192.168.1.1 - - [25/Dec/2023:10:02:00 +0000] "GET /images/logo.png HTTP/1.1" 404 0
+203.0.113.1 - - [25/Dec/2023:10:03:00 +0000] "GET /index.html HTTP/1.1" 200 1234
+""".strip()        #  ONE string of 4 lines, with 3 newlines inside it</pre>
+    <div class="cols w4060" style="flex:none">
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out">Log Analysis Results:
+<b>error: No matches found</b></div>
+        <pre class="code xs" style="margin-top:11px">'apache_common': re.compile(
+    r'^(?P&lt;ip&gt;\S+) \S+ (?P&lt;user&gt;\S+) \[(?P&lt;timestamp&gt;[^\]]+)\] '
+    r'"(?P&lt;method&gt;\w+) (?P&lt;url&gt;\S+) (?P&lt;protocol&gt;[^"]+)" '
+    r'(?P&lt;status&gt;\d+) (?P&lt;size&gt;\d+)$'
+)                                      #  &lt;- no flags
+
+matches = list(pattern.finditer(log_content))   # 4-line string</pre>
+        <div class="callout bad" style="margin-top:11px">
+          The pattern is correct — the next slide shows it parsing single lines perfectly. The <i>call</i> is
+          wrong.
+        </div>
+      </div>
+      <div>
+        <div class="callout">
+          <b>Work it through.</b> <code>log_content</code> is four log lines joined by newlines.
+          <code class="rx">^</code> without <code>re.MULTILINE</code> means "start of the whole string", so
+          only line 1 can ever start a match — and <code class="rx">$</code> means "end of the whole
+          string", which line 1 is nowhere near. Every candidate fails. Zero matches, no error, an empty
+          statistics dict, and a dashboard that silently reports no traffic.
+        </div>
+        <div class="callout good" style="margin-top:11px">
+          <b>The one-word fix, verified:</b>
+          <pre class="code sm" style="margin-top:8px">re.compile(r'^(?P&lt;ip&gt;\S+) …$', re.MULTILINE)</pre>
+          <div class="out xs" style="margin-top:9px">no flag      →  <b>0 matches</b>  {'error': 'No matches found'}
+re.MULTILINE →  <i>4 matches</i>  4 requests, 3 unique IPs, 200×2 401×1 404×1</div>
+        </div>
+        <div class="callout warn sm" style="margin-top:10px">
+          <b>The general lesson.</b> "No matches" is not evidence that the data is clean. Make an empty
+          result set <i>loud</i> — assert on it, log it, fail the pipeline step. Silence is the most
+          expensive failure mode in curation.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23 · LOG PARSING ============ -->
+<section class="slide" data-sec="Applications">
+  <div class="eyebrow">Applications · 1</div>
+  <h1 class="t">Apache Common Log Format, field by field</h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div>
+        <pre class="code xs">log_pattern = (
+  r'^(?P&lt;ip&gt;\S+) \S+ (?P&lt;user&gt;\S+) \[(?P&lt;timestamp&gt;[^\]]+)\] '
+  r'"(?P&lt;method&gt;\w+) (?P&lt;url&gt;\S+) (?P&lt;protocol&gt;[^"]+)" '
+  r'(?P&lt;status&gt;\d+) (?P&lt;size&gt;\d+)$')
+
+for entry in log_entries:
+    match = compiled_pattern.match(entry)
+    if match:
+        data = match.groupdict()</pre>
+        <table class="d sm free" style="margin-top:11px">
+          <tr><th style="width:130px">Token</th><th>Captures</th></tr>
+          <tr><td><code class="rx">(?P&lt;ip&gt;\S+)</code></td><td>the client address</td></tr>
+          <tr><td><code class="rx">\S+</code></td><td>the identity field — matched, deliberately not captured</td></tr>
+          <tr><td><code class="rx">[^\]]+</code></td><td>everything inside the brackets, including spaces</td></tr>
+          <tr><td><code class="rx">[^"]+</code></td><td>the protocol, stopping at the closing quote</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out xs">IP: 192.168.1.1
+User: -
+Method: GET
+URL: /index.html
+Status: 200
+Size: 1234 bytes
+----------------------------------------
+IP: 10.0.0.1
+User: user
+Method: POST
+URL: /api/login
+Status: 401
+Size: 567 bytes</div>
+        <div class="callout good" style="margin-top:11px">
+          <b>Two habits on display.</b> Capture only what you need — the identity field gets
+          <code class="rx">\S+</code> with no group. And use negated classes for delimited runs, so the
+          engine never has to backtrack out of a bracket or a quote.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24 · FALSE POSITIVES ============ -->
+<section class="slide" data-sec="Applications">
+  <div class="eyebrow alert">Applications · 2 <span class="tag r" style="margin-left:8px">Gotcha</span></div>
+  <h1 class="t">Extraction is easy. Precision is the hard part.
+    <small>Same run, four patterns, four different failure modes.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out xs">Emails:
+  - john.smith@company.com      ✓
+  - jane.doe@example.org        ✓
+  - support@help.com            ✓
+
+Phones:
+  - (800) 555-0199              <b>only one of three</b>
+
+Names:
+  - <b>Contact John</b>
+  - Jane Doe                    ✓
+  - <b>Main Street</b>
+  - <b>New York</b>
+
+Addresses:
+  <b>None found</b></div>
+      </div>
+      <div>
+        <table class="d sm free">
+          <tr><th style="width:70px">Field</th><th>What went wrong</th></tr>
+          <tr class="hl"><td>names</td><td><code class="rx">\b[A-Z][a-z]+ [A-Z][a-z]+\b</code> describes
+            <i>capitalised word pairs</i>, not names. "Contact John" and "New York" fit the description
+            exactly. <b>Precision ≈ 25%.</b></td></tr>
+          <tr class="hl"><td>phones</td><td>The pattern has capturing groups, so <code>findall</code>
+            returns tuples of group text — and the display code only formats one shape. A
+            <code>findall</code> surprise from Part 1, in the wild.</td></tr>
+          <tr class="hl"><td>addresses</td><td><code class="rx">\d+\s+[A-Za-z\s,]+\s+[A-Z]{2}\s+\d{5}</code>
+            requires the whole address on one line with no digits in the middle. "Suite 456" contains
+            digits. Zero matches.</td></tr>
+          <tr class="ok"><td>emails</td><td>Worked — because an email has an unambiguous anchor character,
+            <code>@</code>, that appears almost nowhere else.</td></tr>
+        </table>
+        <div class="callout" style="margin-top:11px">
+          <b>The pattern.</b> Regex is reliable when the target contains a <i>distinctive
+          marker</i> — <code>@</code>, <code>https://</code>, <code>#</code>, a fixed digit layout. It is
+          unreliable when the target is defined by <i>meaning</i>. Names are a semantic category, and no
+          amount of pattern tuning will fix that; use a named-entity recogniser.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25 · VERBOSE URL ============ -->
+<section class="slide" data-sec="Applications">
+  <div class="eyebrow">Applications · 3</div>
+  <h1 class="t">re.VERBOSE — the flag that makes big patterns readable</h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <pre class="code xs">url_pattern = r'''
+    ^(?P&lt;scheme&gt;[a-zA-Z][a-zA-Z0-9+.-]*)://   # scheme
+    (?:
+        (?P&lt;username&gt;[^:@]+)                  # username (optional)
+        (?::(?P&lt;password&gt;[^@]+))?             # password (optional)
+        @
+    )?
+    (?P&lt;host&gt;[^:/?#]+)                        # host
+    (?::(?P&lt;port&gt;\d+))?                       # port
+    (?P&lt;path&gt;/[^?#]*)?                        # path
+    (?:\?(?P&lt;query&gt;[^#]*))?                   # query
+    (?:\#(?P&lt;fragment&gt;.*))?                   # fragment
+    $
+'''
+compiled = re.compile(url_pattern, re.VERBOSE)</pre>
+      <div>
+        <div class="outlbl">Actual output</div>
+        <div class="out xs">https://www.example.com:8080/path?x=1#sec
+  scheme: https      host: www.example.com
+  port: 8080         path: /path
+  query: x=1         fragment: sec
+
+ftp://user:pass@ftp.example.com:21/f.pdf
+  scheme: ftp        username: user
+  password: pass     host: ftp.example.com
+
+<b>mailto:user@example.com   →  Invalid URL format</b>
+invalid-url               →  Invalid URL format</div>
+        <div class="callout warn" style="margin-top:10px">
+          <code>mailto:</code> is rejected because the pattern hard-codes <code>://</code>, which
+          <code>mailto</code> URIs do not use. A correct-looking rejection of a valid URI — worth showing
+          students that "invalid" often means "outside what I described".
+        </div>
+      </div>
+    </div>
+    <div class="callout good" style="flex:none">
+      <b>Use VERBOSE for anything over about 40 characters.</b> Whitespace is ignored, <code>#</code>
+      starts a comment, and the pattern becomes reviewable in a pull request. Two costs: you must write
+      <code class="rx">\ </code> or <code class="rx">[ ]</code> for a literal space, and
+      <code>#</code> must be escaped.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26 · COMPILE MYTH ============ -->
+<section class="slide" data-sec="Performance">
+  <div class="eyebrow alert">Performance · 4 <span class="tag o" style="margin-left:8px">The benchmark disagreed</span></div>
+  <h1 class="t">"Always pre-compile for speed" — measure it
+    <small>The notebook's own benchmark is meant to prove that compiling is faster. Here is what it
+    actually printed.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <div class="outlbl">Actual output — notebook cell 42</div>
+        <div class="out">Regex Compilation Benchmark:
+No caching:   0.7157s
+Pre-compiled: 0.7386s
+With caching: 0.7329s
+<b>Speedup (compiled vs no cache): 0.97x</b></div>
+        <div class="outlbl" style="margin-top:12px">Re-measured independently, 200 runs</div>
+        <div class="out">re.findall (module-level)  0.0302s
+compiled.findall           0.0309s</div>
+        <div class="callout bad" style="margin-top:11px">
+          Pre-compiling was <i>marginally slower</i> in both runs. The claimed speedup is not there.
+        </div>
+      </div>
+      <div>
+        <div class="callout">
+          <b>Why.</b> <code>re</code> already caches. Every module-level call looks the pattern up in an
+          internal dictionary, and only compiles on a miss:
+          <pre class="code sm" style="margin-top:8px">&gt;&gt;&gt; re.<span class="py-num">_MAXCACHE</span>
+512</pre>
+          <div style="margin-top:7px">So a loop that calls <code>re.findall</code> with the same literal
+          pattern compiles it exactly once, then pays a dictionary lookup per call. That lookup is
+          nothing next to the actual scanning.</div>
+        </div>
+        <div class="callout good" style="margin-top:11px">
+          <b>Compile anyway — for other reasons.</b>
+          <ul class="b tight" style="margin-top:7px;font-size:13px">
+            <li>The pattern gets a <b>name</b>, defined once near the top of the module.</li>
+            <li>Flags live with the pattern instead of being repeated at every call site.</li>
+            <li>You get methods the module functions do not expose, like
+              <code>.groups</code>, <code>.groupindex</code> and the <code>pos</code>/<code>endpos</code>
+              arguments.</li>
+            <li>It <i>does</i> matter when patterns are built dynamically — more than 512 distinct
+              patterns and the cache starts evicting.</li>
+          </ul>
+        </div>
+        <div class="callout warn sm" style="margin-top:10px">
+          <b>The transferable lesson.</b> A benchmark that confirms what you already believed deserves more
+          scrutiny than one that surprises you.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27 · MISLEADING BENCHMARK ============ -->
+<section class="slide" data-sec="Performance">
+  <div class="eyebrow alert">Performance · 5 <span class="tag r" style="margin-left:8px">Gotcha</span></div>
+  <h1 class="t">The benchmark that compares two different questions</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <pre class="code sm">patterns = {
+    "Inefficient": r'(\w+\s*)+',   # can backtrack badly
+    "Better":      r'\w+',
+    "Compiled":    re.compile(r'\w+'),
+}
+#  … timed with re.findall over the same text</pre>
+        <div class="outlbl" style="margin-top:11px">Actual output</div>
+        <div class="out xs">Inefficient: 0.0010s (<b>1000 matches</b>)
+Better:      0.0015s (<b>9000 matches</b>)
+Compiled:    0.0014s (9000 matches)</div>
+        <div class="callout bad" style="margin-top:11px">
+          The pattern labelled "inefficient" came out <b>fastest</b>. Read the match counts before drawing
+          any conclusion from the times.
+        </div>
+      </div>
+      <div>
+        <div class="callout">
+          <b>Two separate things are wrong.</b>
+          <ul class="b tight" style="margin-top:8px;font-size:13px">
+            <li><code class="rx">(\w+\s*)+</code> has a capturing group, so <code>findall</code> returns
+              <i>the group</i> — the last repetition of each match — not the whole match. It reports 1000
+              results because it is answering a different question.</li>
+            <li>It is also matching a different thing: each result spans a whole run of words, where
+              <code class="rx">\w+</code> returns one word at a time. 1000 large matches versus 9000 small
+              ones.</li>
+          </ul>
+        </div>
+        <div class="callout good" style="margin-top:11px">
+          <b>Fix the measurement first.</b> Make the group non-capturing so both patterns return
+          comparable results:
+          <pre class="code sm" style="margin-top:8px">"Inefficient": r'(?:\w+\s*)+'</pre>
+          <div style="margin-top:7px;font-size:12.5px">And note that on <i>this</i> input
+          <code class="rx">(\w+\s*)+</code> never blows up, because the text always matches. Nested
+          quantifiers are only catastrophic when the match <b>fails</b> and the engine has to prove it —
+          which is exactly what an attacker arranges.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28 · LARGE TEXT ============ -->
+<section class="slide" data-sec="Applications">
+  <div class="eyebrow">Applications · 4</div>
+  <h1 class="t">Large inputs: finditer, and a trailing comma</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <pre class="code sm">#  findall builds the entire list in memory
+matches = re.findall(pattern, huge_text)
+
+#  finditer yields one Match at a time
+for m in re.finditer(pattern, huge_text):
+    process(m.group(), m.start())</pre>
+        <div class="outlbl" style="margin-top:11px">Actual output — 43,300 characters</div>
+        <div class="out xs">Finding emails:  300 matches, 3 unique
+Finding phones:  200 matches, 2 unique
+Finding urls:    200 matches, 2 unique
+    1. <b>http://subdomain.test.org,</b>
+    2. <b>https://www.example.com,</b>
+Finding dates:   300 matches, 3 unique</div>
+      </div>
+      <div>
+        <div class="callout bad">
+          <b>Every URL came back with a comma stuck to it.</b> The pattern is
+          <code class="rx">https?://[^\s]+</code> — "everything up to the next whitespace" — and in prose
+          the character before the whitespace is usually punctuation.
+        </div>
+        <div class="callout good" style="margin-top:11px">
+          <b>Two fixes.</b> Exclude the punctuation you never want, or strip it with a lookbehind-free
+          trailing class:
+          <pre class="code sm" style="margin-top:8px">r'https?://[^\s]+?(?=[.,;:!?]?(?:\s|$))'
+#  or simply
+r'https?://[^\s&lt;&gt;",;]+'</pre>
+          <div style="margin-top:7px;font-size:12.5px">The second is blunter and easier to read. Both beat
+          post-processing with <code>.rstrip(',')</code>, which only removes the punctuation you thought of.</div>
+        </div>
+        <div class="callout warn sm" style="margin-top:10px">
+          <b>Note the deduplication.</b> 300 matches, 3 unique. Reporting only the total would have hidden
+          the fact that this "large text" is one paragraph repeated a hundred times. Always report both.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29 · REDACTION ============ -->
+<section class="slide" data-sec="Applications">
+  <div class="eyebrow">Applications · 5</div>
+  <h1 class="t">Redaction — the highest-stakes use, and the least forgiving</h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div>
+        <pre class="code xs">'personal': {
+  'ssn':         re.compile(r'\b\d{3}-\d{2}-\d{4}\b'),
+  'credit_card': re.compile(r'\b(?:\d{4}[- ]?){3}\d{4}\b'),
+},
+'technical': {
+  'ip_address':  re.compile(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'),
+  'version':     re.compile(r'\bv?\d+(?:\.\d+){1,3}\b'),
+}
+
+def clean_sensitive_data(text, replacement="[REDACTED]"):
+    for name, pattern in sensitive_patterns.items():
+        text = pattern.sub(replacement, text)
+    return text</pre>
+        <div class="outlbl" style="margin-top:11px">Actual output</div>
+        <div class="out xs">John Smith: [REDACTED], [REDACTED]
+SSN: [REDACTED], Driver License: [REDACTED]
+Credit Card: [REDACTED]</div>
+      </div>
+      <div>
+        <div class="callout bad">
+          <b>Now look at what the version pattern caught:</b>
+          <div class="out xs" style="margin-top:8px">version: ['v2.1.3', '5.7.2', <b>'000.00'</b>,
+          <b>'192.168.1.100'</b>, <b>'15.5'</b>, <b>'3.2'</b>]</div>
+          <div style="margin-top:8px;font-size:12.5px">It swallowed the IP address, the revenue figure
+          <code>$2,450,000.00</code> and both percentages. <code class="rx">\bv?\d+(?:\.\d+){1,3}\b</code>
+          describes "digits separated by dots", which is not a version number — it is a very large family
+          of things.</div>
+        </div>
+        <div class="callout warn" style="margin-top:11px">
+          <b>For extraction, a false positive is noise. For redaction, a false <i>negative</i> is a
+          breach.</b> The two error types are not symmetric, so the design is not symmetric either:
+          <ul class="b tight" style="margin-top:7px;font-size:13px">
+            <li>Redact broadly, then review — over-redaction is recoverable.</li>
+            <li>Order matters. Run the specific patterns before the greedy ones, or
+              <code>[REDACTED]</code> will hide the text a later pattern needed.</li>
+            <li>Never redact in place. Keep the original under access control and emit a copy.</li>
+            <li>Test against a corpus of known-sensitive strings, and count what you missed.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30 · DEBUGGING ============ -->
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">How to debug a pattern that will not behave</h1>
+  <div class="wrap">
+    <div class="cols3">
+      <div class="card" style="border-top-color:var(--t-cls)">
+        <h3>1 · Print the match, not the boolean</h3>
+        <p>Every gotcha in this deck was invisible to <code>if match:</code> and obvious from
+        <code>.group()</code> and <code>.span()</code>. Print what matched and <i>where</i>.</p>
+        <pre class="code xs" style="margin-top:8px">for m in p.finditer(text):
+    print(repr(m.group()), m.span(),
+          m.groupdict())</pre>
+      </div>
+      <div class="card" style="border-top-color:var(--t-grp)">
+        <h3>2 · Bisect the pattern</h3>
+        <p>Delete the second half and re-run. Keep halving until it matches, then add tokens back one at a
+        time. The token that breaks it is the bug — and this takes under a minute.</p>
+      </div>
+      <div class="card" style="border-top-color:var(--t-qnt)">
+        <h3>3 · Ask the engine</h3>
+        <p><code>re.compile(p, re.DEBUG)</code> prints the compiled program — every literal, branch and
+        repeat, in order. It shows you what the engine <i>read</i>, which is not always what you wrote.</p>
+      </div>
+    </div>
+    <div class="cols" style="flex:none;margin-top:2px">
+      <div class="callout">
+        <b>regex101.com, with the Python flavour selected.</b> It explains every token, shows the match
+        tree, and — most useful of all — reports the <b>step count</b>. A pattern that takes 50 000 steps
+        on a 40-character string is telling you it backtracks. Watch that number, not the clock.
+      </div>
+      <div class="callout good">
+        <b>Keep the negatives.</b> Next to every pattern, store the strings that must match <i>and</i> the
+        strings that must not. Half the failures in this deck —
+        <code>profile.txt</code>, <code>user.@example.com</code>, <code>'$19.99' → '9.99'</code> —
+        would have been caught by a single "must not match" case.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31 · CLOSE ============ -->
+<section class="slide" data-sec="Close">
+  <div class="eyebrow">End of Part 2</div>
+  <h1 class="t">Nine things worth remembering</h1>
+  <div class="wrap">
+    <div class="cols" style="gap:22px">
+      <div>
+        <ul class="b tight">
+          <li><strong>A match is a span.</strong> Leftmost first, then greedy. Most bugs are a wrong idea
+            about where the engine started.</li>
+          <li><strong>Assertions are zero-width.</strong> They test a position and give the cursor back.</li>
+          <li><strong>Negative lookbehind does not forbid a context</strong> — it forbids one
+            <i>position</i>. The engine will just try the next one. Anchor with
+            <code class="rx">\b</code>.</li>
+          <li><strong>Backreferences match text, not meaning</strong>, and they respect the current flags.</li>
+          <li><strong>Nested quantifiers over overlapping sets are a time bomb</strong>, and only when the
+            match fails.</li>
+        </ul>
+      </div>
+      <div>
+        <ul class="b tight">
+          <li><strong>Prefer a negated class to a lazy dot.</strong> Tell the engine where to stop.</li>
+          <li><strong><code class="rx">\w</code> is Unicode-aware, not script-aware.</strong> Check it
+            against your own corpus before you trust a token count.</li>
+          <li><strong>Empty results are a finding, not a null.</strong> Make them loud.</li>
+          <li><strong>Run it.</strong> Six slides in this deck exist because a comment and an interpreter
+            disagreed.</li>
+        </ul>
+        <div class="callout" style="margin-top:6px;font-size:12.5px">
+          <b>Practice.</b> Take a log file, a scraped page or a messy CSV from your own project. Write the
+          extractor, then write down its precision and recall on fifty hand-checked rows. That number, not
+          the pattern, is the deliverable.
+        </div>
+      </div>
+    </div>
+    <div class="callout good" style="flex:none">
+      <b>Further reading.</b>
+      Python docs — <i>Regular Expression HOWTO</i> · <a href="https://regex101.com" style="color:var(--t-cls)">regex101.com</a> (Python flavour, watch the step count) ·
+      the third-party <code>regex</code> module for variable-width lookbehind, <code class="rx">\p{…}</code> and
+      <code class="rx">\X</code> · Friedl, <i>Mastering Regular Expressions</i> — chapter 4 on how the engine
+      actually works is the one that changes how you write patterns.
+    </div>
+  </div>
+</section>
+
+</div></div>
+
+<div id="nav">
+  <button id="prev" aria-label="Previous slide">‹</button>
+  <button id="next" aria-label="Next slide">›</button>
+</div>
+<div id="hint">← → navigate · F fullscreen · P print</div>
+
+<script>
+/* ============ regex token highlighter ============ */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+const GRP_OPEN=/^\((\?P<[^>]+>|\?P=\w+\)|\?<=|\?<!|\?<[^>]+>|\?:|\?=|\?!|\?>|\?\(\d+\)|\?#[^)]*\))?/;
+function rxHighlight(src){
+  let out='',i=0;
+  const push=(k,t)=>{out+='<span class="rx-'+k+'">'+esc(t)+'</span>';};
+  while(i<src.length){
+    const c=src[i];
+    if(c==='\\'){
+      const n=src[i+1]||'';
+      const k=/[dDwWsS]/.test(n)?'cls':/[bBAZz]/.test(n)?'anc':/[1-9]/.test(n)?'ref':'lit';
+      push(k,c+n); i+=2; continue;
+    }
+    if(c==='['){
+      let j=i+1; if(src[j]==='^')j++; if(src[j]===']')j++;
+      while(j<src.length&&src[j]!==']'){ if(src[j]==='\\')j++; j++; }
+      push('cls',src.slice(i,j+1)); i=j+1; continue;
+    }
+    if(c==='('){
+      const m=GRP_OPEN.exec(src.slice(i)); const tok=m?m[0]:'(';
+      push(/\?=|\?!|\?<=|\?<!/.test(tok)?'asr':'grp',tok); i+=tok.length; continue;
+    }
+    if(c===')'){ push('grp',c); i++; continue; }
+    if(c==='{'){ const j=src.indexOf('}',i);
+      if(j>0&&/^\{\d+(,\d*)?\}$/.test(src.slice(i,j+1))){ push('qnt',src.slice(i,j+1)); i=j+1; continue; } }
+    if(c==='*'||c==='+'||c==='?'){ push('qnt',c); i++; continue; }
+    if(c==='^'||c==='$'){ push('anc',c); i++; continue; }
+    if(c==='|'){ push('alt',c); i++; continue; }
+    if(c==='.'){ push('dot',c); i++; continue; }
+    push('lit',c); i++;
+  }
+  return out;
+}
+const PYKW=/^(def|return|for|in|if|elif|else|import|from|None|True|False|not|and|or|class|with|as|while|lambda|try|except|raise|pass)\b/;
+function pyHighlight(src){
+  let out='',i=0;
+  while(i<src.length){
+    const rest=src.slice(i), c=src[i];
+    if(c==='#'){ const j=src.indexOf('\n',i); const e=j<0?src.length:j;
+      out+='<span class="py-cm">'+esc(src.slice(i,e))+'</span>'; i=e; continue; }
+    const sm=/^([rRfFbB]{0,2})('''|"""|'|")/.exec(rest);
+    if(sm){
+      const pre=sm[1],q=sm[2]; let j=i+pre.length+q.length;
+      while(j<src.length){ if(src[j]==='\\'&&!/r/i.test(pre)){j+=2;continue;}
+        if(src.startsWith(q,j))break; j++; }
+      const body=src.slice(i+pre.length+q.length,j);
+      const inner=/r/i.test(pre)?rxHighlight(body):esc(body);
+      out+='<span class="py-str">'+esc(pre+q)+inner+esc(q)+'</span>';
+      i=j+q.length; continue;
+    }
+    const kw=PYKW.exec(rest);
+    if(kw&&(i===0||!/[A-Za-z0-9_]/.test(src[i-1]))){
+      out+='<span class="py-kw">'+kw[0]+'</span>'; i+=kw[0].length; continue; }
+    const nm=/^\d+(\.\d+)?/.exec(rest);
+    if(nm&&(i===0||!/[A-Za-z0-9_.]/.test(src[i-1]))){
+      out+='<span class="py-num">'+nm[0]+'</span>'; i+=nm[0].length; continue; }
+    out+=esc(c); i++;
+  }
+  return out;
+}
+document.querySelectorAll('code.rx').forEach(el=>{el.innerHTML=rxHighlight(el.textContent);});
+document.querySelectorAll('pre.code').forEach(el=>{el.innerHTML=pyHighlight(el.textContent);});
+
+/* ============ the tape ============ */
+function tape(id,cfg){
+  const el=document.getElementById(id); if(!el)return;
+  const t=[...cfg.text], n=t.length, cw=cfg.cw||24;
+  let h='<div class="cells" style="grid-template-columns:repeat('+n+','+cw+'px)">';
+  t.forEach(ch=>{ h+='<div class="cell'+(ch===' '?' sp':'')+'">'+(ch===' '?'':esc(ch))+'</div>'; });
+  (cfg.bands||[]).forEach(b=>{
+    const r=b.r?';grid-row:'+b.r:'';
+    h+='<div class="band '+(b.k||'match')+'" style="grid-column:'+(b.s+1)+'/'+(b.e+1)+r+'">'+esc(b.t||'')+'</div>';
+    if(b.l) h+='<div class="lbl" style="grid-column:'+(b.e+1)+'/-1'+r+'">'+b.l+'</div>';
+  });
+  const pins=cfg.pins||[];
+  const pad=pins.length?(pins.some(p=>p.hi)?44:26):0;
+  el.style.paddingTop=pad+'px';
+  h+='</div><div class="pinlayer" style="top:'+pad+'px;width:'+(n*cw)+'px">';
+  pins.forEach(p=>{
+    h+='<div class="pin'+(p.ok?' ok':'')+(p.hi?' hi':'')+'" style="left:'+(p.at*cw)+'px"><b>'+esc(p.l||'')+'</b></div>';
+  });
+  el.innerHTML=h+'</div>';
+}
+tape('tp1',{text:'pay $45.00 now',cw:26,
+  bands:[{s:5,e:7,t:'',k:'match',l:"&nbsp;&nbsp;.group() = '45' — neither $ nor .00 is included"}],
+  pins:[{at:5,ok:1,l:'(?<=\\$)'},{at:7,ok:1,l:'(?=\\.00\\b)'}]});
+tape('tp2',{text:'profile.txt',cw:26,
+  bands:[{s:3,e:7,t:'file',k:'miss',l:'&nbsp;&nbsp;<b>blocked</b> — followed by exactly .txt'}],
+  pins:[{at:7,l:'(?!\\.txt)'}]});
+tape('tp3',{text:'$19.99',cw:44,
+  bands:[{s:1,e:6,t:'attempt at index 1',k:'miss',l:'&nbsp;&nbsp;<b>blocked</b> — preceded by $'},
+         {s:2,e:6,t:'',k:'match',l:"&nbsp;&nbsp;preceded by '1' → assertion passes → match = '9.99'"}],
+  pins:[{at:1,hi:1,l:'(?<!\\$) fails here'},{at:2,ok:1,l:'(?<!\\$) passes here'}]});
+/* the same subject, the same two attempts, opposite verdicts */
+tape('tp4',{text:'cat catalogue',cw:32,
+  bands:[{s:0,e:3,t:'blocked',k:'miss',r:2},{s:4,e:7,t:"match 'cat'",k:'match',r:2}],
+  pins:[{at:3,l:'(?=alogue) fails'},{at:7,ok:1,l:'(?=alogue) holds'}]});
+tape('tp5',{text:'cat catalogue',cw:32,
+  bands:[{s:0,e:3,t:"match 'cat'",k:'match',r:2},{s:4,e:7,t:'blocked',k:'miss',r:2}],
+  pins:[{at:3,ok:1,l:'(?!alogue) holds'},{at:7,l:'(?!alogue) fails'}]});
+/* the lookbehind pair — same idea, and the back-jump is the thing to watch */
+tape('tp6',{text:'USD 45.00 EUR 45.00',cw:26,
+  bands:[{s:4,e:9,t:"match '45.00'",k:'match',r:2},{s:14,e:19,t:'blocked',k:'miss',r:2}],
+  pins:[{at:4,ok:1,l:'(?<=USD ) holds'},{at:14,l:'(?<=USD ) fails'}]});
+tape('tp7',{text:'USD 45.00 EUR 45.00',cw:26,
+  bands:[{s:4,e:9,t:'blocked',k:'miss',r:2},{s:14,e:19,t:"match '45.00'",k:'match',r:2}],
+  pins:[{at:4,l:'(?<!USD ) fails'},{at:14,ok:1,l:'(?<!USD ) holds'}]});
+/* fixed width: both assertions are variable width, only one has a start point */
+tape('tp8',{text:'xaaabbb',cw:44,
+  bands:[{s:4,e:5,t:'b',k:'ghost',r:2},{s:4,e:6,t:'bb',k:'ghost',r:3},
+         {s:4,e:7,t:'bbb',k:'ghost',r:4},{s:4,e:7,t:'start is fixed',k:'g1',r:5}],
+  pins:[{at:4,ok:1,l:'start = the cursor'}]});
+/* CSV field: three fields on row 2, and the counterfactual (branches swapped) on row 3 */
+tape('tp13',{text:'"Smith, Jane",30,Boston',cw:28,
+  bands:[{s:0,e:13,t:'field 1 — the quoted branch won',k:'g1',r:2,l:'&nbsp;'},
+         {s:14,e:16,t:'30',k:'g1',r:2,l:'&nbsp;'},
+         {s:17,e:23,t:'Boston',k:'g1',r:2,l:'&nbsp;'},
+         {s:0,e:6,t:'"Smith',k:'miss',r:3,l:'&nbsp;'},
+         {s:7,e:13,t:' Jane"',k:'miss',r:3,
+          l:'&nbsp;&nbsp;branches swapped → four fields, not three'}],
+  pins:[{at:0,ok:1,l:'^'},{at:13,ok:1,l:','},{at:16,ok:1,l:','}]});
+/* backreference: the failed attempt at 0, then the one that holds at 5 */
+tape('tp12',{text:'This is is a test',cw:36,
+  bands:[{s:0,e:4,t:'This',k:'miss',r:2,l:"&nbsp;&nbsp;\\1 then wanted 'This' again — and found 'is a'"},
+         {s:5,e:7,t:'is',k:'g1',r:3,l:'&nbsp;'},
+         {s:8,e:10,t:'is',k:'g1',r:3,l:"&nbsp;&nbsp;\\1 — the same two characters, again"},
+         {s:5,e:10,t:"match = 'is is'",k:'match',r:4,l:'&nbsp;'}],
+  pins:[{at:5,ok:1,l:'\\b'},{at:10,ok:1,l:'\\b'}]});
+/* the email validator: two guards that work, one that cannot, and the dot that gets through */
+tape('tp11',{text:'user.@example.com',cw:36,
+  bands:[{s:0,e:17,t:"(?!.*\\.\\.)  →  no '..' anywhere, so it holds",k:'g1',r:2,l:'&nbsp;'},
+         {s:0,e:17,t:"(?!.*\\.$)  →  17 cells scanned, and it could never have failed",k:'g3',r:3,l:'&nbsp;'},
+         {s:0,e:5, t:'',k:'g2',r:4,l:"&nbsp;&nbsp;username = 'user.' — and it ends on a dot"},
+         {s:0,e:17,t:'MATCH — an address the brief said to reject',k:'match',r:5,l:'&nbsp;'}],
+  pins:[{at:0,ok:1,l:'^'}]});
+/* stacked lookaheads: four bands all flush at column 1 — every pass starts at position 0 */
+tape('tp10',{text:'Password123',cw:40,
+  bands:[{s:0,e:11,t:"(?=.*\\d)  →  digit at 10",k:'g1',r:2,l:'&nbsp;'},
+         {s:0,e:8, t:"(?=.*[a-z])  →  'd' at 7",k:'g2',r:3,l:'&nbsp;'},
+         {s:0,e:1, t:'',k:'g3',r:4,
+          l:"&nbsp;&nbsp;(?=.*[A-Z]) → 'P' at 0 — this one had to hand back all ten"},
+         {s:0,e:11,t:'then .{8,}$ consumes all 11 — the only part in .group()',k:'match',r:5,l:'&nbsp;'}],
+  pins:[{at:0,ok:1,l:'^'}]});
+tape('tp9',{text:'xaaabbb',cw:44,
+  bands:[{s:3,e:4,t:'a',k:'ghost',r:2},{s:2,e:4,t:'aa',k:'ghost',r:3},
+         {s:1,e:4,t:'aaa',k:'ghost',r:4},{s:1,e:4,t:'which one?',k:'miss',r:5}],
+  pins:[{at:4,l:'end = the cursor'}]});
+
+/* ============ traced tapes ============
+   A tape can be stepped through one engine move at a time. The point of every
+   trace on this deck is the same: show the positions the engine tries that you
+   did not have in mind, and the moments where the cursor does not move at all.  */
+const ABORT={abort:1};
+function traceTape(id,cw,build){
+  const el=document.getElementById(id), CAP=document.getElementById(id+'cap');
+  if(!el||!CAP)return;
+  const playB=document.getElementById(id+'play'),
+        stepB=document.getElementById(id+'step'),
+        resB =document.getElementById(id+'reset');
+  el.classList.add('anim');
+  const cur=document.createElement('div'); cur.className='cur';
+  el.querySelector('.pinlayer').appendChild(cur);
+
+  let gen=0, idx=0, playing=false;
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+  const ctx={
+    cells:[...el.querySelectorAll('.cell')],
+    bands:[...el.querySelectorAll('.band')],
+    lbls :[...el.querySelectorAll('.lbl')],
+    pins :[...el.querySelectorAll('.pin')],
+    /* W() is the only way a step should wait — it aborts the step if the tape
+       was reset or replayed underneath it. */
+    async W(ms){ const g=gen; await sleep(ms); if(g!==gen) throw ABORT; },
+    mark  (i,k)   { ctx.cells[i]&&ctx.cells[i].classList.add(k); },
+    unmark(i,...k){ ctx.cells[i]&&ctx.cells[i].classList.remove(...k); },
+    move(i){ cur.style.left=(i*cw)+'px'; cur.classList.add('on'); },
+    hide(){ cur.classList.remove('on'); },
+    show(n){ ctx.bands[n]&&ctx.bands[n].classList.add('show');
+             ctx.lbls[n] &&ctx.lbls[n] .classList.add('show'); },
+    pin(n){ ctx.pins[n]&&ctx.pins[n].classList.add('show'); },
+    cap(html,tone){ CAP.className='tapecap'+(tone?' '+tone:''); CAP.innerHTML=html; }
+  };
+  const steps=build(ctx);
+
+  function reset(){
+    gen++; idx=0; playing=false;
+    ctx.cells.forEach(c=>c.classList.remove('probe','pass','fail','eat'));
+    ctx.bands.concat(ctx.lbls,ctx.pins).forEach(n=>n.classList.remove('show'));
+    cur.classList.remove('on');
+    cur.style.transition='none'; cur.style.left='0px';
+    requestAnimationFrame(()=>{cur.style.transition='';});
+    ctx.cap('<b>▶ Trace</b> runs it; <b>Step</b> advances one move.'+
+            '<span style="color:var(--soft)"> &nbsp;· &nbsp;key: <b>t</b></span>');
+    playB.disabled=false; stepB.disabled=false;
+  }
+
+  stepB.onclick=async()=>{
+    if(playing||idx>=steps.length)return;
+    stepB.disabled=true; playB.disabled=true;
+    try{ await steps[idx++](); }catch(e){ if(e!==ABORT)throw e; return; }
+    stepB.disabled=idx>=steps.length; playB.disabled=false;
+  };
+  playB.onclick=async()=>{
+    if(playing)return;
+    if(idx>=steps.length){ reset(); await sleep(280); }
+    playing=true; playB.disabled=true; stepB.disabled=true;
+    try{
+      while(idx<steps.length){
+        await steps[idx++]();
+        if(idx<steps.length) await ctx.W(1150);
+      }
+    }catch(e){ if(e!==ABORT)throw e; return; }
+    playing=false; playB.disabled=false; stepB.disabled=true;
+  };
+  resB.onclick=reset;
+
+  /* fresh every time the slide is entered; 't' runs the trace hands-free */
+  const slide=el.closest('.slide');
+  addEventListener('slidechange',e=>{ if(e.detail.el===slide) reset(); });
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if((e.key==='t'||e.key==='T')&&slide.classList.contains('on')){ e.preventDefault(); playB.click(); }
+  });
+  reset();
+}
+
+/* slide 5 — (?<=\$)\d+(?=\.00\b) on "pay $45.00 now"
+   p0 a1 y2 ·3 $4 4:5 5:6 .7 0:8 0:9 ·10 n11 o12 w13 */
+traceTape('tp1',26,c=>[
+  async()=>{ c.move(0);
+    c.cap('The engine scans left to right. At <i>every</i> position it tries the whole pattern from the top.'); },
+
+  async()=>{ c.cap('<b>(?&lt;=\\$)</b> is tested first, and fails at 0, 1, 2, 3 and 4.','asr');
+    for(let p=0;p<=4;p++){
+      c.move(p); await c.W(240);
+      if(p>0){ c.mark(p-1,'fail'); await c.W(190); c.unmark(p-1,'fail'); }
+    }
+    c.move(5); },
+
+  async()=>{ c.move(5); c.mark(4,'probe');
+    c.cap('<b>Position 5.</b> Look back one character…','asr');
+    await c.W(520);
+    c.unmark(4,'probe'); c.mark(4,'pass'); c.pin(0);
+    c.cap('<b>Position 5.</b> The character to the left is <i>$</i> — the lookbehind holds.','ok'); },
+
+  async()=>{ c.unmark(4,'pass');
+    c.cap('Zero-width: the <i>$</i> was inspected and handed straight back. The cursor never left 5.','ok'); },
+
+  async()=>{ c.cap('<u>\\d+</u> starts consuming.','eat');
+    c.mark(5,'eat'); c.move(6); await c.W(340);
+    c.mark(6,'eat'); c.move(7); await c.W(340);
+    c.mark(7,'fail');
+    c.cap("<u>\\d+</u> takes <u>4</u>, then <u>5</u>, then tries <b>'.'</b> — not a digit, so it stops. Cursor is at 7.",'eat');
+    await c.W(460); c.unmark(7,'fail'); },
+
+  async()=>{ c.cap('<b>(?=\\.00\\b)</b> now looks forward from 7 — without moving the cursor.','asr');
+    for(const i of [7,8,9]){ c.mark(i,'probe'); await c.W(290); c.unmark(i,'probe'); c.mark(i,'pass'); }
+    c.mark(10,'probe'); await c.W(330); c.unmark(10,'probe'); c.pin(1);
+    c.cap('<i>.00</i> is there, and 9→10 is a word boundary, so <b>\\b</b> holds. The lookahead passes.','ok'); },
+
+  async()=>{ [7,8,9].forEach(i=>c.unmark(i,'pass')); c.move(7);
+    c.cap('Zero-width again — the cursor snaps back to 7. None of <i>.00</i> becomes part of the match.','ok'); },
+
+  async()=>{ c.show(0); c.hide();
+    c.cap("<u>.group() = '45'</u> — two characters, located entirely by what sits on either side of them.",'eat'); }
+]);
+
+/* slide 7 — file(?!\.txt) on "profile.txt"
+   p0 r1 o2 f3 i4 l5 e6 .7 t8 x9 t10 */
+traceTape('tp2',26,c=>[
+  async()=>{ c.move(0);
+    c.cap('The literal <u>file</u> has to match first. The lookahead is only tested afterwards.'); },
+
+  async()=>{ c.cap('<u>f</u> does not match <b>p</b>, <b>r</b> or <b>o</b> — one shift right each time.','asr');
+    for(let p=0;p<=2;p++){
+      c.move(p); await c.W(250);
+      c.mark(p,'fail'); await c.W(230); c.unmark(p,'fail');
+    }
+    c.move(3); },
+
+  async()=>{ c.cap('<b>Position 3.</b> <u>f</u> <u>i</u> <u>l</u> <u>e</u> all match.','eat');
+    for(const i of [3,4,5,6]){ c.mark(i,'eat'); c.move(i+1); await c.W(300); }
+    c.cap('<b>Position 3.</b> The literal <u>file</u> matches. The cursor is now at 7.','eat'); },
+
+  async()=>{ c.cap('<b>(?!\\.txt)</b> now asks one question: is what follows <i>.txt</i>?','asr');
+    for(const i of [7,8,9,10]){ c.mark(i,'probe'); await c.W(260); }
+    await c.W(200);
+    [7,8,9,10].forEach(i=>{ c.unmark(i,'probe'); c.mark(i,'fail'); });
+    c.pin(0);
+    c.cap('It is — exactly <b>.txt</b>. A <i>negative</i> lookahead fails precisely when it finds what it describes.','asr'); },
+
+  async()=>{ [3,4,5,6].forEach(i=>c.unmark(i,'eat'));
+    [7,8,9,10].forEach(i=>c.unmark(i,'fail'));
+    c.show(0);
+    c.cap('So the whole attempt at index 3 is thrown away — <u>file</u> matched, but the position was blocked.','asr'); },
+
+  async()=>{ c.cap('The engine carries on from 4 …');
+    for(let p=4;p<=10;p++){ c.move(p); await c.W(120); }
+    await c.W(250); c.hide();
+    c.cap('… and there is no other <u>file</u> in the string. <b>re.search returns None</b> — not "the file part".','asr'); },
+
+  async()=>{ c.cap('Contrast <i>filename.txt</i>: there <u>file</u> sits at index 0, followed by <b>name</b>, '+
+    'and the same pattern matches. The string decides, not the filename.','ok'); }
+]);
+
+/* slide 9 — (?<!\$)\d+\.\d{2} on "$19.99"
+   $0 1:1 9:2 .3 9:4 9:5 */
+traceTape('tp3',44,c=>[
+  async()=>{ c.move(0);
+    c.cap('Start at position 0. There is no character to the left of it at all.'); },
+
+  async()=>{ c.cap('<b>(?&lt;!\\$)</b> at position 0: nothing precedes it, so "not preceded by $" is <i>true</i>.','ok');
+    await c.W(650);
+    c.mark(0,'fail');
+    c.cap('But <u>\\d+</u> then needs a digit and finds <b>$</b>. This attempt dies on the number, not on the assertion.','asr'); },
+
+  async()=>{ c.unmark(0,'fail'); c.move(1); c.mark(0,'probe');
+    c.cap('<b>Position 1.</b> Look back one character…','asr');
+    await c.W(520);
+    c.unmark(0,'probe'); c.mark(0,'fail'); c.pin(0); c.show(0);
+    c.cap('<b>$</b>. The negative lookbehind blocks the match — exactly what you asked it to do.','asr'); },
+
+  async()=>{ c.unmark(0,'fail');
+    c.cap('This is where most people stop reading. The engine does not stop: it shifts one right and starts over.','asr');
+    await c.W(700); c.move(2); },
+
+  async()=>{ c.mark(1,'probe');
+    c.cap('<b>Position 2.</b> Look back one character…','asr');
+    await c.W(520);
+    c.unmark(1,'probe'); c.mark(1,'pass'); c.pin(1);
+    c.cap('<i>1</i> — not a <b>$</b>. So the assertion <i>passes</i>, and the match is allowed to start here.','ok'); },
+
+  async()=>{ c.unmark(1,'pass');
+    c.cap('<u>\\d+\\.\\d{2}</u> now runs from position 2.','eat');
+    for(const i of [2,3,4,5]){ c.mark(i,'eat'); c.move(i+1); await c.W(300); }
+    c.show(1); },
+
+  async()=>{ c.hide();
+    c.cap("<b>Match = '9.99'.</b> No error, no empty result — a plausible number that is quietly wrong.",'eat'); }
+]);
+
+/* slide 6 — cat(?=alogue) and cat(?!alogue) on "cat catalogue"
+   c0 a1 t2 ·3 c4 a5 t6 a7 l8 o9 g10 u11 e12
+   The two step lists are deliberately the same length and the same duration, so that
+   pressing 't' runs them in lockstep and the divergence is visible as it happens. */
+const LOOK=[7,8,9,10,11,12];
+
+traceTape('tp4',32,c=>[
+  async()=>{ c.cap('The literal <u>cat</u> matches at position 0.','eat'); c.move(0);
+    for(const i of [0,1,2]){ c.mark(i,'eat'); c.move(i+1); await c.W(300); } },
+
+  async()=>{ c.mark(3,'probe');
+    c.cap('<b>(?=alogue)</b> asks: is what follows <i>alogue</i>?','asr');
+    await c.W(500);
+    c.unmark(3,'probe'); c.mark(3,'fail'); c.pin(0);
+    c.cap('A <b>space</b>, not an <b>a</b>. The positive lookahead wants <i>alogue</i> and does not find it — fail.','asr'); },
+
+  async()=>{ [0,1,2].forEach(i=>c.unmark(i,'eat')); c.unmark(3,'fail'); c.show(0);
+    c.cap('The <u>cat</u> at 0 is discarded. The letters matched; the context did not.','asr'); },
+
+  async()=>{ c.cap('Positions 1, 2 and 3 do not begin with <u>c</u>.');
+    for(const p of [1,2,3]){ c.move(p); await c.W(200); }
+    c.cap('<b>Position 4.</b> <u>cat</u> matches again. Cursor at 7.','eat');
+    for(const i of [4,5,6]){ c.mark(i,'eat'); c.move(i+1); await c.W(300); } },
+
+  async()=>{ c.cap('<b>(?=alogue)</b> asks the same question at 7.','asr');
+    for(const i of LOOK){ c.mark(i,'probe'); await c.W(190); c.unmark(i,'probe'); c.mark(i,'pass'); }
+    await c.W(300); c.pin(1);
+    c.cap('This time it <i>is</i> <b>alogue</b>. The positive lookahead holds.','ok'); },
+
+  async()=>{ LOOK.forEach(i=>c.unmark(i,'pass')); c.move(7); c.show(1);
+    c.cap('Zero-width, as always — the cursor returns to 7 and <i>alogue</i> stays out of the result.','ok'); },
+
+  async()=>{ c.hide();
+    c.cap("<u>findall</u> returns <u>['cat']</u> — the <b>second</b> one, at 4.",'eat'); }
+]);
+
+traceTape('tp5',32,c=>[
+  async()=>{ c.cap('Identical so far: the literal <u>cat</u> matches at position 0.','eat'); c.move(0);
+    for(const i of [0,1,2]){ c.mark(i,'eat'); c.move(i+1); await c.W(300); } },
+
+  async()=>{ c.mark(3,'probe');
+    c.cap('<b>(?!alogue)</b> asks the same question — but wants the answer to be <i>no</i>.','asr');
+    await c.W(500);
+    c.unmark(3,'probe'); c.mark(3,'pass'); c.pin(0);
+    c.cap('A <b>space</b>, not an <b>a</b>. <i>alogue</i> is absent, so the negative lookahead holds.','ok'); },
+
+  async()=>{ c.unmark(3,'pass'); c.show(0);
+    c.cap("First match recorded: <u>'cat'</u> at 0–2. The one the other panel just threw away.",'ok'); },
+
+  async()=>{ c.cap('That match consumed 0–2, so scanning resumes at 3 — a space.');
+    c.move(3); await c.W(600);
+    c.cap('<b>Position 4.</b> <u>cat</u> matches again. Cursor at 7.','eat');
+    for(const i of [4,5,6]){ c.mark(i,'eat'); c.move(i+1); await c.W(300); } },
+
+  async()=>{ c.cap('<b>(?!alogue)</b> asks the same question at 7.','asr');
+    for(const i of LOOK){ c.mark(i,'probe'); await c.W(190); c.unmark(i,'probe'); c.mark(i,'pass'); }
+    await c.W(300);
+    LOOK.forEach(i=>{ c.unmark(i,'pass'); c.mark(i,'fail'); }); c.pin(1);
+    c.cap('<i>alogue</i> <b>is</b> there — and finding it is exactly what makes a <i>negative</i> lookahead fail.','asr'); },
+
+  async()=>{ LOOK.forEach(i=>c.unmark(i,'fail')); [4,5,6].forEach(i=>c.unmark(i,'eat'));
+    c.move(4); c.show(1);
+    c.cap('So the second <u>cat</u> is thrown away — the one the other panel just kept.','asr'); },
+
+  async()=>{ c.hide();
+    c.cap("<u>findall</u> returns <u>['cat']</u> — the <b>first</b> one, at 0.",'eat'); }
+]);
+
+/* slide 9 — (?<=USD )45\.00 and (?<!USD )45\.00 on "USD 45.00 EUR 45.00"
+   U0 S1 D2 ·3 4:4 5:5 .6 0:7 0:8 ·9 E10 U11 R12 ·13 4:14 5:15 .16 0:17 0:18
+   The amount is a literal on purpose — \d+\.\d{2} would drag in the slide-12 trap.
+   back() reads right-to-left on purpose: that is the direction the engine is thinking in. */
+async function back(c,from,n,k){
+  const seen=[];
+  for(let d=1;d<=n;d++){ const i=from-d; seen.push(i); c.mark(i,'probe'); await c.W(190); }
+  await c.W(300);
+  seen.forEach(i=>{ c.unmark(i,'probe'); c.mark(i,k); });
+  return seen;
+}
+
+traceTape('tp6',26,c=>[
+  async()=>{ c.cap('A lookbehind sits at the <i>start</i> of the pattern, so it is tested before a single character is consumed.');
+    c.move(0);
+    for(const p of [1,2,3,4]){ c.move(p); await c.W(200); } },
+
+  async()=>{ c.cap('<b>(?&lt;=USD )</b> steps back exactly four cells and reads them.','asr');
+    await back(c,4,4,'pass'); c.pin(0);
+    c.cap('They are <b>USD·</b> — exactly what the assertion wants. It holds.','ok'); },
+
+  async()=>{ [0,1,2,3].forEach(i=>c.unmark(i,'pass'));
+    c.cap('Zero-width — <i>USD·</i> was inspected, not consumed. Only now does <u>45.00</u> run.','eat');
+    for(const i of [4,5,6,7,8]){ c.mark(i,'eat'); c.move(i+1); await c.W(250); }
+    c.show(0);
+    c.cap("Match recorded: <u>'45.00'</u> at 4–8, and the currency code stays out of it.",'ok'); },
+
+  async()=>{ c.cap('That match consumed 4–8, so scanning resumes at 9 …');
+    c.move(9); await c.W(200);
+    for(let p=10;p<=14;p++){ c.move(p); await c.W(120); }
+    c.cap('<b>Position 14</b> — the second amount.'); },
+
+  async()=>{ c.cap('<b>(?&lt;=USD )</b> steps back four again.','asr');
+    await back(c,14,4,'fail'); c.pin(1);
+    c.cap('This time they are <b>EUR·</b>, not <b>USD·</b>. The assertion fails — and <u>45.00</u> is never even tried.','asr'); },
+
+  async()=>{ await c.W(1250);
+    [10,11,12,13].forEach(i=>c.unmark(i,'fail')); c.show(1);
+    c.cap('The attempt at 14 is discarded before the literal ever ran.','asr'); },
+
+  async()=>{ c.hide();
+    c.cap("<u>findall</u> returns <u>['45.00']</u> — the <b>USD</b> one, at 4.",'eat'); }
+]);
+
+traceTape('tp7',26,c=>[
+  async()=>{ c.cap('Same shape, opposite polarity — and tested at the same moment, before any character is consumed.');
+    c.move(0);
+    for(const p of [1,2,3,4]){ c.move(p); await c.W(200); } },
+
+  async()=>{ c.cap('<b>(?&lt;!USD )</b> steps back exactly four cells and reads them.','asr');
+    await back(c,4,4,'fail'); c.pin(0);
+    c.cap('They are <b>USD·</b> — and finding them is exactly what makes a <i>negative</i> lookbehind fail.','asr'); },
+
+  async()=>{ await c.W(1250);
+    [0,1,2,3].forEach(i=>c.unmark(i,'fail')); c.show(0);
+    c.cap('Blocked at 4 before the literal ever ran — the amount the other panel just kept.','asr'); },
+
+  async()=>{ c.cap('Nothing matched, so the engine keeps trying every position from 5 …');
+    for(let p=5;p<=14;p++){ c.move(p); await c.W(80); }
+    c.cap('<b>Position 14</b> — the second amount.'); },
+
+  async()=>{ c.cap('<b>(?&lt;!USD )</b> steps back four again.','asr');
+    await back(c,14,4,'pass'); c.pin(1);
+    c.cap('They are <b>EUR·</b>. Not <b>USD·</b> — so the negative lookbehind holds.','ok'); },
+
+  async()=>{ [10,11,12,13].forEach(i=>c.unmark(i,'pass'));
+    c.cap('Zero-width — <i>EUR·</i> is inspected, not consumed. Now <u>45.00</u> runs.','eat');
+    for(const i of [14,15,16,17,18]){ c.mark(i,'eat'); c.move(i+1); await c.W(250); }
+    c.show(1); },
+
+  async()=>{ c.hide();
+    c.cap("<u>findall</u> returns <u>['45.00']</u> — the <b>EUR</b> one, at 14.",'eat'); }
+]);
+
+/* slide 10 — why the widths are treated differently
+   x0 a1 a2 a3 b4 b5 b6, cursor parked at 4 in both panels */
+traceTape('tp8',44,c=>[
+  async()=>{ c.move(4);
+    c.cap('The cursor is at 4. A lookahead matches <b>forward from here</b> — its start point <i>is</i> the cursor.');
+    await c.W(600); },
+
+  async()=>{ c.mark(4,'pass'); c.show(0);
+    c.cap('<u>b+</u> could take one <b>b</b> …','ok'); await c.W(600); },
+
+  async()=>{ c.mark(5,'pass'); c.show(1);
+    c.cap('… or two …','ok'); await c.W(600); },
+
+  async()=>{ c.mark(6,'pass'); c.show(2); c.pin(0);
+    c.cap('… or three. Every one of them <i>starts</i> at 4, so the engine just runs forward and takes the greedy one.','ok');
+    await c.W(600); },
+
+  async()=>{ [4,5,6].forEach(i=>c.unmark(i,'pass')); c.show(3); c.hide();
+    c.cap('The width varied and nothing broke. Zero-width means where it <i>ended</i> was never recorded anyway.','ok'); }
+]);
+
+traceTape('tp9',44,c=>[
+  async()=>{ c.move(4);
+    c.cap('Same cursor. A lookbehind must match <b>ending</b> at 4 — so the engine needs a start point to run forward <i>from</i>.');
+    await c.W(600); },
+
+  async()=>{ c.mark(3,'probe'); c.show(0);
+    c.cap('Start at 3? <u>a+</u> matches <b>a</b> and ends at 4. Valid.','asr'); await c.W(600); },
+
+  async()=>{ c.mark(2,'probe'); c.show(1);
+    c.cap('Start at 2? <b>aa</b>, also ends at 4. Also valid.','asr'); await c.W(600); },
+
+  async()=>{ c.mark(1,'probe'); c.show(2); c.pin(0);
+    c.cap('Start at 1? <b>aaa</b>, also ends at 4. Also valid.','asr'); await c.W(600); },
+
+  async()=>{ [1,2,3].forEach(i=>{ c.unmark(i,'probe'); c.mark(i,'fail'); }); c.show(3); c.hide();
+    c.cap('Three valid start points and no rule for choosing. Python does not guess — it refuses to compile the pattern at all.','asr'); }
+]);
+
+/* slide 13 — ^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$ on "Password123"
+   P0 a1 s2 s3 w4 o5 r6 d7 1:8 2:9 3:10
+   Four passes from position 0. Each lookahead sends greedy .* to the end and walks it back;
+   the hand-back counts below are the real ones (1, then 3, then 10). */
+traceTape('tp10',40,c=>{
+  const ALL=[0,1,2,3,4,5,6,7,8,9,10];
+  const sweep=async()=>{ for(const i of ALL){ c.mark(i,'probe'); await c.W(55); } };
+  const home=()=>{ ALL.forEach(i=>c.unmark(i,'probe','pass')); c.move(0); };
+  return [
+    async()=>{ c.move(0); c.pin(0);
+      c.cap('<b>^</b> pins everything to position 0. All three lookaheads are tested <i>there</i>, one after another.'); },
+
+    async()=>{ c.cap('<b>(?=.*\\d)</b> — greedy <u>.*</u> swallows the whole string …','asr');
+      await sweep(); await c.W(300);
+      c.unmark(10,'probe'); c.mark(10,'pass'); c.show(0);
+      c.cap('… then hands back one character so <u>\\d</u> can match the <b>3</b>. First condition met.','ok'); },
+
+    async()=>{ home();
+      c.cap('<b>And the cursor is still at 0.</b> Nothing was consumed, so the next assertion starts from scratch.','ok'); },
+
+    async()=>{ c.cap('<b>(?=.*[a-z])</b> — greedy again, from the same spot …','asr');
+      await sweep(); await c.W(300);
+      for(const i of [10,9,8]){ c.unmark(i,'probe'); await c.W(170); }
+      c.mark(7,'pass'); c.show(1);
+      c.cap('… and this time it hands back <b>3</b>, <b>2</b>, <b>1</b> before <u>[a-z]</u> reaches the <b>d</b> at 7.','ok'); },
+
+    async()=>{ home();
+      c.cap('Back at 0 again. Same starting point, second condition met.','ok'); },
+
+    async()=>{ c.cap('<b>(?=.*[A-Z])</b> — greedy one more time …','asr');
+      await sweep(); await c.W(300);
+      for(let i=10;i>=1;i--){ c.unmark(i,'probe'); await c.W(95); }
+      c.mark(0,'pass'); c.show(2);
+      c.cap('… and it hands back <i>ten</i> characters before <u>[A-Z]</u> finds the <b>P</b> — right where it started.','ok'); },
+
+    async()=>{ home();
+      c.cap('Three full scans, three returns to 0, <b>not one character consumed</b>. That is what makes it an AND.','ok'); },
+
+    async()=>{ c.cap('Only now does <u>.{8,}$</u> run — the one part that actually eats anything.','eat');
+      for(const i of ALL){ c.mark(i,'eat'); c.move(i+1); await c.W(90); }
+      c.show(3); c.hide();
+      c.cap('<u>.group()</u> is the whole string. The three conditions decided <i>whether</i> it matched and left no mark on <i>what</i> matched.','eat'); }
+  ];
+});
+
+/* slide 18 — (?:^|,)("(?:[^"]|"")*"|[^,]*) on '"Smith, Jane",30,Boston'
+   "0 S1 m2 i3 t4 h5 ,6 ·7 J8 a9 n10 e11 "12 ,13 3:14 0:15 ,16 B17 o18 s19 t20 o21 n22
+   The comma at 6 is the whole exercise: it survives only because the ORDERED alternation
+   tries the quoted branch first and [^,]* never gets a turn. */
+traceTape('tp13',28,c=>[
+  async()=>{ c.move(0); c.pin(0);
+    c.cap('<b>(?:^|,)</b> — a field starts at the line start or just after a comma. Non-capturing, which is why <u>findall</u> returns fields and not tuples.'); },
+
+  async()=>{ c.mark(0,'probe'); await c.W(550);
+    c.unmark(0,'probe'); c.mark(0,'eat');
+    c.cap('Alternation is <b>ordered</b>. The engine tries the <i>quoted</i> branch first, and cell 0 is a <b>"</b> — so it is in.','ok'); },
+
+  async()=>{ c.cap('<u>[^"]</u> means "anything except a quote" — and it keeps going …','eat');
+    for(let i=1;i<=11;i++){
+      c.mark(i,'eat'); c.move(i+1); await c.W(95);
+      if(i===6) c.cap('… <b>including the comma at 6.</b> That is the entire reason a comma can live inside a field.','eat');
+    } },
+
+  async()=>{ c.mark(12,'eat'); c.move(13); await c.W(300); c.show(0);
+    c.cap('The closing <b>"</b> at 12 ends the branch. <u>Field 1</u> is captured — <b>with its quotes still attached</b>.','ok'); },
+
+  async()=>{ c.cap('Cell 13 is a comma, so <u>(?:^|,)</u> opens the next field …');
+    c.mark(13,'probe'); c.move(14); await c.W(350); c.pin(1);
+    c.mark(14,'probe'); await c.W(350); c.unmark(14,'probe');
+    c.cap('… and at 14 the quoted branch fails immediately — <b>3</b> is not a quote — so the engine falls through to <u>[^,]*</u>.','asr');
+    for(const i of [14,15]){ c.mark(i,'eat'); c.move(i+1); await c.W(200); }
+    c.show(1); },
+
+  async()=>{ c.mark(16,'probe'); c.move(17); await c.W(250); c.pin(2);
+    for(let i=17;i<=22;i++){ c.mark(i,'eat'); c.move(i+1); await c.W(130); }
+    c.show(2); c.hide();
+    c.cap('Same fallback for <b>Boston</b>. Three fields, and the comma at 6 never split anything.','ok'); },
+
+  async()=>{ c.show(3); c.show(4);
+    c.cap('<b>Now swap the two branches.</b> <u>[^,]*</u> would match first and stop at the comma — the quoted branch never gets a turn, and one field becomes two.','asr'); }
+]);
+
+/* slide 16 — \b(\w+)\s+\1\b on "This is is a test"
+   T0 h1 i2 s3 ·4 i5 s6 ·7 i8 s9 ·10 a11 ·12 t13 e14 s15 t16
+   The attempt at 0 is the instructive one: \1 does not want "a word", it wants 'This'. */
+traceTape('tp12',36,c=>[
+  async()=>{ c.move(0);
+    c.cap('<b>\\b</b> — position 0 is a word boundary, so the engine opens an attempt here.'); },
+
+  async()=>{ c.cap('<u>(\\w+)</u> is greedy: it takes as many word characters as it can …','eat');
+    for(const i of [0,1,2,3]){ c.mark(i,'eat'); c.move(i+1); await c.W(180); }
+    c.cap('… which is <b>This</b>. It stops at the space, and those four characters are now <i>group 1</i>.','eat'); },
+
+  async()=>{ c.mark(4,'eat'); c.move(5); await c.W(300);
+    c.mark(5,'fail');
+    c.cap('<u>\\s+</u> takes the space. Then <u>\\1</u> demands the <i>exact characters</i> group 1 captured — <b>This</b> — starting here. The first one it needs is <b>T</b>. It finds <b>i</b>.','asr'); },
+
+  async()=>{ c.cap('So <u>(\\w+)</u> gives characters back and retries …','asr');
+    for(const i of [3,2,1]){
+      c.unmark(i,'eat'); c.mark(i,'fail'); await c.W(230); c.unmark(i,'fail');
+    }
+    [0,4].forEach(i=>c.unmark(i,'eat')); c.unmark(5,'fail'); c.show(0);
+    c.cap('… <b>Thi</b>, <b>Th</b>, <b>T</b> — but <u>\\s+</u> then needs whitespace and finds <b>s</b>, <b>i</b>, <b>h</b>. The attempt at 0 is dead.','asr'); },
+
+  async()=>{ c.cap('Positions 1–3 sit inside a word, so <u>\\b</u> fails there …');
+    for(const p of [1,2,3,4,5]){ c.move(p); await c.W(210); }
+    c.cap('… and position 4 <i>is</i> a boundary, but <u>(\\w+)</u> needs a word character and finds a space.'); },
+
+  async()=>{ c.cap('<b>Position 5.</b> <u>\\b</u> holds, and <u>(\\w+)</u> captures again …','eat');
+    for(const i of [5,6]){ c.mark(i,'eat'); c.move(i+1); await c.W(220); }
+    c.mark(7,'eat'); c.move(8); await c.W(260);
+    c.pin(0); c.show(1);
+    c.cap('… this time <b>is</b>. <u>\\s+</u> takes the space, and the cursor is at 8.','eat'); },
+
+  async()=>{ c.cap('<u>\\1</u> asks for <b>is</b> again — one character at a time.','asr');
+    for(const i of [8,9]){ c.mark(i,'probe'); await c.W(380); c.unmark(i,'probe'); c.mark(i,'pass'); }
+    c.show(2);
+    c.cap('<b>i</b> ✓ then <b>s</b> ✓. This is the only place a regex compares text against text it has already captured.','ok'); },
+
+  async()=>{ [8,9].forEach(i=>{ c.unmark(i,'pass'); c.mark(i,'eat'); });
+    c.pin(1); c.show(3); c.hide();
+    c.cap('<u>\\b</u> closes it at 10. <u>.group()</u> is <b>is is</b>; <u>.group(1)</u> is just <b>is</b>.','eat'); }
+]);
+
+/* slide 14 — ^(?!\.)(?!.*\.\.)(?!.*\.$)[…]+@[…]+\.(com|org|edu)$ on "user.@example.com"
+   u0 s1 e2 r3 .4 @5 e6 x7 a8 m9 p10 l11 e12 .13 c14 o15 m16
+   Same shape as slide 13 — but here one of the three guards is unfalsifiable, and the
+   rule it was supposed to enforce is watching nobody at index 4. */
+traceTape('tp11',36,c=>{
+  const ALL=[...Array(17).keys()];
+  const sweep=async()=>{ for(const i of ALL){ c.mark(i,'probe'); await c.W(45); } };
+  const home=()=>{ ALL.forEach(i=>c.unmark(i,'probe','pass')); c.move(0); };
+  return [
+    async()=>{ c.move(0); c.pin(0);
+      c.cap('<b>^</b> pins everything to 0 — the same shape as the password pattern. Three guards run here before anything is consumed.'); },
+
+    async()=>{ c.mark(0,'probe'); await c.W(500);
+      c.unmark(0,'probe'); c.mark(0,'pass');
+      c.cap('<b>(?!\\.)</b> reads one character: <b>u</b>, not a dot. The username does not <i>start</i> with a dot, so it holds.','ok');
+      await c.W(500); c.unmark(0,'pass'); },
+
+    async()=>{ c.cap('<b>(?!.*\\.\\.)</b> sweeps the whole string looking for two dots in a row …','asr');
+      await sweep(); await c.W(300); home(); c.show(0);
+      c.cap('… there are none, so the negative holds. A full scan, and this one earns it.','ok'); },
+
+    async()=>{ c.cap('<b>(?!.*\\.$)</b> sweeps all seventeen again …','asr');
+      await sweep(); await c.W(300);
+      ALL.forEach(i=>c.unmark(i,'probe')); c.mark(16,'fail'); c.move(0);
+      c.cap('… and for <u>\\.$</u> to hold, the <i>last</i> character would have to be a dot. It is <b>m</b>.','asr'); },
+
+    async()=>{ c.unmark(16,'fail'); [14,15,16].forEach(i=>c.mark(i,'fail')); c.show(1);
+      c.cap('And it never could be: <u>$</u> already demands <b>com</b>, <b>org</b> or <b>edu</b>. This guard cannot fail on anything the pattern would accept.','asr');
+      await c.W(900); [14,15,16].forEach(i=>c.unmark(i,'fail')); },
+
+    async()=>{ c.cap('Now the part that consumes. <u>[a-zA-Z0-9._%+-]+</u> is greedy but has no <b>@</b> in it, so it stops there.','eat');
+      for(const i of [0,1,2,3,4]){ c.mark(i,'eat'); c.move(i+1); await c.W(200); }
+      c.mark(5,'eat'); c.move(6); await c.W(250); c.show(2); },
+
+    async()=>{ c.unmark(4,'eat'); c.mark(4,'fail');
+      c.cap('<b>Look at index 4.</b> The username ends on a <b>dot</b> — exactly what rule 3 forbade — and not one of the three guards was watching that position.','asr'); },
+
+    async()=>{ c.cap('The domain and TLD fall into place …','eat');
+      for(let i=6;i<=16;i++){ c.mark(i,'eat'); c.move(i+1); await c.W(85); }
+      c.show(3); c.hide();
+      c.cap('<b>MATCH.</b> Four rules in the brief, three of them enforced, and the address that breaks the fourth is the one that got in.','eat'); }
+  ];
+});
+
+/* cover ornament */
+(function(){
+  const pats=['(?<=[$₹])\\d+\\.\\d{2}','(?<!\\$)\\b\\d+\\.\\d{2}','\\b(\\w+)\\s+\\1\\b',
+    '<(?P<tag>\\w+)>.*?</(?P=tag)>','(?>a+)+b','^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$',
+    'file(?!\\.txt)','(?P<ip>\\S+) \\S+ (?P<user>\\S+)','(?:^|,)("(?:[^"]|"")*"|[^,]*)',
+    '(<)?\\w+@\\w+\\.com(?(1)>|)','\\bv?\\d+(?:\\.\\d+){1,3}\\b','[^\\s<>",;]+',
+    '(?<=@)[\\w.-]+\\.[a-zA-Z]{2,}','\\b(?:\\d{4}[- ]?){3}\\d{4}\\b','(?:\\w+\\s*)+'];
+  const box=document.getElementById('cvp'); if(!box)return;
+  box.innerHTML=pats.map(p=>'<div>'+rxHighlight(p)+'</div>').join('');
+})();
+
+/* ============ playground ============ */
+function playground(pid,sid,oid,mid,fid,preid){
+  const P=document.getElementById(pid),S=document.getElementById(sid),
+        O=document.getElementById(oid),M=document.getElementById(mid),
+        F=document.getElementById(fid),PRE=document.getElementById(preid);
+  if(!P)return;
+  F.querySelectorAll('button').forEach(b=>b.onclick=()=>{b.classList.toggle('on');run();});
+  if(PRE) PRE.querySelectorAll('button').forEach(b=>b.onclick=()=>{P.value=b.dataset.p;run();});
+  function flags(){let f='';F.querySelectorAll('button.on').forEach(b=>f+=b.dataset.f);
+    return f.includes('g')?f:f+'g';}
+  function run(){
+    const src=P.value;
+    const js=src.replace(/\(\?P</g,'(?<').replace(/\(\?P=(\w+)\)/g,'\\k<$1>');
+    let re;
+    try{ re=new RegExp(js,flags()); P.classList.remove('err'); }
+    catch(e){ P.classList.add('err'); O.textContent=String(e.message); M.innerHTML=''; return; }
+    const text=S.value; let out='',last=0,rows='',count=0,m;
+    re.lastIndex=0;
+    while((m=re.exec(text))!==null){
+      if(++count>400) break;
+      const s=m.index,e=s+m[0].length;
+      out+=esc(text.slice(last,s));
+      out+= m[0].length===0 ? '<mark class="zero"></mark>'
+          : '<mark class="'+(count%2?'':'alt')+'">'+esc(m[0])+'</mark>';
+      last=e;
+      let g='';
+      if(m.length>1) g=m.slice(1).map((v,k)=>'<em>'+(k+1)+':</em> '+(v===undefined?'—':esc(v))).join('  ');
+      if(m.groups) g=Object.entries(m.groups).map(([k,v])=>'<em>'+k+':</em> '+(v===undefined?'—':esc(v))).join('  ');
+      rows+='<div class="m"><b>'+esc(m[0]||'(zero-width)')+'</b> <i>@'+s+'–'+e+'</i>'+(g?'<br/>'+g:'')+'</div>';
+      if(m[0].length===0) re.lastIndex++;
+      if(!re.global) break;
+    }
+    out+=esc(text.slice(last));
+    O.innerHTML=out;
+    M.innerHTML=rows||'<div class="m" style="color:#8FA0A9">no matches</div>';
+    if(count>400) M.innerHTML+='<div class="m" style="color:#B02F3B">stopped at 400 matches</div>';
+  }
+  P.addEventListener('input',run); S.addEventListener('input',run);
+  P.addEventListener('keydown',e=>e.stopPropagation());
+  S.addEventListener('keydown',e=>e.stopPropagation());
+  run();
+}
+playground('pg1p','pg1s','pg1o','pg1m','pg1f','pg1pre');
+
+/* ============ catastrophic backtracking demo ============ */
+(function(){
+  const go=document.getElementById('btgo'), rows=document.getElementById('btrows'),
+        stat=document.getElementById('btstat');
+  if(!go)return;
+  const data=[];
+  function draw(){
+    const max=Math.max(...data.map(d=>d.ms),1);
+    rows.innerHTML=data.map(d=>
+      '<div class="btrow'+(d.safe?' safe':'')+'">'+
+      '<div class="n">'+d.label+'</div>'+
+      '<div class="t">'+(d.ms<1?d.ms.toFixed(3):d.ms.toFixed(1))+' ms</div>'+
+      '<div><div class="bar" style="width:'+Math.max(1,d.ms/max*100)+'%"></div></div></div>').join('');
+  }
+  go.onclick=async()=>{
+    go.disabled=true; data.length=0; draw();
+    // warm the JIT, or the first row reads high and hides the doubling
+    for(let w=0;w<200;w++) /(a+)+b/.test('aaaaaaaaaaaa');
+    for(let n=16;n<=40;n++){
+      const s='a'.repeat(n);
+      stat.textContent='testing '+n+" a's …";
+      await new Promise(r=>setTimeout(r,16));
+      const t0=performance.now();
+      /(a+)+b/.test(s);
+      const ms=performance.now()-t0;
+      data.push({label:n+" a's",ms:ms});
+      draw();
+      if(ms>700){ stat.textContent='stopped at '+n+" a's — each extra character doubles it"; break; }
+    }
+    // the safe comparison, on the worst string tried
+    const worst='a'.repeat(data.length?15+data.length:30);
+    let t0=performance.now(); /a+b/.test(worst); let ms=performance.now()-t0;
+    data.push({label:'a+b',ms:ms,safe:1});
+    t0=performance.now(); /(?=(a+))\1b/.test(worst); ms=performance.now()-t0;
+    data.push({label:'atomic',ms:ms,safe:1});
+    draw();
+    if(!stat.textContent.startsWith('stopped')) stat.textContent='done';
+    go.disabled=false;
+  };
+  data.push({label:"press Run",ms:0}); draw();
+})();
+
+/* ============ deck mechanics ============ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 · Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Part 2 · '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    dispatchEvent(new CustomEvent('slidechange',{detail:{index:i,el:slides[i]}}));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+</script>
+</body>
+</html>
