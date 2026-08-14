@@ -16,7 +16,7 @@ KINDS = {".html": "deck", ".ipynb": "notebook", ".pdf": "pdf"}
 # Optional: nicer names for folders. Anything not listed falls back to the
 # folder name with dashes/underscores turned into spaces and title-cased.
 SECTION_TITLES = {
-    ".": "Course-wide",
+    ".": "Introduction",
     "intro": "Introduction · pandas",
     "data cleaning": "Data cleaning · regular expressions",
     "data-cleaning": "Data cleaning · regular expressions",

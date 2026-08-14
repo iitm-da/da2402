@@ -175,7 +175,7 @@ const KIND_LABEL = {deck:'Slides', notebook:'Notebook', pdf:'PDF'};
    is appended afterwards, alphabetically. Keys are folder paths. */
 const FOLDER_ORDER = ['.', 'intro', 'data cleaning', 'data-cleaning'];
 const SECTION_TITLES = {
-  '.'            : 'Course-wide',
+  '.'            : 'Introduction',
   'intro'        : 'Introduction · pandas',
   'data cleaning': 'Data cleaning · regular expressions',
   'data-cleaning': 'Data cleaning · regular expressions'
@@ -227,7 +227,7 @@ function topicName(it){
   // that folder wasn't folded into a parent above.
   const own = key === (it.folder || '.').replace(/\/+$/,'');
   return (own && it.section) || SECTION_TITLES[key] ||
-         (key === '.' ? 'Course-wide'
+         (key === '.' ? 'Introduction'
                       : key.replace(/[-_\/]+/g,' ').replace(/\b([a-z])/g,(m,c)=>c.toUpperCase()));
 }
 
