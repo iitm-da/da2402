@@ -58,19 +58,36 @@ td.topic .name{font-family:var(--disp);font-weight:700;font-size:16.5px;line-hei
 
 .chips{display:flex;flex-direction:column;gap:8px}
 .chips .line{display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start}
+/* One accent per kind, set once and reused by the edge, the badge and the
+   hover fill — so a new kind only needs its own --accent. */
+a.chip{--accent:var(--t-cls)}
+a.chip.notebook{--accent:var(--t-grp)}
+a.chip.pdf{--accent:var(--t-anc)}
+
 a.chip{display:inline-flex;align-items:baseline;gap:8px;max-width:100%;
-  border:1px solid var(--hair);border-left:3px solid var(--t-cls);
+  position:relative;overflow:hidden;
+  border:1px solid var(--hair);border-left:3px solid var(--accent);
   background:#FFF;padding:7px 11px;text-decoration:none;color:inherit;
-  transition:border-color .14s ease,box-shadow .14s ease,transform .14s ease}
-a.chip:hover{border-color:var(--line);border-left-color:var(--t-cls);
-  transform:translateY(-1px);box-shadow:0 3px 10px rgba(20,34,43,.10)}
-a.chip.notebook{border-left-color:var(--t-grp)}
-a.chip.pdf{border-left-color:var(--t-anc)}
+  transition:border-color .14s ease,box-shadow .14s ease,transform .14s ease,color .18s ease}
+/* The accent sweeps in from the edge it already sits on. */
+a.chip::before{content:"";position:absolute;inset:0;background:var(--accent);
+  transform:scaleX(0);transform-origin:left center;
+  transition:transform .24s cubic-bezier(.4,0,.2,1)}
+a.chip:hover::before,a.chip:focus-visible::before{transform:scaleX(1)}
+a.chip > span{position:relative}                     /* ride above the fill */
+a.chip:hover,a.chip:focus-visible{border-color:var(--accent);color:#FFF;
+  transform:translateY(-1px);box-shadow:0 3px 10px rgba(20,34,43,.16)}
+a.chip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
 a.chip .kind{font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--t-cls);flex:none}
-a.chip.notebook .kind{color:var(--t-grp)}
-a.chip.pdf .kind{color:var(--t-anc)}
+  text-transform:uppercase;color:var(--accent);flex:none;transition:color .18s ease}
+a.chip:hover .kind,a.chip:focus-visible .kind{color:rgba(255,255,255,.82)}
 a.chip .label{font-size:13.5px;font-weight:500;line-height:1.25}
+
+@media (prefers-reduced-motion:reduce){
+  a.chip,a.chip::before,a.chip .kind{transition:none}
+  a.chip:hover,a.chip:focus-visible{transform:none}
+}
 .empty{font-family:var(--mono);font-size:12px;color:#93A4AC}
 
 .note{background:#FFFBF2;border:1px solid var(--hair);border-left:4px solid var(--t-anc);
