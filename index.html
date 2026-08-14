@@ -23,7 +23,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
   -webkit-font-smoothing:antialiased;line-height:1.5;min-height:100vh;
   display:flex;flex-direction:column}
 .bar{height:4px;background:var(--t-asr);width:100%}
-.wrap{width:100%;max-width:1000px;margin:0 auto;padding:44px 26px 26px;flex:1}
+.wrap{width:100%;max-width:1180px;margin:0 auto;padding:44px 26px 26px;flex:1}
 
 header .eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
   text-transform:uppercase;color:var(--soft);margin-bottom:10px;display:flex;gap:10px;align-items:center}
@@ -34,35 +34,52 @@ header p.lede{font-size:15.5px;color:#31444F;max-width:70ch}
 header .who{font-family:var(--mono);font-size:12px;color:var(--soft);margin-top:14px;
   padding-top:12px;border-top:1px solid var(--line)}
 
-section{margin-top:34px}
-section h2{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--soft);margin-bottom:11px;
-  display:flex;gap:10px;align-items:center}
-section h2::after{content:"";flex:1;height:1px;background:var(--line)}
+/* ---- the four-column course table -------------------------------------- */
+.tablewrap{margin-top:30px;background:var(--card);border:1px solid var(--hair);
+  overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:820px}
+thead th{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--soft);text-align:left;
+  padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;
+  background:#F4F7F8}
+tbody td{padding:14px;border-bottom:1px solid var(--hair);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#F8FAFB}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-a.item{display:block;background:var(--card);border:1px solid var(--hair);
-  border-left:4px solid var(--t-cls);padding:13px 15px;text-decoration:none;color:inherit;
-  transition:border-color .14s ease,transform .14s ease,box-shadow .14s ease}
-a.item:hover{border-color:var(--line);border-left-color:var(--t-cls);
-  transform:translateY(-1px);box-shadow:0 4px 14px rgba(20,34,43,.09)}
-a.item.notebook{border-left-color:var(--t-grp)}
-a.item.pdf{border-left-color:var(--t-anc)}
-a.item .kind{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--t-cls)}
-a.item.notebook .kind{color:var(--t-grp)}
-a.item.pdf .kind{color:var(--t-anc)}
-a.item .title{font-family:var(--disp);font-weight:700;font-size:17px;line-height:1.2;
-  margin:5px 0 7px;letter-spacing:-.01em}
-a.item .meta{font-family:var(--mono);font-size:10.5px;color:var(--soft);
-  display:flex;gap:9px;flex-wrap:wrap}
-a.item .meta span::before{content:"·";margin-right:9px;color:var(--line)}
-a.item .meta span:first-child::before{content:"";margin:0}
+col.c-sl{width:62px}
+col.c-topic{width:23%}
+col.c-slides{width:auto}
+col.c-practice{width:30%}
 
-.note{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-anc);
-  background:#FFFBF2;padding:11px 15px;font-size:13.5px;margin-top:26px;line-height:1.46}
+td.sl{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--soft);
+  text-align:center;padding-top:16px}
+td.topic .name{font-family:var(--disp);font-weight:700;font-size:16.5px;line-height:1.22;
+  letter-spacing:-.01em}
+td.topic .folder{font-family:var(--mono);font-size:10px;color:var(--soft);margin-top:5px;
+  letter-spacing:.04em}
+
+.chips{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+a.chip{display:inline-flex;align-items:baseline;gap:8px;max-width:100%;
+  border:1px solid var(--hair);border-left:3px solid var(--t-cls);
+  background:#FFF;padding:7px 11px;text-decoration:none;color:inherit;
+  transition:border-color .14s ease,box-shadow .14s ease,transform .14s ease}
+a.chip:hover{border-color:var(--line);border-left-color:var(--t-cls);
+  transform:translateY(-1px);box-shadow:0 3px 10px rgba(20,34,43,.10)}
+a.chip.notebook{border-left-color:var(--t-grp)}
+a.chip.pdf{border-left-color:var(--t-anc)}
+a.chip .kind{font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--t-cls);flex:none}
+a.chip.notebook .kind{color:var(--t-grp)}
+a.chip.pdf .kind{color:var(--t-anc)}
+a.chip .label{font-size:13.5px;font-weight:500;line-height:1.25}
+a.chip .sz{font-family:var(--mono);font-size:9.5px;color:var(--soft);flex:none}
+.empty{font-family:var(--mono);font-size:12px;color:#93A4AC}
+
+.note{background:#FFFBF2;border:1px solid var(--hair);border-left:4px solid var(--t-anc);
+  padding:11px 15px;font-size:13.5px;margin-top:22px;line-height:1.46}
 .note b{font-weight:700}
 .note code{font-family:var(--mono);font-size:12.5px}
+.note + .note{margin-top:10px}
 
 #status{font-family:var(--mono);font-size:12px;color:var(--soft);padding:20px 0}
 #status.err{color:var(--t-asr)}
@@ -70,9 +87,28 @@ a.item .meta span:first-child::before{content:"";margin:0}
 footer{border-top:1px solid var(--line);margin-top:40px;padding:16px 26px 26px;
   font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--soft);
   display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between;
-  max-width:1000px;margin-left:auto;margin-right:auto;width:100%}
+  max-width:1180px;margin-left:auto;margin-right:auto;width:100%}
 footer a{color:var(--soft)}
-@media (max-width:520px){ .wrap{padding:30px 18px 20px} }
+
+/* Below ~760px a four-column table stops being readable, so each row folds
+   into a labelled block. Same markup, no duplicate list to keep in sync. */
+@media (max-width:760px){
+  .wrap{padding:30px 18px 20px}
+  .tablewrap{overflow-x:visible;background:transparent;border:0}
+  table{min-width:0;display:block}
+  thead{display:none}
+  tbody,tr,td{display:block;width:100%}
+  tbody tr{background:var(--card);border:1px solid var(--hair);margin-bottom:12px}
+  tbody tr:hover td{background:transparent}
+  tbody td{border-bottom:1px solid var(--hair);padding:12px 14px}
+  tbody tr td:last-child{border-bottom:0}
+  td.sl{text-align:left;font-size:11px;letter-spacing:.15em;padding-bottom:0;border-bottom:0}
+  td.sl::before{content:"No. "}
+  td.topic{padding-top:6px}
+  td[data-label]::before{content:attr(data-label);display:block;
+    font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--soft);margin-bottom:8px}
+}
 </style>
 </head>
 <body>
@@ -94,11 +130,17 @@ footer a{color:var(--soft)}
     <b>Notebooks open on GitHub</b>, which renders them in place — GitHub Pages would only hand you
     the raw JSON. Everything else opens directly.
   </div>
+  <div class="note">
+    <b>Practice notebooks</b> are picked up automatically: put the file in a
+    <code>practice/</code> (or <code>exercises/</code>) sub-folder, or name it with
+    <code>practice</code>, <code>exercise</code>, <code>lab</code>, <code>assignment</code>
+    or <code>worksheet</code> in it — e.g. <code>regex_part1_practice.ipynb</code>.
+  </div>
 </div>
 
 <footer>
   <div>DA2402 · Data Curation and Visualization</div>
-  <div><a href="https://github.com/oldmonkABA/da2402">github.com/oldmonkABA/da2402</a></div>
+  <div><a href="https://github.com/iitm-da/da2402">github.com/iitm-da/da2402</a></div>
 </footer>
 
 <script>
@@ -107,15 +149,52 @@ footer a{color:var(--soft)}
    is all it takes for it to appear here. If the manifest is ever missing
    (say, before the workflow has run once) we fall back to reading the repo
    tree straight from the GitHub API. */
-const REPO   = 'oldmonkABA/da2402';
-const BRANCH = 'master';
+
+/* Where the repo lives. Read off the Pages URL first — that is always right
+   and survives the repo being renamed or moved to another owner, which is
+   exactly what broke every notebook link when the owner was hard-coded.
+   Then manifest.json, then a constant as the last resort. */
+const FALLBACK_REPO = 'iitm-da/da2402';
+const FALLBACK_BRANCH = 'master';
+
+function repoFromLocation(){
+  const host = location.hostname.match(/^([\w-]+)\.github\.io$/i);
+  if(!host) return '';                                   // local file, custom domain, etc.
+  const seg = location.pathname.split('/').filter(Boolean)[0];
+  if(!seg || /\.[a-z0-9]+$/i.test(seg)) return '';       // owner.github.io root, no project path
+  return host[1] + '/' + seg;
+}
+
+let REPO   = repoFromLocation() || FALLBACK_REPO;
+let BRANCH = FALLBACK_BRANCH;
+
 const KIND_LABEL = {deck:'Slides', notebook:'Notebook', pdf:'PDF'};
+
+/* Topics run in teaching order, not alphabetical order. Anything not listed
+   is appended afterwards, alphabetically. Keys are folder paths. */
+const FOLDER_ORDER = ['.', 'intro', 'data cleaning', 'data-cleaning'];
 const SECTION_TITLES = {
   '.'            : 'Course-wide',
   'intro'        : 'Introduction · pandas',
   'data cleaning': 'Data cleaning · regular expressions',
   'data-cleaning': 'Data cleaning · regular expressions'
 };
+
+/* A notebook counts as practice if it sits in a practice/exercise folder or
+   says so in its filename. A manifest entry may also set "track":"practice"
+   to force it. */
+const PRACTICE_DIR  = /(^|\/)(practice|practise|exercises?|labs?|assignments?|problems?)(\/|$)/i;
+const PRACTICE_NAME = /(practice|practise|exercise|worksheet|assignment|homework|\blab\b|problem[-_ ]?set)/i;
+// Same words as a trailing path segment, so "data cleaning/practice" folds
+// back into the "data cleaning" row instead of becoming a topic of its own.
+const PRACTICE_TAIL = /(^|\/)(practice|practise|exercises?|labs?|assignments?|problems?)\/?$/i;
+
+function isPractice(it){
+  if(it.track) return it.track.toLowerCase() === 'practice';
+  if(it.kind !== 'notebook') return false;
+  const dir = it.folder || '';
+  return PRACTICE_DIR.test(dir + '/') || PRACTICE_NAME.test(it.name);
+}
 
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
                           .replace(/"/g,'&quot;');
@@ -136,10 +215,41 @@ function hrefFor(it){
     ? `https://github.com/${REPO}/blob/${BRANCH}/${p}` // GitHub renders .ipynb; Pages would not
     : p;
 }
-function sectionOf(it){
-  return it.section || SECTION_TITLES[it.folder] ||
-         (it.folder === '.' ? 'Course-wide'
-                            : it.folder.replace(/[-_]+/g,' ').replace(/\b([a-z])/g,(m,c)=>c.toUpperCase()));
+function topicKey(it){
+  const f = (it.folder || '.').replace(/\/+$/,'');
+  if(!f || f === '.') return '.';
+  return f.replace(PRACTICE_TAIL,'').replace(/\/+$/,'') || '.';
+}
+function topicName(it){
+  const key = topicKey(it);
+  // it.section describes the file's own folder, so it is only trustworthy when
+  // that folder wasn't folded into a parent above.
+  const own = key === (it.folder || '.').replace(/\/+$/,'');
+  return (own && it.section) || SECTION_TITLES[key] ||
+         (key === '.' ? 'Course-wide'
+                      : key.replace(/[-_\/]+/g,' ').replace(/\b([a-z])/g,(m,c)=>c.toUpperCase()));
+}
+
+/* Sort inside a cell: decks, then PDFs, then notebooks, each by name. */
+const KIND_RANK = {deck:0, pdf:1, notebook:2};
+function byKindThenName(a,b){
+  const d = (KIND_RANK[a.kind] ?? 9) - (KIND_RANK[b.kind] ?? 9);
+  return d || a.name.localeCompare(b.name, undefined, {numeric:true});
+}
+
+function chips(items){
+  if(!items.length) return '<span class="empty">—</span>';
+  return '<div class="chips">' + items.sort(byKindThenName).map(it => {
+    const ext = it.kind === 'notebook' ? ' target="_blank" rel="noopener"' : '';
+    const sz  = kb(it.size);
+    const upd = it.updated ? ` · updated ${it.updated}` : '';
+    return `<a class="chip ${esc(it.kind)}" href="${esc(hrefFor(it))}"${ext}
+              title="${esc(it.path)}${esc(upd)}">
+        <span class="kind">${esc(KIND_LABEL[it.kind] || it.kind)}</span>
+        <span class="label">${esc(prettify(it.name))}</span>
+        ${sz ? `<span class="sz">${esc(sz)}</span>` : ''}
+      </a>`;
+  }).join('') + '</div>';
 }
 
 function render(items, sourceNote){
@@ -149,34 +259,46 @@ function render(items, sourceNote){
     status.textContent = 'No material published yet.';
     return;
   }
-  const order = ['Course-wide'];
-  const groups = new Map();
+
+  /* One row per topic (folder). Each row splits its files into the two
+     right-hand columns. */
+  const topics = new Map();
   for(const it of items){
-    const s = sectionOf(it);
-    if(!groups.has(s)) groups.set(s, []);
-    groups.get(s).push(it);
+    const key = topicKey(it);
+    if(!topics.has(key)) topics.set(key, {key, name:topicName(it), main:[], practice:[]});
+    (isPractice(it) ? topics.get(key).practice : topics.get(key).main).push(it);
   }
-  const names = [...groups.keys()].sort((a,b) => {
-    const ia = order.indexOf(a), ib = order.indexOf(b);
+
+  const rows = [...topics.values()].sort((a,b) => {
+    const ia = FOLDER_ORDER.indexOf(a.key), ib = FOLDER_ORDER.indexOf(b.key);
     if(ia !== ib) return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
-    return a.localeCompare(b);
+    return a.name.localeCompare(b.name);
   });
 
-  out.innerHTML = names.map(name => {
-    const rows = groups.get(name)
-      .sort((a,b) => (a.kind === b.kind ? a.name.localeCompare(b.name)
-                                        : (a.kind === 'deck' ? -1 : 1)))
-      .map(it => {
-        const meta = [kb(it.size), it.updated]        // the badge already names the kind
-          .filter(Boolean).map(m => `<span>${esc(m)}</span>`).join('');
-        const ext = it.kind === 'notebook' ? ' target="_blank" rel="noopener"' : '';
-        return `<a class="item ${esc(it.kind)}" href="${esc(hrefFor(it))}"${ext}>
-          <div class="kind">${esc(KIND_LABEL[it.kind] || it.kind)}</div>
-          <div class="title">${esc(prettify(it.name))}</div>
-          <div class="meta">${meta}</div></a>`;
-      }).join('');
-    return `<section><h2>${esc(name)}</h2><div class="grid">${rows}</div></section>`;
+  let n = 0;
+  const body = rows.map(t => {
+    // "Course-wide" is not a topic in the syllabus sense, so it is not numbered.
+    const sl = t.key === '.' ? '—' : ++n;
+    return `<tr>
+      <td class="sl">${esc(sl)}</td>
+      <td class="topic" data-label="Topic">
+        <div class="name">${esc(t.name)}</div>
+        ${t.key === '.' ? '' : `<div class="folder">${esc(t.key)}/</div>`}
+      </td>
+      <td data-label="Slides &amp; notebooks">${chips(t.main)}</td>
+      <td data-label="Practice notebooks">${chips(t.practice)}</td>
+    </tr>`;
   }).join('');
+
+  out.innerHTML = `<div class="tablewrap"><table>
+      <colgroup>
+        <col class="c-sl"/><col class="c-topic"/><col class="c-slides"/><col class="c-practice"/>
+      </colgroup>
+      <thead><tr>
+        <th>Sl no</th><th>Topic</th><th>Slides &amp; notebooks</th><th>Practice notebooks</th>
+      </tr></thead>
+      <tbody>${body}</tbody>
+    </table></div>`;
 
   status.textContent = sourceNote || '';
   if(!sourceNote) status.style.display = 'none';
@@ -204,6 +326,9 @@ async function fromApi(){
     const r = await fetch('manifest.json', {cache:'no-cache'});
     if(!r.ok) throw new Error('no manifest');
     const m = await r.json();
+    // The Pages URL wins; the manifest only fills in what it could not tell us.
+    if(!repoFromLocation() && m.repo) REPO = m.repo;
+    if(m.branch) BRANCH = m.branch;
     render(m.items || [], '');
   }catch(e){
     try{
