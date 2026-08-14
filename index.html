@@ -55,8 +55,6 @@ td.sl{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--soft);
   text-align:center;padding-top:16px}
 td.topic .name{font-family:var(--disp);font-weight:700;font-size:16.5px;line-height:1.22;
   letter-spacing:-.01em}
-td.topic .folder{font-family:var(--mono);font-size:10px;color:var(--soft);margin-top:5px;
-  letter-spacing:.04em}
 
 .chips{display:flex;flex-direction:column;gap:8px}
 .chips .line{display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start}
@@ -296,7 +294,6 @@ function render(items, sourceNote){
       <td class="sl">${esc(sl)}</td>
       <td class="topic" data-label="Topic">
         <div class="name">${esc(t.name)}</div>
-        ${t.key === '.' ? '' : `<div class="folder">${esc(t.key)}/</div>`}
       </td>
       <td data-label="Slides &amp; notebooks">${chips(t.main)}</td>
       <td data-label="Practice notebooks">${chips(t.practice)}</td>
