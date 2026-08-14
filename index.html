@@ -71,7 +71,6 @@ a.chip .kind{font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spac
 a.chip.notebook .kind{color:var(--t-grp)}
 a.chip.pdf .kind{color:var(--t-anc)}
 a.chip .label{font-size:13.5px;font-weight:500;line-height:1.25}
-a.chip .sz{font-family:var(--mono);font-size:9.5px;color:var(--soft);flex:none}
 .empty{font-family:var(--mono);font-size:12px;color:#93A4AC}
 
 .note{background:#FFFBF2;border:1px solid var(--hair);border-left:4px solid var(--t-anc);
@@ -205,10 +204,6 @@ function prettify(name){
              .replace(/([a-z])(\d)/g, '$1 $2')   // part1 -> part 1, but DA2402 is left alone
              .replace(/\b([a-z])/g, (m,c) => c.toUpperCase());
 }
-function kb(bytes){
-  if(!bytes) return '';
-  return bytes >= 1048576 ? (bytes/1048576).toFixed(1)+' MB' : Math.round(bytes/1024)+' KB';
-}
 function hrefFor(it){
   const p = encodeURI(it.path);                       // the space in a folder name becomes %20
   // Notebooks open straight into Colab, running, with nothing to download or
@@ -238,13 +233,11 @@ const KIND_RANK = {deck:0, pdf:1, notebook:2};
 
 function chip(it){
   const ext = it.kind === 'notebook' ? ' target="_blank" rel="noopener"' : '';
-  const sz  = kb(it.size);
   const upd = it.updated ? ` · updated ${it.updated}` : '';
   return `<a class="chip ${esc(it.kind)}" href="${esc(hrefFor(it))}"${ext}
             title="${esc(it.path)}${esc(upd)}">
       <span class="kind">${esc(KIND_LABEL[it.kind] || it.kind)}</span>
       <span class="label">${esc(prettify(it.name))}</span>
-      ${sz ? `<span class="sz">${esc(sz)}</span>` : ''}
     </a>`;
 }
 
