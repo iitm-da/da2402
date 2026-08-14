@@ -128,8 +128,9 @@ footer a{color:var(--soft)}
   <div id="status">Loading course material…</div>
 
   <div class="note">
-    <b>Notebooks open on GitHub</b>, which renders them in place — GitHub Pages would only hand you
-    the raw JSON. Everything else opens directly.
+    <b>Notebooks open in Google Colab</b>, ready to run — nothing to install or download, and the
+    data loads over the network. You get your own copy, so edit freely; your changes never touch
+    the course version. Slides and the PDF open directly.
   </div>
   <div class="note">
     <b>Practice notebooks</b> are picked up automatically: put the file in a
@@ -169,7 +170,7 @@ function repoFromLocation(){
 let REPO   = repoFromLocation() || FALLBACK_REPO;
 let BRANCH = FALLBACK_BRANCH;
 
-const KIND_LABEL = {deck:'Slides', notebook:'Notebook', pdf:'PDF'};
+const KIND_LABEL = {deck:'Slides', notebook:'Colab', pdf:'PDF'};
 
 /* Topics run in teaching order, not alphabetical order. Anything not listed
    is appended afterwards, alphabetically. Keys are folder paths. */
@@ -212,8 +213,11 @@ function kb(bytes){
 }
 function hrefFor(it){
   const p = encodeURI(it.path);                       // the space in a folder name becomes %20
+  // Notebooks open straight into Colab, running, with nothing to download or
+  // upload. It is the GitHub blob URL with Colab's host swapped in, so it
+  // needs the repo to stay public. Everything else is served by Pages.
   return it.kind === 'notebook'
-    ? `https://github.com/${REPO}/blob/${BRANCH}/${p}` // GitHub renders .ipynb; Pages would not
+    ? `https://colab.research.google.com/github/${REPO}/blob/${BRANCH}/${p}`
     : p;
 }
 function topicKey(it){
