@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Collection · Part 1: Talking to Servers, Not Pages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<!-- ============ 1 · COVER ============ -->
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat" id="cvp"></div>
+  <div class="kicker">DA2402 · Data Curation and Visualization</div>
+  <h1>Data<br/>Collection</h1>
+  <div class="pt">Part 1 — Talking to servers, not pages</div>
+  <div class="rule"></div>
+  <p class="sub">HTTP from the wire up, then the two routes that never touch HTML at all:
+  syndication feeds, and the JSON endpoints a page calls behind your back. Ends with a real
+  scrape that succeeded and still produced a broken dataset.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 · BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data collection from the web</td></tr>
+    <tr><td>Part</td><td>1 of 4 · APIs and feeds</td></tr>
+    <tr><td>Toolkit</td><td>requests · feedparser · pandas</td></tr>
+  </table>
+</section>
+
+<!-- ============ 2 · MOTIVATION ============ -->
+<section class="slide" data-sec="Motivation">
+  <div class="eyebrow">Motivation · 1 of 2</div>
+  <h1 class="t">The data you want is already leaving the server
+    <small>Four things a data team is asked for in an ordinary week. Before writing a line of code,
+    the only question that matters is <i>what shape does the server send</i>. Get that wrong and you
+    will spend a day parsing HTML for something that was available as JSON all along.</small></h1>
+  <div class="wrap" style="gap:13px">
+
+    <div class="mrow" style="border-left-color:var(--t-grp);padding:13px 13px">
+      <div class="k">Newsroom<br/>NDTV top stories</div>
+      <div class="v">&lt;item&gt;
+  &lt;title&gt;<span class="hit">Cabinet clears...</span>&lt;/title&gt;
+  &lt;link&gt;<span class="hit">https://ndtv.com/...</span>&lt;/link&gt;</div>
+      <div class="n"><b>XML, published on purpose.</b> An RSS feed is a contract: the site
+        <i>wants</i> you to read it. One library call, no parsing.</div>
+    </div>
+
+    <div class="mrow" style="border-left-color:var(--t-cls);padding:13px 13px">
+      <div class="k">Quant desk<br/>index price history</div>
+      <div class="v">{"data":{"closeRecords":[
+   {"EOD_CLOSE_VAL":<span class="hit">21741.9</span>,
+    "EOD_DATE":"<span class="hit">28-Dec-2023</span>"}</div>
+      <div class="n"><b>JSON, not published on purpose.</b> The page you see is drawn by
+        JavaScript from this endpoint. Find it and you skip the page entirely.</div>
+    </div>
+
+    <div class="mrow" style="border-left-color:var(--t-qnt);padding:13px 13px">
+      <div class="k">Market research<br/>service listings</div>
+      <div class="v">&lt;div class="sk-card" businessid="<span class="hit">4821</span>"&gt;
+  &lt;div class="locality"&gt;&lt;span&gt;<span class="hit">Adyar</span>&lt;/span&gt;</div>
+      <div class="n"><b>HTML, and no alternative.</b> The values are real but they sit in
+        presentation markup. This is Lecture 2.</div>
+    </div>
+
+    <div class="mrow" style="border-left-color:var(--t-asr);padding:13px 13px">
+      <div class="k">Anything modern<br/>a JS-built page</div>
+      <div class="v">&lt;div id="root"&gt;<span class="hit bad">&lt;/div&gt;</span>
+&lt;script src="/bundle.js"&gt;&lt;/script&gt;
+<span class="h-dim">/* your data is nowhere in this file */</span></div>
+      <div class="n"><b>HTML with nothing in it.</b> <code class="k">requests.get</code> returns an
+        empty shell. This is Lecture 3.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · THE FOUR ROUTES ============ -->
+<section class="slide" data-sec="Motivation">
+  <div class="eyebrow">Motivation · 2 of 2</div>
+  <h1 class="t">Four routes in, and you want the highest one that works
+    <small>This ladder is the spine of all four lectures. Every rung down costs you speed, adds
+    fragility and raises the legal temperature. Students who learn Selenium first reach for it
+    always — so we start at the top and only descend when forced.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+      <div class="ladder">
+        <div class="rung"><div class="num on">1</div>
+          <div class="txt on"><h4>Documented API or feed</h4>
+          <p>RSS, Atom, a published REST API, a bulk download. Stable, fast, explicitly permitted.
+          Milliseconds per record. <b>Lecture 1.</b></p></div></div>
+        <div class="rung"><div class="num on">2</div>
+          <div class="txt on"><h4>Undocumented endpoint the page itself calls</h4>
+          <p>Found in the browser's Network tab. Still JSON, still fast — but unversioned, and it can
+          be locked behind session checks. <b>Lecture 1.</b></p></div></div>
+        <div class="rung"><div class="num">3</div>
+          <div class="txt"><h4>Parse the HTML the server sends</h4>
+          <p>BeautifulSoup over server-rendered markup. Breaks whenever a designer touches a class
+          name. <b>Lecture 2.</b></p></div></div>
+        <div class="rung"><div class="num">4</div>
+          <div class="txt"><h4>Drive a real browser</h4>
+          <p>Selenium. Works on anything a human can see, costs ~100&times; the CPU and RAM of a
+          plain request. <b>Lecture 3.</b></p></div></div>
+      </div>
+      <div class="callout warn sm"><b>The order is not a preference, it is a cost
+        curve.</b> A feed reader pulls 40 articles in under a second on one core. The equivalent
+        Selenium job opens 40 browser tabs.</div>
+      </div>
+    <div class="colstack">
+      <table class="d sm">
+        <tr><th>Route</th><th class="c">Speed</th><th class="c">Breaks when</th></tr>
+        <tr class="ok"><td>Feed / API</td><td class="c">1&times;</td><td>the contract changes</td></tr>
+        <tr class="ok"><td>Hidden endpoint</td><td class="c">1–2&times;</td><td>anything changes</td></tr>
+        <tr class="wr"><td>HTML parse</td><td class="c">2–5&times;</td><td>the design changes</td></tr>
+        <tr class="hl"><td>Browser</td><td class="c">50–200&times;</td><td>rarely, but slowly</td></tr>
+      </table>
+      <div class="card sm b"><h3>How to pick, in one question</h3>
+        <p>Open the page, then open the Network tab and reload. If the values you want arrive in a
+        JSON response, you are on rung 2 and you are done. If they arrive inside the first HTML
+        document, rung 3. If they appear only after scripts run and no single response contains them,
+        rung 4.</p></div>
+      <div class="card sm r"><h3>The rung you skip is the rung you get sued over</h3>
+        <p>Every case in Lecture 4 — hiQ, 3Taps, Bright Data — involves someone on rung 3 or 4
+        working around a block. Nobody has ever been sued for reading an RSS feed.</p></div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4 · HTTP: THE CYCLE ============ -->
+<section class="slide" data-sec="HTTP">
+  <div class="eyebrow">HTTP · 1 of 6</div>
+  <h1 class="t">One request, one response, and then the server forgets you
+    <small>HTTP is a text protocol. A request is a few lines of ASCII sent over a socket; a response is
+    a few lines back. Everything else in this course — cookies, sessions, blocking, fingerprinting —
+    is built on top of a protocol that by itself remembers nothing.</small></h1>
+  <div class="wrap">
+    <div class="wire">
+      <div class="box"><h4>Client</h4>
+        <p style="font-size:12px;line-height:1.45;color:#31444F">Your Python process, or a browser.
+        Opens a TCP connection, writes text, reads text, closes.</p>
+        <div style="font-family:var(--mono);font-size:10.5px;color:var(--soft);margin-top:7px">
+        requests.get(url)</div></div>
+      <div class="arrows">
+        <div class="ar"><b>request</b></div>
+        <div class="ar back"><b>response</b></div>
+      </div>
+      <div class="box" style="border-top-color:var(--t-grp)"><h4>Server</h4>
+        <p style="font-size:12px;line-height:1.45;color:#31444F">Reads the request, decides what you
+        are allowed to have, writes a status line and a body.</p>
+        <div style="font-family:var(--mono);font-size:10.5px;color:var(--soft);margin-top:7px">
+        www.indexboard.example</div></div>
+    </div>
+    <div class="cols" style="gap:16px">
+      <div>
+        <h2 class="s">What "stateless" actually costs you</h2>
+        <ul class="b sm">
+          <li>The server does not know that the request it is answering now came from whoever sent
+            the previous one. <strong>Each request stands alone.</strong></li>
+          <li>So every fact the server needs — who you are, what you already agreed to, which page
+            you came from — <strong>must be re-sent every single time</strong>, in the headers.</li>
+          <li>That re-sending is what a <code class="k">Session</code> object does for you, and it is
+            also exactly what a scraper forgets to do.</li>
+          <li>It is why the scraper on slide 17 visits two ordinary pages before it touches the
+            API at all: it is manufacturing state the protocol will not keep.</li>
+        </ul>
+      </div>
+      <div class="colstack">
+        <div class="callout sm"><b>Connectionless is not the same as stateless.</b> HTTP/1.1 keeps the
+          TCP connection open between requests for speed; that is a transport optimisation. The
+          server's <i>memory</i> is still zero either way.</div>
+        <table class="d xs">
+          <tr><th>Version</th><th>What changed</th><th>Matters to you?</th></tr>
+          <tr><td>HTTP/1.1</td><td>persistent connections</td><td>yes — Session reuse</td></tr>
+          <tr><td>HTTP/2</td><td>multiplexing, header compression</td><td>yes — TLS/H2 fingerprinting</td></tr>
+          <tr><td>HTTP/3</td><td>QUIC over UDP</td><td>rarely</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · ANATOMY ============ -->
+<section class="slide" data-sec="HTTP">
+  <div class="eyebrow">HTTP · 2 of 6</div>
+  <h1 class="t">Anatomy of the two messages
+    <small>Read these once, properly, and half the mystery of scraping disappears. Both messages have
+    the same three-part shape: a first line, a block of <code class="k">Name: value</code> headers,
+    a blank line, then an optional body.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">Request — what your process writes to the socket</div>
+        <pre class="code sm"><span class="h-mth">GET</span> <span class="h-url">/v1/prices?symbol=ACME&amp;from=2024-01-01</span> <span class="h-dim">HTTP/1.1</span>
+<span class="h-hdr">Host</span>: <span class="h-val">api.example.com</span>
+<span class="h-hdr">User-Agent</span>: <span class="h-val">Mozilla/5.0 (Windows NT 10.0; Win64; x64) ...</span>
+<span class="h-hdr">Accept</span>: <span class="h-val">application/json, text/plain, */*</span>
+<span class="h-hdr">Referer</span>: <span class="h-val">https://www.example.com/reports/historical</span>
+<span class="h-hdr">Cookie</span>: <span class="h-val">session=a1b2c3; csrftoken=d4e5f6</span>
+<span class="h-dim">&lt;blank line&gt;</span>
+<span class="h-dim">(no body — GET requests normally have none)</span></pre>
+        <div class="callout sm"><b>Line 1 is the whole ask.</b> Method, path with query string, protocol
+          version. Everything after it is context the server may or may not require.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">Response — what comes back</div>
+        <pre class="code sm"><span class="h-dim">HTTP/1.1</span> <span class="h-ok">200 OK</span>
+<span class="h-hdr">Content-Type</span>: <span class="h-val">application/json; charset=utf-8</span>
+<span class="h-hdr">Content-Length</span>: <span class="h-val">184213</span>
+<span class="h-hdr">Set-Cookie</span>: <span class="h-val">session=a1b2c3; Path=/; HttpOnly</span>
+<span class="h-hdr">X-Request-Id</span>: <span class="h-val">7f3c9a21-4e08-4b6d-9f21-0c5a8e3b1d47</span>
+<span class="h-dim">&lt;blank line&gt;</span>
+<span class="j-pun">{</span><span class="j-key">"data"</span><span class="j-pun">:{</span><span class="j-key">"records"</span><span class="j-pun">:[{</span>
+  <span class="j-key">"close"</span><span class="j-pun">:</span><span class="j-num">1482.65</span><span class="j-pun">,</span>
+  <span class="j-key">"date"</span><span class="j-pun">:</span><span class="j-str">"28-Dec-2023"</span><span class="j-pun">}, ...]}}</span></pre>
+        <div class="callout warn sm"><b>Content-Type is the field people ignore and then regret.</b>
+          It, not the URL, tells you whether to call <code class="k">.json()</code> or reach for a
+          parser. A <code class="k">.json</code> URL can return HTML; an extensionless URL can return
+          JSON. Trust the header.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · METHODS ============ -->
+<section class="slide" data-sec="HTTP">
+  <div class="eyebrow">HTTP · 3 of 6</div>
+  <h1 class="t">Methods: two you will use, three you should recognise
+    <small>The method is a promise about what the request does. Servers enforce that promise loosely,
+    but caches, proxies and retry logic all rely on it, so breaking it causes strange bugs rather than
+    clean errors.</small></h1>
+  <div class="wrap">
+    <table class="d sm free">
+      <tr><th style="width:78px">Method</th><th style="width:110px">Sends a body?</th>
+        <th style="width:96px">Idempotent</th><th>What it means, and where it shows up in this course</th></tr>
+      <tr class="ok"><td class="m"><b>GET</b></td><td class="c">no</td><td class="c">yes</td>
+        <td>Fetch a representation. Parameters ride in the query string, so the whole request is one
+          URL you can paste in a browser. <b>Every scraper in Lecture 1 and 2 except one.</b></td></tr>
+      <tr class="ok"><td class="m"><b>POST</b></td><td class="c">yes</td><td class="c">no</td>
+        <td>Submit data for processing. The payload is in the body, so you cannot reproduce it from a
+          URL alone. <b>The POST endpoint on slide 20 — the payload is a JSON object.</b></td></tr>
+      <tr><td class="m">PUT</td><td class="c">yes</td><td class="c">yes</td>
+        <td>Replace a resource wholesale. Idempotent: sending it five times leaves the same state as
+          sending it once. Rare in scraping, common in APIs you write.</td></tr>
+      <tr><td class="m">DELETE</td><td class="c">no</td><td class="c">yes</td>
+        <td>Remove a resource. You will never send one at a site you do not own.</td></tr>
+      <tr><td class="m">HEAD</td><td class="c">no</td><td class="c">yes</td>
+        <td>Identical to GET but the server returns headers only, no body. <b>Genuinely useful:</b>
+          check whether a large file changed, or whether a link is alive, without downloading it.</td></tr>
+    </table>
+    <div class="cols">
+      <div class="callout bad sm"><b>Idempotent is about the server's state, not the response body.</b>
+        A GET to a stock API returns different numbers each minute and is still idempotent, because
+        <i>your asking</i> changed nothing. A POST that appends a row is not, which is why you must never
+        blindly retry one in a loop.</div>
+      <div class="callout sm"><b>Why POST endpoints hide better.</b> A GET endpoint leaks in browser
+        history, logs and the Referer header. A POST endpoint's payload is invisible in all three, which
+        is why the site on slide 20 uses one — and why you can only find it in the Network tab.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 · STATUS CODES ============ -->
+<section class="slide" data-sec="HTTP">
+  <div class="eyebrow">HTTP · 4 of 6</div>
+  <h1 class="t">Status codes, and the one that lies to you
+    <small>The first digit is the class; the rest is detail. For scraping, six codes carry almost all the
+    information you will ever act on — plus one habit that will save you hours.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <table class="d sm free">
+        <tr><th style="width:64px">Code</th><th style="width:120px">Name</th><th>What you should do</th></tr>
+        <tr class="ok"><td class="m">200</td><td>OK</td>
+          <td>Proceed — but check <code class="k">Content-Type</code> and the body length before you
+            celebrate. A 200 can carry an error page.</td></tr>
+        <tr><td class="m">301 / 302</td><td>Moved</td>
+          <td><code class="k">requests</code> follows these silently. Read <code class="k">r.url</code> to
+            see where you actually ended up; a login redirect looks like success otherwise.</td></tr>
+        <tr class="wr"><td class="m">401 / 403</td><td>Unauthorised<br/>Forbidden</td>
+          <td>You were identified and refused. Adding threads will not help. Stop and look for an API.</td></tr>
+        <tr class="hl"><td class="m">404</td><td>Not Found</td>
+          <td>The resource does not exist — <i>or the server is pretending it does not.</i> See below.</td></tr>
+        <tr class="wr"><td class="m">429</td><td>Too Many Requests</td>
+          <td>You are rate limited. Honour <code class="k">Retry-After</code> if present, back off
+            exponentially if not.</td></tr>
+        <tr><td class="m">5xx</td><td>Server error</td>
+          <td>Their fault, usually transient. This is the only class worth retrying automatically.</td></tr>
+      </table>
+      <div class="colstack">
+        <div class="card r"><h3>404 is sometimes a polite 403</h3>
+          <p>Request the protected endpoint on slide 19 with no session and you get <b>404 Not Found</b>
+          — not 403. The endpoint plainly exists; the browser uses it constantly. Returning 404 hides the
+          existence of the API from anyone probing for it.</p>
+          <p style="margin-top:6px">So a 404 does <b>not</b> mean "wrong URL, try another". Confirm the URL
+          in the Network tab first, and only then ask what the browser was sending that you were not.</p></div>
+        <div class="callout warn sm"><b>Habit worth forming.</b> Log
+          <code class="k">status_code</code>, <code class="k">len(r.content)</code> and
+          <code class="k">r.headers['Content-Type']</code> for every request during development. Almost
+          every silent scraping failure is visible in those three numbers.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 · HEADERS ============ -->
+<section class="slide" data-sec="HTTP">
+  <div class="eyebrow">HTTP · 5 of 6</div>
+  <h1 class="t">Six headers decide whether you get the data
+    <small>A default <code class="k">requests.get()</code> sends a handful of headers that no browser has
+    ever sent. To a server watching for automation, that is the signal. Here is what each field is
+    for and what it gives away.</small></h1>
+  <div class="wrap">
+    <table class="d sm free">
+      <tr><th style="width:118px">Header</th><th style="width:300px">What Python sends by default</th>
+        <th>Why the server cares</th></tr>
+      <tr class="hl"><td class="m">User-Agent</td>
+        <td class="o">python-requests/2.31.0</td>
+        <td>Announces the client software. The default string is the single most obvious tell there is;
+          it appears in the server's access log on every hit.</td></tr>
+      <tr class="hl"><td class="m">Referer</td><td class="o">(absent)</td>
+        <td>Which page linked here. An XHR fired by a real page always carries one. Absent Referer on an
+          internal API call means "nobody was on the site".</td></tr>
+      <tr class="hl"><td class="m">Cookie</td><td class="o">(absent until you get one)</td>
+        <td>Carries the session. Everything the server thinks it knows about you lives here.</td></tr>
+      <tr><td class="m">Accept</td><td class="o">*/*</td>
+        <td>What formats you can handle. Browsers send long, specific, ordered lists. <code class="k">*/*</code>
+          is a fingerprint of its own.</td></tr>
+      <tr><td class="m">Host</td><td class="o">derived from the URL</td>
+        <td>Which virtual host you want. One IP serves many sites; this picks one. Rarely set by hand —
+          the POST scraper on slide 20 does, which is unusual.</td></tr>
+      <tr><td class="m">Origin</td><td class="o">(absent)</td>
+        <td>Scheme + host of the page making a cross-origin call. Sent by browsers on POST XHRs; part of
+          the CORS handshake, and checked by some APIs.</td></tr>
+    </table>
+    <div class="cols">
+      <div>
+        <div class="outlbl">What Chrome sends on an ordinary page load</div>
+        <pre class="code xxs"><span class="h-hdr">Host</span>: <span class="h-val">www.indexboard.example</span>
+<span class="h-hdr">Connection</span>: <span class="h-val">keep-alive</span>
+<span class="h-hdr">sec-ch-ua</span>: <span class="h-val">"Chromium";v="120", "Not_A Brand";v="8"</span>
+<span class="h-hdr">sec-ch-ua-platform</span>: <span class="h-val">"Windows"</span>
+<span class="h-hdr">User-Agent</span>: <span class="h-val">Mozilla/5.0 (Windows NT 10.0; Win64; x64) ...</span>
+<span class="h-hdr">Accept</span>: <span class="h-val">text/html,application/xhtml+xml;q=0.9,*/*;q=0.8</span>
+<span class="h-hdr">Sec-Fetch-Site</span>: <span class="h-val">same-origin</span>
+<span class="h-hdr">Accept-Encoding</span>: <span class="h-val">gzip, deflate, br</span>
+<span class="h-hdr">Accept-Language</span>: <span class="h-val">en-GB,en;q=0.9,ta;q=0.8</span></pre>
+        <div class="callout warn sm" style="margin-top:10px"><b>The honest framing.</b> A forged
+          <code class="k">User-Agent</code> is a false statement to the server. It is near-universal, and
+          courts treat it as far less serious than defeating a technical block — but copying all six
+          headers is a decision, not a default. <b>Lecture 4.</b></div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">What <code class="k">requests.get(url)</code> sends</div>
+        <pre class="code xxs" style="flex:none"><span class="h-hdr">Host</span>: <span class="h-val">www.indexboard.example</span>
+<span class="h-hdr">Connection</span>: <span class="h-val">keep-alive</span>
+<span class="h-hdr">User-Agent</span>: <span class="h-bad">python-requests/2.31.0</span>
+<span class="h-hdr">Accept</span>: <span class="h-val">*/*</span>
+<span class="h-hdr">Accept-Encoding</span>: <span class="h-val">gzip, deflate</span></pre>
+        <div class="callout bad sm"><b>Eleven fields against five, and the shape differs as much as the
+          content.</b> No <code class="k">Sec-Fetch-*</code>, no client hints, no language preference,
+          and the fields arrive in a different order. Distinguishing the two costs a server nothing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9 · WIDGET · REQUEST INSPECTOR ============ -->
+<section class="slide" data-sec="HTTP · Live">
+  <div class="eyebrow">HTTP · 6 of 6 · interactive</div>
+  <h1 class="t sm">Build the request and watch the answer change
+    <small class="tight">Tick headers on and off. The left pane is the exact text that would go on the
+    wire; the right is what a CDN bot-manager in front of the site would make of it.
+    <span class="jsbadge">Simulated</span> The rules encoded here are the ones we work through on
+    slides 17–19 — this page makes no network request of its own.</small></h1>
+  <div class="wrap" style="margin-top:10px">
+    <div class="insp">
+      <div class="ctl">
+        <div class="hdr">Target</div>
+        <label class="tgl on"><input type="radio" name="tgt" value="api" checked/>
+          <span><b>/api/history?index=...</b><i>the protected JSON endpoint</i></span></label>
+        <label class="tgl"><input type="radio" name="tgt" value="home"/>
+          <span><b>/ (home page)</b><i>public HTML, no session needed</i></span></label>
+        <div class="hdr">Headers you send</div>
+        <label class="tgl"><input type="checkbox" id="hUA"/>
+          <span><b>User-Agent: Mozilla/5.0 ...</b><i>off = python-requests/2.31.0</i></span></label>
+        <label class="tgl"><input type="checkbox" id="hRef"/>
+          <span><b>Referer: /reports/historical</b><i>the page that "made" this call</i></span></label>
+        <label class="tgl"><input type="checkbox" id="hAcc"/>
+          <span><b>Accept: application/json</b><i>off = */*</i></span></label>
+        <div class="hdr">Session state</div>
+        <label class="tgl"><input type="checkbox" id="hWarm"/>
+          <span><b>Warmed the session first</b><i>GET / then GET /reports/... to collect cookies</i></span></label>
+      </div>
+      <div class="res">
+        <div class="outlbl">On the wire</div>
+        <pre class="code sm" id="wire"></pre>
+        <div id="verdict"></div>
+        <div class="callout warn sm"><b>Work it in this order.</b> Tick everything &mdash; you get 200.
+          Now untick one box at a time and watch <i>which</i> failure the edge reports. The order in which
+          the reasons appear is the order the checks run in: session first, then Referer, then User-Agent.
+          A scraper that fixes the wrong one first learns nothing, because the status code never
+          changes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 · STATE ============ -->
+<section class="slide" data-sec="HTTP">
+  <div class="eyebrow">State</div>
+  <h1 class="t">Cookies: how a forgetful protocol fakes a memory
+    <small>The server cannot remember you, so it hands you a slip of paper and asks you to show it every
+    time. That is the whole mechanism. Everything else — logins, carts, tracking, bot walls — is what
+    people built on top of it.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <ol class="n">
+          <li><b>First request.</b> You send nothing. The server generates an identifier and replies with
+            <code class="k">Set-Cookie: ibsess=xyz123; Path=/; HttpOnly</code>.</li>
+          <li><b>Storage.</b> Your client keeps it, keyed by domain. A browser does this automatically;
+            <code class="k">requests</code> does it only if you use a <code class="k">Session</code>.</li>
+          <li><b>Every later request.</b> You send <code class="k">Cookie: ibsess=xyz123</code> back. The
+            server looks the identifier up and recovers whatever it stored against it.</li>
+          <li><b>Expiry or eviction.</b> The slip stops working, and you are a stranger again — mid-scrape,
+            usually around request 300.</li>
+        </ol>
+        <div class="callout sm"><b>Cookie attributes worth knowing.</b>
+          <code class="k">HttpOnly</code> hides it from JavaScript. <code class="k">Secure</code> sends it
+          only over HTTPS. <code class="k">SameSite</code> controls whether it rides along on cross-site
+          requests. A cookie set by the site you are on is <i>first-party</i>; one set by an embedded
+          third domain is <i>third-party</i>, which is the tracking mechanism Lecture 4 returns to.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">What the site hands out on the first visit</div>
+        <pre class="code xs"><span class="h-hdr">Set-Cookie</span>: <span class="h-val">ibsess=</span><span class="h-dim">...</span><span class="h-val">; Path=/; HttpOnly</span>
+<span class="h-hdr">Set-Cookie</span>: <span class="h-val">EDGE_A2=</span><span class="h-dim">...</span><span class="h-val">; Path=/; Secure</span>
+<span class="h-hdr">Set-Cookie</span>: <span class="h-val">bm_seq=</span><span class="h-dim">...</span><span class="h-val">; Path=/; SameSite=Lax</span>
+<span class="h-hdr">Set-Cookie</span>: <span class="h-val">ibappid=</span><span class="h-dim">...</span></pre>
+        <div class="card sm o"><h3>Three cookies, three owners</h3>
+          <p><code class="k">ibsess</code> and <code class="k">ibappid</code> are the site's own session
+          identifiers. <code class="k">EDGE_A2</code> and <code class="k">bm_seq</code> belong to the CDN
+          sitting in front of it — the second one to its bot-management product. <b>You are being assessed
+          by two systems, and only one of them is the site you are looking at.</b></p></div>
+        <div class="callout warn sm"><b>This is why the warm-up loop exists.</b> No amount of header
+          spoofing produces a valid <code class="k">bm_seq</code>. You have to be issued one, which means
+          actually requesting the pages that issue it.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 · REQUESTS ============ -->
+<section class="slide" data-sec="requests">
+  <div class="eyebrow">Python · requests · 1 of 2</div>
+  <h1 class="t">The Response object is the whole API
+    <small>One function call, one object back. Almost every scraping bug in this course is somebody
+    reading the wrong attribute off this object, so it is worth memorising the five that matter.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <pre class="code sm"><span class="py-kw">import</span> requests
+
+r = requests.get(url, headers=hdrs, timeout=<span class="py-num">30</span>)</pre>
+        <table class="d sm free">
+          <tr><th style="width:150px">Attribute</th><th>What you get</th></tr>
+          <tr class="ok"><td class="m">r.status_code</td><td><code class="k">int</code>. Check it before
+            anything else. <code class="k">r.ok</code> is <code class="k">True</code> for anything under 400.</td></tr>
+          <tr><td class="m">r.text</td><td><code class="k">str</code>, decoded using the charset in
+            <code class="k">Content-Type</code> — or guessed, badly, if that header is missing.</td></tr>
+          <tr><td class="m">r.content</td><td><code class="k">bytes</code>, exactly as received. Use this for
+            images, PDFs, and any page whose encoding you distrust.</td></tr>
+          <tr class="ok"><td class="m">r.json()</td><td>Parses the body as JSON. <b>A method, not an
+            attribute</b> — and it raises if the body is an HTML error page.</td></tr>
+          <tr><td class="m">r.headers</td><td>Case-insensitive dict of response headers.
+            <code class="k">r.headers['content-type']</code> works.</td></tr>
+          <tr class="wr"><td class="m">r.url</td><td>Where you <i>ended up</i> after redirects. Not always
+            the URL you asked for.</td></tr>
+        </table>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3>Three defaults that will bite you</h3>
+          <p><b>1. No timeout.</b> Omit <code class="k">timeout=</code> and a stalled server hangs your
+          script indefinitely. There is no default. Always pass one.</p>
+          <p style="margin-top:6px"><b>2. No exception on 404.</b> <code class="k">requests</code> raises
+          only for network failures, never for HTTP error statuses. A 404 sails through your
+          <code class="k">try</code> block and hits <code class="k">.json()</code> instead. Call
+          <code class="k">r.raise_for_status()</code> if you want the exception.</p>
+          <p style="margin-top:6px"><b>3. Redirects followed silently.</b> Convenient until a session
+          expiry quietly redirects you to a login page and you parse that.</p></div>
+        <pre class="code xs"><span class="py-cm"># the shape every request in this course should have</span>
+<span class="py-kw">try</span>:
+    r = session.get(url, headers=hdrs, timeout=<span class="py-num">30</span>)
+    r.raise_for_status()
+    data = r.json()
+<span class="py-kw">except</span> requests.exceptions.<span class="py-fn">Timeout</span>:
+    log(<span class="py-str">"timed out"</span>, url); <span class="py-kw">return</span> <span class="py-bi">None</span>
+<span class="py-kw">except</span> requests.exceptions.<span class="py-fn">HTTPError</span> <span class="py-kw">as</span> e:
+    log(r.status_code, <span class="py-bi">len</span>(r.content)); <span class="py-kw">return</span> <span class="py-bi">None</span>
+<span class="py-kw">except</span> ValueError:                 <span class="py-cm"># .json() failed</span>
+    log(<span class="py-str">"not JSON:"</span>, r.text[:<span class="py-num">200</span>]); <span class="py-kw">return</span> <span class="py-bi">None</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · SESSION ============ -->
+<section class="slide" data-sec="requests">
+  <div class="eyebrow">Python · requests · 2 of 2</div>
+  <h1 class="t">Session is not an optimisation, it is a requirement
+    <small>Bare <code class="k">requests.get()</code> opens a new connection and throws away every cookie
+    the moment it returns. For any site with a session check, that makes the second request as anonymous
+    as the first.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">Without a Session — three strangers</div>
+        <pre class="code sm">requests.get(<span class="py-str">'https://www.indexboard.example'</span>)
+<span class="py-cm"># Set-Cookie received ... and discarded</span>
+requests.get(<span class="py-str">'https://www.indexboard.example/reports/...'</span>)
+<span class="py-cm"># Set-Cookie received ... and discarded</span>
+requests.get(api_url)
+<span class="py-cm"># sends no Cookie header at all</span></pre>
+        <div class="outlbl" style="margin-top:4px">With a Session — one visitor</div>
+        <pre class="code sm">s = requests.<span class="py-fn">Session</span>()
+s.headers.update(headers)          <span class="py-cm"># set once, sent always</span>
+s.get(<span class="py-str">'https://www.indexboard.example'</span>)  <span class="py-cm"># cookies stored</span>
+s.get(<span class="py-str">'https://www.indexboard.example/reports/...'</span>)
+s.get(api_url)                     <span class="py-cm"># cookies replayed</span>
+<span class="py-bi">print</span>(s.cookies.get_dict().keys())
+<span class="py-cm"># dict_keys(['ibsess','EDGE_A2','bm_seq','ibappid'])</span></pre>
+      </div>
+      <div class="colstack">
+        <ul class="b sm">
+          <li><strong>Cookie jar.</strong> Every <code class="k">Set-Cookie</code> is stored and replayed on
+            matching later requests, exactly as a browser would.</li>
+          <li><strong>Connection pooling.</strong> The TCP and TLS handshake is done once and reused. On a
+            few thousand requests this alone is a large speed-up.</li>
+          <li><strong>Shared defaults.</strong> Headers, proxies and auth set on the Session apply to every
+            request through it, so you cannot forget one.</li>
+          <li><strong>It is a context manager.</strong> <code class="k">with requests.Session() as s:</code>
+            closes the pool cleanly.</li>
+        </ul>
+        <div class="callout good sm"><b>Rule of thumb.</b> If your script makes more than one request to the
+          same host, it should be using a Session. There is no case where a bare
+          <code class="k">requests.get</code> in a loop is the better choice.</div>
+        <div class="callout warn sm"><b>A trap in our own material.</b>
+          the POST scraper on slide 20 calls <code class="k">requests.post()</code> directly in a
+          26-iteration loop, opening and discarding 26 connections. It works because that host does not check
+          sessions — but it is the wrong shape, and the parallel version inherits the same habit.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 · ROUTE 1 · RSS ============ -->
+<section class="slide" data-sec="Feeds">
+  <div class="eyebrow">Route 1 · feeds · 1 of 3</div>
+  <h1 class="t">RSS: the case where the site is on your side
+    <small>A feed is XML published at a fixed URL, with a fixed vocabulary, for the express purpose of being
+    read by machines. No permission question, no parsing gymnastics, no blocking. When one exists, take
+    it.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <div class="card b"><h3>Where to find one</h3>
+          <p>Look for <code class="k">/rss</code>, <code class="k">/feed</code>,
+          <code class="k">/atom.xml</code>, or a
+          <code class="k">&lt;link rel="alternate" type="application/rss+xml"&gt;</code> tag in the page
+          head. Most news sites, blogs, journals, government notice boards and job boards still publish
+          one, even when nothing links to it visibly.</p></div>
+        <div class="card g"><h3>RSS or Atom?</h3>
+          <p>Two competing standards with the same purpose and different tag names —
+          <code class="k">&lt;item&gt;</code> versus <code class="k">&lt;entry&gt;</code>,
+          <code class="k">&lt;pubDate&gt;</code> versus <code class="k">&lt;updated&gt;</code>.
+          <code class="k">feedparser</code> normalises both, which is the main reason to use it rather than
+          an XML parser.</p></div>
+        <div class="callout sm"><b>Feeds are usually truncated.</b> Most publish the latest 20–50 items and
+          nothing older. A feed is a way to stay current, not a way to get an archive. If you need history
+          you are back on the ladder.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">The XML underneath, trimmed</div>
+        <pre class="code xs">&lt;rss version=<span class="h-val">"2.0"</span>&gt;
+ &lt;channel&gt;
+  &lt;title&gt;NDTV News - Top Stories&lt;/title&gt;
+  &lt;link&gt;https://www.ndtv.com/&lt;/link&gt;
+  &lt;item&gt;
+   &lt;title&gt;<span class="hit">Cabinet clears new data rules</span>&lt;/title&gt;
+   &lt;link&gt;<span class="hit">https://www.ndtv.com/india-news/...</span>&lt;/link&gt;
+   &lt;description&gt;<span class="hit">The Union Cabinet on Monday...</span>&lt;/description&gt;
+   &lt;pubDate&gt;Mon, 11 Aug 2025 09:14:02 +0530&lt;/pubDate&gt;
+   &lt;guid isPermaLink=<span class="h-val">"false"</span>&gt;news-4821993&lt;/guid&gt;
+   &lt;content:encoded&gt;<span class="hit">&lt;p&gt;Full article body...&lt;/p&gt;</span>&lt;/content:encoded&gt;
+  &lt;/item&gt;
+  &lt;item&gt; ... &lt;/item&gt;
+ &lt;/channel&gt;
+&lt;/rss&gt;</pre>
+        <div class="callout warn sm"><b>Note <code class="k">content:encoded</code>.</b> It is a namespaced
+          extension, not core RSS — some feeds carry it, most do not. That single fact is the bug on the next
+          slide but one.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 · rss_feed_scraper.py ============ -->
+<section class="slide" data-sec="Feeds">
+  <div class="eyebrow">Route 1 · feeds · 2 of 3 · <code style="font-family:var(--mono);text-transform:none">rss_feed_scraper.py</code></div>
+  <h1 class="t">Twenty lines, and no HTTP code at all
+    <small>This is our first scraper. Notice what is absent: no headers, no session, no status check, no
+    parser. <code class="k">feedparser</code> does the fetching and the XML work, and hands back a
+    dictionary-like object.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <pre class="code sm"><span class="py-kw">import</span> feedparser
+<span class="py-kw">import</span> json
+
+url = <span class="py-str">"https://feeds.feedburner.com/ndtvnews-top-stories"</span>
+feed = feedparser.<span class="py-fn">parse</span>(url)          <span class="py-cm"># fetches AND parses</span>
+
+feed_data = {<span class="py-str">"articles"</span>: []}
+<span class="py-kw">for</span> entry <span class="py-kw">in</span> feed[<span class="py-str">"entries"</span>]:
+    article = {
+        <span class="py-str">"title"</span>:       entry.get(<span class="py-str">'title'</span>, <span class="py-str">''</span>),
+        <span class="py-str">"link"</span>:        entry.get(<span class="py-str">'link'</span>, <span class="py-str">''</span>),
+        <span class="py-str">"description"</span>: entry.get(<span class="py-str">'summary'</span>, <span class="py-str">''</span>),
+        <span class="py-str">"detail"</span>:      entry.content[<span class="py-num">0</span>].get(<span class="py-str">'value'</span>, <span class="py-str">''</span>),
+    }
+    feed_data[<span class="py-str">"articles"</span>].append(article)
+
+<span class="py-bi">print</span>(json.dumps(feed_data, indent=<span class="py-num">4</span>))</pre>
+      <div class="colstack">
+        <ul class="b sm">
+          <li><code class="k">feedparser.parse()</code> accepts a <strong>URL, a file path, or a string</strong>
+            of XML. Give it a URL and it performs the HTTP request itself.</li>
+          <li><code class="k">feed.entries</code> is the list of items. <code class="k">feed.feed</code> holds
+            channel-level metadata — title, link, last build date.</li>
+          <li>Entries support both <code class="k">entry['title']</code> and
+            <code class="k">entry.title</code>. The two are the same object.</li>
+          <li>It <strong>never raises on malformed XML.</strong> It repairs what it can and sets
+            <code class="k">feed.bozo = 1</code> with the exception in
+            <code class="k">feed.bozo_exception</code>.</li>
+        </ul>
+        <div class="callout warn sm"><b>So check <code class="k">feed.bozo</code>.</b> A feed that 404s still
+          returns an object; <code class="k">feed.entries</code> is simply empty and your loop runs zero
+          times, writing an empty file and exiting successfully.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15 · THE RSS BUG ============ -->
+<section class="slide" data-sec="Feeds">
+  <div class="eyebrow">Route 1 · feeds · 3 of 3</div>
+  <h1 class="t">Three lines are defensive. The fourth is not.
+    <small>Look again at the dictionary being built. The author used <code class="k">.get()</code> with a
+    default on three fields and then reached straight into <code class="k">entry.content[0]</code> on the
+    fourth. That asymmetry is the entire lesson.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code sm"><span class="py-str">"title"</span>:       entry.get(<span class="py-str">'title'</span>, <span class="py-str">''</span>),        <span class="py-cm"># safe</span>
+<span class="py-str">"link"</span>:        entry.get(<span class="py-str">'link'</span>, <span class="py-str">''</span>),         <span class="py-cm"># safe</span>
+<span class="py-str">"description"</span>: entry.get(<span class="py-str">'summary'</span>, <span class="py-str">''</span>),      <span class="py-cm"># safe</span>
+<span class="py-str">"detail"</span>:      entry.content[<span class="py-num">0</span>].get(<span class="py-str">'value'</span>,<span class="py-str">''</span>) <span class="py-cm"># three ways to die</span></pre>
+        <table class="d sm free">
+          <tr><th style="width:190px">If the feed...</th><th>Result</th></tr>
+          <tr class="hl"><td>omits <code class="k">content:encoded</code></td>
+            <td class="o">AttributeError: object has no<br/>attribute 'content'</td></tr>
+          <tr class="hl"><td>has an empty content list</td><td class="o">IndexError: list index out of range</td></tr>
+          <tr class="hl"><td>drops it on <i>one</i> item in fifty</td>
+            <td class="o">crashes at item 34; items 1–33 are<br/>in memory and never written</td></tr>
+        </table>
+        <div class="callout bad sm"><b>The third row is the dangerous one.</b> It is not a crash you notice in
+          testing, because the feed you tested against happened to be complete. It is a crash that arrives
+          three weeks later, in a cron job, with no output file.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">The repair</div>
+        <pre class="code xs"><span class="py-kw">def</span> <span class="py-fn">full_text</span>(entry):
+    <span class="py-str">"""content:encoded if present, else summary."""</span>
+    content = entry.get(<span class="py-str">'content'</span>) <span class="py-kw">or</span> []
+    <span class="py-kw">if</span> content:
+        <span class="py-kw">return</span> content[<span class="py-num">0</span>].get(<span class="py-str">'value'</span>, <span class="py-str">''</span>)
+    <span class="py-kw">return</span> entry.get(<span class="py-str">'summary'</span>, <span class="py-str">''</span>)
+
+feed = feedparser.<span class="py-fn">parse</span>(url)
+<span class="py-kw">if</span> feed.bozo:
+    <span class="py-bi">print</span>(<span class="py-str">"malformed feed:"</span>, feed.bozo_exception)
+<span class="py-kw">if</span> <span class="py-kw">not</span> feed.entries:
+    <span class="py-kw">raise</span> <span class="py-fn">SystemExit</span>(<span class="py-str">"no entries — check the URL"</span>)
+
+articles = [{
+    <span class="py-str">"title"</span>: e.get(<span class="py-str">'title'</span>, <span class="py-str">''</span>),
+    <span class="py-str">"link"</span>:  e.get(<span class="py-str">'link'</span>, <span class="py-str">''</span>),
+    <span class="py-str">"description"</span>: e.get(<span class="py-str">'summary'</span>, <span class="py-str">''</span>),
+    <span class="py-str">"detail"</span>: <span class="py-fn">full_text</span>(e),
+} <span class="py-kw">for</span> e <span class="py-kw">in</span> feed.entries]</pre>
+        <div class="callout good sm"><b>The general rule.</b> Every field you pull from a remote source is
+          optional until you have proved otherwise, and you cannot prove it from one sample. Write the
+          default, or write the check — never neither.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16 · FINDING THE HIDDEN API ============ -->
+<section class="slide" data-sec="Hidden APIs">
+  <div class="eyebrow">Route 2 · hidden endpoints · 1 of 6</div>
+  <h1 class="t">Every table drawn by JavaScript was JSON a moment earlier
+    <small>If a page renders a grid of numbers after a brief spinner, the numbers arrived over the network in
+    a machine-readable format and were then turned into <code class="k">&lt;td&gt;</code> elements. Your job
+    is to intercept them one step earlier.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <ol class="n">
+          <li>Open the target page. <b>F12</b>, then the <b>Network</b> tab.</li>
+          <li>Filter to <b>Fetch/XHR</b>. This hides images, fonts and stylesheets, usually leaving under
+            ten rows.</li>
+          <li><b>Reload</b> with the panel open, or click whatever control loads the data.</li>
+          <li>Click each row and read the <b>Response</b> or <b>Preview</b> pane until you see your values.</li>
+          <li>Right-click that row &rarr; <b>Copy &rarr; Copy as cURL</b>. You now hold the complete request,
+            headers and cookies included.</li>
+          <li>Convert to Python and start deleting headers one at a time until it breaks. What is left is the
+            minimum the server actually requires.</li>
+        </ol>
+        <div class="callout good sm"><b>Step 6 is the one people skip.</b> Copying all forty headers works but
+          teaches you nothing and breaks silently later. The three or four that matter are worth finding.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">What the Network tab shows on the report page</div>
+        <pre class="code xs"><span class="h-dim">Name                                    Type    Size</span>
+<span class="h-dim">─────────────────────────────────────────────────────</span>
+historical-data                         document  41 kB
+jquery.min.js                           script   88 kB
+<span class="h-mth">getHistoryTableAsString</span>                 <span class="h-ok">xhr</span>     <span class="h-ok">312 kB</span>  <span class="h-bad">&lt;--</span>
+analytics.js                            script   19 kB</pre>
+        <div class="card sm b"><h3>Reading the signal</h3>
+          <p>One XHR, far larger than everything around it, with a name that describes the data rather than
+          the page. That is nearly always the endpoint. The 312 kB is the tell: that is a payload, not a
+          UI call.</p></div>
+        <div class="callout warn sm"><b>An undocumented endpoint is an undocumented endpoint.</b> Nobody
+          promised it would keep working, nobody will announce a change, and field names can move without
+          warning. Rung 2 is fast, not stable — pin your parsing to explicit keys and fail loudly when they
+          vanish.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17 · SESSION-WALLED GET — WARM-UP ============ -->
+<section class="slide" data-sec="Hidden APIs">
+  <div class="eyebrow">Route 2 · a session-walled GET endpoint · 2 of 6</div>
+  <h1 class="t">The warm-up: two requests you throw away
+    <small>The first two lines that touch the network fetch pages this script has no interest in. Their entire
+    purpose is to be issued the cookies that the third request will need. This is the single most important
+    pattern in AJAX scraping.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code sm"><span class="py-kw">def</span> <span class="py-fn">get_index_data</span>():
+    session = requests.<span class="py-fn">Session</span>()
+    headers = {
+        <span class="py-str">'User-Agent'</span>: <span class="py-str">'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '</span>
+                      <span class="py-str">'AppleWebKit/537.36 (KHTML, like Gecko) '</span>
+                      <span class="py-str">'Chrome/91.0.4472.124 Safari/537.36'</span>
+    }
+
+    <span class="py-cm"># Step 1: main page, to be issued a session</span>
+    session.get(<span class="py-str">'https://www.indexboard.example'</span>, headers=headers)
+    time.sleep(<span class="py-num">2</span>)
+
+    <span class="py-cm"># Step 2: the report page the chart lives on</span>
+    session.get(<span class="py-str">'https://www.indexboard.example/'</span>
+                <span class="py-str">'reports/historical'</span>, headers=headers)
+    time.sleep(<span class="py-num">2</span>)</pre>
+        <div class="callout sm"><b>Why the <i>second</i> page too.</b> Some checks record which section of the
+          site you were in. Requesting the report page is what makes the later
+          <code class="k">Referer</code> plausible and, on some deployments, is what unlocks that family of
+          endpoints. It is cheap insurance.</div>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>What each step buys</h3>
+          <p><b>Request 1</b> &rarr; <code class="k">ibsess</code>, <code class="k">EDGE_A2</code>,
+          <code class="k">bm_seq</code>. The Session stores them.<br/>
+          <b>Request 2</b> &rarr; refreshes them, and registers a plausible navigation path.<br/>
+          <b>Request 3</b> &rarr; the API call, now carrying a Cookie header it did not have to construct.</p></div>
+        <div class="card o"><h3>The two <code class="k">sleep(2)</code> calls</h3>
+          <p>Not politeness — realism. A human cannot request three pages in 40 milliseconds. Timing between
+          requests is one of the cheapest bot signals a server has, and it is the one people forget while
+          carefully forging headers.</p></div>
+        <div class="callout warn sm"><b>Watch what is missing.</b> Neither warm-up request checks
+          <code class="k">status_code</code>. If the edge returns a challenge page instead of the home page,
+          this script never notices and proceeds to make eleven doomed API calls.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18 · SESSION-WALLED GET — THE LOOP ============ -->
+<section class="slide" data-sec="Hidden APIs">
+  <div class="eyebrow">Route 2 · a session-walled GET endpoint · 3 of 6</div>
+  <h1 class="t">Chunking by year, and a JSON path three levels deep
+    <small>The endpoint refuses very wide date ranges, so the script walks year by year and concatenates.
+    Chunking a query you cannot ask in one go is the normal shape of historical API scraping.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code sm">    all_data = []
+    <span class="py-kw">for</span> year <span class="py-kw">in</span> <span class="py-bi">range</span>(<span class="py-num">2014</span>, <span class="py-num">2025</span>):
+        api_url = (<span class="py-str">f'https://www.indexboard.example/api/history'</span>
+                   <span class="py-str">f'?index=BLUE%2050'</span>
+                   <span class="py-str">f'&amp;from=01-01-{year}&amp;to=01-01-{year+1}'</span>)
+        <span class="py-kw">try</span>:
+            response = session.get(api_url, headers=headers, timeout=<span class="py-num">30</span>)
+            data = response.json()
+            records = data[<span class="py-str">"data"</span>][<span class="py-str">"closeRecords"</span>]
+            all_data.extend(records)
+        <span class="py-kw">except</span> <span class="py-fn">Exception</span> <span class="py-kw">as</span> e:
+            <span class="py-bi">print</span>(e)
+        time.sleep(<span class="py-num">2</span>)
+    <span class="py-kw">return</span> all_data</pre>
+        <ul class="b sm">
+          <li><code class="k">BLUE%2050</code> is <code class="k">BLUE 50</code> URL-encoded — the space
+            becomes <code class="k">%20</code>. Build query strings with the
+            <code class="k">params=</code> argument and <code class="k">requests</code> encodes them for you.</li>
+          <li>Ranges overlap: <code class="k">to=01-01-{year+1}</code> is the same day as the next iteration's
+            <code class="k">from</code>. Duplicate rows, silently.</li>
+        </ul>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">The response, and the path into it</div>
+        <pre class="code xs"><span class="j-pun">{</span>
+  <span class="j-key">"data"</span><span class="j-pun">: {</span>
+    <span class="j-key">"closeRecords"</span><span class="j-pun">: [</span>                     <span class="h-bad">&lt;-- want this</span>
+      <span class="j-pun">{</span> <span class="j-key">"EOD_INDEX_NAME"</span><span class="j-pun">:</span> <span class="j-str">"Blue 50"</span><span class="j-pun">,</span>
+        <span class="j-key">"EOD_OPEN_VAL"</span><span class="j-pun">:</span> <span class="j-num">21727.75</span><span class="j-pun">,</span>
+        <span class="j-key">"EOD_CLOSE_VAL"</span><span class="j-pun">:</span> <span class="j-num">21741.90</span><span class="j-pun">,</span>
+        <span class="j-key">"EOD_DATE"</span><span class="j-pun">:</span> <span class="j-str">"28-Dec-2023"</span> <span class="j-pun">}, ...</span>
+    <span class="j-pun">],</span>
+    <span class="j-key">"turnoverRecords"</span><span class="j-pun">: [ ... ]</span>            <span class="h-dim">&lt;-- ignored</span>
+  <span class="j-pun">}</span>
+<span class="j-pun">}</span></pre>
+        <div class="callout bad sm"><b><code class="k">except Exception: print(e)</code> is where the data goes
+          to die.</b> A failed year prints one line to a terminal nobody is watching and the loop moves on.
+          The CSV is written, the script exits 0, and the gap is invisible until somebody plots it. We will
+          watch exactly this happen on slide 26.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19 · WHY IT WORKS / WHY IT BREAKS ============ -->
+<section class="slide" data-sec="Hidden APIs">
+  <div class="eyebrow">Route 2 · a session-walled GET endpoint · 4 of 6</div>
+  <h1 class="t">Three ways to ask for the same URL
+    <small>This comparison is the clearest demonstration in the course that a request is more than a URL. The
+    address is identical in all three; only the accumulated state differs.</small></h1>
+  <div class="wrap">
+    <div class="cols3">
+      <div class="card r"><h3><span class="num">01</span>Python, cold</h3>
+        <pre class="code xxs" style="margin:6px 0">requests.get(
+  <span class="py-str">"https://www.indexboard.example"</span>
+  <span class="py-str">"/api/history?..."</span>)</pre>
+        <p><span class="tag r">404</span>No cookies, no Referer, <code class="k">python-requests/2.31.0</code>
+        in the User-Agent. Refused at the edge before the site's application ever sees it.</p></div>
+      <div class="card r"><h3><span class="num">02</span>Browser, cold</h3>
+        <p style="margin-bottom:6px">Paste the API URL straight into a fresh browser tab.</p>
+        <p><span class="tag r">404</span>A real browser, a real User-Agent, real TLS — and still refused.
+        There has been no prior interaction with the domain, so there are no cookies to send. The client
+        being genuine is not the thing being checked.</p></div>
+      <div class="card g"><h3><span class="num">03</span>Browser, after a visit</h3>
+        <p style="margin-bottom:6px">Load the site's home page first, then the API URL.</p>
+        <p><span class="tag g">200</span>Cookies were issued on the first load and are replayed on the
+        second. That is the only difference. <b>Our script reproduces exactly this sequence.</b></p></div>
+    </div>
+    <div class="cols">
+      <div class="callout good sm"><b>The transferable lesson.</b> When an endpoint that plainly works in your
+        browser refuses your script, the question is never "what is wrong with my URL". It is
+        <i>"what had my browser already done that my script has not?"</i> — and the answer is almost always
+        a prior request that issued a cookie.</div>
+      <div class="callout warn sm"><b>And the honest caveat.</b> This works because this site's checks are
+        cookie-based. Where the check also requires JavaScript to have run — computing a token, solving a
+        challenge — no amount of header work in <code class="k">requests</code> will pass it, and you are on
+        rung 4. That is Lecture 3.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20 · POST ============ -->
+<section class="slide" data-sec="Hidden APIs">
+  <div class="eyebrow">Route 2 · a POST endpoint · 5 of 6</div>
+  <h1 class="t">A POST endpoint, and a payload that should not work
+    <small>Same problem, different site, and a much stranger request. This one is worth reading slowly,
+    because the payload is doing something genuinely odd and it is not a mistake.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <pre class="code sm">headers = {
+  <span class="py-str">"host"</span>:    <span class="py-str">"www.sectorstats.example"</span>,
+  <span class="py-str">"origin"</span>:  <span class="py-str">"https://www.sectorstats.example"</span>,
+  <span class="py-str">"referer"</span>: <span class="py-str">"https://www.sectorstats.example/reports/historical"</span>,
+  <span class="py-str">'User-Agent'</span>: <span class="py-str">'Mozilla/5.0 ... Chrome/91.0.4472.124 Safari/537.36'</span>
+}
+
+<span class="py-kw">for</span> year <span class="py-kw">in</span> <span class="py-bi">range</span>(<span class="py-num">2000</span>, <span class="py-num">2026</span>):
+    inner_payload = {<span class="py-str">'name'</span>: <span class="py-str">'BLUE METAL'</span>,
+                     <span class="py-str">'startDate'</span>: <span class="py-str">f'01-Jan-{year}'</span>,
+                     <span class="py-str">'endDate'</span>:   <span class="py-str">f'31-Dec-{year}'</span>,
+                     <span class="py-str">'indexName'</span>: <span class="py-str">'BLUE METAL'</span>}
+    payload = {<span class="py-str">"cinfo"</span>: <span class="py-bi">str</span>(inner_payload)}      <span class="py-cm"># &lt;-- look at this</span>
+
+    url = (<span class="py-str">'https://www.sectorstats.example/Backend.aspx/'</span>
+           <span class="py-str">'getHistoryTableAsString'</span>)
+    response = requests.post(url, headers=headers, json=payload)</pre>
+      <div class="colstack">
+        <div class="card p"><h3>No warm-up here</h3>
+          <p>This one checks <code class="k">origin</code> and <code class="k">referer</code> instead of a
+          session cookie, so three forged headers are enough. <b>Different site, different wall</b> — you
+          discover which by removing headers until it breaks.</p></div>
+        <div class="card b"><h3><code class="k">json=payload</code>, not <code class="k">data=payload</code></h3>
+          <p><code class="k">json=</code> serialises the dict and sets
+          <code class="k">Content-Type: application/json</code>. <code class="k">data=</code> would form-encode
+          it as <code class="k">cinfo=...&amp;</code>. An ASP.NET <code class="k">.aspx/method</code> endpoint
+          demands the former; send the latter and you get an error page with a 200 status.</p></div>
+        <div class="callout warn sm"><b>The URL shape is a fingerprint.</b>
+          <code class="k">Backend.aspx/getHistoryTableAsString</code> is an ASP.NET page method — a
+          server-side function exposed directly over HTTP. Recognising the framework tells you what the
+          endpoint will accept before you try anything.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21 · THE DOUBLE ENCODING ============ -->
+<section class="slide" data-sec="Hidden APIs">
+  <div class="eyebrow">Route 2 · a POST endpoint · 6 of 6</div>
+  <h1 class="t">JSON wrapped around Python wrapped around JSON
+    <small>Both ends of this exchange carry a string that contains structured data rather than the structure
+    itself. Unpicking this is the difference between a working scraper and an afternoon lost to
+    <code class="k">TypeError: string indices must be integers</code>.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">Going out — <code class="k">str()</code> of a dict is not JSON</div>
+        <pre class="code xs"><span class="py-bi">str</span>({<span class="py-str">'name'</span>: <span class="py-str">'BLUE METAL'</span>, <span class="py-str">'startDate'</span>: <span class="py-str">'01-Jan-2024'</span>})
+
+<span class="py-cm"># produces, with SINGLE quotes:</span>
+<span class="h-bad">"{'name': 'BLUE METAL', 'startDate': '01-Jan-2024'}"</span>
+<span class="py-cm"># JSON would require double quotes:</span>
+<span class="h-ok">'{"name": "BLUE METAL", "startDate": "01-Jan-2024"}'</span></pre>
+        <div class="callout warn sm"><b>And yet it works.</b> The server does not parse
+          <code class="k">cinfo</code> as JSON — it splits it with string operations, so the quote style never
+          matters. Swap in <code class="k">json.dumps()</code> and it still works, because both forms survive
+          that splitting. <b>You cannot tell which the server wants by reasoning about it; you find out by
+          sending both.</b></div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">Coming back — unwrap twice</div>
+        <pre class="code xs"><span class="py-kw">if</span> response.status_code == <span class="py-num">200</span>:
+    json_data = json.loads( response.json()[<span class="py-str">'d'</span>] )
+                <span class="h-dim">└─ 2nd ─┘  └────── 1st ──────┘</span>
+
+<span class="py-cm"># 1st: parses the HTTP body</span>
+<span class="py-cm">#   -> {'d': '[{"HistoryDate":"01 Jan 2024", ...}]'}</span>
+<span class="py-cm">#      response.json()['d'] is a STRING, not a list</span>
+
+<span class="py-cm"># 2nd: parses that string</span>
+<span class="py-cm">#   -> [{'HistoryDate': '01 Jan 2024', ...}, ...]</span></pre>
+        <div class="callout sm"><b>Why <code class="k">'d'</code>?</b> ASP.NET wraps every page-method response
+          in a single-key object called <code class="k">d</code>. It was added years ago as a defence against
+          a JSON hijacking attack. You will meet it on any <code class="k">.aspx</code> endpoint, and it is a
+          reliable clue about what you are talking to.</div>
+        <div class="callout bad sm"><b>The failure you will actually see.</b> Forget the second
+          <code class="k">json.loads</code> and <code class="k">pd.DataFrame(...)</code> receives a string.
+          You get a one-column frame of single characters, not an exception.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22 · RATE LIMITING ============ -->
+<section class="slide" data-sec="Discipline">
+  <div class="eyebrow">Discipline · 1 of 2</div>
+  <h1 class="t">Politeness, and why <code class="k" style="font-size:.8em">sleep(2)</code> is only half of it
+    <small>Every script we have read pauses two seconds between requests. That is a reasonable floor and a
+    poor ceiling: it handles the server's feelings and none of your own failures.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <h2 class="s xs">What a fixed sleep does well</h2>
+        <ul class="b sm">
+          <li>Caps your request rate at a level a shared server will not notice. 26 requests over 52 seconds
+            is invisible in an access log.</li>
+          <li>Keeps you clear of the rate limiter, so you never see a 429 and never need to handle one.</li>
+          <li>Makes the timing pattern un-humanlike but un-aggressive — detectable, but not worth acting on.</li>
+        </ul>
+        <h2 class="s xs" style="margin-top:4px">What it does not do</h2>
+        <ul class="b sm">
+          <li><strong>Retry.</strong> A transient 502 costs you a whole year of data permanently.</li>
+          <li><strong>Back off.</strong> If the server is struggling, a fixed delay keeps hammering at the
+            same rate.</li>
+          <li><strong>Adapt.</strong> Two seconds is far too slow for 30 requests and far too fast for
+            300,000.</li>
+        </ul>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">The shape worth copying</div>
+        <pre class="code xs"><span class="py-kw">import</span> time, random
+
+<span class="py-kw">def</span> <span class="py-fn">fetch</span>(session, url, tries=<span class="py-num">4</span>):
+    <span class="py-kw">for</span> attempt <span class="py-kw">in</span> <span class="py-bi">range</span>(tries):
+        r = session.get(url, timeout=<span class="py-num">30</span>)
+        <span class="py-kw">if</span> r.status_code == <span class="py-num">200</span>:
+            <span class="py-kw">return</span> r
+        <span class="py-kw">if</span> r.status_code == <span class="py-num">429</span>:
+            wait = <span class="py-bi">int</span>(r.headers.get(<span class="py-str">"Retry-After"</span>, <span class="py-num">2</span> ** attempt))
+        <span class="py-kw">elif</span> <span class="py-num">500</span> &lt;= r.status_code &lt; <span class="py-num">600</span>:
+            wait = <span class="py-num">2</span> ** attempt          <span class="py-cm"># 1, 2, 4, 8</span>
+        <span class="py-kw">else</span>:
+            <span class="py-kw">raise</span> <span class="py-fn">RuntimeError</span>(<span class="py-str">f"{r.status_code} on {url}"</span>)
+        time.sleep(wait + random.uniform(<span class="py-num">0</span>, <span class="py-num">1</span>))
+    <span class="py-kw">raise</span> <span class="py-fn">RuntimeError</span>(<span class="py-str">f"gave up on {url}"</span>)</pre>
+        <ul class="b sm">
+          <li><strong>Retry 5xx and 429. Never retry 4xx</strong> — a 403 will still be a 403 on the eighth
+            attempt.</li>
+          <li>The random fraction is <i>jitter</i>: it stops parallel workers from retrying in lockstep.</li>
+          <li>It <strong>raises at the end</strong>. A scraper that gives up loudly is worth ten that give up
+            quietly.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23 · PARALLEL ============ -->
+<section class="slide" data-sec="Discipline">
+  <div class="eyebrow">Discipline · 2 of 2 · the parallel scraper</div>
+  <h1 class="t">Threads help. Proxies are a different kind of decision.
+    <small>The parallel version of the scraper does two things that look like one thing. They are not, and
+    the difference matters legally as well as technically.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card g"><h3>Threads: a legitimate speed-up</h3>
+          <pre class="code xxs" style="margin:6px 0"><span class="py-kw">from</span> concurrent.futures <span class="py-kw">import</span> ThreadPoolExecutor
+
+indices = [<span class="py-str">'BLUE 100'</span>, <span class="py-str">'BLUE 50'</span>]
+<span class="py-kw">with</span> <span class="py-fn">ThreadPoolExecutor</span>(max_workers=<span class="py-num">2</span>) <span class="py-kw">as</span> ex:
+    results = <span class="py-bi">list</span>(ex.map(get_index_data, indices))</pre>
+          <p>HTTP requests are I/O-bound: the thread sits idle waiting for bytes, so the GIL is released and
+          real concurrency happens. Two workers, two indices, roughly half the wall-clock.</p>
+          <p style="margin-top:6px"><b>The unit of parallelism should be the resource, not the request.</b> One
+          worker per index keeps each worker's requests sequential and polite, and the total rate at
+          <i>workers &times; rate</i> — a number you can still reason about.</p></div>
+        <div class="callout warn sm"><b>Concurrency multiplies your rate limit.</b> Eight workers at
+          <code class="k">sleep(2)</code> is four requests a second, which is a different conversation from
+          one every two seconds. Divide your politeness budget among the workers.</div>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3>Proxies: not a speed-up</h3>
+          <pre class="code xxs" style="margin:6px 0"><span class="py-kw">def</span> <span class="py-fn">get_proxy</span>():
+    df = pd.read_html(<span class="py-str">'http://www.sslproxies.org/'</span>)[<span class="py-num">0</span>]
+    df = df[df[<span class="py-str">'Https'</span>] == <span class="py-str">'yes'</span>]
+    <span class="py-cm"># ... try each until one returns 200 ...</span>
+    <span class="py-kw">return</span> {<span class="py-str">'https'</span>: <span class="py-str">f'http://{ip}:{port}'</span>}</pre>
+          <p>A proxy does not make requests faster. Its only function here is to present a <b>different source
+          IP</b>, and the only reason to want that is that your own IP has been, or is about to be, blocked.</p>
+          <p style="margin-top:6px">In this script the function is written, tested, and then <b>disabled</b> —
+          <code class="k">main()</code> calls it and immediately calls <code class="k">exit()</code>, and the
+          call inside <code class="k">get_index_data</code> is commented out. Read that as the author reaching
+          the same conclusion.</p></div>
+        <div class="callout bad sm"><b>Flagging this forward.</b> In <i>Craigslist v. 3Taps</i> (2012), routing
+          around an IP block with proxies was precisely what turned scraping into unauthorised access under
+          the CFAA — it settled at $1 million. The technique is a few lines. The consequence is
+          <b>Lecture 4</b>.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24 · THE RESULT ============ -->
+<section class="slide" data-sec="Real output">
+  <div class="eyebrow">What actually came back · 1 of 3</div>
+  <h1 class="t">The scrape succeeded. Here is the file.
+    <small>Genuine output from the POST scraper — 5,463 rows, written without a single error message.
+    <b>Every figure on this slide and the next two was measured on a real collection run</b>; only the site
+    and its field names have been changed. Read the file before you read the next slide.</small></h1>
+  <div class="wrap">
+    <div class="outlbl">BLUE METAL.csv · first three and last three rows</div>
+    <pre class="out xs">RequestNumber,Index Name,INDEX_NAME,HistoryDate,OPEN,HIGH,LOW,CLOSE
+His63905478754468581100,,Blue Metal,31 Dec 2004,-,-,-,1146.53
+His63905478754468581100,,Blue Metal,30 Dec 2004,-,-,-,1144.56
+His63905478754468581100,,Blue Metal,29 Dec 2004,-,-,-,1151.71
+                              ⋮
+His63905478821267438500,,Blue Metal,03 Jan 2025,8723.7,8817.15,8710.9,8729.95
+His63905478821267438500,,Blue Metal,02 Jan 2025,8655.75,8728.15,8616.5,8723.35
+His63905478821267438500,,Blue Metal,01 Jan 2025,8646.6,8667.7,8580.25,8639.90</pre>
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="outlbl">…and what pandas makes of it</div>
+        <pre class="out xs">&gt;&gt;&gt; df = pd.read_csv('BLUE METAL.csv')
+&gt;&gt;&gt; df.shape
+(5463, 8)
+&gt;&gt;&gt; df.dtypes
+RequestNumber      object
+Index Name        <span class="h-bad">float64</span>
+INDEX_NAME         object
+HistoryDate        object
+OPEN               <span class="h-bad">object</span>
+HIGH               <span class="h-bad">object</span>
+LOW                <span class="h-bad">object</span>
+CLOSE              float64</pre>
+      </div>
+      <div class="colstack">
+        <div class="callout warn"><b>Before the next slide, spend a minute on this one.</b> The script printed
+          no errors. The row count looks plausible. Every column has a sensible name.<br/><br/>
+          What in those twelve lines is wrong?</div>
+        <div class="callout sm"><b>A hint.</b> The loop asked for
+          <code class="k">range(2000, 2026)</code>.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25 · FIVE DEFECTS ============ -->
+<section class="slide" data-sec="Real output">
+  <div class="eyebrow">What actually came back · 2 of 3</div>
+  <h1 class="t sm">Five defects, none of which raised an exception
+    <small class="tight">Every number below was measured on the file in the course folder. Not one of these
+    would appear in a log, a status code, or a stack trace.</small></h1>
+  <div class="wrap" style="gap:12px;margin-top:12px">
+    <table class="d free" style="line-height:1.5">
+      <tr><th style="width:32px">#</th><th style="width:212px">Defect</th><th style="width:284px">Evidence</th>
+        <th>Why it happened, and what it costs you</th></tr>
+      <tr class="hl"><td class="c">1</td><td><b>Four years silently missing</b></td>
+        <td class="o">range(2000, 2026) = 26 asks<br/>nunique(RequestNumber) = <b>22</b><br/>min(date) = 01 Jan 2004</td>
+        <td>2000–2003 returned empty lists. The <code class="k">if len(json_data)&gt;0</code> guard skipped
+          them without a word. <b>The index simply did not exist yet</b> — a real fact about the world that
+          your data pipeline should record, not discard.</td></tr>
+      <tr class="hl"><td class="c">2</td><td><b>Three price columns are not numbers</b></td>
+        <td class="o">OPEN, HIGH, LOW &rarr; dtype <b>object</b><br/>1,932 rows hold the string <code>-</code><br/>all of them before 03 Oct 2011</td>
+        <td>The API returns <code class="k">"-"</code> where intraday values were never recorded. One string
+          in a column makes the whole column text. <b><code class="k">df.mean()</code> returns CLOSE only</b>
+          and says nothing about the three it dropped.</td></tr>
+      <tr class="hl"><td class="c">3</td><td><b>An empty column beside a full one</b></td>
+        <td class="o">Index Name &nbsp;&rarr; 5463 nulls, float64<br/>INDEX_NAME &rarr; 'Blue Metal'</td>
+        <td>The endpoint returns two similarly named fields and populates one. An all-null column becomes
+          <code class="k">float64</code> in pandas, so a column of <i>names</i> is typed as a number.</td></tr>
+      <tr class="hl"><td class="c">4</td><td><b>Dates are text, in two sort orders</b></td>
+        <td class="o">'31 Dec 2004' &rarr; dtype object<br/>years ascending, days <b>descending</b><br/>is_monotonic: False both ways</td>
+        <td>Each yearly response is newest-first; the years were appended oldest-first. Sorting or
+          resampling before <code class="k">pd.to_datetime</code> gives silent nonsense — string order puts
+          <code class="k">01 Apr</code> before <code class="k">02 Jan</code>.</td></tr>
+      <tr class="hl"><td class="c">5</td><td><b>A scraper artefact in the data</b></td>
+        <td class="o">RequestNumber = His639054787…<br/>22 distinct values, 1 per request</td>
+        <td>This identifies <i>our HTTP call</i>, not the market. It leaks the shape of the collection run
+          into the dataset, and it is the only reason defect 1 was detectable at all.</td></tr>
+    </table>
+    <div class="callout bad"><b>The point of this slide.</b> Four of the five are invisible until you look;
+      the fifth is only visible by accident. A scraper that exits cleanly has told you nothing about whether
+      it worked. <b>Validation is not a tidy-up step after collection — it is part of collection.</b></div>
+  </div>
+</section>
+
+<!-- ============ 26 · THE REPAIR ============ -->
+<section class="slide" data-sec="Real output">
+  <div class="eyebrow">What actually came back · 3 of 3</div>
+  <h1 class="t">Repair, and record what you repaired
+    <small>Cleaning is not deleting the awkward rows. Every fix below preserves the information that
+    something was missing, because "no intraday data before October 2011" is itself a finding.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <pre class="code xs"><span class="py-kw">import</span> pandas <span class="py-kw">as</span> pd
+
+df = pd.read_csv(<span class="py-str">'BLUE METAL.csv'</span>)
+
+<span class="py-cm"># 3 · drop the empty twin, keep the populated one</span>
+df = df.drop(columns=[<span class="py-str">'Index Name'</span>, <span class="py-str">'RequestNumber'</span>])   <span class="py-cm"># 5</span>
+
+<span class="py-cm"># 2 · '-' is missing data, not a value</span>
+price_cols = [<span class="py-str">'OPEN'</span>, <span class="py-str">'HIGH'</span>, <span class="py-str">'LOW'</span>, <span class="py-str">'CLOSE'</span>]
+df[price_cols] = (df[price_cols]
+                  .replace(<span class="py-str">'-'</span>, pd.NA)
+                  .apply(pd.to_numeric, errors=<span class="py-str">'raise'</span>))
+
+<span class="py-cm"># 4 · real timestamps, one known order</span>
+df[<span class="py-str">'HistoryDate'</span>] = pd.to_datetime(df[<span class="py-str">'HistoryDate'</span>],
+                                     format=<span class="py-str">'%d %b %Y'</span>)
+df = df.sort_values(<span class="py-str">'HistoryDate'</span>).reset_index(drop=<span class="py-bi">True</span>)
+
+<span class="py-cm"># 1 · record the gap instead of hiding it</span>
+have = <span class="py-bi">set</span>(df[<span class="py-str">'HistoryDate'</span>].dt.year)
+missing = <span class="py-bi">sorted</span>(<span class="py-bi">set</span>(<span class="py-bi">range</span>(<span class="py-num">2000</span>, <span class="py-num">2026</span>)) - have)
+<span class="py-bi">print</span>(<span class="py-str">f"no data for: {missing}"</span>)</pre>
+      <div class="colstack">
+        <div class="outlbl">After</div>
+        <pre class="out xs">no data for: [2000, 2001, 2002, 2003]
+
+&gt;&gt;&gt; df.dtypes
+INDEX_NAME                object
+HistoryDate       datetime64[ns]
+OPEN                     <span class="h-ok">float64</span>
+HIGH                     <span class="h-ok">float64</span>
+LOW                      <span class="h-ok">float64</span>
+CLOSE                    <span class="h-ok">float64</span>
+
+&gt;&gt;&gt; df[['OPEN','CLOSE']].isna().sum()
+OPEN     <span class="h-ok">1932</span>
+CLOSE       <span class="h-ok">0</span>
+
+&gt;&gt;&gt; df['HistoryDate'].is_monotonic_increasing
+<span class="h-ok">True</span></pre>
+        <div class="callout good sm"><b>Read the new output.</b> The 1,932 is now <i>visible</i> as null count
+          rather than <i>invisible</i> as a dtype accident, and the four missing years are a printed line
+          instead of an absence. Nothing was thrown away; the file now describes its own limits.</div>
+        <div class="callout warn sm"><b><code class="k">errors='raise'</code> is deliberate.</b> The tempting
+          <code class="k">errors='coerce'</code> turns anything unparseable into NaN, which would quietly
+          swallow a <i>new</i> junk value the API starts sending next year. Fail on surprises.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27 · THE HARNESS ============ -->
+<section class="slide" data-sec="Discipline">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Six assertions to run before you trust a scrape
+    <small>Cheap to write, and each one catches a real failure we have met in this lecture. Run them at the
+    end of the collection script, not in a notebook two weeks later.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <pre class="code xs"><span class="py-kw">def</span> <span class="py-fn">validate</span>(df, asked_years, price_cols):
+    <span class="py-cm"># 1 · did every request actually return something?</span>
+    got = <span class="py-bi">set</span>(df[<span class="py-str">'HistoryDate'</span>].dt.year)
+    <span class="py-bi">print</span>(<span class="py-str">"years asked but empty:"</span>, <span class="py-bi">sorted</span>(<span class="py-bi">set</span>(asked_years) - got))
+
+    <span class="py-cm"># 2 · did anything come back at all?</span>
+    <span class="py-kw">assert</span> <span class="py-bi">len</span>(df) &gt; <span class="py-num">0</span>, <span class="py-str">"empty result set"</span>
+
+    <span class="py-cm"># 3 · are the numeric columns numeric?</span>
+    <span class="py-kw">for</span> c <span class="py-kw">in</span> price_cols:
+        <span class="py-kw">assert</span> pd.api.types.is_numeric_dtype(df[c]), <span class="py-str">f"{c} is {df[c].dtype}"</span>
+
+    <span class="py-cm"># 4 · is any column entirely null?</span>
+    dead = [c <span class="py-kw">for</span> c <span class="py-kw">in</span> df <span class="py-kw">if</span> df[c].isna().<span class="py-bi">all</span>()]
+    <span class="py-kw">assert</span> <span class="py-kw">not</span> dead, <span class="py-str">f"all-null columns: {dead}"</span>
+
+    <span class="py-cm"># 5 · did chunk boundaries duplicate rows?</span>
+    dupes = df.duplicated(subset=[<span class="py-str">'HistoryDate'</span>]).<span class="py-bi">sum</span>()
+    <span class="py-kw">assert</span> dupes == <span class="py-num">0</span>, <span class="py-str">f"{dupes} duplicate dates"</span>
+
+    <span class="py-cm"># 6 · is the coverage plausible for the span?</span>
+    span = (df.HistoryDate.max() - df.HistoryDate.min()).days / <span class="py-num">365.25</span>
+    <span class="py-kw">assert</span> <span class="py-bi">len</span>(df) &gt; span * <span class="py-num">200</span>, <span class="py-str">"far too few rows for the date range"</span></pre>
+      <div class="colstack">
+        <table class="d xs free">
+          <tr><th style="width:24px">#</th><th>Catches</th></tr>
+          <tr><td class="c">1</td><td>Defect 1 — a request that returned an empty list and was skipped.</td></tr>
+          <tr><td class="c">2</td><td>A total failure: wrong URL, expired session, blocked IP. Surprisingly
+            common to ship without.</td></tr>
+          <tr><td class="c">3</td><td>Defect 2 — one <code class="k">'-'</code> or <code class="k">'N/A'</code>
+            turning a price column to text.</td></tr>
+          <tr><td class="c">4</td><td>Defect 3 — a field the API renamed, leaving your column empty.</td></tr>
+          <tr><td class="c">5</td><td>The overlapping ranges on slide 18
+            (<code class="k">to=01-01-{year+1}</code> repeats the next chunk's first day). This file happened
+            to avoid it by using <code class="k">31-Dec</code>; the GET scraper does not.</td></tr>
+          <tr><td class="c">6</td><td>A partial run — half the years silently lost to timeouts.</td></tr>
+        </table>
+        <div class="callout good sm"><b>Assert, do not warn.</b> A warning in a scheduled job is a message
+          nobody reads. An <code class="k">AssertionError</code> makes the job fail, and a failed job gets
+          looked at. That is the entire difference between the two.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28 · RECAP ============ -->
+<section class="slide" data-sec="Recap">
+  <div class="eyebrow">Recap</div>
+  <h1 class="t">Where the ladder stands after Lecture 1
+    <small>Rungs 1 and 2 are done. Both give you structured data with no parsing at all, and between them they
+    cover far more sites than students expect — check for a feed and check the Network tab before you write a
+    single line of BeautifulSoup.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="ladder">
+        <div class="rung"><div class="num on">1</div>
+          <div class="txt on"><h4>Documented API or feed <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p><code class="k">feedparser.parse(url)</code>. Check <code class="k">bozo</code>, check
+          <code class="k">entries</code>, default every field.</p></div></div>
+        <div class="rung"><div class="num on">2</div>
+          <div class="txt on"><h4>Undocumented endpoint <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>Network tab &rarr; Fetch/XHR &rarr; copy as cURL &rarr; strip headers to the minimum. Session for
+          cookies, warm-up requests where the site demands state.</p></div></div>
+        <div class="rung"><div class="num">3</div>
+          <div class="txt"><h4>Parse the server's HTML <span class="tag b" style="margin-left:6px">next</span></h4>
+          <p>The DOM, CSS selectors, BeautifulSoup — and a listings scraper with a typo in it that has been
+          quietly working by accident.</p></div></div>
+        <div class="rung"><div class="num">4</div>
+          <div class="txt"><h4>Drive a browser</h4>
+          <p>When the HTML arrives empty. Lecture 3.</p></div></div>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>The diagnostic sequence, one more time</h3>
+          <p><b>1.</b> Is there a feed or a public API? &rarr; use it.<br/>
+          <b>2.</b> Network tab, Fetch/XHR, reload. Do my values arrive as JSON? &rarr; call that endpoint.<br/>
+          <b>3.</b> View source. Are my values in the HTML the server sent? &rarr; parse it.<br/>
+          <b>4.</b> Neither &rarr; drive a browser, and ask whether the data is worth it.</p></div>
+        <div class="callout warn sm"><b>One thing to carry into Lecture 2.</b> Steps 2 and 3 differ by a single
+          check — <i>view-source</i> versus the <i>rendered DOM</i>. Getting that check wrong is how people end
+          up writing a Selenium script for a page that would have yielded to
+          <code class="k">requests.get</code>.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29 · TAKEAWAYS ============ -->
+<section class="slide" data-sec="Recap">
+  <div class="eyebrow">Key takeaways</div>
+  <h1 class="t">Six things worth keeping</h1>
+  <div class="wrap">
+    <div class="cols3" style="flex:1">
+      <div class="card b"><h3><span class="num">01</span>A request is state, not a URL</h3>
+        <p>The same address returns 404 or 200 depending on cookies, Referer and User-Agent. When your script
+        fails where your browser succeeds, ask what the browser had already done.</p></div>
+      <div class="card g"><h3><span class="num">02</span>Climb down the ladder, never start at the bottom</h3>
+        <p>Feed, then hidden endpoint, then HTML, then browser. Each rung costs speed, stability and legal
+        headroom. Most sites yield above rung 3.</p></div>
+      <div class="card o"><h3><span class="num">03</span>Session for anything past one request</h3>
+        <p>Cookie jar and connection reuse. Bare <code class="k">requests.get</code> in a loop is never the
+        better choice.</p></div>
+    </div>
+    <div class="cols3" style="flex:1">
+      <div class="card p"><h3><span class="num">04</span>Every remote field is optional</h3>
+        <p><code class="k">entry.content[0]</code> crashed on item 34 of a feed that looked fine in testing.
+        Default it or check it — never neither.</p></div>
+      <div class="card r"><h3><span class="num">05</span>Silence is not success</h3>
+        <p>Four missing years, three text columns and an empty field all shipped without one error message.
+        Assert at the end of the run.</p></div>
+      <div class="card"><h3><span class="num">06</span>Know which techniques are decisions</h3>
+        <p>Timeouts and retries are engineering. A forged User-Agent is a small claim about who you are.
+        Proxy rotation around a block is the thing that cost 3Taps a million dollars. Lecture 4.</p></div>
+    </div>
+    <div class="callout sm" style="margin-top:2px"><b>Reading for next week.</b> Open any site you might scrape
+      for the project, view source, and search the raw HTML for a value you can see on screen. Whether you find
+      it decides which of the next two lectures applies to you.</div>
+  </div>
+</section>
+
+<!-- ============ 30 · EXERCISES ============ -->
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Five exercises
+    <small>The first three should take under an hour together. The last two are the ones that teach.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card sm b"><h3><span class="num">01</span>Harden the feed reader</h3>
+          <p>Take <code class="k">rss_feed_scraper.py</code> and make it survive a feed with no
+          <code class="k">content:encoded</code>, an empty feed, and a 404. It must exit non-zero on the last
+          two. Test it against a URL you deliberately misspell.</p></div>
+        <div class="card sm b"><h3><span class="num">02</span>Find an endpoint yourself</h3>
+          <p>Pick any site with a table that appears after a spinner. Locate the XHR, copy as cURL, and reduce
+          it to the smallest Python request that still returns 200. <b>Report which headers were load-bearing</b>
+          — that list is the answer, not the data.</p></div>
+        <div class="card sm o"><h3><span class="num">03</span>Break a session scraper on purpose</h3>
+          <p>Take the session-walled GET scraper from the course folder. Run it with the two warm-up requests
+          commented out and record the status code. Then restore them but remove the User-Agent. <b>Which of
+          the two mattered more, and what does that tell you about the check?</b></p></div>
+      </div>
+      <div class="colstack">
+        <div class="card sm r"><h3><span class="num">04</span>Audit a scrape you did not write</h3>
+          <p>Run the six assertions from slide 27 against the scraped CSV in the course folder. Then write a
+          seventh of your own that catches something none of the six do, and justify it in two sentences.
+          <b>Trading-day counts and price continuity are both fair game.</b></p></div>
+        <div class="card sm p"><h3><span class="num">05</span>Compare two routes on one target</h3>
+          <p>Choose a site that publishes both a feed and an HTML index of the same items. Collect twenty
+          records each way. Compare lines of code, wall-clock time, and — the interesting one — <b>the fields
+          each route gives you that the other does not.</b></p></div>
+        <div class="callout warn sm"><b>Ground rules for all five.</b> Timeout on every request, a delay between
+          them, and never more than a few hundred requests to a host you do not own. If something returns 403,
+          <b>stop</b> — do not go looking for a way around it. That question is Lecture 4's, and the answer is
+          not always yes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div>
+<div id="hint">← → navigate · F fullscreen · P print</div>
+<div id="nav"><button id="prev" aria-label="Previous slide">‹</button><button id="next" aria-label="Next slide">›</button></div>
+
+<script>
+/* ============================================================
+   cover ornament — a wall of wire traffic
+   ============================================================ */
+(function(){
+  const lines=[
+    ['h-mth','GET'],[null,' /api/history?index=BLUE%2050&from=01-01-2024'],
+    ['h-hdr','Host'],[null,': '],['h-val','www.indexboard.example'],
+    ['h-hdr','User-Agent'],[null,': '],['h-val','Mozilla/5.0 (Windows NT 10.0; Win64; x64)'],
+    ['h-hdr','Referer'],[null,': '],['h-val','https://www.indexboard.example/reports/historical'],
+    ['h-hdr','Cookie'],[null,': '],['h-val','ibsess=xyz123; EDGE_A2=abc456; bm_seq=def789'],
+    ['h-dim','HTTP/1.1 '],['h-ok','200 OK'],
+    ['h-hdr','Content-Type'],[null,': '],['h-val','application/json; charset=utf-8'],
+    ['h-mth','POST'],[null,' /Backend.aspx/getHistoryTableAsString'],
+    ['h-hdr','Origin'],[null,': '],['h-val','https://www.sectorstats.example'],
+    ['h-dim','HTTP/1.1 '],['h-bad','404 Not Found'],
+    ['h-hdr','Set-Cookie'],[null,': '],['h-val','bm_seq=...; Path=/; SameSite=Lax'],
+    ['h-hdr','X-Request-Id'],[null,': '],['h-val','7f3c9a21-4e08-4b6d-9f21-0c5a8e3b1d47'],
+    ['h-hdr','Retry-After'],[null,': '],['h-val','30'],
+    ['h-dim','HTTP/1.1 '],['h-bad','429 Too Many Requests'],
+    ['h-mth','GET'],[null,' /rss/ndtvnews-top-stories'],
+    ['h-hdr','Accept'],[null,': '],['h-val','application/rss+xml, application/xml']
+  ];
+  const box=document.getElementById('cvp'); if(!box) return;
+  // regroup the flat token list back into visual lines
+  const out=[]; let cur='';
+  for(const [cls,txt] of lines){
+    const piece = cls ? '<span class="'+cls+'">'+txt+'</span>' : txt;
+    if(cls==='h-mth' || cls==='h-hdr' || (cls==='h-dim'&&txt.startsWith('HTTP'))){
+      if(cur) out.push(cur); cur=piece;
+    } else cur+=piece;
+  }
+  if(cur) out.push(cur);
+  box.innerHTML=out.map(l=>'<div>'+l+'</div>').join('');
+})();
+
+/* ============================================================
+   request inspector
+   The rules below model the session-walled endpoint described on
+   slides 17-19. It is a model of a server, not a client for one —
+   this page issues no network requests.
+   ============================================================ */
+(function(){
+  const wire=document.getElementById('wire'), verdict=document.getElementById('verdict');
+  if(!wire) return;
+  const UA=document.getElementById('hUA'), REF=document.getElementById('hRef'),
+        ACC=document.getElementById('hAcc'), WARM=document.getElementById('hWarm');
+  const boxes=[UA,REF,ACC,WARM];
+  const radios=[...document.querySelectorAll('input[name="tgt"]')];
+
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const H=(n,v)=>'<span class="h-hdr">'+n+'</span>: <span class="h-val">'+esc(v)+'</span>';
+
+  function paintToggles(){
+    boxes.forEach(b=>b.closest('.tgl').classList.toggle('on',b.checked));
+    radios.forEach(r=>r.closest('.tgl').classList.toggle('on',r.checked));
+  }
+
+  function run(){
+    paintToggles();
+    const api = radios.find(r=>r.checked).value==='api';
+    const path = api
+      ? '/api/history?index=BLUE%2050&from=01-01-2024&to=01-01-2025'
+      : '/';
+
+    /* ---- the request that would go on the wire ---- */
+    const L=[];
+    L.push('<span class="h-mth">GET</span> <span class="h-url">'+esc(path)+'</span> <span class="h-dim">HTTP/1.1</span>');
+    L.push(H('Host','www.indexboard.example'));
+    L.push(H('User-Agent', UA.checked
+      ? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ... Chrome/91.0'
+      : 'python-requests/2.31.0'));
+    L.push(H('Accept', ACC.checked ? 'application/json, text/plain, */*' : '*/*'));
+    if(REF.checked) L.push(H('Referer','https://www.indexboard.example/reports/historical'));
+    if(WARM.checked) L.push(H('Cookie','ibsess=xyz123; EDGE_A2=abc456; bm_seq=def789; ibappid=...'));
+    if(!WARM.checked) L.push('<span class="h-dim">(no Cookie header — nothing has been issued to us)</span>');
+    wire.innerHTML=L.join('\n');
+
+    /* ---- what the edge makes of it ---- */
+    let code, ok, why;
+    if(!api){
+      code='200 OK'; ok=true;
+      why='The home page is public — no session required, and it is where the session comes from. '
+        + 'The response carries <em>Set-Cookie</em> for <em>ibsess</em>, <em>EDGE_A2</em> and <em>bm_seq</em>. '
+        + (WARM.checked
+            ? 'You already hold them, so this request simply refreshes them.'
+            : 'This is the request that would earn them. Tick <b>warmed the session</b> and switch back to the API.');
+    } else if(!WARM.checked){
+      code='404 Not Found'; ok=false;
+      why='<b>No session cookies.</b> The endpoint exists — your browser calls it constantly — but with no '
+        + '<em>ibsess</em> or <em>bm_seq</em> to look up, the edge refuses before the site\'s application sees the '
+        + 'request. Note it answers <b>404, not 403</b>: hiding the endpoint\'s existence rather than '
+        + 'admitting you were denied. Every other header is irrelevant while this one is missing.';
+    } else if(!REF.checked){
+      code='404 Not Found'; ok=false;
+      why='<b>No Referer.</b> Cookies are present, so you look like a returning visitor — but a real XHR is '
+        + 'fired <i>by a page</i>, and always says which. An internal API call with no referring page is a '
+        + 'request nobody was on the site to make. This is layer 4, header validation.';
+    } else if(!UA.checked){
+      code='404 Not Found'; ok=false;
+      why='<b>User-Agent: python-requests/2.31.0.</b> Cookies and Referer are right, and then the client '
+        + 'announces itself in plain text. This is the cheapest check the edge runs and the one most often '
+        + 'forgotten. <i>Setting it is also a false statement about who you are — see Lecture 4.</i>';
+    } else {
+      code='200 OK'; ok=true;
+      why='Cookies from a real prior visit, a plausible Referer, a browser User-Agent. This is exactly what '
+        + 'the warm-up scraper on slide 17 assembles, and why it works.'
+        + (ACC.checked ? '' : ' <br/><br/><b>Still passing with Accept: */*</b> — a weak fingerprint that is '
+        + 'not being enforced here. Cheap signals are not always checked; do not assume the ones you get away '
+        + 'with are unmonitored.');
+    }
+    verdict.className = ok ? 'ok' : 'bad';
+    verdict.innerHTML='<span class="st">'+code+'</span><div class="why">'+why+'</div>';
+  }
+
+  boxes.concat(radios).forEach(el=>el.addEventListener('change',run));
+  run();
+})();
+
+/* ============================================================
+   deck mechanics
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 · Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 1 · '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  function show(n){
+    const prev=i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(slides[i]) slides[i].dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+</script>
+</body>
+</html>

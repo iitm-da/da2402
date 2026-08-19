@@ -20,6 +20,8 @@ SECTION_TITLES = {
     "intro": "Introduction · pandas",
     "data cleaning": "Data cleaning · regular expressions",
     "data-cleaning": "Data cleaning · regular expressions",
+    "data collection": "Data collection · web scraping",
+    "data-collection": "Data collection · web scraping",
 }
 
 

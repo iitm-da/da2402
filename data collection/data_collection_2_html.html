@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Collection · Part 2: HTML You Can Parse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, >=, != and <= must show them as typed.
+   It also stops JetBrains Mono turning the CSS child combinator "div > p" into a glyph. */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+
+/* ---------- html token colours, dark ground ---------- */
+pre.code .ht-tag{color:#6FB6F0}
+pre.code .ht-att{color:#F58ACE}
+pre.code .ht-val{color:#B7E39B}
+pre.code .ht-txt{color:#E9F2F6}
+pre.code .ht-cm{color:#6F8896;font-style:italic}
+pre.code .ht-pun{color:#8CA3AF}
+.out .ht-tag{color:#125F9E}
+.out .ht-att{color:#9B2C7E}
+.out .ht-val{color:#0E7A55}
+/* ---------- css-selector token colours ---------- */
+.cs-tag{color:var(--t-cls);font-weight:500}
+.cs-cls{color:var(--t-qnt);font-weight:700}
+.cs-id{color:var(--t-asr);font-weight:700}
+.cs-att{color:var(--t-grp);font-weight:500}
+.cs-com{color:var(--t-dot);font-weight:700}
+.cs-pse{color:var(--t-anc);font-weight:700}
+pre.code .cs-tag{color:#6FB6F0}
+pre.code .cs-cls{color:#F58ACE}
+pre.code .cs-id{color:#FF9090}
+pre.code .cs-att{color:#55D6A2}
+pre.code .cs-com{color:#C0A6F5}
+pre.code .cs-pse{color:#F0C46B}
+/* ---------- dom tree diagram ---------- */
+/* white-space:pre is load-bearing — this block is drawn with newlines and
+   box-drawing characters, and without it the whole tree reflows into a paragraph */
+.tree{font-family:var(--mono);font-size:11.5px;line-height:1.85;background:var(--card);
+  border:1px solid var(--hair);padding:12px 15px;color:#26404E;
+  white-space:pre;overflow:auto}
+.tree .n{color:var(--t-cls);font-weight:500}
+.tree .a{color:var(--t-qnt)}
+.tree .v{color:var(--t-grp)}
+.tree .g{color:#9BAAB3}
+.tree .want{background:#BFE3F2;border-radius:2px;padding:0 3px;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.tree .lbl{color:var(--soft);font-size:10px;letter-spacing:.06em}
+/* ---------- selector playground ---------- */
+.pg{display:grid;grid-template-columns:1fr 330px;gap:14px;flex:1;min-height:0}
+.pgl{display:flex;flex-direction:column;gap:8px;min-height:0}
+.pgrow{display:flex;gap:8px;align-items:center}
+.pgrow label{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);width:66px;flex:none}
+input.sel,textarea.src{font-family:var(--mono);font-size:13px;border:1px solid var(--line);
+  background:var(--card);padding:8px 10px;color:var(--ink);width:100%;resize:none;line-height:1.5}
+input.sel{font-size:14.5px;font-weight:500}
+input.sel:focus,textarea.src:focus{outline:2px solid var(--t-cls);outline-offset:-1px;border-color:var(--t-cls)}
+input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
+.preset{display:flex;gap:5px;flex-wrap:wrap}
+.preset button{font-family:var(--mono);font-size:10.5px;padding:3px 8px;cursor:pointer;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px}
+.preset button:hover{background:#EAF4FA}
+.preset button:focus-visible{outline:2px solid var(--t-cls);outline-offset:2px}
+.hlbox{flex:1;min-height:0;overflow:auto;background:var(--card);border:1px solid var(--hair);
+  font-family:var(--mono);font-size:10.2px;line-height:1.62;padding:10px 12px;white-space:pre;
+  color:#26404E}
+.hlbox .tx{color:#31444F}
+.hlbox .tv{color:var(--t-grp)}
+.hlbox .el{border-radius:2px;padding:1px 0}
+.hlbox .el.m1{background:#BFE3F2;box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hlbox .el.m2{background:#CDEFDD;box-shadow:0 1px 0 #0E7A55 inset,0 -2px 0 #0E7A55 inset}
+.pgr{display:flex;flex-direction:column;gap:8px;min-height:0}
+.pgr .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft)}
+.mlist{flex:1;min-height:0;overflow:auto;background:var(--card);border:1px solid var(--hair);
+  font-family:var(--mono);font-size:10.6px;line-height:1.5}
+.mlist div.m{padding:5px 9px;border-bottom:1px solid var(--hair)}
+.mlist div.m b{color:#12556F}
+.mlist div.m i{color:var(--soft);font-style:normal;display:block}
+.mlist div.m em{color:var(--t-grp);font-style:normal}
+.pgnote{font-size:11.3px;line-height:1.4;color:var(--soft);background:#FFFBF2;
+  border-left:3px solid var(--t-anc);padding:7px 10px}
+.pgnote b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<!-- ============ 1 · COVER ============ -->
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat" id="cvp"></div>
+  <div class="kicker">DA2402 · Data Curation and Visualization</div>
+  <h1>Data<br/>Collection</h1>
+  <div class="pt">Part 2 — HTML you can parse</div>
+  <div class="rule"></div>
+  <p class="sub">The DOM, CSS selectors and BeautifulSoup, then one real listings scraper read line by
+  line — including the typo that has been working by accident, the class name that matches only in one
+  word order, and the bug that would copy every business's response time onto the next.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 · BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data collection from the web</td></tr>
+    <tr><td>Part</td><td>2 of 4 · Server-rendered HTML</td></tr>
+    <tr><td>Toolkit</td><td>requests · BeautifulSoup 4 · lxml</td></tr>
+  </table>
+</section>
+
+<!-- ============ 2 · WHERE WE ARE ============ -->
+<section class="slide" data-sec="Orientation">
+  <div class="eyebrow">Orientation · 1 of 2</div>
+  <h1 class="t">Rung 3, and the one test that puts you here
+    <small>Lecture 1 ended with a diagnostic. This lecture is what you do when it comes back with the third
+    answer: the values are in the HTML the server sent, sitting inside markup that was written for a
+    designer, not for you.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+      <div class="ladder">
+        <div class="rung"><div class="num">1</div>
+          <div class="txt"><h4>Documented API or feed <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p><code class="k">feedparser</code>, published REST APIs, bulk downloads.</p></div></div>
+        <div class="rung"><div class="num">2</div>
+          <div class="txt"><h4>Undocumented endpoint <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>Network tab, Fetch/XHR, sessions and warm-up requests.</p></div></div>
+        <div class="rung"><div class="num on">3</div>
+          <div class="txt on"><h4>Parse the HTML the server sends <span class="tag r" style="margin-left:6px">here</span></h4>
+          <p>One <code class="k">requests.get</code>, then a parse tree. Fast, cheap, and permanently one
+          redesign away from breaking. <b>This lecture.</b></p></div></div>
+        <div class="rung"><div class="num">4</div>
+          <div class="txt"><h4>Drive a real browser</h4>
+          <p>When the HTML arrives empty. Lecture 3.</p></div></div>
+      </div>
+      <div class="callout warn sm"><b>Rung 3 is not a fallback from rung 2 — it is a different situation.</b>
+        Plenty of perfectly ordinary sites have no API and no XHR because the server builds the whole page
+        and sends it finished. There is nothing to intercept. Parsing is the correct answer, not a
+        consolation prize.</div>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>The test, in three steps</h3>
+          <p><b>1.</b> Open the page and copy a value you can see — a price, a name, a rating.<br/>
+          <b>2.</b> <code class="k">Ctrl+U</code> for view-source. This is the <i>raw bytes the server
+          sent</i>, before any script ran.<br/>
+          <b>3.</b> <code class="k">Ctrl+F</code> and search for your value.</p>
+          <p style="margin-top:7px"><b>Found it</b> &rarr; rung 3, this lecture.<br/>
+          <b>Not there</b> &rarr; rung 4, Lecture 3.</p></div>
+        <div class="callout bad sm"><b>Use view-source, not Inspect Element.</b> The Elements panel shows the
+          <i>live DOM</i> — the document after every script has run and rewritten it. It will happily show
+          you content that was never in the response. Searching there tells you nothing about what
+          <code class="k">requests.get</code> would receive.</div>
+        <div class="callout good sm"><b>Or from Python, which cannot lie to you:</b><br/>
+          <code class="k">'Adyar' in requests.get(url).text</code></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · WHAT HTML IS ============ -->
+<section class="slide" data-sec="The document">
+  <div class="eyebrow">Orientation · 2 of 2</div>
+  <h1 class="t">HTML is a tree written as text
+    <small>Four things carry meaning: the <i>tag name</i>, the <i>attributes</i>, the <i>text</i>, and — the
+    one people forget — the <i>position in the tree</i>. Every extraction you write is a way of naming one
+    of those four.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <pre class="code sm"><span class="ht-pun">&lt;</span><span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"sk-card"</span> <span class="ht-att">businessid</span>=<span class="ht-val">"4821"</span>
+     <span class="ht-att">businessname</span>=<span class="ht-val">"Sparkle Home Cleaning"</span><span class="ht-pun">&gt;</span>
+  <span class="ht-pun">&lt;</span><span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"locality"</span><span class="ht-pun">&gt;</span>
+    <span class="ht-pun">&lt;</span><span class="ht-tag">span</span><span class="ht-pun">&gt;</span><span class="ht-txt">Adyar, Chennai</span><span class="ht-pun">&lt;/</span><span class="ht-tag">span</span><span class="ht-pun">&gt;</span>
+    <span class="ht-pun">&lt;</span><span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"sk-link"</span> <span class="ht-att">businesslat</span>=<span class="ht-val">"13.0067"</span>
+         <span class="ht-att">businesslong</span>=<span class="ht-val">"80.2570"</span><span class="ht-pun">&gt;</span><span class="ht-txt">Directions</span><span class="ht-pun">&lt;/</span><span class="ht-tag">div</span><span class="ht-pun">&gt;</span>
+  <span class="ht-pun">&lt;/</span><span class="ht-tag">div</span><span class="ht-pun">&gt;</span>
+  <span class="ht-pun">&lt;</span><span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"ratings-group"</span><span class="ht-pun">&gt;</span>
+    <span class="ht-pun">&lt;</span><span class="ht-tag">b</span><span class="ht-pun">&gt;</span><span class="ht-txt">4.6</span><span class="ht-pun">&lt;/</span><span class="ht-tag">b</span><span class="ht-pun">&gt;</span> <span class="ht-pun">&lt;</span><span class="ht-tag">span</span><span class="ht-pun">&gt;</span><span class="ht-txt">(212 reviews)</span><span class="ht-pun">&lt;/</span><span class="ht-tag">span</span><span class="ht-pun">&gt;</span>
+  <span class="ht-pun">&lt;/</span><span class="ht-tag">div</span><span class="ht-pun">&gt;</span>
+<span class="ht-pun">&lt;/</span><span class="ht-tag">div</span><span class="ht-pun">&gt;</span></pre>
+      </div>
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th style="width:96px">Carrier</th><th style="width:150px">Example here</th><th>How you name it</th></tr>
+          <tr><td><b>Tag name</b></td><td class="o">div, span, b</td>
+            <td>The element's type. Weak on its own — this page has hundreds of divs.</td></tr>
+          <tr class="ok"><td><b>Attribute</b></td><td class="o">class="sk-card"<br/>businessid="4821"</td>
+            <td>Where the useful handles live. <code class="k">class</code> is the usual one; note that
+              <code class="k">businessid</code> is not standard HTML at all.</td></tr>
+          <tr class="ok"><td><b>Text</b></td><td class="o">Adyar, Chennai<br/>4.6</td>
+            <td>The visible content. Usually what you want, but it is the leaf, not the address.</td></tr>
+          <tr class="wr"><td><b>Position</b></td><td class="o">the <code class="k">b</code> inside<br/>ratings-group</td>
+            <td>"The bold tag inside the ratings block." Nothing marks the rating as a rating except
+              <i>where it sits</i>.</td></tr>
+        </table>
+        <div class="callout sm"><b>Read the fourth row again.</b> The value <code class="k">4.6</code> has no
+          class, no id and no distinguishing tag. It is identifiable only by its ancestry — and that is why
+          scrapers break when a designer restructures a block that <i>looks</i> unchanged.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4 · THE DOM TREE ============ -->
+<section class="slide" data-sec="The document">
+  <div class="eyebrow">The DOM · 1 of 2</div>
+  <h1 class="t">The same markup, as the parser sees it
+    <small>BeautifulSoup does not search text; it searches a tree it built from the text. Every method you
+    are about to learn is a way of walking this structure, so it is worth being able to draw it.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="tree">div<span class="a"> .sk-card</span> <span class="g">businessid="4821" businessname="Sparkle…"</span>
+<span class="g">│</span>
+<span class="g">├──</span> div<span class="a"> .locality</span>
+<span class="g">│    ├──</span> span &rarr; <span class="want">"Adyar, Chennai"</span>
+<span class="g">│    └──</span> div<span class="a"> .sk-link</span> <span class="g">businesslat=</span><span class="want">"13.0067"</span>
+<span class="g">│</span>
+<span class="g">├──</span> div<span class="a"> .ratings-group</span>
+<span class="g">│    ├──</span> b &rarr; <span class="want">"4.6"</span>
+<span class="g">│    └──</span> span &rarr; "(212 reviews)"
+<span class="g">│</span>
+<span class="g">├──</span> div<span class="a"> .tags-link</span>
+<span class="g">│    ├──</span> span<span class="a"> .tag-link-item</span> &rarr; <span class="want">"Sofa Cleaning"</span>
+<span class="g">│    └──</span> span<span class="a"> .tag-link-item</span> &rarr; <span class="want">"Bathroom Cleaning"</span>
+<span class="g">│</span>
+<span class="g">└──</span> div<span class="a"> .key-points .light</span>
+<span class="g">     ├──</span> span &rarr; "Response Time " <span class="g">+</span> b &rarr; <span class="want">"15 mins"</span>
+<span class="g">     └──</span> span &rarr; "Sulekha score " <span class="g">+</span> b &rarr; <span class="want">"8.7"</span></div>
+      <div class="colstack">
+        <ul class="b sm">
+          <li><strong>Everything is a node.</strong> Tags are nodes; so is the text inside them. In
+            BeautifulSoup a tag is a <code class="k">Tag</code> and its text is a
+            <code class="k">NavigableString</code>.</li>
+          <li><strong>Relationships are the API.</strong> parent, children, siblings, descendants — the
+            vocabulary of the tree is the vocabulary of the library.</li>
+          <li><strong>Nesting is not indentation.</strong> The source may be minified onto one line; the tree
+            is identical either way. Never write a scraper that depends on line breaks.</li>
+          <li><strong>Shaded</strong> = the eight values one card must yield. Notice how few of them have a
+            useful class of their own.</li>
+        </ul>
+        <div class="callout warn sm"><b>The last two rows are the awkward ones.</b> "Response Time" and its
+          value live in the <i>same</i> span, split across a text node and a
+          <code class="k">&lt;b&gt;</code>. You cannot select them by class, because there is none. You have
+          to find the span whose text mentions the label, then take the bold tag inside it — which is
+          exactly what the scraper does, and exactly why that part is the most fragile.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · WHERE THE HANDLES ARE ============ -->
+<section class="slide" data-sec="The document">
+  <div class="eyebrow">The DOM · 2 of 2</div>
+  <h1 class="t">Judge a handle by how likely it is to survive
+    <small>Every selector you write is a bet that some part of the markup will not change. Some parts of a
+    page change every sprint; others have not changed since the site was built. Learn to tell them
+    apart.</small></h1>
+  <div class="wrap">
+    <table class="d sm free">
+      <tr><th style="width:150px">Handle</th><th style="width:230px">Example</th><th style="width:88px">Survives?</th>
+        <th>Why</th></tr>
+      <tr class="ok"><td><b>Application attributes</b></td><td class="o">businessid="4821"<br/>data-product-sku="X9"</td>
+        <td class="c">best</td>
+        <td>Non-standard attributes the site's own JavaScript reads. Changing them breaks the site's
+          features, so nobody renames them casually. <b>Look for these first.</b></td></tr>
+      <tr class="ok"><td><b>Semantic classes</b></td><td class="o">class="locality"<br/>class="ratings-group"</td>
+        <td class="c">good</td>
+        <td>Named after what the content <i>is</i>. Tied to meaning, so they usually outlive a
+          restyle.</td></tr>
+      <tr><td><b>id</b></td><td class="o">id="search-results"</td><td class="c">good</td>
+        <td>Unique per document and often referenced by scripts — but usually only on page-level
+          containers, not the rows you want.</td></tr>
+      <tr class="wr"><td><b>Structural classes</b></td><td class="o">class="col-md-4 mb-3"</td><td class="c">poor</td>
+        <td>Bootstrap or Tailwind layout classes. Named after <i>appearance</i>. A designer changing a
+          column width breaks your scraper.</td></tr>
+      <tr class="hl"><td><b>Generated classes</b></td><td class="o">class="css-1x9fj2k"<br/>class="jsx-3819477201"</td>
+        <td class="c">no</td>
+        <td>Emitted by a CSS-in-JS build. The hash changes on the next deploy. Never select on these,
+          however tempting the browser's "Copy selector" is.</td></tr>
+      <tr class="hl"><td><b>Position alone</b></td><td class="o">div &gt; div:nth-child(3) &gt; span</td>
+        <td class="c">no</td>
+        <td>One inserted wrapper and every index shifts. This is what "Copy selector" gives you, and it is
+          the most brittle option on the page.</td></tr>
+    </table>
+    <div class="cols">
+      <div class="callout good sm"><b>Practical habit.</b> Before writing a selector, search the raw HTML for
+        an attribute whose name reads like a database column — <code class="k">businessid</code>,
+        <code class="k">data-sku</code>, <code class="k">itemprop</code>. Sites leak their internal schema
+        into markup constantly, and those names are the most stable thing on the page.</div>
+      <div class="callout sm"><b>Also worth a look:</b> <code class="k">&lt;script type="application/ld+json"&gt;</code>
+        blocks. Many listing and product pages embed structured metadata for search engines — the whole
+        record, already as JSON, sitting in the HTML you have. Check before you write a single
+        <code class="k">find_all</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · CSS SELECTORS 1 ============ -->
+<section class="slide" data-sec="Selectors">
+  <div class="eyebrow">CSS selectors · 1 of 2</div>
+  <h1 class="t">Four ways to name an element
+    <small>CSS selectors are the shared language of browsers, BeautifulSoup's <code class="k">.select()</code>
+    and Selenium's <code class="k">By.CSS_SELECTOR</code>. Learn them once and they work in all three for
+    the rest of this course.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <table class="d sm free">
+        <tr><th style="width:160px">Selector</th><th>Matches</th></tr>
+        <tr><td class="m"><span class="cs-tag">div</span></td><td>every <code class="k">&lt;div&gt;</code> in
+          the document, regardless of anything else</td></tr>
+        <tr class="ok"><td class="m"><span class="cs-cls">.sk-card</span></td><td>any element whose
+          <code class="k">class</code> list <i>contains</i> <code class="k">sk-card</code> — the class
+          attribute may hold others too</td></tr>
+        <tr><td class="m"><span class="cs-tag">div</span><span class="cs-cls">.sk-card</span></td>
+          <td>both at once: a <code class="k">div</code> that has that class. No space — a space means
+            something completely different.</td></tr>
+        <tr><td class="m"><span class="cs-id">#search-results</span></td><td>the element with
+          <code class="k">id="search-results"</code>. Should be unique; browsers tolerate duplicates,
+          which is how bugs happen.</td></tr>
+        <tr class="ok"><td class="m"><span class="cs-att">[businessid]</span></td><td>any element that
+          <i>has</i> that attribute, whatever its value</td></tr>
+        <tr class="ok"><td class="m"><span class="cs-att">[businessid="4821"]</span></td><td>exact value match</td></tr>
+        <tr><td class="m"><span class="cs-att">[href^="/business/"]</span></td><td>value <b>starts with</b>.
+          <code class="k">$=</code> ends with, <code class="k">*=</code> contains.</td></tr>
+        <tr><td class="m"><span class="cs-tag">span</span><span class="cs-cls">.a</span><span class="cs-cls">.b</span></td>
+          <td>a span carrying <b>both</b> classes. Chaining is AND.</td></tr>
+        <tr><td class="m"><span class="cs-tag">div</span>, <span class="cs-tag">span</span></td>
+          <td>either one. The comma is OR, and it is the only place a comma appears.</td></tr>
+      </table>
+      <div class="colstack">
+        <div class="callout bad"><b>The single most common mistake.</b><br/>
+          <code class="k">div.sk-card</code> — a div <i>that has</i> class sk-card.<br/>
+          <code class="k">div .sk-card</code> — anything with class sk-card <i>inside</i> a div.<br/><br/>
+          One space, two unrelated meanings. When a selector silently returns the wrong thing, check for a
+          stray space before you check anything else.</div>
+        <div class="card b"><h3>Classes are a list, not a string</h3>
+          <p><code class="k">class="key-points light"</code> gives the element <b>two</b> classes.
+          <code class="k">.key-points</code> matches it, <code class="k">.light</code> matches it, and
+          <code class="k">.key-points.light</code> matches it. Order in the attribute is irrelevant to
+          CSS.</p>
+          <p style="margin-top:6px"><b>Remember this one.</b> BeautifulSoup's <code class="k">find()</code>
+          does <i>not</i> behave this way, and slide 13 is about the difference.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 · CSS SELECTORS 2 ============ -->
+<section class="slide" data-sec="Selectors">
+  <div class="eyebrow">CSS selectors · 2 of 2</div>
+  <h1 class="t">Combinators: naming an element by its neighbours
+    <small>The four handles above name an element by what it <i>is</i>. Combinators name it by where it
+    <i>sits</i> — which is the only option when the element you want carries no distinguishing marks of its
+    own, as with the rating and the response time.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <table class="d sm free">
+        <tr><th style="width:170px">Combinator</th><th>Meaning, and when you actually need it</th></tr>
+        <tr class="ok"><td class="m"><span class="cs-tag">div</span> <span class="cs-tag">span</span></td>
+          <td><b>Descendant</b> (a space). A span anywhere below a div, at any depth. The workhorse — and
+            forgiving, because inserting a wrapper does not break it.</td></tr>
+        <tr><td class="m"><span class="cs-tag">div</span> <span class="cs-com">&gt;</span> <span class="cs-tag">span</span></td>
+          <td><b>Child</b>. A span that is a <i>direct</i> child. Precise, and brittle for exactly that
+            reason: one new wrapper div and it matches nothing.</td></tr>
+        <tr><td class="m"><span class="cs-tag">h3</span> <span class="cs-com">+</span> <span class="cs-tag">p</span></td>
+          <td><b>Adjacent sibling</b>. The p immediately after an h3, same parent. Useful for
+            label-then-value markup.</td></tr>
+        <tr><td class="m"><span class="cs-tag">h3</span> <span class="cs-com">~</span> <span class="cs-tag">p</span></td>
+          <td><b>General sibling</b>. Every p after an h3 at the same level.</td></tr>
+        <tr class="wr"><td class="m"><span class="cs-tag">li</span><span class="cs-pse">:first-child</span></td>
+          <td>First child of its parent. Also <code class="k">:last-child</code>,
+            <code class="k">:nth-child(2)</code>, <code class="k">:nth-child(odd)</code>.</td></tr>
+        <tr><td class="m"><span class="cs-tag">tr</span><span class="cs-pse">:not(.header)</span></td>
+          <td>Negation. Genuinely useful for skipping a table's header row without slicing.</td></tr>
+      </table>
+      <div class="colstack">
+        <div class="outlbl">Reading a real one</div>
+        <pre class="code sm"><span class="cs-tag">div</span><span class="cs-cls">.sk-card</span> <span class="cs-cls">.ratings-group</span> <span class="cs-com">&gt;</span> <span class="cs-tag">b</span>
+
+<span class="py-cm"># a div with class sk-card,</span>
+<span class="py-cm">#   containing (at any depth) something</span>
+<span class="py-cm">#   with class ratings-group,</span>
+<span class="py-cm">#     whose DIRECT child is a b tag</span></pre>
+        <div class="callout warn sm"><b>Mix the two deliberately.</b> Loose descendant spaces high up
+          (survives redesigns), a tight <code class="k">&gt;</code> only at the last step where you need to
+          avoid catching a nested match. A selector that is precise all the way down is a selector that
+          breaks next month.</div>
+        <div class="callout bad sm"><b><code class="k">:nth-child</code> counts <i>all</i> siblings,</b> not
+          just ones matching your selector. <code class="k">p:nth-child(2)</code> means "the second child,
+          which must also be a p" — if the second child is an h3, it matches nothing.
+          <code class="k">:nth-of-type(2)</code> is the one you usually meant.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 · WIDGET · SELECTOR PLAYGROUND ============ -->
+<section class="slide" data-sec="Selectors · Live">
+  <div class="eyebrow">CSS selectors · interactive</div>
+  <h1 class="t sm">Try a selector against a real card
+    <small class="tight">Left is markup taken from the Sulekha listing page; type a selector and matches
+    highlight live. <span class="jsbadge">Browser engine</span> This runs the browser's own
+    <code class="k">querySelectorAll</code>, which agrees with BeautifulSoup's
+    <code class="k">.select()</code> on everything shown here — the differences are on slide 15.</small></h1>
+  <div class="wrap" style="margin-top:10px">
+    <div class="pg">
+      <div class="pgl">
+        <div class="pgrow"><label>Selector</label>
+          <input class="sel" id="sel" value=".sk-card .tag-link-item" spellcheck="false"/></div>
+        <div class="preset" id="presets"></div>
+        <div class="hlbox" id="hl"></div>
+      </div>
+      <div class="pgr">
+        <div class="hdr">Matches <span id="cnt"></span></div>
+        <div class="mlist" id="ml"></div>
+        <div class="pgnote"><b>Try in this order:</b> <code class="k">div</code> (too many),
+          <code class="k">.sk-card</code> (the rows), <code class="k">.ratings-group b</code> (the rating),
+          then <code class="k">.key-points b</code> — and notice it returns <i>two</i> values with nothing
+          to tell you which is which.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9 · PARSERS ============ -->
+<section class="slide" data-sec="BeautifulSoup">
+  <div class="eyebrow">BeautifulSoup · 1 of 8</div>
+  <h1 class="t">BeautifulSoup is not a parser
+    <small>It is an interface over one. The second argument to the constructor chooses which, and that choice
+    changes the tree you get — not just how fast you get it.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <table class="d sm free">
+        <tr><th style="width:118px">Parser</th><th style="width:82px">Install</th><th style="width:86px">Speed</th>
+          <th>Character</th></tr>
+        <tr><td class="m">html.parser</td><td class="c">built in</td><td class="c">272 ms</td>
+          <td>Python's own. Nothing to install, which is its whole argument. Does not wrap your fragment in
+            <code class="k">&lt;html&gt;&lt;body&gt;</code>.</td></tr>
+        <tr class="ok"><td class="m">lxml</td><td class="c">pip</td><td class="c">193 ms</td>
+          <td>C library. Fastest, very tolerant of broken markup, and the default choice for scraping.
+            <b>Both our scripts use it.</b></td></tr>
+        <tr><td class="m">html5lib</td><td class="c">pip</td><td class="c">slowest</td>
+          <td>Implements the WHATWG parsing algorithm exactly, so its tree matches what a browser builds —
+            character for character. Reach for it when a page is badly broken and the other two disagree
+            with what you see in devtools.</td></tr>
+        <tr><td class="m">lxml-xml</td><td class="c">pip</td><td class="c">fast</td>
+          <td>Strict XML. Use for RSS, sitemaps and SOAP — anything where a malformed document
+            <i>should</i> be an error rather than something to guess at.</td></tr>
+      </table>
+      <div class="colstack">
+        <div class="outlbl">Measured here — 202 kB, 400 cards, mean of 5 runs</div>
+        <pre class="out xs">html.parser    272.2 ms   cards=400
+lxml           192.7 ms   cards=400</pre>
+        <div class="callout sm"><b>A 1.4&times; difference, not 10&times;.</b> On one page it is noise. Across
+          50,000 saved pages in a re-parse it is twenty minutes. Pick <code class="k">lxml</code> because it
+          is also the most forgiving, and treat the speed as a bonus.</div>
+        <div class="outlbl">Where they genuinely disagree</div>
+        <pre class="out xs">&gt;&gt;&gt; BeautifulSoup('&lt;a&gt;&lt;/p&gt;', 'html.parser')
+&lt;a&gt;&lt;/a&gt;
+&gt;&gt;&gt; BeautifulSoup('&lt;a&gt;&lt;/p&gt;', 'lxml')
+&lt;html&gt;&lt;body&gt;&lt;a&gt;&lt;/a&gt;&lt;/body&gt;&lt;/html&gt;</pre>
+        <div class="callout warn sm"><b>Two consequences.</b> A selector anchored at
+          <code class="k">html &gt; body</code> works under lxml and matches nothing under
+          <code class="k">html.parser</code>. And on genuinely broken pages the parsers can nest recovered
+          tags differently — so <b>always name the parser explicitly.</b> Omit it and bs4 picks the best one
+          installed, which means your script's behaviour depends on your virtualenv.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 · MAKING SOUP ============ -->
+<section class="slide" data-sec="BeautifulSoup">
+  <div class="eyebrow">BeautifulSoup · 2 of 8</div>
+  <h1 class="t">Three ways in, and one decision about bytes
+    <small>The constructor takes a string, a file object, or bytes. Which you hand it decides who guesses the
+    character encoding — and getting that wrong is how a scraper produces
+    <code class="k">â€™</code> where an apostrophe should be.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <pre class="code sm"><span class="py-kw">from</span> bs4 <span class="py-kw">import</span> BeautifulSoup <span class="py-kw">as</span> bs
+
+<span class="py-cm"># 1 · from a string you already have</span>
+soup = bs(html_string, <span class="py-str">'lxml'</span>)
+
+<span class="py-cm"># 2 · from a file on disk</span>
+<span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">'sulekha.html'</span>, encoding=<span class="py-str">'utf-8'</span>) <span class="py-kw">as</span> f:
+    soup = bs(f, <span class="py-str">'lxml'</span>)
+
+<span class="py-cm"># 3 · straight from a response</span>
+r = requests.get(url, timeout=<span class="py-num">30</span>)
+soup = bs(r.<span class="py-bi">content</span>, <span class="py-str">'lxml'</span>)   <span class="py-cm"># bytes — preferred</span>
+soup = bs(r.text,    <span class="py-str">'lxml'</span>)   <span class="py-cm"># str  — see right</span></pre>
+        <div class="callout good sm"><b>Prefer <code class="k">r.content</code> over
+          <code class="k">r.text</code>.</b> <code class="k">.text</code> makes
+          <code class="k">requests</code> decode the bytes first, and when the
+          <code class="k">Content-Type</code> header carries no charset it falls back to a guess —
+          historically <code class="k">ISO-8859-1</code>. Hand over the raw bytes and bs4 reads the
+          <code class="k">&lt;meta charset&gt;</code> from the document itself, which is the one place the
+          answer is actually written down.</div>
+      </div>
+      <div class="colstack">
+        <ul class="b sm">
+          <li><strong>Always pass the parser.</strong> <code class="k">bs(html)</code> works and emits a
+            warning; on another machine it silently picks a different parser.</li>
+          <li><strong><code class="k">soup</code> is a Tag.</strong> Everything you can do to an element you
+            can do to the whole document — the root just happens to be the document.</li>
+          <li><strong><code class="k">soup.prettify()</code></strong> prints the tree with indentation. The
+            fastest way to find out what the parser actually built, as opposed to what you assumed.</li>
+          <li><strong>Encoding, after the fact.</strong> <code class="k">soup.original_encoding</code> tells
+            you what it decided. Worth printing once when the text looks wrong.</li>
+        </ul>
+        <div class="callout warn sm"><b>Mojibake is silent.</b> Nothing raises. You get
+          <code class="k">Chennai â€" Adyar</code> in a CSV that loads fine, and you discover it during
+          analysis, weeks later, in a column you had already grouped by.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 · FIND / FIND_ALL ============ -->
+<section class="slide" data-sec="BeautifulSoup">
+  <div class="eyebrow">BeautifulSoup · 3 of 8</div>
+  <h1 class="t">find and find_all: same search, different failure
+    <small>The two methods take identical arguments and differ in one respect that decides how your scraper
+    dies. Knowing which you want is knowing whether a missing element is a bug or a normal Tuesday.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th style="width:130px"></th><th style="width:150px">find()</th><th>find_all()</th></tr>
+          <tr><td><b>Returns</b></td><td class="m">Tag</td><td class="m">ResultSet (a list)</td></tr>
+          <tr class="hl"><td><b>When nothing matches</b></td><td class="m">None</td><td class="m">[] — empty list</td></tr>
+          <tr><td><b>How it then fails</b></td><td>AttributeError on the <i>next</i> line</td>
+            <td>the <code class="k">for</code> loop runs zero times</td></tr>
+          <tr><td><b>Stops at</b></td><td>the first match</td><td>every match, or <code class="k">limit=n</code></td></tr>
+          <tr class="ok"><td><b>Shorthand</b></td><td class="m">soup.h1</td><td class="m">soup('p')</td></tr>
+        </table>
+        <pre class="code xs">soup.find(<span class="py-str">'div'</span>, class_=<span class="py-str">'sk-card'</span>)          <span class="py-cm"># first one</span>
+soup.find_all(<span class="py-str">'div'</span>, class_=<span class="py-str">'sk-card'</span>)      <span class="py-cm"># all of them</span>
+soup.find_all(<span class="py-str">'div'</span>, limit=<span class="py-num">10</span>)             <span class="py-cm"># first ten</span>
+soup.find_all([<span class="py-str">'h1'</span>, <span class="py-str">'h2'</span>, <span class="py-str">'h3'</span>])          <span class="py-cm"># any of these tags</span>
+soup.find_all(attrs={<span class="py-str">'businessid'</span>: <span class="py-bi">True</span>})  <span class="py-cm"># has the attribute</span>
+soup.find_all(<span class="py-str">'div'</span>, recursive=<span class="py-bi">False</span>)        <span class="py-cm"># direct children only</span>
+soup.find_all(string=<span class="py-str">'Adyar'</span>)              <span class="py-cm"># text nodes, not tags</span></pre>
+      </div>
+      <div class="colstack">
+        <div class="callout bad"><b>The failure that costs an afternoon.</b><br/>
+          <code class="k">soup.find('div', class_='price').text</code><br/><br/>
+          When the div is missing, <code class="k">find</code> returns <code class="k">None</code> and the
+          <code class="k">.text</code> raises<br/>
+          <code class="k">AttributeError: 'NoneType' object has no attribute 'text'</code><br/><br/>
+          The traceback points at <code class="k">.text</code>, so people go and check
+          <code class="k">.text</code>. The actual fault is one method call to its left, and it is not an
+          error at all — it is <code class="k">find</code> correctly reporting that nothing matched.</div>
+        <pre class="code xs"><span class="py-cm"># the three ways out, in order of preference</span>
+el = card.find(<span class="py-str">'div'</span>, class_=<span class="py-str">'price'</span>)
+price = el.get_text(strip=<span class="py-bi">True</span>) <span class="py-kw">if</span> el <span class="py-kw">else</span> <span class="py-bi">None</span>
+
+<span class="py-cm"># or, when absence means the record is unusable</span>
+<span class="py-kw">if</span> el <span class="py-kw">is</span> <span class="py-bi">None</span>:
+    <span class="py-kw">raise</span> <span class="py-fn">ValueError</span>(<span class="py-str">f"no price in card {business_id}"</span>)
+
+<span class="py-cm"># or, when it is genuinely optional</span>
+price = (card.select_one(<span class="py-str">'.price'</span>) <span class="py-kw">or</span> Empty).text</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · POSITIONAL ARGS ============ -->
+<section class="slide" data-sec="BeautifulSoup">
+  <div class="eyebrow">BeautifulSoup · 4 of 8 · from our own scraper</div>
+  <h1 class="t">Why <code class="k" style="font-size:.78em">find('div', 'ratings-group')</code> works
+    <small>Read that line in <code class="k">scraper_sulekha.py</code> and it looks like a mistake — a bare
+    string where a keyword should be. It is not, and the reason is worth knowing, because the shorthand
+    behaves differently from the keyword in a way that bites two slides from now.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="outlbl">The signature</div>
+        <pre class="code sm">find(name=<span class="py-bi">None</span>, attrs=<span class="py-bi">None</span>, recursive=<span class="py-bi">True</span>,
+     string=<span class="py-bi">None</span>, **kwargs)</pre>
+        <ul class="b sm">
+          <li>The <b>second positional</b> parameter is <code class="k">attrs</code>. Pass a dict and it
+            filters on those attributes.</li>
+          <li>Pass a <b>plain string</b> instead and BeautifulSoup treats it as a
+            <code class="k">class</code> filter — a documented convenience, because filtering by class is
+            what nearly everyone wants.</li>
+          <li>So <code class="k">find('div', 'ratings-group')</code> and
+            <code class="k">find('div', class_='ratings-group')</code> are the same call.</li>
+          <li>The keyword is spelled <code class="k">class_</code> with a trailing underscore, because
+            <code class="k">class</code> is a reserved word in Python. That is the whole reason the
+            shorthand exists.</li>
+        </ul>
+        <div class="callout sm"><b>Both spellings appear in the same file.</b>
+          <code class="k">scraper_sulekha.py</code> uses <code class="k">class_=</code> in some places and
+          the positional form in others. It is not a bug — but pick one and stay with it, because the reader
+          of your code has to re-derive this every time.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">Other things that slot into <code class="k">attrs</code></div>
+        <pre class="code xs"><span class="py-cm"># a dict — any attributes at all</span>
+card.find(<span class="py-str">'div'</span>, {<span class="py-str">'businessid'</span>: <span class="py-str">'4821'</span>})
+
+<span class="py-cm"># True means "has this attribute, any value"</span>
+soup.find_all(<span class="py-str">'a'</span>, {<span class="py-str">'href'</span>: <span class="py-bi">True</span>})
+
+<span class="py-cm"># a compiled regex</span>
+<span class="py-kw">import</span> re
+soup.find_all(<span class="py-str">'div'</span>, class_=re.compile(<span class="py-str">r'^sk-'</span>))
+
+<span class="py-cm"># a function, for anything else</span>
+soup.find_all(<span class="py-kw">lambda</span> t: t.name == <span class="py-str">'div'</span>
+              <span class="py-kw">and</span> t.has_attr(<span class="py-str">'businessid'</span>)
+              <span class="py-kw">and</span> <span class="py-bi">len</span>(t.get_text(strip=<span class="py-bi">True</span>)) &gt; <span class="py-num">40</span>)</pre>
+        <div class="callout good sm"><b>The regex form is genuinely useful</b> against generated class names.
+          <code class="k">class_=re.compile(r'^ProductCard')</code> survives a build that renames
+          <code class="k">ProductCard_a3f</code> to <code class="k">ProductCard_b71</code>, where an exact
+          match would not. It is the one respectable use of a regex on HTML in this course —
+          you are matching an <i>attribute value</i>, not parsing markup.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 · CLASS MATCHING TRAP ============ -->
+<section class="slide" data-sec="BeautifulSoup">
+  <div class="eyebrow">BeautifulSoup · 5 of 8 · a real trap in our scraper</div>
+  <h1 class="t">Two classes, and a match that depends on word order
+    <small>The scraper reaches the key-points block with
+    <code class="k">card.find('div', 'key-points light')</code>. That string contains a space, and a space
+    changes what BeautifulSoup does with it entirely. Every result below was measured.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">The markup as it stands</div>
+        <pre class="code xs">&lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"key-points light"</span>&gt;...&lt;/<span class="ht-tag">div</span>&gt;</pre>
+        <pre class="out xs">find('div','key-points light')  <span class="h-ok">True</span>
+find('div','key-points')        <span class="h-ok">True</span>
+find('div', class_='light')     <span class="h-ok">True</span>
+select('.key-points.light')     <span class="h-ok">1</span></pre>
+        <div class="outlbl" style="margin-top:6px">The same element, classes written the other way round</div>
+        <pre class="code xs">&lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"light key-points"</span>&gt;...&lt;/<span class="ht-tag">div</span>&gt;</pre>
+        <pre class="out xs">find('div','key-points light')  <span class="h-bad">False</span>   &lt;-- our scraper
+find('div','key-points')        <span class="h-ok">True</span>
+select('.key-points')           <span class="h-ok">1</span>
+elem['class']                   ['light', 'key-points']</pre>
+      </div>
+      <div class="colstack">
+        <div class="callout bad"><b>What is actually happening.</b> A string with no space is matched against
+          each class in the element's list — so <code class="k">'key-points'</code> hits. A string
+          <i>containing</i> a space cannot be a single class name, so BeautifulSoup falls back to comparing
+          it against the <b>whole <code class="k">class</code> attribute, verbatim.</b> Same two classes,
+          different order, no match.</div>
+        <ul class="b sm">
+          <li>To CSS, <code class="k">class="a b"</code> and <code class="k">class="b a"</code> are
+            <strong>identical</strong>. To <code class="k">find()</code> with a spaced string they are
+            <strong>different</strong>.</li>
+          <li>bs4 stores the attribute as a list — <code class="k">elem['class']</code> returns
+            <code class="k">['light', 'key-points']</code>, not a string. The list is where the truth is.</li>
+          <li>The fix is one character: <code class="k">card.select_one('.key-points')</code>, or
+            <code class="k">card.find('div', class_='key-points')</code>. Match <b>one</b> class, the one
+            that carries the meaning. <code class="k">light</code> is a styling hook and will be the first
+            thing a redesign drops.</li>
+        </ul>
+        <div class="callout warn sm"><b>Why this has not broken yet.</b> The order happens to be right today.
+          It is a bet on the output of somebody else's template, and nothing in the code says the bet is
+          being made.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 · SELECT ============ -->
+<section class="slide" data-sec="BeautifulSoup">
+  <div class="eyebrow">BeautifulSoup · 6 of 8</div>
+  <h1 class="t">select and select_one: CSS, all the way down
+    <small>Everything from slides 6 and 7 works here. <code class="k">.select()</code> is backed by
+    <b>soupsieve</b>, a separate library bs4 ships with, and it implements a large part of the CSS selector
+    specification — considerably more than most people expect.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code sm">soup.select(<span class="py-str">'div.sk-card'</span>)               <span class="py-cm"># -> list, [] if none</span>
+soup.select_one(<span class="py-str">'.ratings-group &gt; b'</span>)   <span class="py-cm"># -> Tag, None if none</span>
+
+<span class="py-cm"># the whole grammar is available</span>
+soup.select(<span class="py-str">'.sk-card [businesslat]'</span>)
+soup.select(<span class="py-str">'a[href^="/business/"]'</span>)
+soup.select(<span class="py-str">'tr:not(.header) td:nth-of-type(2)'</span>)
+soup.select(<span class="py-str">'.key-points span:last-child b'</span>)
+
+<span class="py-cm"># and it is scoped, exactly like the browser</span>
+<span class="py-kw">for</span> card <span class="py-kw">in</span> soup.select(<span class="py-str">'div.sk-card'</span>):
+    name = card.select_one(<span class="py-str">'.locality span'</span>)   <span class="py-cm"># inside THIS card</span></pre>
+        <div class="callout good sm"><b>Scoping is the point.</b> Find the repeating container once, then run
+          every field selector <i>against that container</i>. A scraper that searches the whole document for
+          each field will happily pair card 4's name with card 9's price the day one card is missing a
+          field.</div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>Two soupsieve extras worth knowing</h3>
+          <p><code class="k">:-soup-contains("Response Time")</code> selects an element by its text. CSS has
+          no such selector — browsers dropped the proposal — so this works in bs4 and <b>fails in
+          Selenium</b>. Useful, and a portability trap.</p>
+          <p style="margin-top:6px"><code class="k">:has(> b)</code> — "an element that contains a direct
+          child b". Long unavailable in browsers, always available here.</p></div>
+        <div class="callout warn sm"><b>Where <code class="k">select</code> cannot follow.</b> CSS can only
+          describe descent, so there is no parent selector and no "the sibling <i>before</i> this one".
+          When you need to go upwards you leave CSS and use <code class="k">.parent</code> or
+          <code class="k">find_parent()</code> — slide 16.</div>
+        <div class="callout sm"><b>Naming, so the error messages make sense.</b>
+          <code class="k">soup.select</code> is soupsieve; <code class="k">soup.find_all</code> is
+          BeautifulSoup itself. A <code class="k">SelectorSyntaxError</code> comes from the former and means
+          your CSS is malformed, not that the page changed.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15 · FIND VS SELECT ============ -->
+<section class="slide" data-sec="BeautifulSoup">
+  <div class="eyebrow">BeautifulSoup · 7 of 8</div>
+  <h1 class="t">So which do you use?
+    <small>They overlap heavily and neither is going away. The honest answer is that each does something the
+    other cannot, and a good scraper uses both — for the right reasons rather than by habit.</small></h1>
+  <div class="wrap">
+    <table class="d sm free">
+      <tr><th style="width:250px">Task</th><th style="width:270px">find / find_all</th><th style="width:270px">select / select_one</th>
+        <th>Use</th></tr>
+      <tr class="ok"><td>Descend several levels</td><td class="o">nested calls, one per level</td>
+        <td class="o">'.sk-card .locality span'</td><td><b>select</b> — one readable line instead of four</td></tr>
+      <tr class="ok"><td>Class that appears with others</td><td class="o">class_='key-points'<br/><i>and never a spaced string</i></td>
+        <td class="o">'.key-points'</td><td><b>select</b> — no word-order trap to remember</td></tr>
+      <tr class="hl"><td>Match on a <b>regex</b></td><td class="o">class_=re.compile(r'^sk-')</td>
+        <td class="o">not possible</td><td><b>find</b> — CSS has no regex</td></tr>
+      <tr class="hl"><td>Match on a <b>function</b></td><td class="o">find_all(lambda t: ...)</td>
+        <td class="o">not possible</td><td><b>find</b> — arbitrary predicates</td></tr>
+      <tr class="hl"><td>Direct children only</td><td class="o">recursive=False</td><td class="o">':scope > div'</td>
+        <td><b>find</b> — clearer, and <code class="k">:scope</code> surprises people</td></tr>
+      <tr><td>Find by <b>text content</b></td><td class="o">find(string='Adyar')</td>
+        <td class="o">':-soup-contains("Adyar")'</td><td><b>either</b> — but neither is portable to Selenium</td></tr>
+      <tr class="wr"><td>Go <b>up</b> the tree</td><td class="o">find_parent('div', class_='sk-card')</td>
+        <td class="o">not possible</td><td><b>find</b> — CSS only goes down</td></tr>
+      <tr class="ok"><td>Reuse a selector in Selenium</td><td class="o">no equivalent</td>
+        <td class="o">the same string, verbatim</td><td><b>select</b> — this matters in Lecture 3</td></tr>
+    </table>
+    <div class="cols">
+      <div class="callout good sm"><b>A working rule.</b> Reach for <code class="k">select</code> by default:
+        it is shorter, it avoids the class trap, and the selector string moves to Selenium unchanged when a
+        site later starts rendering client-side. Drop to <code class="k">find</code> for the four things CSS
+        cannot express — regex, predicates, upward moves, and <code class="k">recursive=False</code>.</div>
+      <div class="callout warn sm"><b>The last row is not a small point.</b> Half of Lecture 3 is the same
+        extraction logic driven through a browser. Every selector you write as a CSS string today is one you
+        will not have to rewrite; every <code class="k">find_all</code> chain is one you will.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16 · NAVIGATION ============ -->
+<section class="slide" data-sec="BeautifulSoup">
+  <div class="eyebrow">BeautifulSoup · 8 of 8</div>
+  <h1 class="t">Walking the tree, and the whitespace that ruins it
+    <small>Navigation properties are how you reach elements that carry no handle of their own. They are also
+    where beginners lose an hour to a newline, so the trap is worth meeting before you need it.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <table class="d xs free">
+          <tr><th style="width:150px">Property</th><th>Gives you</th></tr>
+          <tr><td class="m">.parent</td><td>the containing Tag</td></tr>
+          <tr><td class="m">.parents</td><td>every ancestor, upward — an iterator</td></tr>
+          <tr class="hl"><td class="m">.contents</td><td>direct children <b>as a list, text nodes included</b></td></tr>
+          <tr class="hl"><td class="m">.children</td><td>the same, as an iterator</td></tr>
+          <tr class="ok"><td class="m">.find_all(recursive=False)</td><td>direct child <b>tags</b> only</td></tr>
+          <tr><td class="m">.descendants</td><td>everything below, depth-first</td></tr>
+          <tr class="hl"><td class="m">.next_sibling</td><td>the very next node — <b>often a newline</b></td></tr>
+          <tr class="ok"><td class="m">.find_next_sibling()</td><td>the next sibling <b>tag</b>. Use this one.</td></tr>
+          <tr class="ok"><td class="m">.find_parent('div', class_=…)</td><td>the nearest matching ancestor</td></tr>
+        </table>
+        <div class="callout good sm"><b>The pattern the last row enables.</b> Find the distinctive thing —
+          a label, a unique string — then climb to the row that contains it:
+          <code class="k">soup.find(string='Response Time').find_parent('div', class_='sk-card')</code>.
+          When the container has no usable class, this is the way in.</div>
+      </div>
+      <div class="colstack">
+        <div class="callout bad"><b>The whitespace trap.</b> HTML written by a human contains newlines
+          between tags, and the parser keeps every one as a <code class="k">NavigableString</code> node.</div>
+        <pre class="code xs">&lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"ratings-group"</span>&gt;
+  &lt;<span class="ht-tag">b</span>&gt;4.6&lt;/<span class="ht-tag">b</span>&gt;
+  &lt;<span class="ht-tag">span</span>&gt;(212 reviews)&lt;/<span class="ht-tag">span</span>&gt;
+&lt;/<span class="ht-tag">div</span>&gt;</pre>
+        <pre class="out xs">&gt;&gt;&gt; b.next_sibling
+'\n  '                    <span class="h-bad">&lt;-- a newline, not the span</span>
+&gt;&gt;&gt; b.next_sibling.name
+None
+&gt;&gt;&gt; b.find_next_sibling()
+&lt;span&gt;(212 reviews)&lt;/span&gt;   <span class="h-ok">&lt;-- what you meant</span>
+&gt;&gt;&gt; len(div.contents)
+5                          <span class="h-bad">&lt;-- 2 tags + 3 whitespace nodes</span></pre>
+        <div class="callout warn sm"><b>And it depends on the source formatting.</b> The same page minified
+          has no whitespace nodes at all, so <code class="k">.next_sibling</code> works there and breaks the
+          day the site turns minification off. <b>Never use the raw sibling and child properties in a
+          scraper</b> — use the <code class="k">find_*</code> forms, which skip text nodes by
+          construction.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17 · TEXT ============ -->
+<section class="slide" data-sec="Extraction">
+  <div class="eyebrow">Extraction · 1 of 2</div>
+  <h1 class="t">Getting the text out is three different questions
+    <small><code class="k">.string</code>, <code class="k">.text</code> and
+    <code class="k">.get_text()</code> look interchangeable and are not. The differences show up precisely on
+    the messy elements — the ones where a label and its value share a parent.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <pre class="code xs">&lt;<span class="ht-tag">span</span>&gt;Response Time &lt;<span class="ht-tag">b</span>&gt;15 mins&lt;/<span class="ht-tag">b</span>&gt;&lt;/<span class="ht-tag">span</span>&gt;</pre>
+        <pre class="out xs">&gt;&gt;&gt; span.string
+None            <span class="h-bad">&lt;-- more than one child</span>
+
+&gt;&gt;&gt; span.text
+'Response Time 15 mins'
+
+&gt;&gt;&gt; span.get_text()
+'Response Time 15 mins'
+
+&gt;&gt;&gt; span.get_text(strip=True)
+'Response Time15 mins'   <span class="h-bad">&lt;-- joined!</span>
+
+&gt;&gt;&gt; span.get_text(' ', strip=True)
+'Response Time 15 mins'  <span class="h-ok">&lt;-- what you want</span></pre>
+      </div>
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th style="width:180px">Call</th><th>Behaviour</th></tr>
+          <tr class="hl"><td class="m">.string</td><td>The single text child — and <b><code class="k">None</code>
+            whenever there is more than one child</b>, which on real pages is most of the time. Avoid it.</td></tr>
+          <tr><td class="m">.text</td><td>All descendant text, concatenated. A property, no arguments. This is
+            just <code class="k">get_text()</code> with defaults.</td></tr>
+          <tr class="ok"><td class="m">.get_text(sep, strip)</td><td>The same, with control.
+            <code class="k">strip=True</code> strips each fragment; <code class="k">sep</code> is inserted
+            between them.</td></tr>
+          <tr><td class="m">.stripped_strings</td><td>An iterator of the non-empty fragments, already
+            stripped. Best when you want the pieces separately rather than joined.</td></tr>
+        </table>
+        <div class="callout bad sm"><b>Read the fourth output again.</b>
+          <code class="k">get_text(strip=True)</code> strips each fragment and then joins with <i>nothing</i>,
+          so <code class="k">'Response Time '</code> and <code class="k">'15 mins'</code> become
+          <code class="k">'Response Time15 mins'</code>. It is the most common silent corruption in
+          BeautifulSoup code. <b>Pass a separator whenever an element has more than one text
+          child:</b> <code class="k">get_text(' ', strip=True)</code>.</div>
+        <div class="callout warn sm"><b>Text carries invisible passengers.</b> Non-breaking spaces
+          (<code class="k">\xa0</code>) from <code class="k">&amp;nbsp;</code>, zero-width joiners, and
+          directional marks all survive <code class="k">.strip()</code> because Python does not consider
+          them whitespace. When a comparison fails against a string that looks identical, print
+          <code class="k">repr()</code>.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18 · ATTRIBUTES ============ -->
+<section class="slide" data-sec="Extraction">
+  <div class="eyebrow">Extraction · 2 of 2</div>
+  <h1 class="t">Attributes, and the one that is a list
+    <small>Attribute access looks like dictionary access because a Tag largely behaves like one. The
+    exception is the attribute you will touch most often.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <pre class="code xs"><span class="py-cm"># raises KeyError if absent</span>
+card[<span class="py-str">'businessid'</span>]            <span class="py-cm"># '4821'</span>
+
+<span class="py-cm"># returns None if absent — prefer this</span>
+card.get(<span class="py-str">'businessid'</span>)         <span class="py-cm"># '4821'</span>
+card.get(<span class="py-str">'businessid'</span>, <span class="py-str">''</span>)     <span class="py-cm"># '' when missing</span>
+
+<span class="py-cm"># everything at once</span>
+card.attrs
+<span class="py-cm"># {'class': ['sk-card'], 'businessid': '4821',</span>
+<span class="py-cm">#  'businessname': 'Sparkle Home Cleaning'}</span>
+
+card.has_attr(<span class="py-str">'businesslat'</span>)     <span class="py-cm"># True / False</span>
+card.name                       <span class="py-cm"># 'div'</span></pre>
+        <div class="callout good sm"><b>Our scraper gets this right.</b> Every attribute read in
+          <code class="k">scraper_sulekha.py</code> uses <code class="k">.get(name, "")</code> with a
+          default. It is the one thing that file is consistently careful about — and the reason it survives
+          cards that are missing a field, rather than dying on the first one.</div>
+      </div>
+      <div class="colstack">
+        <div class="callout bad"><b><code class="k">class</code> comes back as a list.</b> HTML defines it as
+          space-separated, so bs4 parses it. Multi-valued attributes —
+          <code class="k">class</code>, <code class="k">rel</code>, <code class="k">accept</code> — behave
+          this way; everything else is a plain string.</div>
+        <pre class="out xs">&gt;&gt;&gt; card['class']
+['sk-card']                 <span class="h-bad">&lt;-- a list, always</span>
+
+&gt;&gt;&gt; div['class']
+['key-points', 'light']
+
+&gt;&gt;&gt; ' '.join(div['class'])
+'key-points light'          <span class="h-ok">&lt;-- if you need the string</span>
+
+&gt;&gt;&gt; 'light' in div['class']
+True                        <span class="h-ok">&lt;-- the right test</span></pre>
+        <div class="callout warn sm"><b>Two consequences.</b>
+          <code class="k">card['class'] == 'sk-card'</code> is <code class="k">False</code>, always —
+          a list never equals a string. And writing <code class="k">card['class'][0]</code> works right up
+          until a designer adds a second class in front of the one you wanted.</div>
+        <div class="callout sm"><b>Relative URLs.</b> <code class="k">a['href']</code> is very often
+          <code class="k">/business/4821</code>, not a full address. Resolve it once, at extraction time:
+          <code class="k">urllib.parse.urljoin(page_url, href)</code>.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19 · THE TARGET ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">Case study · 1 of 8 · <code style="font-family:var(--mono);text-transform:none">scraper_sulekha.py</code></div>
+  <h1 class="t">One page, forty cards, eight fields each
+    <small>A business listings page: home cleaning services in Chennai. It is a good teaching target because
+    the markup is ordinary, the values are genuinely in the HTML, and the script that reads it contains
+    four distinct classes of mistake — all of which are producing output right now.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <div class="card b"><h3>The shape of the task</h3>
+          <p>Find the repeating container — <code class="k">div.sk-card</code> — and pull eight fields out of
+          each. This is the single most common scraping job there is, and the pattern generalises to product
+          grids, search results, job boards and directories without change.</p></div>
+        <table class="d sm free">
+          <tr><th style="width:120px">Field</th><th>Where it lives</th></tr>
+          <tr class="ok"><td>id, name</td><td>attributes on the card div itself</td></tr>
+          <tr class="ok"><td>locality</td><td>text of a span inside <code class="k">.locality</code></td></tr>
+          <tr class="ok"><td>lat, long</td><td>attributes on a nested <code class="k">.sk-link</code></td></tr>
+          <tr class="wr"><td>rating</td><td>a <code class="k">&lt;b&gt;</code> inside
+            <code class="k">.ratings-group</code> — no class of its own</td></tr>
+          <tr class="wr"><td>services</td><td>every <code class="k">.tag-link-item</code>, as a list</td></tr>
+          <tr class="hl"><td>response time<br/>sulekha score</td><td><b>identified only by their label text</b>,
+            inside sibling spans that look identical</td></tr>
+        </table>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">One card, as the server sends it</div>
+        <pre class="code xs">&lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"sk-card"</span> <span class="ht-att">businessid</span>=<span class="ht-val">"4821"</span>
+     <span class="ht-att">businessname</span>=<span class="ht-val">"Sparkle Home Cleaning"</span>&gt;
+  &lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"locality"</span>&gt;
+    &lt;<span class="ht-tag">span</span>&gt;<span class="ht-txt">Adyar, Chennai</span>&lt;/<span class="ht-tag">span</span>&gt;
+    &lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"sk-link"</span> <span class="ht-att">businesslat</span>=<span class="ht-val">"13.0067"</span>
+         <span class="ht-att">businesslong</span>=<span class="ht-val">"80.2570"</span>&gt;<span class="ht-txt">Directions</span>&lt;/<span class="ht-tag">div</span>&gt;
+  &lt;/<span class="ht-tag">div</span>&gt;
+  &lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"ratings-group"</span>&gt;&lt;<span class="ht-tag">b</span>&gt;<span class="ht-txt">4.6</span>&lt;/<span class="ht-tag">b</span>&gt;
+    &lt;<span class="ht-tag">span</span>&gt;<span class="ht-txt">(212 reviews)</span>&lt;/<span class="ht-tag">span</span>&gt;&lt;/<span class="ht-tag">div</span>&gt;
+  &lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"tags-link"</span>&gt;
+    &lt;<span class="ht-tag">span</span> <span class="ht-att">class</span>=<span class="ht-val">"tag-link-item"</span>&gt;<span class="ht-txt">Sofa Cleaning</span>&lt;/<span class="ht-tag">span</span>&gt;
+    &lt;<span class="ht-tag">span</span> <span class="ht-att">class</span>=<span class="ht-val">"tag-link-item"</span>&gt;<span class="ht-txt">Bathroom Cleaning</span>&lt;/<span class="ht-tag">span</span>&gt;
+  &lt;/<span class="ht-tag">div</span>&gt;
+  &lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"key-points light"</span>&gt;
+    &lt;<span class="ht-tag">span</span>&gt;<span class="ht-txt">Response Time </span>&lt;<span class="ht-tag">b</span>&gt;<span class="ht-txt">15 mins</span>&lt;/<span class="ht-tag">b</span>&gt;&lt;/<span class="ht-tag">span</span>&gt;
+    &lt;<span class="ht-tag">span</span>&gt;<span class="ht-txt">Sulekha score </span>&lt;<span class="ht-tag">b</span>&gt;<span class="ht-txt">8.7</span>&lt;/<span class="ht-tag">b</span>&gt;&lt;/<span class="ht-tag">span</span>&gt;
+  &lt;/<span class="ht-tag">div</span>&gt;
+&lt;/<span class="ht-tag">div</span>&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20 · FETCH AND PARSE ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">Case study · 2 of 8</div>
+  <h1 class="t">Fetch once, parse many times
+    <small>The first thing this script does is save the page to disk and then immediately read it back. That
+    looks like a pointless round trip. It is the best decision in the file.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code sm"><span class="py-kw">import</span> requests
+<span class="py-kw">from</span> bs4 <span class="py-kw">import</span> BeautifulSoup <span class="py-kw">as</span> bs
+
+url = <span class="py-str">"https://www.sulekha.com/home-cleaning-services/chennai"</span>
+response = requests.get(url)
+<span class="py-kw">if</span> response.status_code == <span class="py-num">200</span>:
+    <span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">"sulekha.html"</span>, <span class="py-str">"w"</span>, encoding=<span class="py-str">"utf-8"</span>) <span class="py-kw">as</span> f:
+        f.write(response.text)
+
+<span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">'sulekha.html'</span>, <span class="py-str">'r'</span>, encoding=<span class="py-str">'utf-8'</span>) <span class="py-kw">as</span> file:
+    html_content = file.read()
+
+soup = bs(html_content, <span class="py-str">'lxml'</span>)</pre>
+        <ul class="b sm">
+          <li><strong>Collection and extraction are separate jobs.</strong> Fetching is slow, rate limited
+            and rude to repeat. Parsing is instant and you will do it forty times while you get the
+            selectors right.</li>
+          <li><strong>The saved file is your test fixture.</strong> Debug against it offline, at full speed,
+            with the site untouched.</li>
+          <li><strong>It is also your evidence.</strong> When the numbers look wrong three weeks later, the
+            HTML you actually parsed is still on disk.</li>
+        </ul>
+      </div>
+      <div class="colstack">
+        <div class="callout bad"><b>Three problems with it as written.</b><br/><br/>
+          <b>1.</b> If the request fails, the <code class="k">if</code> is skipped — and the script then
+          reads <b>yesterday's</b> <code class="k">sulekha.html</code> without a word. You get a full,
+          plausible, <i>stale</i> CSV.<br/><br/>
+          <b>2.</b> No <code class="k">timeout=</code>, no <code class="k">User-Agent</code>, no delay.<br/><br/>
+          <b>3.</b> One fixed filename, so each run destroys the previous evidence.</div>
+        <pre class="code xs"><span class="py-kw">from</span> pathlib <span class="py-kw">import</span> Path
+<span class="py-kw">from</span> datetime <span class="py-kw">import</span> date
+
+r = requests.get(url, headers=HDRS, timeout=<span class="py-num">30</span>)
+r.raise_for_status()                  <span class="py-cm"># stop here, loudly</span>
+
+snapshot = Path(<span class="py-str">f"snapshots/sulekha-{date.today()}.html"</span>)
+snapshot.parent.mkdir(exist_ok=<span class="py-bi">True</span>)
+snapshot.write_bytes(r.<span class="py-bi">content</span>)     <span class="py-cm"># bytes, not text</span>
+
+soup = bs(snapshot.read_bytes(), <span class="py-str">'lxml'</span>)</pre>
+        <div class="callout good sm"><b>Dated snapshots pay for themselves</b> the first time a site changes
+          its markup: you can diff yesterday's page against today's and see exactly which selector died.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21 · THE CARD LOOP ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">Case study · 3 of 8</div>
+  <h1 class="t">Find the container, then never search the document again
+    <small>Everything after this line operates on <code class="k">card</code>, not on
+    <code class="k">soup</code>. That scoping is what keeps row 4's name attached to row 4's rating.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <pre class="code sm">cards = soup.find_all(<span class="py-str">'div'</span>, class_=<span class="py-str">"sk-card"</span>)
+sulekha_data = []
+business_info = {}
+
+<span class="py-kw">for</span> card <span class="py-kw">in</span> cards:
+    <span class="py-cm"># Id, name — straight off the container</span>
+    business_info[<span class="py-str">'id'</span>]   = card.get(<span class="py-str">'businessid'</span>, <span class="py-str">""</span>)
+    business_info[<span class="py-str">'name'</span>] = card.get(<span class="py-str">'businessname'</span>, <span class="py-str">""</span>)</pre>
+        <div class="callout good sm"><b>Two things right here.</b> The container is found by a semantic class,
+          and both fields come from <b>application attributes</b> — the kind that survive redesigns, from
+          slide 5. <code class="k">businessid</code> is not standard HTML; the site's own JavaScript needs
+          it, so nobody will rename it casually.</div>
+        <div class="callout warn sm"><b>One thing to watch.</b>
+          <code class="k">find_all</code> returns <code class="k">[]</code> when the class changes, so the
+          loop runs zero times and the script writes an empty CSV, successfully. <b>Assert the count</b>:
+          a listings page returning fewer than five cards is a failure, not a quiet result.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">The shape worth internalising</div>
+        <pre class="code xs"><span class="py-cm"># 1 · one selector for the repeating container</span>
+cards = soup.select(<span class="py-str">'div.sk-card'</span>)
+<span class="py-kw">assert</span> <span class="py-bi">len</span>(cards) &gt;= <span class="py-num">5</span>, <span class="py-str">f"only {len(cards)} cards — layout changed?"</span>
+
+<span class="py-kw">for</span> card <span class="py-kw">in</span> cards:
+    <span class="py-cm"># 2 · every field selector scoped to THIS card</span>
+    row = {
+        <span class="py-str">'id'</span>:   card.get(<span class="py-str">'businessid'</span>),
+        <span class="py-str">'name'</span>: card.get(<span class="py-str">'businessname'</span>),
+        <span class="py-str">'rating'</span>: text_of(card.select_one(<span class="py-str">'.ratings-group b'</span>)),
+    }
+    <span class="py-cm"># 3 · a fresh dict per row — see slide 25</span>
+    rows.append(row)</pre>
+        <div class="callout sm"><b>Why scoping matters more than it sounds.</b> Search the whole document for
+          <code class="k">.ratings-group b</code> and you get a list of forty ratings — which you then have
+          to zip against forty names, on the assumption that both lists are complete and in the same order.
+          One card without a rating and every row after it is wrong. Scoping makes that impossible by
+          construction.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22 · GUARDS ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">Case study · 4 of 8</div>
+  <h1 class="t">Guarded in one place, unguarded in the next
+    <small>The locality block shows both habits within six lines. The <code class="k">if location:</code>
+    check is exactly right; the two lines above it are exactly the ones that will raise.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <pre class="code sm">locality = card.find(<span class="py-str">'div'</span>, class_=<span class="py-str">"locality"</span>)
+location = locality.find(<span class="py-str">'span'</span>)              <span class="py-cm"># 2 unguarded</span>
+business_info[<span class="py-str">'locality'</span>] = location.get_text()  <span class="py-cm"># calls</span>
+
+location = locality.find(<span class="py-str">'div'</span>, class_=<span class="py-str">'sk-link'</span>)
+<span class="py-kw">if</span> location:                                  <span class="py-cm"># guarded</span>
+    business_info[<span class="py-str">'lat'</span>]  = location.get(<span class="py-str">'businesslat'</span>, <span class="py-str">""</span>)
+    business_info[<span class="py-str">'long'</span>] = location.get(<span class="py-str">'businesslong'</span>, <span class="py-str">""</span>)
+<span class="py-kw">else</span>:
+    business_info[<span class="py-str">'lat'</span>]  = <span class="py-str">''</span>
+    business_info[<span class="py-str">'long'</span>] = <span class="py-str">''</span></pre>
+        <div class="callout good sm"><b>The <code class="k">else</code> branch is the part people skip.</b>
+          Without it, <code class="k">lat</code> keeps whatever value it held from the previous card — which
+          is the bug on slide 25, avoided here by writing both branches. The author clearly knew. They just
+          did not do it everywhere.</div>
+      </div>
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th style="width:126px">Line</th><th>What happens if it is missing</th></tr>
+          <tr class="hl"><td class="m">locality</td><td><code class="k">None</code>, then
+            <code class="k">.find</code> on it &rarr; <b>AttributeError, whole script stops</b></td></tr>
+          <tr class="hl"><td class="m">location (span)</td><td><code class="k">None</code>, then
+            <code class="k">.get_text()</code> &rarr; <b>AttributeError</b></td></tr>
+          <tr class="ok"><td class="m">sk-link</td><td>guarded — empty strings, loop continues</td></tr>
+          <tr class="hl"><td class="m">ratings-group</td><td>unguarded — <b>AttributeError</b> (the
+            <code class="k">&lt;b&gt;</code> inside it <i>is</i> guarded, which is the wrong one to
+            protect)</td></tr>
+          <tr class="hl"><td class="m">tags-link</td><td>unguarded — <b>AttributeError</b></td></tr>
+          <tr class="hl"><td class="m">key-points light</td><td>unguarded — <b>AttributeError</b></td></tr>
+        </table>
+        <div class="callout bad sm"><b>Five of six containers are unguarded, and one card kills the run.</b>
+          Not the record — the <i>run</i>. Thirty-nine good cards are in memory when the exception is
+          raised on the fortieth, and none of them are written, because the
+          <code class="k">to_csv</code> is after the loop.</div>
+        <div class="callout warn sm"><b>The fix is structural, not defensive.</b> Wrap the body of the loop
+          in <code class="k">try/except</code>, log the failing card's id, and continue. One malformed
+          listing should cost you one row.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23 · THE TYPO ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">Case study · 5 of 8</div>
+  <h1 class="t">A typo that has never once caused a failure
+    <small>This is my favourite thing in the file. There is a misspelled tag name in the services block, and
+    the code works perfectly — because <code class="k">find_all</code> answers a question about a tag that
+    does not exist with an empty list rather than an error.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code sm">services_div = card.find(<span class="py-str">'div'</span>, class_=<span class="py-str">"tags-link"</span>)
+
+services_list = services_div.find_all(<span class="py-str">'spam'</span>,      <span class="py-cm"># &lt;-- 'spam'</span>
+                                      class_=<span class="py-str">"tag-link-item"</span>)
+services = []
+<span class="py-kw">if</span> <span class="py-kw">not</span> services_list:                              <span class="py-cm"># always true</span>
+    services_list = services_div.find_all(<span class="py-str">'span'</span>,   <span class="py-cm"># the real one</span>
+                                          class_=<span class="py-str">"tag-link-item"</span>)
+<span class="py-kw">for</span> service <span class="py-kw">in</span> services_list:
+    service_name = service.get_text()
+    <span class="py-kw">if</span> service_name <span class="py-kw">not</span> <span class="py-kw">in</span> services:      <span class="py-cm"># dedupe</span>
+        services.append(service_name)
+
+business_info[<span class="py-str">'services'</span>] = services</pre>
+        <div class="outlbl">Measured</div>
+        <pre class="out xs">&gt;&gt;&gt; d.find_all('spam', class_="tag-link-item")
+[]
+&gt;&gt;&gt; [x.get_text() for x in
+...  d.find_all('span', class_="tag-link-item")]
+['Sofa', 'Bath']</pre>
+      </div>
+      <div class="colstack">
+        <ol class="n">
+          <li>There is no <code class="k">&lt;spam&gt;</code> element in HTML, so the search matches nothing.</li>
+          <li><code class="k">find_all</code> returns <code class="k">[]</code>. <b>No exception</b> — an
+            invalid tag name is not an error, merely a search with no results.</li>
+          <li><code class="k">if not services_list:</code> is therefore <b>always</b> true.</li>
+          <li>The fallback runs, with the correct spelling, every single time. The output is right.</li>
+        </ol>
+        <div class="callout bad"><b>Read what the fallback was for.</b> It was written to handle a site that
+          sometimes uses a different tag. Instead it is silently carrying a typo, and the first branch has
+          never executed. <b>Dead code that produces correct output is the hardest kind to find</b>, because
+          nothing ever draws attention to it.</div>
+        <div class="callout warn sm"><b>The general lesson, which is bigger than the typo.</b> An empty
+          <code class="k">ResultSet</code> is indistinguishable from a wrong selector, a changed page and a
+          misspelled tag. If you write a fallback, <b>log which branch fired.</b> One
+          <code class="k">print</code> here would have surfaced this on the first run.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24 · LABEL-TEXT EXTRACTION ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">Case study · 6 of 8</div>
+  <h1 class="t">When the only handle is the label itself
+    <small>Response time and Sulekha score sit in sibling spans with no classes, no ids and no distinguishing
+    tags. The only thing separating them is the English word printed next to the number.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code sm">key_points = card.find(<span class="py-str">'div'</span>, <span class="py-str">'key-points light'</span>)
+key_point_span = key_points.find_all(<span class="py-str">'span'</span>)
+
+<span class="py-kw">for</span> key_point <span class="py-kw">in</span> key_point_span:
+    <span class="py-kw">if</span> <span class="py-str">'Response Time'</span> <span class="py-kw">in</span> key_point.get_text():
+        b_tag = key_point.find(<span class="py-str">'b'</span>)
+        business_info[<span class="py-str">'response_time'</span>] = b_tag.get_text()
+    <span class="py-kw">if</span> <span class="py-str">'Sulekha score'</span> <span class="py-kw">in</span> key_point.get_text():
+        b_tag = key_point.find(<span class="py-str">'b'</span>)
+        business_info[<span class="py-str">'sulekha_score'</span>] = b_tag.get_text()</pre>
+        <div class="callout sm"><b>The approach is correct.</b> Iterate the candidates, test each one's text
+          for the label, take the value from inside it. There is no better option when the markup gives you
+          nothing else — and this pattern appears constantly on specification tables, product attributes and
+          address blocks.</div>
+      </div>
+      <div class="colstack">
+        <div class="callout bad"><b>But it is matching on presentation.</b> The label is a string a copywriter
+          owns. <code class="k">'Response Time'</code> becomes <code class="k">'Response time'</code>, or
+          <code class="k">'Avg. Response Time'</code>, or gets translated — and the field silently stops
+          being collected. Nothing raises; the column just fills with nulls.</div>
+        <ul class="b sm">
+          <li><strong>Normalise before comparing.</strong> <code class="k">'response time' in
+            span.get_text(' ', strip=True).lower()</code> survives capitalisation and stray whitespace at
+            no cost.</li>
+          <li><strong>Note the missing <code class="k">else</code>.</strong> Neither
+            <code class="k">if</code> has one, so a card without a response time leaves
+            <code class="k">business_info['response_time']</code> untouched. <b>Slide 25 is what that
+            does.</b></li>
+          <li><strong><code class="k">b_tag</code> is unguarded.</strong> A label present with an empty value
+            &rarr; <code class="k">None.get_text()</code> &rarr; AttributeError.</li>
+          <li><strong>The spaced class string</strong> is the slide 13 trap, still live in this line.</li>
+        </ul>
+        <div class="callout good sm"><b>The tidier form:</b>
+          <code class="k">card.select_one('.key-points span:-soup-contains("Response Time") b')</code> —
+          one line, and it returns <code class="k">None</code> instead of raising. Note that
+          <code class="k">:-soup-contains</code> is soupsieve's own and will not move to Selenium.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25 · THE DICT BUG ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">Case study · 7 of 8</div>
+  <h1 class="t">One dictionary, reused forty times
+    <small><code class="k">business_info = {}</code> is created <i>before</i> the loop and mutated inside it.
+    That single decision creates one bug the author fixed and one they did not. Both outputs below were
+    produced by running the code.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">The bug that was fixed</div>
+        <pre class="code xs">    sulekha_data.append(copy(business_info))
+                        <span class="h-ok">^^^^</span></pre>
+        <pre class="out xs"><span class="h-bad">WITHOUT copy() — every row identical:</span>
+ id  name
+  3 Gamma
+  3 Gamma
+  3 Gamma</pre>
+        <div class="callout sm"><b>Why.</b> Appending the dict appends a <i>reference</i>. All forty entries
+          point at the same object, so the list holds forty views of the last card.
+          <code class="k">copy()</code> takes a snapshot and fixes it.</div>
+        <div class="callout warn sm"><b>Shallow is enough here — by luck.</b>
+          <code class="k">services</code> is a list, and a shallow copy shares it. It is safe only because
+          <code class="k">services = []</code> rebuilds it each iteration. Move that line above the loop and
+          the aliasing bug returns, in the one column nobody checks.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">The bug that was not</div>
+        <pre class="out xs"><span class="h-bad">AS WRITTEN — card 2 has no Response Time:</span>
+ id  name  response_time  sulekha_score
+  1 Alpha        10 mins            8.1
+  2  Beta        <span class="h-bad">10 mins</span>            8.2
+  3 Gamma        30 mins            8.3</pre>
+        <div class="callout bad"><b>Beta's response time is Alpha's.</b> The dict is never cleared. When the
+          <code class="k">if 'Response Time'</code> test fails, the key is simply not written — so it keeps
+          the previous card's value, and <code class="k">copy()</code> faithfully snapshots the stale
+          number into the row.</div>
+        <ul class="b sm">
+          <li>This does not raise, does not warn, and does not look wrong. <b>10 mins is a perfectly
+            plausible response time for Beta.</b></li>
+          <li>It is worse than a crash and worse than a null: it is <b>invented data</b>, and it will survive
+            every sanity check you run downstream.</li>
+          <li><strong>The fix is one line:</strong> build a fresh <code class="k">dict</code> inside the loop.
+            Then a missing field is a missing key, which becomes <code class="k">NaN</code> in pandas —
+            visible, countable, honest.</li>
+        </ul>
+        <div class="callout good sm"><b>The general rule.</b> Accumulator variables belong inside the loop
+          they accumulate for. Hoisting one outside to "avoid re-creating it" saves nanoseconds and costs
+          correctness.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26 · FRAGILITY AUDIT ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">Case study · 8 of 8</div>
+  <h1 class="t">The whole file, scored
+    <small>Nine findings. Two are correctness bugs producing wrong output today; the rest decide how the
+    script behaves on the day the page changes — which it will.</small></h1>
+  <div class="wrap">
+    <table class="d sm free" style="line-height:1.45">
+      <tr><th style="width:26px">#</th><th style="width:224px">Finding</th><th style="width:84px">Class</th>
+        <th>Consequence</th></tr>
+      <tr class="hl"><td class="c">1</td><td>Dict hoisted above the loop, fields never cleared</td>
+        <td><b>wrong data</b></td><td>A card missing a field inherits the previous card's value. Invented,
+          plausible, undetectable downstream.</td></tr>
+      <tr class="hl"><td class="c">2</td><td>Stale <code class="k">sulekha.html</code> read when the fetch fails</td>
+        <td><b>wrong data</b></td><td>The <code class="k">if status==200</code> has no <code class="k">else</code>,
+          so a failed request silently re-parses yesterday's page.</td></tr>
+      <tr class="wr"><td class="c">3</td><td>Five of six containers unguarded</td><td>crash</td>
+        <td>One malformed card raises <code class="k">AttributeError</code> and loses all rows, because
+          <code class="k">to_csv</code> is after the loop.</td></tr>
+      <tr class="wr"><td class="c">4</td><td><code class="k">find('div','key-points light')</code></td><td>breakage</td>
+        <td>Matches the class attribute verbatim. Reorder the two classes and the field vanishes.</td></tr>
+      <tr class="wr"><td class="c">5</td><td>Label matched case-sensitively</td><td>breakage</td>
+        <td><code class="k">'Response Time'</code> &rarr; <code class="k">'Response time'</code> and the
+          column silently fills with nulls.</td></tr>
+      <tr><td class="c">6</td><td><code class="k">find_all('spam', ...)</code></td><td>dead code</td>
+        <td>Never matches; the fallback carries the whole feature. Output is correct, intent is lost.</td></tr>
+      <tr><td class="c">7</td><td>No <code class="k">timeout</code>, no <code class="k">User-Agent</code>,
+        no delay</td><td>hygiene</td><td>Can hang indefinitely; announces itself as
+        <code class="k">python-requests</code>. Lecture 1, slide 8.</td></tr>
+      <tr><td class="c">8</td><td>No count assertion after <code class="k">find_all</code></td><td>silence</td>
+        <td>A renamed container writes an empty CSV and exits 0.</td></tr>
+      <tr><td class="c">9</td><td>One fixed output filename, no snapshot history</td><td>hygiene</td>
+        <td>Each run destroys the evidence needed to diagnose the next failure.</td></tr>
+    </table>
+    <div class="callout bad sm"><b>Findings 1 and 2 are the ones to sit with.</b> Neither raises, neither logs,
+      and both produce a CSV that passes every eyeball test. <b>A scraper's most dangerous failure mode is
+      not crashing — it is succeeding with the wrong numbers.</b></div>
+  </div>
+</section>
+
+<!-- ============ 27 · THE REWRITE ============ -->
+<section class="slide" data-sec="The rewrite">
+  <div class="eyebrow">The rewrite · 1 of 2</div>
+  <h1 class="t">Same logic, three habits
+    <small>Not longer, not cleverer. One helper that absorbs the <code class="k">None</code> checks, a fresh
+    dict per row, and a <code class="k">try</code> that costs you a row instead of a run.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <pre class="code xs"><span class="py-kw">def</span> <span class="py-fn">text_of</span>(el, default=<span class="py-bi">None</span>):
+    <span class="py-str">"""Text of an element that may not exist."""</span>
+    <span class="py-kw">return</span> el.get_text(<span class="py-str">' '</span>, strip=<span class="py-bi">True</span>) <span class="py-kw">if</span> el <span class="py-kw">else</span> default
+
+<span class="py-kw">def</span> <span class="py-fn">labelled</span>(card, label):
+    <span class="py-str">"""The bold value in the key-point whose text mentions `label`."""</span>
+    <span class="py-kw">for</span> span <span class="py-kw">in</span> card.select(<span class="py-str">'.key-points span'</span>):
+        <span class="py-kw">if</span> label.lower() <span class="py-kw">in</span> span.get_text(<span class="py-str">' '</span>, strip=<span class="py-bi">True</span>).lower():
+            <span class="py-kw">return</span> text_of(span.find(<span class="py-str">'b'</span>))
+    <span class="py-kw">return</span> <span class="py-bi">None</span>
+
+<span class="py-kw">def</span> <span class="py-fn">parse_card</span>(card):
+    geo = card.select_one(<span class="py-str">'.locality .sk-link'</span>)
+    <span class="py-kw">return</span> {                                <span class="py-cm"># fresh dict, every card</span>
+        <span class="py-str">'id'</span>:            card.get(<span class="py-str">'businessid'</span>),
+        <span class="py-str">'name'</span>:          card.get(<span class="py-str">'businessname'</span>),
+        <span class="py-str">'locality'</span>:      text_of(card.select_one(<span class="py-str">'.locality span'</span>)),
+        <span class="py-str">'lat'</span>:           geo.get(<span class="py-str">'businesslat'</span>)  <span class="py-kw">if</span> geo <span class="py-kw">else</span> <span class="py-bi">None</span>,
+        <span class="py-str">'long'</span>:          geo.get(<span class="py-str">'businesslong'</span>) <span class="py-kw">if</span> geo <span class="py-kw">else</span> <span class="py-bi">None</span>,
+        <span class="py-str">'rating'</span>:        text_of(card.select_one(<span class="py-str">'.ratings-group b'</span>)),
+        <span class="py-str">'services'</span>:      <span class="py-str">'|'</span>.join(<span class="py-bi">dict</span>.fromkeys(          <span class="py-cm"># dedupe, keep order</span>
+                            text_of(s) <span class="py-kw">for</span> s <span class="py-kw">in</span>
+                            card.select(<span class="py-str">'.tag-link-item'</span>))),
+        <span class="py-str">'response_time'</span>: labelled(card, <span class="py-str">'response time'</span>),
+        <span class="py-str">'sulekha_score'</span>: labelled(card, <span class="py-str">'sulekha score'</span>),
+    }</pre>
+      <div class="colstack">
+        <pre class="code xs">cards = soup.select(<span class="py-str">'div.sk-card'</span>)
+<span class="py-kw">assert</span> <span class="py-bi">len</span>(cards) &gt;= <span class="py-num">5</span>, <span class="py-str">f"only {len(cards)} cards"</span>
+
+rows, failed = [], []
+<span class="py-kw">for</span> card <span class="py-kw">in</span> cards:
+    <span class="py-kw">try</span>:
+        rows.append(parse_card(card))
+    <span class="py-kw">except</span> <span class="py-fn">Exception</span> <span class="py-kw">as</span> e:
+        failed.append((card.get(<span class="py-str">'businessid'</span>), <span class="py-bi">repr</span>(e)))
+
+<span class="py-bi">print</span>(<span class="py-str">f"{len(rows)} parsed, {len(failed)} failed"</span>)
+<span class="py-kw">for</span> bid, err <span class="py-kw">in</span> failed:
+    <span class="py-bi">print</span>(<span class="py-str">"  "</span>, bid, err)</pre>
+        <table class="d sm free">
+          <tr><th style="width:132px">Change</th><th>Kills finding</th></tr>
+          <tr class="ok"><td><code class="k">text_of</code> helper</td><td>3 — no unguarded
+            <code class="k">.get_text()</code> survives</td></tr>
+          <tr class="ok"><td>fresh dict per card</td><td>1 — the invented-data bug</td></tr>
+          <tr class="ok"><td><code class="k">select</code> with one class</td><td>4 — the word-order trap</td></tr>
+          <tr class="ok"><td><code class="k">.lower()</code> on labels</td><td>5 — capitalisation drift</td></tr>
+          <tr class="ok"><td>per-card <code class="k">try</code></td><td>3 — one bad card, one lost row</td></tr>
+          <tr class="ok"><td><code class="k">assert len(cards)</code></td><td>8 — the silent empty CSV</td></tr>
+        </table>
+        <div class="callout good sm"><b>And it reports.</b> Two printed lines — how many parsed, how many
+          failed and why — turn a script you have to trust into one you can check.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28 · SOUP TO DATAFRAME ============ -->
+<section class="slide" data-sec="The rewrite">
+  <div class="eyebrow">The rewrite · 2 of 2</div>
+  <h1 class="t">Everything you scraped is a string
+    <small>BeautifulSoup returns text, because HTML has no types. The moment you hand that to pandas, the
+    types it infers are a guess — and one of the columns does not survive a CSV at all.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">Straight from the loop — every column is object</div>
+        <pre class="out xs">&gt;&gt;&gt; df = pd.DataFrame(rows); df.dtypes
+id               object
+name             object
+locality         object
+lat              object      <span class="h-bad">&lt;-- a coordinate</span>
+long             object      <span class="h-bad">&lt;-- a coordinate</span>
+rating           object      <span class="h-bad">&lt;-- a number</span>
+services         object      <span class="h-bad">&lt;-- a list!</span>
+response_time    object
+sulekha_score    object</pre>
+        <div class="outlbl" style="margin-top:6px">What a list column does to a CSV</div>
+        <pre class="out xxs">id,name,...,services,response_time
+4821,Sparkle Home Cleaning,...,<span class="h-bad">"['Sofa Cleaning', 'Bathroom Cleaning']"</span>,15 mins
+
+&gt;&gt;&gt; pd.read_csv('out.csv')['services'][0]
+<span class="h-bad">"['Sofa Cleaning', 'Bathroom Cleaning']"</span>   &lt;- a str
+</pre>
+        <div class="callout bad sm"><b>The list did not round-trip.</b> pandas wrote Python's
+          <code class="k">repr</code> into the cell, and reading it back gives a <i>string that looks like a
+          list</i>. Anyone who then reaches for <code class="k">eval()</code> to recover it has invited
+          arbitrary code from a scraped page into their process.</div>
+      </div>
+      <div class="colstack">
+        <pre class="code xs"><span class="py-cm"># 1 · flatten the list at extraction time (see slide 27)</span>
+<span class="py-str">'services'</span>: <span class="py-str">'|'</span>.join(names)      <span class="py-cm"># 'Sofa|Bathroom'</span>
+<span class="py-cm">#   recover with .str.split('|'), never eval()</span>
+<span class="py-cm">#   or write JSON/Parquet, which keep real lists</span>
+
+<span class="py-cm"># 2 · cast on purpose, and see what fails</span>
+num = [<span class="py-str">'lat'</span>, <span class="py-str">'long'</span>, <span class="py-str">'rating'</span>, <span class="py-str">'sulekha_score'</span>]
+<span class="py-kw">for</span> c <span class="py-kw">in</span> num:
+    bad = df[c].notna() &amp; pd.to_numeric(df[c], errors=<span class="py-str">'coerce'</span>).isna()
+    <span class="py-kw">if</span> bad.any():
+        <span class="py-bi">print</span>(<span class="py-str">f"{c}: unparseable ->"</span>, df.loc[bad, c].unique()[:<span class="py-num">5</span>])
+    df[c] = pd.to_numeric(df[c], errors=<span class="py-str">'coerce'</span>)
+
+<span class="py-cm"># 3 · pull the number out of '15 mins' explicitly</span>
+df[<span class="py-str">'response_mins'</span>] = (df[<span class="py-str">'response_time'</span>]
+    .str.extract(<span class="py-str">r'(\d+)'</span>).astype(<span class="py-str">'Float64'</span>))</pre>
+        <div class="callout warn sm"><b>Why print the unparseable values before coercing.</b>
+          <code class="k">errors='coerce'</code> alone turns <code class="k">'4.6 (212)'</code>,
+          <code class="k">'N/A'</code> and <code class="k">'—'</code> all into <code class="k">NaN</code>
+          with no record that they were different. Look at them once; you almost always find a formatting
+          case you had not considered.</div>
+        <div class="callout good sm"><b>Then re-run Lecture 1's six assertions.</b> Every one of them applies
+          unchanged here: no all-null columns, no duplicate ids, numeric columns actually numeric, row count
+          plausible. The source changed; the discipline did not.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 29 · WHEN IT FAILS ============ -->
+<section class="slide" data-sec="Limits">
+  <div class="eyebrow">Limits</div>
+  <h1 class="t">Four ways rung 3 runs out
+    <small>Everything in this lecture assumes the server sends you a finished document. Here is what it looks
+    like when that assumption stops holding, and which of the four is Lecture 3's problem.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card r"><h3><span class="num">01</span>The HTML arrives empty</h3>
+          <pre class="code xxs" style="margin:6px 0">&lt;<span class="ht-tag">div</span> <span class="ht-att">id</span>=<span class="ht-val">"root"</span>&gt;&lt;/<span class="ht-tag">div</span>&gt;
+&lt;<span class="ht-tag">script</span> <span class="ht-att">src</span>=<span class="ht-val">"/static/bundle.js"</span>&gt;&lt;/<span class="ht-tag">script</span>&gt;</pre>
+          <p>React, Vue, Angular. The document is a shell; the content is assembled in the browser. Your
+          selectors are correct and match nothing. <b>Lecture 3.</b></p></div>
+        <div class="card o"><h3><span class="num">02</span>The first page works, the second does not</h3>
+          <p>Infinite scroll, "Load more", filters that never change the URL. Page 1 is server-rendered;
+          everything after it arrives by XHR. <b>Often solvable on rung 2</b> — find that XHR before you
+          reach for a browser.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card p"><h3><span class="num">03</span>The markup is right but the values are wrong</h3>
+          <p>Prices, stock levels and personalised text patched in by JavaScript after load. The
+          <i>structure</i> is in the HTML, so your scraper runs happily and reports placeholder or stale
+          values. <b>The nastiest of the four</b>, because nothing looks broken.</p></div>
+        <div class="card"><h3><span class="num">04</span>The page renders, then blocks you</h3>
+          <p>A challenge page, a consent wall, or a 403 after twenty requests. This is not a parsing problem
+          at all. <b>Lecture 3</b> covers the mechanism, <b>Lecture 4</b> covers whether working around it
+          is your decision to make.</p></div>
+        <div class="callout warn sm"><b>Check for case 3 explicitly.</b> Pick one record, compare the scraped
+          value against what the page shows in a browser, and do it again next week. It is the only failure
+          here that produces a complete, well-formed, confidently wrong dataset.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 30 · RECAP ============ -->
+<section class="slide" data-sec="Recap">
+  <div class="eyebrow">Recap</div>
+  <h1 class="t">Three rungs down, one to go
+    <small>You can now collect from any site that sends its content in the response. That is more of the web
+    than students expect — and the remaining rung is the expensive one.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+      <div class="ladder">
+        <div class="rung"><div class="num">1</div>
+          <div class="txt"><h4>Documented API or feed <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p><code class="k">feedparser</code>, published REST APIs, bulk downloads.</p></div></div>
+        <div class="rung"><div class="num">2</div>
+          <div class="txt"><h4>Undocumented endpoint <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>Network tab, sessions, warm-up requests, double-encoded JSON.</p></div></div>
+        <div class="rung"><div class="num">3</div>
+          <div class="txt"><h4>Parse the server's HTML <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>One container selector, scoped field selectors, a fresh dict per row, a guard on every
+          extraction, an assertion on the count.</p></div></div>
+        <div class="rung"><div class="num on">4</div>
+          <div class="txt on"><h4>Drive a real browser <span class="tag r" style="margin-left:6px">next</span></h4>
+          <p>Selenium: waits, locators, staleness, cleanup — and the NSE case, where the wall is not the
+          markup but the session. <b>Lecture 3.</b></p></div></div>
+      </div>
+      <div class="callout good sm"><b>The selectors come with you.</b> Every CSS string you wrote today works
+        unchanged in <code class="k">driver.find_element(By.CSS_SELECTOR, ...)</code>. That is the argument
+        for preferring <code class="k">.select()</code>, and it is why slide 15 spent a row on it.</div>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>The extraction loop, as a shape</h3>
+          <pre class="code xxs" style="margin:6px 0">soup = bs(r.content, <span class="py-str">'lxml'</span>)
+cards = soup.select(CONTAINER)
+<span class="py-kw">assert</span> <span class="py-bi">len</span>(cards) &gt;= MINIMUM
+
+<span class="py-kw">for</span> card <span class="py-kw">in</span> cards:          <span class="py-cm"># scoped</span>
+    <span class="py-kw">try</span>:
+        rows.append(parse(card))  <span class="py-cm"># fresh dict</span>
+    <span class="py-kw">except</span> <span class="py-fn">Exception</span> <span class="py-kw">as</span> e:
+        failed.append((<span class="py-bi">id</span>, e))   <span class="py-cm"># lose a row</span>
+
+validate(pd.DataFrame(rows))  <span class="py-cm"># Lecture 1</span></pre></div>
+        <div class="callout warn sm"><b>Before next week.</b> Take one page you actually want for the project,
+          save it to disk, and get the container selector right. If <code class="k">find_all</code> returns
+          zero on a page you can plainly see content on, you have just diagnosed yourself into Lecture 3.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 31 · TAKEAWAYS ============ -->
+<section class="slide" data-sec="Recap">
+  <div class="eyebrow">Key takeaways</div>
+  <h1 class="t">Six things worth keeping</h1>
+  <div class="wrap">
+    <div class="cols3" style="flex:1">
+      <div class="card b"><h3><span class="num">01</span>View-source, not Inspect Element</h3>
+        <p>The Elements panel shows the document after scripts ran. Only view-source — or
+        <code class="k">requests.get(url).text</code> — tells you what your scraper will actually
+        receive.</p></div>
+      <div class="card g"><h3><span class="num">02</span>Container first, then scope everything</h3>
+        <p>One selector for the repeating row, every field selector run against <i>that</i> element. It makes
+        misaligned records structurally impossible rather than merely unlikely.</p></div>
+      <div class="card o"><h3><span class="num">03</span>Pick handles that survive</h3>
+        <p>Application attributes beat semantic classes beat layout classes. Generated hashes and
+        <code class="k">nth-child</code> paths are not handles at all, whatever "Copy selector"
+        offers.</p></div>
+    </div>
+    <div class="cols3" style="flex:1">
+      <div class="card p"><h3><span class="num">04</span>Empty is not an error, and that is the danger</h3>
+        <p><code class="k">find_all</code> returns <code class="k">[]</code> for a wrong selector, a changed
+        page and a misspelled tag alike. Assert the count; log which fallback fired.</p></div>
+      <div class="card r"><h3><span class="num">05</span>A fresh dict for every row</h3>
+        <p>The hoisted accumulator copied one business's response time onto another's record. Silent,
+        plausible, invented data — worse than any crash.</p></div>
+      <div class="card"><h3><span class="num">06</span>Prefer <code class="k">select</code>, keep <code class="k">find</code> for four things</h3>
+        <p>Regex, arbitrary predicates, moving up the tree, and <code class="k">recursive=False</code>.
+        Everything else reads better as CSS — and moves to Selenium unchanged.</p></div>
+    </div>
+    <div class="callout sm"><b>And one from Lecture 1, unchanged.</b> Silence is not success. The validation
+      you wrote for an API response applies to a parsed page without a single edit.</div>
+  </div>
+</section>
+
+<!-- ============ 32 · EXERCISES ============ -->
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Five exercises
+    <small>Numbers 3 and 4 are the ones that will teach you something you cannot get from the slides.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card sm b"><h3><span class="num">01</span>Selector drills</h3>
+          <p>Against the card markup from slide 19, write selectors for: every service name; the rating only;
+          the latitude; the response time value without its label; and every card <b>without</b> a
+          <code class="k">sk-link</code>. Do the last one twice — once with
+          <code class="k">:not(:has(...))</code>, once with a <code class="k">find_all</code> predicate.</p></div>
+        <div class="card sm o"><h3><span class="num">02</span>Prove the class trap</h3>
+          <p>Build a two-element fixture, one with <code class="k">class="key-points light"</code> and one
+          with <code class="k">class="light key-points"</code>. Show which of
+          <code class="k">find('div','key-points light')</code>,
+          <code class="k">find(class_='key-points')</code> and <code class="k">select('.key-points')</code>
+          match each. <b>Write down the rule in your own words.</b></p></div>
+        <div class="card sm r"><h3><span class="num">03</span>Reproduce the invented data</h3>
+          <p>Take the fixture from slide 25 — three cards, the middle one missing its response time — and run
+          the original loop. Confirm card 2 reports card 1's value. Then remove
+          <code class="k">copy()</code> and confirm all three rows become identical. <b>Two different bugs
+          from one hoisted dictionary; explain how each arises.</b></p></div>
+      </div>
+      <div class="colstack">
+        <div class="card sm p"><h3><span class="num">04</span>Break your own scraper</h3>
+          <p>Save a real listings page. Get a working extraction. Now edit the saved HTML the way a designer
+          would — rename one class, wrap a block in an extra div, reorder two classes, insert an
+          advertisement row among the cards. <b>Record which of your selectors survived each edit and
+          why.</b> That table is the actual deliverable.</p></div>
+        <div class="card sm g"><h3><span class="num">05</span>Scrape something small, end to end</h3>
+          <p>One page, at least 20 rows, at least 5 fields. Requirements: a dated snapshot on disk; a
+          container-count assertion; a per-row <code class="k">try</code> that reports failures; a fresh dict
+          per row; and Lecture 1's six validations on the resulting frame. <b>Submit the printed validation
+          output alongside the CSV</b> — the evidence matters as much as the data.</p></div>
+        <div class="callout warn sm"><b>Ground rules.</b> One request per page, a timeout on every request,
+          a real delay, and check <code class="k">robots.txt</code> first — we cover what that file does and
+          does not oblige you to do in <b>Lecture 4</b>, but read it now anyway. Debug against your saved
+          snapshot, not against the live site.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div>
+<div id="hint">← → navigate · F fullscreen · P print</div>
+<div id="nav"><button id="prev" aria-label="Previous slide">‹</button><button id="next" aria-label="Next slide">›</button></div>
+
+<script>
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ============================================================
+   cover ornament — a wall of selectors and markup
+   ============================================================ */
+(function(){
+  const box=document.getElementById('cvp'); if(!box) return;
+  const sels=[
+    ['cs-tag','div'],['cs-cls','.sk-card'],null,
+    ['cs-cls','.locality'],[null,' '],['cs-tag','span'],null,
+    ['cs-cls','.ratings-group'],[null,' '],['cs-com','&gt;'],[null,' '],['cs-tag','b'],null,
+    ['cs-att','[businessid]'],null,
+    ['cs-tag','a'],['cs-att','[href^="/business/"]'],null,
+    ['cs-cls','.key-points'],[null,' '],['cs-tag','span'],['cs-pse',':last-child'],null,
+    ['cs-tag','tr'],['cs-pse',':not(.header)'],[null,' '],['cs-tag','td'],['cs-pse',':nth-of-type(2)'],null,
+    ['cs-cls','.tag-link-item'],null,
+    ['cs-tag','div'],['cs-cls','.sk-card'],[null,' '],['cs-att','[businesslat]'],null,
+    ['cs-id','#search-results'],[null,' '],['cs-cls','.card'],null,
+    ['cs-tag','span'],['cs-pse',':-soup-contains("Response Time")'],null,
+    ['cs-cls','.sk-card'],[null,' '],['cs-cls','.tags-link'],[null,' '],['cs-tag','span'],null,
+    ['cs-tag','h3'],[null,' '],['cs-com','+'],[null,' '],['cs-tag','p'],null,
+    ['cs-tag','li'],['cs-pse',':first-child'],null,
+    ['cs-cls','.product-item'],[null,' '],['cs-cls','.price'],null
+  ];
+  const lines=[]; let cur='';
+  for(const tok of sels){
+    if(tok===null){ lines.push(cur); cur=''; continue; }
+    const [cls,txt]=tok;
+    cur += cls ? '<span class="'+cls+'">'+txt+'</span>' : txt;
+  }
+  if(cur) lines.push(cur);
+  box.innerHTML=lines.map(l=>'<div>'+l+'</div>').join('');
+})();
+
+/* ============================================================
+   selector playground
+   Runs the browser's own querySelectorAll over a parsed copy of
+   the markup below. BeautifulSoup's .select() agrees with it on
+   everything here; slide 15 lists where the two diverge.
+   ============================================================ */
+(function(){
+  const box=document.getElementById('hl'); if(!box) return;
+  const inp=document.getElementById('sel'), list=document.getElementById('ml'),
+        cnt=document.getElementById('cnt'), pre=document.getElementById('presets');
+
+  const SRC = `<div class="results" id="search-results">
+  <div class="sk-card" businessid="4821" businessname="Sparkle Home Cleaning">
+    <div class="locality"><span>Adyar, Chennai</span>
+      <div class="sk-link" businesslat="13.0067" businesslong="80.2570">Directions</div>
+    </div>
+    <div class="ratings-group"><b>4.6</b><span>(212 reviews)</span></div>
+    <div class="tags-link"><span class="tag-link-item">Sofa Cleaning</span><span class="tag-link-item">Bathroom Cleaning</span></div>
+    <div class="key-points light"><span>Response Time <b>15 mins</b></span><span>Sulekha score <b>8.7</b></span></div>
+  </div>
+  <div class="sk-card" businessid="4822" businessname="FreshNest Services">
+    <div class="locality"><span>T. Nagar, Chennai</span></div>
+    <div class="ratings-group"><b>4.1</b><span>(38 reviews)</span></div>
+    <div class="tags-link"><span class="tag-link-item">Kitchen Cleaning</span></div>
+    <div class="key-points light"><span>Sulekha score <b>7.9</b></span></div>
+  </div>
+</div>`;
+
+  const doc = new DOMParser().parseFromString('<body>'+SRC+'</body>','text/html');
+  const els = [];                       // document order, index === data-i
+  const INLINE = 120;                   // serialise short elements onto one line
+
+  const tagOpen = (el,i) => {
+    let a='';
+    for(const at of el.attributes)
+      a += ' <span class="cs-att">'+esc(at.name)+'</span>=<span class="tv">"'+esc(at.value)+'"</span>';
+    return '&lt;<span class="cs-tag">'+el.tagName.toLowerCase()+'</span>'+a+'&gt;';
+  };
+  const tagClose = el => '&lt;/<span class="cs-tag">'+el.tagName.toLowerCase()+'</span>&gt;';
+
+  // one line, nested .el spans intact so any descendant can still highlight
+  function inline(el){
+    const i = els.length; els.push(el);
+    let mid='';
+    for(const ch of el.childNodes){
+      if(ch.nodeType===3){ const t=ch.textContent.trim(); if(t) mid+='<span class="tx">'+esc(t)+'</span>'; }
+      else if(ch.nodeType===1) mid += inline(ch);
+    }
+    return '<span class="el" data-i="'+i+'">'+tagOpen(el,i)+mid+tagClose(el)+'</span>';
+  }
+
+  function render(node, depth){
+    let out='';
+    for(const ch of node.childNodes){
+      if(ch.nodeType===3){
+        const t=ch.textContent.trim();
+        if(t) out += '  '.repeat(depth)+'<span class="tx">'+esc(t)+'</span>\n';
+      } else if(ch.nodeType===1){
+        const pad='  '.repeat(depth);
+        if(ch.outerHTML.length <= INLINE){ out += pad+inline(ch)+'\n'; continue; }
+        const i=els.length; els.push(ch);
+        out += pad+'<span class="el" data-i="'+i+'">'+tagOpen(ch,i)+'</span>\n'
+             + render(ch, depth+1)
+             + pad+'<span class="el" data-i="'+i+'">'+tagClose(ch)+'</span>\n';
+      }
+    }
+    return out;
+  }
+  box.innerHTML = render(doc.body, 0);
+
+  const PRESETS=['div','.sk-card','.sk-card .tag-link-item','.ratings-group b',
+                 '.key-points b','[businessid]','.sk-card:not(:has(.sk-link))',
+                 '.locality > span','div.sk-card > div'];
+  pre.innerHTML = PRESETS.map(p=>'<button type="button">'+esc(p)+'</button>').join('');
+  pre.querySelectorAll('button').forEach(b=>b.onclick=()=>{inp.value=b.textContent; run();});
+
+  function run(){
+    box.querySelectorAll('.el').forEach(e=>e.classList.remove('m1','m2'));
+    let found;
+    try{ found=[...doc.querySelectorAll(inp.value)]; inp.classList.remove('err'); }
+    catch(e){
+      inp.classList.add('err');
+      cnt.textContent='';
+      list.innerHTML='<div class="m" style="color:#B02F3B">'+esc(e.message)+'</div>';
+      return;
+    }
+    cnt.textContent='· '+found.length;
+    let rows='';
+    found.forEach((el,k)=>{
+      const i=els.indexOf(el);
+      box.querySelectorAll('.el[data-i="'+i+'"]').forEach(s=>s.classList.add(k%2?'m2':'m1'));
+      const cls=el.className ? '.'+String(el.className).trim().split(/\s+/).join('.') : '';
+      const txt=(el.textContent||'').replace(/\s+/g,' ').trim();
+      rows += '<div class="m"><b>&lt;'+el.tagName.toLowerCase()+'&gt;</b> <em>'+esc(cls)+'</em>'
+            + (txt ? '<i>'+esc(txt.length>52?txt.slice(0,52)+'…':txt)+'</i>' : '')+'</div>';
+    });
+    list.innerHTML = rows || '<div class="m" style="color:#8FA0A9">no matches</div>';
+  }
+  inp.addEventListener('input',run);
+  inp.addEventListener('keydown',e=>e.stopPropagation());
+  run();
+})();
+
+/* ============================================================
+   deck mechanics
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 · Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 2 · '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  function show(n){
+    const prev=i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(slides[i]) slides[i].dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+</script>
+</body>
+</html>
