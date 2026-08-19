@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-08-19 07:51 UTC",
+ "generated": "2026-08-19 07:52 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -47,33 +47,6 @@
    "kind": "notebook",
    "size": 84603,
    "updated": "2026-08-13"
-  },
-  {
-   "path": "data collection/09 static_vs_dynamic.html",
-   "name": "09 static_vs_dynamic.html",
-   "folder": "data collection",
-   "section": "Data collection \u00b7 web scraping",
-   "kind": "demo",
-   "size": 40606,
-   "updated": "2026-08-19"
-  },
-  {
-   "path": "data collection/10 browser_fingerprint.html",
-   "name": "10 browser_fingerprint.html",
-   "folder": "data collection",
-   "section": "Data collection \u00b7 web scraping",
-   "kind": "demo",
-   "size": 39245,
-   "updated": "2026-08-19"
-  },
-  {
-   "path": "data collection/11 scraping_case_law.html",
-   "name": "11 scraping_case_law.html",
-   "folder": "data collection",
-   "section": "Data collection \u00b7 web scraping",
-   "kind": "demo",
-   "size": 35788,
-   "updated": "2026-08-19"
   },
   {
    "path": "data collection/data_collection_1_apis.html",
