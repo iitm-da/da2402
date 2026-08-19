@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browser Fingerprint — DA2402</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+/* ===== DA2402 deck theme tokens (shared with the lecture decks) ===== */
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+/* ligatures OFF: code full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+</style>
+<style>
+/* ---- house style ---- */
+body{font-family:var(--body);margin:0;padding:20px;
+    background:var(--surround);min-height:100vh;color:var(--ink);font-size:16px;}
+.container{max-width:1280px;margin:0 auto;background:#fff;border-radius:3px;padding:30px;
+    box-shadow:0 20px 40px rgba(0,0,0,.1);}
+h1{text-align:center;color:var(--ink);margin:0 0 6px;font-size:2.2em;
+    background:var(--ink);-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;}
+.subtitle{text-align:center;color:var(--soft);margin:0 0 26px;font-size:.97em;}
+
+/* privacy badge */
+.privacy-badge{display:flex;align-items:center;gap:10px;background:var(--card);
+    border-left:5px solid var(--t-cls);border-radius:3px;padding:13px 20px;margin-bottom:26px;
+    font-size:.95em;color:var(--ink);}
+.privacy-badge .icon{font-size:1.4em;flex-shrink:0;}
+
+/* entropy hero */
+.entropy-hero{background:var(--ink);border-radius:3px;
+    padding:24px 30px;margin-bottom:26px;color:#fff;text-align:center;
+    box-shadow:0 8px 24px rgba(18,95,158,.35);}
+.entropy-hero h2{margin:0 0 4px;font-size:1.1em;font-weight:600;opacity:.9;letter-spacing:.04em;text-transform:uppercase;}
+.entropy-num{font-size:3.2em;font-weight:800;line-height:1.0;margin:6px 0;}
+.entropy-sub{font-size:.92em;opacity:.85;margin:0;}
+.entropy-bar-wrap{background:rgba(255,255,255,.25);border-radius:3px;height:12px;margin:14px auto 0;max-width:520px;}
+.entropy-bar{height:12px;border-radius:3px;background:rgba(255,255,255,.85);transition:width .8s ease;}
+
+/* cards grid */
+.section-label{font-size:.78em;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--t-dot);margin:22px 0 10px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-bottom:22px;}
+.fp-card{background:var(--card);border:1.5px solid var(--hair);border-radius:3px;padding:16px 18px;
+    transition:.2s;}
+.fp-card:hover{border-color:var(--soft);transform:translateY(-2px);box-shadow:0 6px 16px rgba(18,95,158,.13);}
+.fp-card .card-title{font-size:.75em;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+    color:#fff;background:var(--ink);display:inline-block;
+    padding:3px 11px;border-radius:3px;margin-bottom:10px;}
+.fp-card .card-title.green{background:var(--t-grp);}
+.fp-card .card-title.amber{background:var(--t-anc);}
+.fp-card .card-title.teal{background:var(--t-cls);}
+.fp-card .card-title.red{background:var(--t-asr);}
+.fp-card .signal-row{display:flex;justify-content:space-between;align-items:baseline;
+    padding:4px 0;border-bottom:1px solid var(--paper);font-size:.93em;gap:10px;}
+.fp-card .signal-row:last-child{border-bottom:none;}
+.fp-card .sig-label{color:#31444F;flex-shrink:0;font-size:.9em;}
+.fp-card .sig-value{color:var(--ink);font-weight:600;text-align:right;word-break:break-all;font-size:.88em;}
+.fp-card .sig-value.mono{font-family:var(--mono);font-size:.83em;color:var(--ink);}
+.fp-card .sig-value.na{color:#8FA0A9;font-style:italic;font-weight:400;}
+.fp-card .sig-value.good{color:var(--t-grp);}
+.fp-card .sig-value.warn{color:var(--t-anc);}
+
+/* hash card */
+.hash-display{font-family:var(--mono);font-size:1.05em;font-weight:700;
+    color:var(--ink);background:var(--card);border-radius:3px;padding:8px 14px;
+    word-break:break-all;margin-top:4px;letter-spacing:.04em;}
+
+/* fonts card */
+.fonts-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.font-pill{background:var(--card);border:1px solid var(--line);border-radius:3px;
+    padding:3px 10px;font-size:.82em;color:var(--ink);}
+.font-pill.absent{background:var(--card);border-color:var(--hair);color:#8FA0A9;text-decoration:line-through;}
+
+/* callout boxes */
+.note{background:#FFFBF2;border-left:4px solid var(--t-anc);border-radius:3px;
+    padding:12px 16px;margin:0 0 18px;font-size:.92em;color:var(--t-anc);}
+.explain{background:#EEF5FA;border-left:4px solid var(--t-cls);border-radius:3px;
+    padding:12px 16px;margin:22px 0 8px;font-size:.93em;color:var(--t-cls);}
+
+/* entropy table */
+table.dt{border-collapse:collapse;width:100%;margin:14px 0 6px;background:#fff;
+    box-shadow:0 3px 10px rgba(0,0,0,.06);border-radius:3px;overflow:hidden;font-size:.88em;}
+table.dt th{background:var(--ink);color:#fff;padding:9px 12px;text-align:left;}
+table.dt td{padding:7px 12px;border-bottom:1px solid var(--hair);vertical-align:top;}
+table.dt tr:nth-child(even){background:var(--paper);}
+table.dt .bits{font-weight:700;color:var(--t-cls);text-align:right;}
+
+/* canvas hidden */
+#fingerprintCanvas{display:none;}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="da-eyebrow">Data collection · interactive demo <span class="jsbadge">Runs in your browser</span></div><h1>Your Browser Fingerprint</h1>
+    <p class="subtitle">Live browser-side data collection &nbsp;·&nbsp; DA2402 · Data Collection</p>
+
+    <div class="privacy-badge">
+        <span class="icon">🔒</span>
+        <span>
+            <strong>Everything runs in your browser. Nothing is sent anywhere.</strong>
+            All signals are read by JavaScript from standard browser APIs on this device —
+            no network requests are made. This demo shows exactly what a third-party script
+            on any web page can learn about you.
+        </span>
+    </div>
+
+    <!-- Entropy hero -->
+    <div class="entropy-hero" id="entropyHero">
+        <h2>Estimated Identifying Information</h2>
+        <div class="entropy-num" id="entropyNum">—</div>
+        <p class="entropy-sub" id="entropySub">bits of entropy (illustration — not a real measurement)</p>
+        <div class="entropy-bar-wrap">
+            <div class="entropy-bar" id="entropyBar" style="width:0%"></div>
+        </div>
+    </div>
+
+    <div class="note">
+        <strong>What "bits of entropy" means here:</strong>
+        Each signal contributes an estimate of how many bits of information it carries
+        about a particular browser. 33 bits ≈ 1 in 8 billion; 20 bits ≈ 1 in 1 million.
+        These estimates are rough and illustrative — real uniqueness depends on the
+        population of browsers you compare against (e.g., EFF Panopticlick data).
+    </div>
+
+    <!-- ===== SECTION 1: IDENTITY SIGNALS ===== -->
+    <div class="section-label">Identity &amp; Platform</div>
+    <div class="cards-grid">
+        <div class="fp-card">
+            <span class="card-title">User Agent</span>
+            <div class="signal-row"><span class="sig-label">userAgent</span><span class="sig-value mono" id="ua">—</span></div>
+            <div class="signal-row"><span class="sig-label">platform</span><span class="sig-value" id="platform">—</span></div>
+            <div class="signal-row"><span class="sig-label">vendor</span><span class="sig-value" id="vendor">—</span></div>
+            <div class="signal-row"><span class="sig-label">appVersion</span><span class="sig-value mono" id="appVersion">—</span></div>
+        </div>
+        <div class="fp-card">
+            <span class="card-title teal">Locale &amp; Time</span>
+            <div class="signal-row"><span class="sig-label">language</span><span class="sig-value" id="lang">—</span></div>
+            <div class="signal-row"><span class="sig-label">languages</span><span class="sig-value" id="langs">—</span></div>
+            <div class="signal-row"><span class="sig-label">timezone</span><span class="sig-value" id="tz">—</span></div>
+            <div class="signal-row"><span class="sig-label">UTC offset</span><span class="sig-value" id="tzOffset">—</span></div>
+            <div class="signal-row"><span class="sig-label">Do-Not-Track</span><span class="sig-value" id="dnt">—</span></div>
+        </div>
+        <div class="fp-card">
+            <span class="card-title amber">Hardware</span>
+            <div class="signal-row"><span class="sig-label">CPU cores (logical)</span><span class="sig-value" id="cpuCores">—</span></div>
+            <div class="signal-row"><span class="sig-label">Device memory (GB)</span><span class="sig-value" id="devMem">—</span></div>
+            <div class="signal-row"><span class="sig-label">Max touch points</span><span class="sig-value" id="touch">—</span></div>
+            <div class="signal-row"><span class="sig-label">Touch device?</span><span class="sig-value" id="touchDevice">—</span></div>
+            <div class="signal-row"><span class="sig-label">Cookies enabled</span><span class="sig-value" id="cookies">—</span></div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 2: SCREEN & DISPLAY ===== -->
+    <div class="section-label">Screen &amp; Display</div>
+    <div class="cards-grid">
+        <div class="fp-card">
+            <span class="card-title">Screen</span>
+            <div class="signal-row"><span class="sig-label">Total resolution</span><span class="sig-value" id="screenRes">—</span></div>
+            <div class="signal-row"><span class="sig-label">Available area</span><span class="sig-value" id="screenAvail">—</span></div>
+            <div class="signal-row"><span class="sig-label">Color depth (bits)</span><span class="sig-value" id="colorDepth">—</span></div>
+            <div class="signal-row"><span class="sig-label">Pixel depth</span><span class="sig-value" id="pixelDepth">—</span></div>
+            <div class="signal-row"><span class="sig-label">devicePixelRatio</span><span class="sig-value" id="dpr">—</span></div>
+        </div>
+        <div class="fp-card">
+            <span class="card-title teal">Viewport</span>
+            <div class="signal-row"><span class="sig-label">Inner size (WxH)</span><span class="sig-value" id="winInner">—</span></div>
+            <div class="signal-row"><span class="sig-label">Outer size (WxH)</span><span class="sig-value" id="winOuter">—</span></div>
+            <div class="signal-row"><span class="sig-label">Color scheme pref</span><span class="sig-value" id="colorScheme">—</span></div>
+            <div class="signal-row"><span class="sig-label">Reduced motion</span><span class="sig-value" id="reducedMotion">—</span></div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 3: CANVAS FINGERPRINT ===== -->
+    <div class="section-label">Canvas Fingerprint</div>
+    <div class="cards-grid">
+        <div class="fp-card">
+            <span class="card-title red">Canvas Hash</span>
+            <div class="signal-row"><span class="sig-label">Method</span><span class="sig-value">Draw text + shapes → toDataURL() → hash</span></div>
+            <div class="signal-row"><span class="sig-label">Hash (FNV-1a 32-bit)</span></div>
+            <div class="hash-display" id="canvasHash">computing…</div>
+            <div class="signal-row" style="margin-top:8px"><span class="sig-label">Status</span><span class="sig-value" id="canvasStatus">—</span></div>
+        </div>
+        <div class="fp-card">
+            <span class="card-title">Canvas Preview</span>
+            <p style="font-size:.85em;color:#31444F;margin:0 0 8px;">The exact pixels drawn vary by OS/GPU/browser. Even the same phrase looks slightly different — that difference is the fingerprint.</p>
+            <canvas id="canvasPreview" width="240" height="90"
+                style="border:1.5px solid var(--hair);border-radius:8px;max-width:100%;"></canvas>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 4: WebGL ===== -->
+    <div class="section-label">WebGL Fingerprint</div>
+    <div class="cards-grid">
+        <div class="fp-card">
+            <span class="card-title amber">WebGL Renderer</span>
+            <div class="signal-row"><span class="sig-label">Vendor (unmasked)</span><span class="sig-value mono" id="glVendor">—</span></div>
+            <div class="signal-row"><span class="sig-label">Renderer (unmasked)</span><span class="sig-value mono" id="glRenderer">—</span></div>
+            <div class="signal-row"><span class="sig-label">Vendor (standard)</span><span class="sig-value mono" id="glVendorStd">—</span></div>
+            <div class="signal-row"><span class="sig-label">Renderer (standard)</span><span class="sig-value mono" id="glRendererStd">—</span></div>
+            <div class="signal-row"><span class="sig-label">Version</span><span class="sig-value mono" id="glVersion">—</span></div>
+            <div class="signal-row"><span class="sig-label">Shading lang.</span><span class="sig-value mono" id="glSL">—</span></div>
+        </div>
+        <div class="fp-card">
+            <span class="card-title teal">WebGL Parameters</span>
+            <div class="signal-row"><span class="sig-label">Max texture size</span><span class="sig-value" id="glMaxTex">—</span></div>
+            <div class="signal-row"><span class="sig-label">Max viewport dims</span><span class="sig-value" id="glMaxViewport">—</span></div>
+            <div class="signal-row"><span class="sig-label">Max vertex attribs</span><span class="sig-value" id="glMaxVA">—</span></div>
+            <div class="signal-row"><span class="sig-label">Antialiasing</span><span class="sig-value" id="glAA">—</span></div>
+            <div class="signal-row"><span class="sig-label">Extensions count</span><span class="sig-value" id="glExtCount">—</span></div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 5: AUDIO ===== -->
+    <div class="section-label">Audio Stack</div>
+    <div class="cards-grid">
+        <div class="fp-card">
+            <span class="card-title">Audio Context</span>
+            <div class="signal-row"><span class="sig-label">AudioContext supported</span><span class="sig-value" id="audioSupport">—</span></div>
+            <div class="signal-row"><span class="sig-label">Sample rate (Hz)</span><span class="sig-value" id="audioSampleRate">—</span></div>
+            <div class="signal-row"><span class="sig-label">Max channel count</span><span class="sig-value" id="audioChannels">—</span></div>
+            <div class="signal-row"><span class="sig-label">State</span><span class="sig-value" id="audioState">—</span></div>
+            <div class="signal-row"><span class="sig-label">Audio hash hint</span><span class="sig-value mono" id="audioHash">—</span></div>
+        </div>
+        <div class="fp-card">
+            <span class="card-title teal">Media Capabilities</span>
+            <div class="signal-row"><span class="sig-label">Input devices count</span><span class="sig-value" id="mediaInputs">—</span></div>
+            <div class="signal-row"><span class="sig-label">Output devices count</span><span class="sig-value" id="mediaOutputs">—</span></div>
+            <div class="signal-row"><span class="sig-label">Video inputs</span><span class="sig-value" id="mediaVideos">—</span></div>
+        </div>
+    </div>
+
+    <!-- ===== SECTION 6: FONTS ===== -->
+    <div class="section-label">Installed Fonts Probe</div>
+    <div class="fp-card" style="margin-bottom:22px;">
+        <span class="card-title">Font Detection via Text Metrics</span>
+        <p style="font-size:.88em;color:#31444F;margin:4px 0 8px;">
+            Each font is tested by measuring the pixel width of a test string rendered in that font
+            vs. a fallback. A different width means the font is installed.
+        </p>
+        <div class="signal-row"><span class="sig-label">Detected fonts</span><span class="sig-value" id="fontCount">—</span></div>
+        <div class="fonts-list" id="fontsList"></div>
+    </div>
+
+    <!-- ===== SECTION 7: ENTROPY TABLE ===== -->
+    <div class="explain">
+        <strong>How the entropy estimate is computed:</strong>
+        Each signal category is assigned an estimated bit-contribution based on published browser
+        fingerprinting research (Eckersley 2010, Laperdrix et al. 2016). The total is a rough
+        lower bound — many signals are correlated, so the effective entropy is lower.
+        <em>This is a teaching illustration, not a surveillance tool.</em>
+    </div>
+
+    <div class="section-label">Entropy Breakdown</div>
+    <table class="dt" id="entropyTable">
+        <thead><tr><th>Signal group</th><th>Signal(s) sampled</th><th style="text-align:right">Est. bits</th></tr></thead>
+        <tbody id="entropyTbody"></tbody>
+        <tfoot>
+            <tr style="background:var(--card);">
+                <td colspan="2"><strong>Total (sum — not accounting for correlation)</strong></td>
+                <td class="bits" id="entropyTotal">—</td>
+            </tr>
+        </tfoot>
+    </table>
+    <p style="font-size:.82em;color:var(--soft);margin:4px 0 22px;">
+        Real uniqueness benchmark: 33 bits ≈ 1 in 8 billion browsers; 20 bits ≈ 1 in 1 million.
+        The EFF Panopticlick study (2010) found the median browser carried ~18.9 bits.
+        Modern browsers with privacy protections (Firefox, Brave, Safari ITP) reduce this significantly.
+    </p>
+<div class="da-rail"><div class="a">DA2402 · Data Curation and Visualization</div><div class="n">Dr. Arun B Ayyar</div><div class="c">Interactive demo · Browser fingerprint</div></div></div>
+
+<!-- Hidden canvas for fingerprinting -->
+<canvas id="fingerprintCanvas" width="400" height="100"></canvas>
+
+<script>
+/* =========================================================
+   UTILITY
+   ========================================================= */
+function safe(fn) {
+    try { return fn(); } catch(e) { return null; }
+}
+
+function na(val, fallback) {
+    if (val === null || val === undefined || val === '') return fallback || 'unavailable';
+    return val;
+}
+
+function setEl(id, val, cls) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = (val === null || val === undefined || val === '') ? 'unavailable' : String(val);
+    if (val === null || val === undefined || val === '') {
+        el.classList.add('na');
+    } else if (cls) {
+        el.classList.add(cls);
+    }
+}
+
+/* Simple FNV-1a 32-bit hash (JS, no crypto API needed) */
+function fnv1a32(str) {
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        hash = (hash * 0x01000193) >>> 0;
+    }
+    return ('0000000' + hash.toString(16)).slice(-8).toUpperCase();
+}
+
+/* =========================================================
+   1. IDENTITY SIGNALS
+   ========================================================= */
+function collectIdentity() {
+    const nav = navigator;
+    setEl('ua',         safe(() => nav.userAgent) || null);
+    setEl('platform',   safe(() => nav.platform) || null);
+    setEl('vendor',     safe(() => nav.vendor) || null);
+    setEl('appVersion', safe(() => nav.appVersion) || null);
+
+    setEl('lang',     safe(() => nav.language) || null);
+    setEl('langs',    safe(() => (nav.languages || []).join(', ')) || null);
+    setEl('tz',       safe(() => Intl.DateTimeFormat().resolvedOptions().timeZone) || null);
+    const offsetMin  = safe(() => -(new Date().getTimezoneOffset()));
+    setEl('tzOffset', offsetMin !== null
+        ? `UTC${offsetMin >= 0 ? '+' : ''}${(offsetMin/60).toFixed(2).replace(/\.00$/,'')}` : null);
+    const dntVal = safe(() => nav.doNotTrack);
+    setEl('dnt', dntVal === '1' ? 'Enabled (1)' : dntVal === '0' ? 'Disabled (0)' : 'Not set');
+
+    const cores = safe(() => nav.hardwareConcurrency);
+    setEl('cpuCores', cores || null);
+
+    const mem = safe(() => nav.deviceMemory);
+    setEl('devMem', mem !== undefined && mem !== null ? mem : null);
+
+    const touchPts = safe(() => nav.maxTouchPoints);
+    setEl('touch', touchPts !== undefined ? touchPts : null);
+    setEl('touchDevice', touchPts > 0 ? 'Yes' : 'No', touchPts > 0 ? 'warn' : '');
+
+    setEl('cookies', safe(() => nav.cookieEnabled) ? 'Yes' : 'No',
+          safe(() => nav.cookieEnabled) ? 'good' : 'warn');
+}
+
+/* =========================================================
+   2. SCREEN & DISPLAY
+   ========================================================= */
+function collectScreen() {
+    const s = safe(() => window.screen);
+    setEl('screenRes',   s ? `${s.width} × ${s.height}` : null);
+    setEl('screenAvail', s ? `${s.availWidth} × ${s.availHeight}` : null);
+    setEl('colorDepth',  s ? s.colorDepth : null);
+    setEl('pixelDepth',  s ? s.pixelDepth : null);
+    setEl('dpr',         safe(() => window.devicePixelRatio));
+    setEl('winInner',    `${window.innerWidth} × ${window.innerHeight}`);
+    setEl('winOuter',    `${window.outerWidth} × ${window.outerHeight}`);
+
+    const darkMode = safe(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
+    setEl('colorScheme', darkMode === true ? 'Dark' : darkMode === false ? 'Light' : null);
+
+    const reducedMotion = safe(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    setEl('reducedMotion', reducedMotion === true ? 'Preferred' : reducedMotion === false ? 'No preference' : null);
+}
+
+/* =========================================================
+   3. CANVAS FINGERPRINT
+   ========================================================= */
+function collectCanvas() {
+    // Draw on the preview canvas (visible)
+    const prev = document.getElementById('canvasPreview');
+    const ctx2 = safe(() => prev.getContext('2d'));
+    if (!ctx2) {
+        setEl('canvasHash',   'Canvas API unavailable');
+        setEl('canvasStatus', null);
+        return;
+    }
+
+    // Draw the fingerprint drawing on the hidden canvas too
+    const hid = document.getElementById('fingerprintCanvas');
+    const ctx  = safe(() => hid.getContext('2d'));
+
+    [ctx, ctx2].forEach(function(c, idx) {
+        if (!c) return;
+        const w = c.canvas.width, h = c.canvas.height;
+        // Background
+        c.fillStyle = idx === 0 ? '#ffffff' : '#f8f9ff';
+        c.fillRect(0, 0, w, h);
+
+        // Text: different fonts, sizes, emoji — rendering varies per GPU/OS
+        c.fillStyle = '#125F9E';
+        c.font = 'bold 16px "Segoe UI", Arial, sans-serif';
+        c.fillText('DA2402 — Browser Fingerprint \u{1F50D}', 8, 22);
+
+        c.fillStyle = '#6A4CA8';
+        c.font = 'italic 13px Georgia, serif';
+        c.fillText('The quick brown fox jumps over the lazy dog', 8, 42);
+
+        // Shapes
+        c.beginPath();
+        c.arc(320, 50, 28, 0, Math.PI * 2);
+        c.fillStyle = 'rgba(18,95,158,0.4)';
+        c.fill();
+
+        c.beginPath();
+        c.moveTo(180, 58); c.lineTo(210, 78); c.lineTo(150, 78);
+        c.fillStyle = 'rgba(118,75,162,0.5)';
+        c.fill();
+
+        // Gradient rect
+        const grd = c.createLinearGradient(8, 60, 130, 90);
+        grd.addColorStop(0, '#4ecdc4');
+        grd.addColorStop(1, '#125F9E');
+        c.fillStyle = grd;
+        c.fillRect(8, 62, 120, 18);
+
+        // Small text with special chars
+        c.fillStyle = '#B02F3B';
+        c.font = '11px monospace';
+        c.fillText('Ω α β ∑ ∞ ♥', 8, 88);
+    });
+
+    // Read the hidden canvas data and hash it
+    const dataURL = safe(() => hid.toDataURL('image/png'));
+    if (!dataURL) {
+        setEl('canvasHash',   'toDataURL() blocked');
+        setEl('canvasStatus', null);
+        return;
+    }
+    const hash = fnv1a32(dataURL);
+    document.getElementById('canvasHash').textContent = hash;
+    setEl('canvasStatus', 'OK — data URL hashed (' + dataURL.length + ' chars)', 'good');
+}
+
+/* =========================================================
+   4. WebGL FINGERPRINT
+   ========================================================= */
+function collectWebGL() {
+    const canvas = document.createElement('canvas');
+    const gl = safe(() => canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+    if (!gl) {
+        ['glVendor','glRenderer','glVendorStd','glRendererStd','glVersion',
+         'glSL','glMaxTex','glMaxViewport','glMaxVA','glAA','glExtCount'].forEach(id => setEl(id, null));
+        return;
+    }
+
+    // Unmasked strings (may be null if WEBGL_debug_renderer_info not exposed)
+    const dbgExt = safe(() => gl.getExtension('WEBGL_debug_renderer_info'));
+    setEl('glVendor',   dbgExt ? safe(() => gl.getParameter(dbgExt.UNMASKED_VENDOR_WEBGL)) : null);
+    setEl('glRenderer', dbgExt ? safe(() => gl.getParameter(dbgExt.UNMASKED_RENDERER_WEBGL)) : null);
+
+    // Standard (possibly masked) strings
+    setEl('glVendorStd',   safe(() => gl.getParameter(gl.VENDOR)));
+    setEl('glRendererStd', safe(() => gl.getParameter(gl.RENDERER)));
+    setEl('glVersion',     safe(() => gl.getParameter(gl.VERSION)));
+    setEl('glSL',          safe(() => gl.getParameter(gl.SHADING_LANGUAGE_VERSION)));
+
+    // Numeric parameters
+    setEl('glMaxTex',      safe(() => gl.getParameter(gl.MAX_TEXTURE_SIZE)));
+    const vp = safe(() => gl.getParameter(gl.MAX_VIEWPORT_DIMS));
+    setEl('glMaxViewport', vp ? `${vp[0]} × ${vp[1]}` : null);
+    setEl('glMaxVA',       safe(() => gl.getParameter(gl.MAX_VERTEX_ATTRIBS)));
+
+    const ctxAttribs = safe(() => gl.getContextAttributes());
+    setEl('glAA', ctxAttribs ? (ctxAttribs.antialias ? 'Yes' : 'No') : null);
+
+    const exts = safe(() => gl.getSupportedExtensions());
+    setEl('glExtCount', exts ? exts.length : null);
+}
+
+/* =========================================================
+   5. AUDIO FINGERPRINT HINT
+   ========================================================= */
+function collectAudio() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) {
+        setEl('audioSupport', 'No');
+        ['audioSampleRate','audioChannels','audioState','audioHash'].forEach(id => setEl(id, null));
+    } else {
+        setEl('audioSupport', 'Yes', 'good');
+        const ctx = safe(() => new AC());
+        if (ctx) {
+            setEl('audioSampleRate', safe(() => ctx.sampleRate));
+            setEl('audioChannels',   safe(() => ctx.destination.maxChannelCount));
+            setEl('audioState',      safe(() => ctx.state));
+
+            // Minimal oscillator hash: run a short buffer offline and hash the sample values
+            const offlineCtx = safe(() => new OfflineAudioContext(1, 4096, 44100));
+            if (offlineCtx) {
+                try {
+                    const osc = offlineCtx.createOscillator();
+                    const comp = offlineCtx.createDynamicsCompressor();
+                    osc.connect(comp);
+                    comp.connect(offlineCtx.destination);
+                    osc.start(0);
+                    offlineCtx.startRendering().then(function(buf) {
+                        const data = buf.getChannelData(0).subarray(0, 64);
+                        let s = '';
+                        for (let i = 0; i < data.length; i++) s += data[i].toFixed(6) + ',';
+                        document.getElementById('audioHash').textContent = fnv1a32(s);
+                    }).catch(function() {
+                        setEl('audioHash', null);
+                    });
+                } catch(e) {
+                    setEl('audioHash', null);
+                }
+            } else {
+                setEl('audioHash', null);
+            }
+
+            safe(() => ctx.close());
+        }
+    }
+
+    // Media devices (counts only — no actual streams)
+    const enumDevices = safe(() => navigator.mediaDevices && navigator.mediaDevices.enumerateDevices);
+    if (enumDevices) {
+        navigator.mediaDevices.enumerateDevices().then(function(devices) {
+            let audioIn = 0, audioOut = 0, videoIn = 0;
+            devices.forEach(function(d) {
+                if (d.kind === 'audioinput')  audioIn++;
+                if (d.kind === 'audiooutput') audioOut++;
+                if (d.kind === 'videoinput')  videoIn++;
+            });
+            setEl('mediaInputs',  audioIn);
+            setEl('mediaOutputs', audioOut);
+            setEl('mediaVideos',  videoIn);
+        }).catch(function() {
+            ['mediaInputs','mediaOutputs','mediaVideos'].forEach(id => setEl(id, null));
+        });
+    } else {
+        ['mediaInputs','mediaOutputs','mediaVideos'].forEach(id => setEl(id, null));
+    }
+}
+
+/* =========================================================
+   6. INSTALLED FONTS PROBE
+   ========================================================= */
+function collectFonts() {
+    // Candidate fonts — a representative cross-platform list
+    const CANDIDATES = [
+        'Arial','Arial Black','Arial Narrow','Comic Sans MS','Courier New',
+        'Georgia','Impact','Lucida Console','Lucida Sans Unicode',
+        'Microsoft Sans Serif','Palatino Linotype','Tahoma','Times New Roman',
+        'Trebuchet MS','Verdana',
+        // Mac / Apple
+        'Helvetica Neue','Helvetica','Geneva','Monaco','Optima','Futura',
+        'Gill Sans','Baskerville',
+        // Windows extras
+        'Calibri','Cambria','Candara','Consolas','Constantia','Corbel',
+        'Franklin Gothic Medium','Segoe UI','Segoe Print',
+        // Linux
+        'DejaVu Sans','DejaVu Serif','Liberation Mono','Ubuntu','Noto Sans',
+        // Widely installed extras
+        'Roboto','Open Sans','Lato','Montserrat','Source Code Pro'
+    ];
+
+    const BASELINE_FONTS = ['monospace', 'serif', 'sans-serif'];
+    const TEST_STR = 'mmmmmmmmmmlli';
+    const FONT_SIZE = '48px';
+
+    // Measure baseline widths
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        setEl('fontCount', null);
+        return;
+    }
+
+    function getWidth(font) {
+        ctx.font = FONT_SIZE + ' ' + font;
+        return ctx.measureText(TEST_STR).width;
+    }
+
+    const baseWidths = BASELINE_FONTS.map(f => getWidth(f));
+
+    const detected = [];
+    const absent = [];
+
+    CANDIDATES.forEach(function(font) {
+        let found = false;
+        for (let i = 0; i < BASELINE_FONTS.length; i++) {
+            const testFont = FONT_SIZE + ' "' + font + '",' + BASELINE_FONTS[i];
+            ctx.font = testFont;
+            const w = ctx.measureText(TEST_STR).width;
+            if (Math.abs(w - baseWidths[i]) > 0.5) {
+                found = true;
+                break;
+            }
+        }
+        if (found) detected.push(font);
+        else absent.push(font);
+    });
+
+    setEl('fontCount', detected.length + ' of ' + CANDIDATES.length + ' probed');
+
+    const list = document.getElementById('fontsList');
+    detected.sort().forEach(function(f) {
+        const pill = document.createElement('span');
+        pill.className = 'font-pill';
+        pill.textContent = f;
+        list.appendChild(pill);
+    });
+    // Show a few absent ones (greyed)
+    absent.slice(0, 6).forEach(function(f) {
+        const pill = document.createElement('span');
+        pill.className = 'font-pill absent';
+        pill.textContent = f;
+        list.appendChild(pill);
+    });
+}
+
+/* =========================================================
+   7. ENTROPY TABLE
+   ========================================================= */
+function buildEntropyTable() {
+    // Estimated bits based on Eckersley (2010) and Laperdrix et al. (2016)
+    // Values shown are ILLUSTRATIVE; real values depend on the reference population
+    const SIGNALS = [
+        { group: 'User agent string',     sample: safe(() => navigator.userAgent) || '',    bits: 10.5,
+          note: 'Encodes browser version, OS, engine, renderer' },
+        { group: 'Platform / vendor',     sample: safe(() => navigator.platform + ' / ' + navigator.vendor) || '', bits: 3.5,
+          note: 'Narrows down OS family' },
+        { group: 'Language(s)',           sample: safe(() => (navigator.languages || [navigator.language]).join(', ')) || '', bits: 2.5,
+          note: 'Language and locale preferences' },
+        { group: 'Timezone',              sample: safe(() => Intl.DateTimeFormat().resolvedOptions().timeZone) || '', bits: 3.0,
+          note: 'Geographic region indicator' },
+        { group: 'Screen resolution + DPR',
+          sample: safe(() => screen.width + '×' + screen.height + ' @' + window.devicePixelRatio + 'x') || '', bits: 5.5,
+          note: 'Hundreds of distinct combinations' },
+        { group: 'Color depth',           sample: safe(() => String(screen.colorDepth) + '-bit') || '', bits: 1.5,
+          note: 'Usually 24-bit today, but still varies' },
+        { group: 'CPU cores / device memory',
+          sample: safe(() => navigator.hardwareConcurrency + ' cores, ' + (navigator.deviceMemory || '?') + ' GB') || '', bits: 2.5,
+          note: 'Hardware tier indicator' },
+        { group: 'Canvas fingerprint',    sample: 'FNV-1a hash of toDataURL()',             bits: 8.0,
+          note: 'GPU/font rendering variation is highly discriminating' },
+        { group: 'WebGL renderer strings', sample: 'Unmasked vendor + renderer',            bits: 7.5,
+          note: 'GPU model often uniquely identifies a machine class' },
+        { group: 'Audio fingerprint',     sample: 'OfflineAudioContext oscillator hash',    bits: 4.0,
+          note: 'DSP implementation varies across audio stacks' },
+        { group: 'Installed fonts',       sample: document.getElementById('fontCount') ? document.getElementById('fontCount').textContent : 'pending', bits: 6.5,
+          note: 'Font set is highly personal (work, language, software installs)' },
+        { group: 'Touch support / media devices', sample: safe(() => 'max touch: ' + navigator.maxTouchPoints) || '', bits: 1.5,
+          note: 'Mobile vs desktop distinction + peripheral setup' },
+    ];
+
+    const tbody = document.getElementById('entropyTbody');
+    let total = 0;
+    SIGNALS.forEach(function(s) {
+        total += s.bits;
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + s.group + '<br><span style="font-size:.8em;color:#53666F;">' + s.note + '</span></td>' +
+                       '<td style="font-size:.83em;color:#31444F;">' +
+                           (s.sample.length > 80 ? s.sample.slice(0,78) + '…' : s.sample) + '</td>' +
+                       '<td class="bits">' + s.bits.toFixed(1) + '</td>';
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('entropyTotal').textContent = total.toFixed(1) + ' bits';
+
+    // Update hero
+    const maxBits = 58;
+    document.getElementById('entropyNum').textContent = total.toFixed(1) + ' bits';
+    const pct = Math.min(100, (total / maxBits) * 100);
+    document.getElementById('entropyBar').style.width = pct + '%';
+
+    const oneIn = Math.pow(2, total);
+    let label;
+    if (total > 30)      label = 'near-unique in a global browser population';
+    else if (total > 20) label = 'distinguishable in ~1 in ' + Math.round(oneIn / 1e6).toLocaleString() + 'M browsers';
+    else                 label = 'distinguishable in ~1 in ' + Math.round(oneIn).toLocaleString() + ' browsers';
+    document.getElementById('entropySub').textContent =
+        total.toFixed(1) + ' bits estimated (' + label + ') — illustration only, not a real measurement';
+}
+
+/* =========================================================
+   MAIN: run all collectors
+   ========================================================= */
+(function init() {
+    collectIdentity();
+    collectScreen();
+    collectCanvas();
+    collectWebGL();
+    collectAudio();
+    collectFonts();
+    // Build entropy table last so font count is available
+    setTimeout(buildEntropyTable, 200);
+})();
+</script>
+
+<style>
+/* ===== DA2402 theme overrides (applied after the demo's own stylesheet) ===== */
+html{background:var(--surround)}
+body{background:var(--surround);color:var(--ink);font-family:var(--body);padding:22px 20px 26px;
+  -webkit-font-smoothing:antialiased}
+.container{background:var(--paper);border-radius:0;border-top:3px solid var(--ink);
+  box-shadow:0 20px 70px rgba(0,0,0,.5);padding:26px 34px 0}
+.da-eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin:0 0 10px;display:flex;gap:10px;align-items:center}
+.da-eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+.da-eyebrow .jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+h1{font-family:var(--disp);font-weight:700;letter-spacing:-.018em;line-height:1.1;font-size:30px;
+  text-align:left;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;margin:0 0 4px}
+.subtitle{text-align:left;font-family:var(--body);color:var(--soft);font-size:14.5px;line-height:1.42;
+  margin:0 0 18px;max-width:900px}
+h2,h3,h4{font-family:var(--disp);letter-spacing:-.005em}
+button,.ex-btn,.step,.mode-tab,.chip,.tab,.tab-btn,.case-card,.run-btn,.q-option{border-radius:3px!important;
+  transform:none!important;box-shadow:none!important}
+button:hover:not(:disabled),.ex-btn:hover,.step:hover,.mode-tab:hover,.chip:hover{transform:none!important;box-shadow:none!important}
+pre,code,kbd,.code-panel,.code-row code,.result-item,.selector-input,.entropy-banner,.results-panel,
+.panel,.card,.stagebar,.note,.explain,.good,.tip,.warn,.xpath-hint,.match-badge,.tag,#sample-frame,
+table,td,th{border-radius:0!important}
+.note,.explain,.good,.tip,.warn,.xpath-hint,.stagebar{border-radius:0!important}
+.container>*:last-child{margin-bottom:0}
+/* byline rail, same text as the decks */
+.da-rail{margin:26px -34px 0;height:30px;background:var(--card);border-top:1.5px solid var(--ink);
+  display:flex;align-items:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--soft)}
+.da-rail .a{padding:0 16px;flex:1}
+.da-rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.da-rail .c{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;white-space:nowrap}
+</style>
+<style>
+/* embedded inside a lecture deck slide: drop chrome the slide already provides */
+body.embed{padding:0;zoom:.86}
+body.embed .container{box-shadow:none;border-top:0;padding:18px 26px 0}
+body.embed .da-eyebrow,body.embed .da-rail{display:none}
+body.embed h1{font-size:24px}
+</style>
+<script>if(window.self!==window.top||/[?&]embed/.test(location.search))document.body.classList.add('embed');</script>
+</body>
+</html>

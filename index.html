@@ -63,6 +63,7 @@ td.topic .name{font-family:var(--disp);font-weight:700;font-size:16.5px;line-hei
 a.chip{--accent:var(--t-cls)}
 a.chip.notebook{--accent:var(--t-grp)}
 a.chip.pdf{--accent:var(--t-anc)}
+a.chip.demo{--accent:var(--t-dot)}
 
 a.chip{display:inline-flex;align-items:baseline;gap:8px;max-width:100%;
   position:relative;overflow:hidden;
@@ -184,7 +185,7 @@ function repoFromLocation(){
 let REPO   = repoFromLocation() || FALLBACK_REPO;
 let BRANCH = FALLBACK_BRANCH;
 
-const KIND_LABEL = {deck:'Slides', notebook:'Colab', pdf:'PDF'};
+const KIND_LABEL = {deck:'Slides', demo:'Demo', notebook:'Colab', pdf:'PDF'};
 
 /* Topics run in teaching order, not alphabetical order. Anything not listed
    is appended afterwards, alphabetically. Keys are folder paths. */
@@ -216,7 +217,7 @@ const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
                           .replace(/"/g,'&quot;');
 
 function prettify(name){
-  return name.replace(/\.[^.]+$/,'')
+  return name.replace(/\.[^.]+$/,'').replace(/^\d\d /,'')
              .replace(/[_-]+/g,' ')
              .replace(/([a-z])(\d)/g, '$1 $2')   // part1 -> part 1, but DA2402 is left alone
              .replace(/\b([a-z])/g, (m,c) => c.toUpperCase());
@@ -246,10 +247,10 @@ function topicName(it){
 }
 
 /* Lines inside a cell run decks, then PDFs, then notebooks. */
-const KIND_RANK = {deck:0, pdf:1, notebook:2};
+const KIND_RANK = {deck:0, demo:1, pdf:2, notebook:3};
 
 function chip(it){
-  const ext = it.kind === 'notebook' ? ' target="_blank" rel="noopener"' : '';
+  const ext = (it.kind === 'notebook' || it.kind === 'demo') ? ' target="_blank" rel="noopener"' : '';
   const upd = it.updated ? ` · updated ${it.updated}` : '';
   return `<a class="chip ${esc(it.kind)}" href="${esc(hrefFor(it))}"${ext}
             title="${esc(it.path)}${esc(upd)}">
@@ -263,7 +264,7 @@ function chip(it){
 function chips(items){
   if(!items.length) return '<span class="empty">—</span>';
   const seen = new Set(items.map(i => i.kind));
-  const kinds = ['deck','pdf','notebook'].filter(k => seen.has(k))
+  const kinds = ['deck','demo','pdf','notebook'].filter(k => seen.has(k))
     .concat([...seen].filter(k => !KIND_RANK.hasOwnProperty(k)).sort());
   return '<div class="chips">' + kinds.map(k =>
     '<div class="line">' +
@@ -336,7 +337,8 @@ async function fromApi(){
       const ext  = (name.split('.').pop() || '').toLowerCase();
       if(!KINDS[ext] || name === 'index.html' || n.path.startsWith('.')) return null;
       const folder = n.path.includes('/') ? n.path.slice(0, n.path.lastIndexOf('/')) : '.';
-      return {path:n.path, name, folder, kind:KINDS[ext], size:n.size, updated:''};
+      const kind = (ext === 'html' && /^\d\d /.test(name)) ? 'demo' : KINDS[ext];
+      return {path:n.path, name, folder, kind, size:n.size, updated:''};
     })
     .filter(Boolean);
 }

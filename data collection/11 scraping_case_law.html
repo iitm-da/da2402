@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scraping Case-Law Gallery — DA2402</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+/* ===== DA2402 deck theme tokens (shared with the lecture decks) ===== */
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+/* ligatures OFF: code full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+</style>
+<style>
+    body{font-family:var(--body);margin:0;padding:20px;
+        background:var(--surround);min-height:100vh;color:var(--ink);font-size:16px;}
+    .container{max-width:1340px;margin:0 auto;background:#fff;border-radius:3px;padding:30px 36px;
+        box-shadow:0 20px 40px rgba(0,0,0,.15);}
+    h1{text-align:center;margin:0 0 6px;font-size:2.2em;
+        background:var(--ink);-webkit-background-clip:text;
+        -webkit-text-fill-color:transparent;background-clip:text;}
+    .subtitle{text-align:center;color:var(--soft);margin:0 0 26px;font-size:1em;}
+
+    /* ---- case cards grid ---- */
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px;}
+    .card{background:var(--card);border:3px solid var(--hair);border-radius:3px;padding:14px 12px;cursor:pointer;
+        transition:.22s;text-align:center;}
+    .card:hover{border-color:var(--soft);transform:translateY(-3px);box-shadow:0 8px 20px rgba(18,95,158,.18);}
+    .card.active{background:var(--ink);color:#fff;border-color:var(--t-cls);transform:scale(1.04);}
+    .card .icon{font-size:1.7em;display:block;margin-bottom:5px;}
+    .card .case-name{font-weight:700;font-size:.92em;margin-bottom:4px;line-height:1.3;}
+    .card .case-year{font-size:.8em;opacity:.8;}
+    .card.active .case-year{opacity:.9;}
+
+    /* ---- status pill ---- */
+    .status-pill{display:inline-block;padding:3px 10px;border-radius:3px;font-size:.77em;font-weight:700;
+        letter-spacing:.04em;margin-left:8px;vertical-align:middle;}
+    .status-decided{background:#F3FBF7;color:var(--t-grp);}
+    .status-ongoing{background:#FFFBF2;color:var(--t-anc);}
+    .status-cfaa{background:#EEF5FA;color:var(--t-cls);}
+    .status-copyright{background:#FFFBF2;color:var(--t-anc);}
+
+    /* ---- detail panel ---- */
+    .detail{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:26px;margin-bottom:28px;min-height:260px;}
+    .detail h2{margin:0 0 4px;color:var(--ink);font-size:1.4em;}
+    .detail .case-meta{color:var(--soft);font-size:.9em;margin-bottom:16px;}
+    .detail-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;}
+    .detail-cols.three{grid-template-columns:1.1fr 1fr 1fr;}
+    .dcol{background:#fff;border:1px solid var(--hair);border-radius:3px;padding:16px 18px;}
+    .dcol h3{margin:0 0 10px;font-size:.78em;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+        background:var(--ink);display:inline-block;padding:5px 12px;border-radius:3px;}
+    .dcol h3.green{background:var(--t-grp);}
+    .dcol h3.amber{background:var(--t-anc);}
+    .dcol h3.red{background:var(--t-asr);}
+    .dcol ul{margin:4px 0 0;padding-left:20px;}
+    .dcol li{margin-bottom:9px;font-size:.94em;line-height:1.5;}
+    .dcol p{font-size:.94em;line-height:1.6;margin:4px 0;}
+    .placeholder{text-align:center;color:#8FA0A9;padding:60px 20px;font-size:1em;}
+    blockquote{margin:10px 0;padding:10px 16px;background:var(--card);border-left:4px solid var(--t-dot);
+        border-radius:3px;font-style:italic;font-size:.9em;color:#31444F;}
+
+    /* ---- callout boxes ---- */
+    .note{background:#FFFBF2;border-left:4px solid var(--t-anc);border-radius:3px;
+        padding:11px 16px;margin:12px 0;font-size:.92em;color:var(--t-anc);}
+    .note b{color:var(--t-anc);}
+    .explain{background:#EEF5FA;border-left:4px solid var(--t-cls);border-radius:3px;
+        padding:11px 16px;margin:12px 0;font-size:.92em;color:var(--t-cls);}
+
+    /* ---- DPDP panel ---- */
+    .dpdp-section{margin-top:8px;}
+    .dpdp-section h2{font-size:1.35em;color:var(--ink);margin:0 0 6px;}
+    .dpdp-section .dpdp-sub{color:var(--soft);font-size:.92em;margin:0 0 20px;}
+    .dpdp-steps{display:flex;flex-direction:column;gap:14px;}
+    .dpdp-step{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:16px 20px;}
+    .dpdp-step .q-label{font-weight:700;color:var(--ink);font-size:1em;margin-bottom:10px;display:block;}
+    .dpdp-options{display:flex;gap:12px;flex-wrap:wrap;}
+    .dpdp-btn{padding:9px 22px;border-radius:3px;border:2px solid var(--line);background:var(--card);
+        cursor:pointer;font-size:.94em;font-weight:600;color:var(--ink);transition:.2s;font-family:inherit;}
+    .dpdp-btn:hover{background:var(--paper);border-color:var(--t-cls);}
+    .dpdp-btn.selected-yes{background:var(--t-grp);color:#fff;border-color:var(--t-grp);}
+    .dpdp-btn.selected-no{background:var(--t-asr);color:#fff;border-color:var(--t-asr);}
+    .dpdp-btn.selected-unsure{background:var(--t-anc);color:#fff;border-color:var(--t-anc);}
+    .dpdp-step.locked{opacity:.45;pointer-events:none;}
+    .dpdp-step.active-step{border-color:var(--t-cls);box-shadow:0 4px 14px rgba(18,95,158,.2);}
+    .verdict-box{border-radius:3px;padding:20px 24px;margin-top:18px;display:none;}
+    .verdict-box.show{display:block;}
+    .verdict-box.clear{background:#F3FBF7;border:2px solid var(--t-grp);}
+    .verdict-box.caution{background:#FFFBF2;border:2px solid var(--t-anc);}
+    .verdict-box.risk{background:#FFF5F5;border:2px solid var(--t-asr);}
+    .verdict-box h3{margin:0 0 8px;font-size:1.05em;}
+    .verdict-box.clear h3{color:var(--t-grp);}
+    .verdict-box.caution h3{color:var(--t-anc);}
+    .verdict-box.risk h3{color:var(--t-asr);}
+    .verdict-box p{margin:4px 0;font-size:.94em;line-height:1.6;}
+    .reset-btn{background:var(--ink);color:#fff;border:none;
+        padding:9px 22px;border-radius:3px;cursor:pointer;font-size:.92em;font-family:inherit;
+        transition:.22s;margin-top:14px;}
+    .reset-btn:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(18,95,158,.4);}
+
+    /* ---- section divider ---- */
+    .section-divider{border:none;border-top:2px solid var(--hair);margin:30px 0;}
+
+    @media(max-width:900px){
+        .detail-cols,.detail-cols.three{grid-template-columns:1fr;}
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="da-eyebrow">Data collection · interactive demo <span class="jsbadge">Runs in your browser</span></div><h1>Scraping &amp; the Law — Case Gallery</h1>
+    <p class="subtitle">Key court decisions shaping web-scraping legality &nbsp;·&nbsp; DA2402 · Data Collection</p>
+
+    <div class="explain">
+        <b>How to use:</b> Click a case card to read the background, dispute, ruling, and the key takeaway for scrapers. After the gallery, try the DPDP Act decision panel to check whether a scraping scenario is lawful under India's data-protection law.
+    </div>
+
+    <!-- ========== CASE CARDS ========== -->
+    <div class="cards" id="cards"></div>
+
+    <!-- ========== DETAIL PANEL ========== -->
+    <div class="detail" id="detail">
+        <p class="placeholder">← Click a case card above to see details.</p>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ========== DPDP DECISION PANEL ========== -->
+    <div class="dpdp-section">
+        <h2>DPDP Act 2023 — Is this scraping scenario lawful?</h2>
+        <p class="dpdp-sub">A guided checklist based on India's Digital Personal Data Protection Act, 2023. Answer each question in turn to receive a plain-language verdict.</p>
+
+        <div class="dpdp-steps" id="dpdpSteps">
+            <!-- Steps rendered by JS -->
+        </div>
+
+        <div class="verdict-box" id="verdictBox">
+            <h3 id="verdictTitle"></h3>
+            <p id="verdictText"></p>
+            <p id="verdictCaveat" style="font-size:.86em;margin-top:8px;opacity:.8;"></p>
+            <br>
+            <button class="reset-btn" onclick="resetDPDP()">Reset checklist</button>
+        </div>
+    </div>
+
+<div class="da-rail"><div class="a">DA2402 · Data Curation and Visualization</div><div class="n">Dr. Arun B Ayyar</div><div class="c">Interactive demo · Scraping & the law</div></div></div><!-- /container -->
+
+<script>
+/* ================================================================
+   CASE DATA
+   Sources: PPTX slides extracted + well-established public facts.
+   Ongoing cases are labelled as such; no final rulings are invented.
+   ================================================================ */
+const CASES = [
+{
+    key:"hiq",
+    icon:"💼",
+    name:"hiQ Labs v. LinkedIn",
+    year:"2017–2022 · Ninth Circuit",
+    badge:"CFAA / Anti-Competitive",
+    badgeClass:"status-cfaa",
+    meta:"Ninth Circuit Court of Appeals · 2017 (injunction), 2022 (remanded) · Decided (on CFAA question)",
+    background:`<p>hiQ Labs was a data-analytics company that scraped <em>publicly visible</em> LinkedIn profiles
+        (no login required) to build workforce-analytics products it sold to employers. LinkedIn sent a
+        cease-and-desist letter and deployed technical measures (IP blocks) to stop the scraping.
+        hiQ filed suit seeking an injunction to continue.</p>`,
+    dispute:`<ul>
+        <li><b>LinkedIn argued</b> that hiQ's scraping violated the Computer Fraud and Abuse Act (CFAA)
+            — specifically, that accessing its servers against an explicit prohibition constituted
+            "unauthorised access".</li>
+        <li><b>hiQ argued</b> the data was public, LinkedIn had no technical access barrier, and blocking
+            a competitor from public data was anti-competitive.</li>
+    </ul>`,
+    ruling:`<p>The Ninth Circuit ruled in hiQ's favour on the CFAA question, holding that the
+        CFAA does <em>not</em> prohibit accessing data that is <strong>publicly available</strong> on the
+        open web — even if the website's Terms of Service forbid it. The rationale: "authorisation" under
+        the CFAA refers to technical access barriers (gates), not contractual terms alone.
+        The case was subsequently remanded to the district court after the Supreme Court's
+        <em>Van Buren</em> decision (2021).</p>`,
+    takeaway:`<ul>
+        <li>Scraping publicly accessible pages (no login required) is not a CFAA violation under the
+            Ninth Circuit's reading.</li>
+        <li>A ToS clause alone cannot convert public-data access into a CFAA offence.</li>
+        <li>Anti-competitive use of CFAA threats against a lawful scraper may itself be challenged.</li>
+    </ul>`
+},
+{
+    key:"vanburen",
+    icon:"⚖️",
+    name:"Van Buren v. United States",
+    year:"2021 · Supreme Court",
+    badge:"CFAA Scope",
+    badgeClass:"status-cfaa",
+    meta:"Supreme Court of the United States · June 3, 2021 · 6–3 decision · Decided",
+    background:`<p>Nathan Van Buren was a police officer who used his authorised access to a law-enforcement
+        database to look up a licence plate for a personal (improper) purpose — a favour for someone in
+        exchange for money. He was convicted under the CFAA for "exceeding authorised access". The case
+        reached the Supreme Court on the question of what "exceeds authorised access" means.</p>`,
+    dispute:`<ul>
+        <li>The <b>Government</b> argued that accessing information for an improper <em>purpose</em> — even
+            with technical authorisation to access the system — constitutes "exceeding authorised access".</li>
+        <li><b>Van Buren</b> argued that "exceeds authorised access" should be read narrowly: it covers only
+            accessing files/folders/databases the user has <em>no technical right</em> to open at all.</li>
+    </ul>`,
+    ruling:`<p>The Supreme Court (6–3, Justice Barrett writing) adopted the narrower interpretation: the
+        CFAA's "exceeds authorised access" provision covers only situations where someone accesses parts of
+        a computer system they are <em>technically prohibited</em> from entering — it does <strong>not</strong>
+        criminalise misuse of information someone is already authorised to access. The Court offered the
+        "gates-up-or-down" analogy: if the gate is up, you have authorisation regardless of purpose.</p>`,
+    takeaway:`<ul>
+        <li>Directly narrows CFAA scope: violating a website's <em>purpose restrictions</em> or ToS — without
+            bypassing a <em>technical</em> barrier — does not constitute a CFAA offence.</li>
+        <li>Strengthens the legal foundation for scraping publicly available data where no password or
+            technical lock exists.</li>
+        <li>Does not address all scraping scenarios — other laws (copyright, contract) still apply.</li>
+    </ul>`
+},
+{
+    key:"brightdata",
+    icon:"🌐",
+    name:"Meta v. Bright Data",
+    year:"2024 · N.D. California",
+    badge:"ToS / Public Data",
+    badgeClass:"status-cfaa",
+    meta:"Case No. 3:23-cv-00077-EMC · N.D. Cal. · Jan 23, 2024 · Judge Edward Chen · Decided (at summary judgment stage)",
+    background:`<p>Bright Data Ltd. provides scraping infrastructure and sells datasets compiled from publicly
+        accessible web sources, including public Facebook and Instagram pages. Meta sued, arguing that
+        Bright Data's scraping — both while logged in to Meta's platforms <em>and</em> while logged off —
+        violated Meta's Terms of Service and constituted computer fraud.</p>`,
+    dispute:`<ul>
+        <li><b>Meta</b> argued its ToS prohibited scraping whether the user was logged in or logged off, and
+            that accepting terms creates a binding contract whose breach triggers legal liability.</li>
+        <li><b>Bright Data</b> argued its "logged-off" scraping of public pages never involved Meta's systems
+            in a meaningful contractual sense, and that ToS cannot restrict access to information that is
+            otherwise public.</li>
+    </ul>`,
+    ruling:`<p>The court ruled in favour of Bright Data on the logged-off scraping question: "Bright Data
+        did not 'use' Facebook and Instagram when it engaged in public logged-off scraping." The ToS
+        cannot be enforced against a party that never agreed to them (a non-user scraping public pages).
+        The ruling makes scraping publicly available social-media data significantly less legally risky,
+        and challenges Meta's ability to prevent such scraping through ToS enforcement alone.</p>`,
+    takeaway:`<ul>
+        <li>A website's ToS cannot restrict scraping by parties who never logged in and therefore never
+            accepted those terms.</li>
+        <li>"Public" truly means public: data visible without authentication is fair game under
+            contract-law analysis (though copyright and other claims may still apply).</li>
+        <li>Scraping while <em>logged in</em> remains legally distinct — ToS violations by authenticated
+            users can still create liability.</li>
+    </ul>`
+},
+{
+    key:"3taps",
+    icon:"🏠",
+    name:"Craigslist v. 3Taps",
+    year:"2012 · N.D. California",
+    badge:"IP Blocks / CFAA",
+    badgeClass:"status-cfaa",
+    meta:"N.D. Cal. · 2012 · Partially settled 2013 · Decided",
+    background:`<p>3Taps scraped housing and other classified ads from Craigslist and re-distributed them
+        via an API to third-party developers (including the apartment-search app PadMapper). Craigslist
+        sent a cease-and-desist letter, blocked 3Taps' IP addresses, and filed suit under the CFAA.</p>`,
+    dispute:`<ul>
+        <li><b>Craigslist</b> argued that once it had explicitly revoked 3Taps' access via a C&amp;D letter
+            and IP blocks, any further access was "without authorisation" under the CFAA.</li>
+        <li><b>3Taps</b> argued the listings were public and it had no contractual relationship with
+            Craigslist.</li>
+    </ul>`,
+    ruling:`<p>The court ruled that Craigslist's cease-and-desist letter combined with IP-address blocks
+        was sufficient to revoke authorisation under the CFAA. Continued access after that revocation
+        constituted "access without authorisation." The case settled in 2015 for $1 million paid to
+        Craigslist, which then committed to donating the full amount to the Electronic Frontier Foundation
+        over ten years.</p>
+        <div class="note"><b>Note:</b> This ruling pre-dates <em>hiQ</em> and <em>Van Buren</em>. Later decisions have
+        narrowed the CFAA's scope, but the principle that explicit revocation + technical barriers can
+        create liability remains relevant.</div>`,
+    takeaway:`<ul>
+        <li>An explicit cease-and-desist letter combined with technical barriers (IP blocks) can
+            constitute access revocation under the CFAA — even for previously public data.</li>
+        <li>Using proxies or other methods to bypass IP blocks <em>after</em> receiving a C&amp;D letter
+            is legally dangerous.</li>
+        <li>Contrast with <em>hiQ</em>: 3Taps received an explicit revocation notice; hiQ had not (initially).</li>
+    </ul>`
+},
+{
+    key:"nytimes",
+    icon:"📰",
+    name:"NYT v. OpenAI",
+    year:"2023 · Ongoing",
+    badge:"Copyright / AI Training",
+    badgeClass:"status-copyright",
+    meta:"S.D.N.Y. · Filed December 27, 2023 · Ongoing — no final ruling",
+    background:`<p>The New York Times filed suit in federal court against OpenAI and Microsoft, alleging
+        that millions of NYT articles were used — without permission or payment — to train large language
+        models including GPT-4, which underpins ChatGPT and Microsoft Copilot.</p>`,
+    dispute:`<ul>
+        <li><b>NYT</b> argues the use does not qualify as "fair use" because it is not transformative:
+            ChatGPT can reproduce NYT articles almost verbatim, substituting for the original and
+            diverting readers and revenue.</li>
+        <li><b>OpenAI</b> argues that training on publicly accessible text is protected under the fair-use
+            doctrine, which permits use of copyrighted material for research, analysis, and transformative
+            purposes.</li>
+        <li>NYT also alleged that ChatGPT's outputs can harm the newspaper's market by acting as a
+            substitute for visiting the NYT website.</li>
+    </ul>`,
+    ruling:`<p><strong>Ongoing — no final ruling as of the knowledge cutoff.</strong> The case is in
+        pretrial stages. It could set a landmark precedent for whether training AI systems on
+        copyrighted web content constitutes copyright infringement. In early 2025, a separate court
+        ruled AI training is <em>not</em> fair use, while other decisions have reached different conclusions
+        — the area is actively contested.</p>
+        <blockquote>"There is nothing 'transformative' about using The Times's content without payment
+        to create products that substitute for The Times and steal audiences away from it."
+        — NYT Legal Team</blockquote>`,
+    takeaway:`<ul>
+        <li>Copyright law is a <em>separate</em> constraint from the CFAA: even if scraping public pages
+            is lawful under CFAA/contract law, the <em>use</em> of copyrighted content may still infringe.</li>
+        <li>The "fair use" question for AI training is unsettled — scrapers building training corpora
+            face genuine legal uncertainty.</li>
+        <li>Verbatim reproduction of scraped content in AI outputs heightens infringement risk.</li>
+    </ul>`
+},
+{
+    key:"reddit",
+    icon:"💬",
+    name:"Reddit v. Anthropic",
+    year:"2025 · Ongoing",
+    badge:"ToS / Unfair Competition",
+    badgeClass:"status-ongoing",
+    meta:"California Superior Court, San Francisco · Filed June 4, 2025 · Ongoing — no final ruling",
+    background:`<p>Reddit filed suit against Anthropic (creator of the Claude AI) alleging that Anthropic
+        scraped millions of Reddit user comments without permission to train its AI chatbot. Reddit
+        argued this violated its Terms of Service and constituted unfair competition.</p>`,
+    dispute:`<ul>
+        <li><b>Reddit</b> alleged breach of Terms of Service and unfair competition. Notably, the
+            lawsuit does <em>not</em> allege copyright infringement — a significant legal distinction.
+            Reddit also pointed out it has licensing agreements with Google, OpenAI, and others who
+            pay for data access and include user-protection and privacy safeguards.</li>
+        <li><b>Anthropic</b> denied the claims, stating it "disagrees with Reddit's claims and will
+            defend itself vigorously."</li>
+    </ul>`,
+    ruling:`<p><strong>Ongoing — no final ruling as of the knowledge cutoff.</strong></p>
+        <blockquote>"AI companies should not be allowed to scrape information and content from people
+        without clear limitations on how they can use that data."
+        — Ben Lee, Reddit Chief Legal Officer</blockquote>`,
+    takeaway:`<ul>
+        <li>User-generated content platforms are increasingly monetising their data through licensing
+            agreements — scraping that bypasses these deals faces legal and reputational risk.</li>
+        <li>Even without a copyright claim, ToS-violation and unfair-competition theories may create
+            liability for large-scale AI training scrapes.</li>
+        <li>The case illustrates the emerging tension between open-web scraping norms and the
+            commercial value of community-generated data.</li>
+    </ul>`
+}
+];
+
+/* ================================================================
+   RENDER CASE CARDS
+   ================================================================ */
+const cardsDiv = document.getElementById("cards");
+CASES.forEach((c, i) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.id = "card-" + c.key;
+    div.innerHTML = `<span class="icon">${c.icon}</span>
+        <span class="case-name">${c.name}</span>
+        <span class="case-year">${c.year}</span>`;
+    div.addEventListener("click", () => selectCase(i));
+    cardsDiv.appendChild(div);
+});
+
+function selectCase(i) {
+    const c = CASES[i];
+    document.querySelectorAll(".card").forEach(el => el.classList.remove("active"));
+    document.getElementById("card-" + c.key).classList.add("active");
+
+    document.getElementById("detail").innerHTML = `
+        <h2>${c.icon} ${c.name} <span class="status-pill ${c.badgeClass}">${c.badge}</span></h2>
+        <p class="case-meta">${c.meta}</p>
+        <div class="detail-cols three">
+            <div class="dcol">
+                <h3>Background &amp; Facts</h3>
+                ${c.background}
+            </div>
+            <div class="dcol">
+                <h3 class="amber">The Dispute</h3>
+                ${c.dispute}
+            </div>
+            <div class="dcol">
+                <h3 class="green">Ruling / Status</h3>
+                ${c.ruling}
+            </div>
+        </div>
+        <div class="dcol" style="margin-top:16px;">
+            <h3 class="red">Takeaway for Scrapers</h3>
+            ${c.takeaway}
+        </div>`;
+}
+
+/* Default: select first card on load */
+selectCase(0);
+
+
+/* ================================================================
+   DPDP ACT 2023 — DECISION PANEL
+   Based on the Digital Personal Data Protection Act, 2023 (India).
+   Key provisions used:
+     - §2(t): "personal data" = data about an identifiable living individual
+     - §3 read with §4: applies to processing of digital personal data
+     - §4 proviso: does NOT apply to data "made available by the Data
+       Principal" themselves or under a legal obligation (publicly
+       volunteered data exemption — often called the "public availability"
+       carve-out in DPDP policy discussions).
+     - §6: Consent as a lawful basis
+     - §7: "Legitimate uses" as an alternative to consent
+   NOTE: The Act is in force but rules are not yet finalised as of 2025.
+   This panel reflects the statutory text; implementation guidance may
+   evolve. Do NOT treat this as legal advice.
+   ================================================================ */
+
+const DPDP_STEPS = [
+    {
+        id: "q1",
+        label: "Q1 — Is the data you are collecting personal data?",
+        hint: "Personal data = any data about an identifiable living individual (name, contact details, IP address, browsing profile, profile photo, etc.).",
+        options: ["Yes — it identifies or can identify a living person", "No — purely aggregated / anonymised / non-personal data"],
+        keys: ["yes","no"]
+    },
+    {
+        id: "q2",
+        label: "Q2 — Was this data made publicly available by the Data Principal themselves (or under a legal obligation)?",
+        hint: "Data Principal = the individual the data is about. 'Publicly available' here means the person themselves chose to publish it (e.g., a public LinkedIn profile, a public tweet) OR it was disclosed under a statutory requirement. Data posted by a third party about someone does NOT qualify.",
+        options: ["Yes — the individual themselves published it publicly", "No — posted by others, or behind a login, or unclear"],
+        keys: ["yes","no"]
+    },
+    {
+        id: "q3",
+        label: "Q3 — Do you have a lawful basis for processing this personal data?",
+        hint: "Under the DPDP Act, processing requires either (a) Consent: free, specific, informed, unconditional and unambiguous consent from the Data Principal; OR (b) a 'Legitimate Use' listed in §7 (e.g., a State function, compliance with a legal obligation, employment-related processing, or an emergency involving threat to life).",
+        options: ["Yes — I have consent OR a §7 legitimate use", "No — I have neither consent nor a clear §7 ground", "Unsure / need to check"],
+        keys: ["yes","no","unsure"]
+    }
+];
+
+let dpdpAnswers = {}; // key: step id, value: answer key
+let dpdpCurrentStep = 0;
+
+function renderDPDP() {
+    const container = document.getElementById("dpdpSteps");
+    container.innerHTML = "";
+    DPDP_STEPS.forEach((step, i) => {
+        const div = document.createElement("div");
+        div.className = "dpdp-step" + (i > dpdpCurrentStep ? " locked" : "") + (i === dpdpCurrentStep ? " active-step" : "");
+        div.id = "dpdp-" + step.id;
+
+        const answered = dpdpAnswers[step.id];
+        const optionsHtml = step.options.map((opt, oi) => {
+            const key = step.keys[oi];
+            let btnClass = "dpdp-btn";
+            if (answered === key) {
+                if (key === "yes") btnClass += " selected-yes";
+                else if (key === "no") btnClass += " selected-no";
+                else btnClass += " selected-unsure";
+            }
+            return `<button class="${btnClass}" onclick="answerDPDP('${step.id}', '${key}', ${i})">${opt}</button>`;
+        }).join("");
+
+        div.innerHTML = `
+            <span class="q-label">${step.label}</span>
+            <div class="explain" style="margin:0 0 10px;font-size:.88em;">${step.hint}</div>
+            <div class="dpdp-options">${optionsHtml}</div>`;
+        container.appendChild(div);
+    });
+}
+
+function answerDPDP(stepId, answerKey, stepIndex) {
+    dpdpAnswers[stepId] = answerKey;
+
+    // Determine if we should short-circuit or advance
+    const verdictBox = document.getElementById("verdictBox");
+    verdictBox.className = "verdict-box";
+    verdictBox.style.display = "none";
+
+    if (stepId === "q1" && answerKey === "no") {
+        // DPDP not engaged
+        dpdpCurrentStep = stepIndex; // stay here but show verdict
+        renderDPDP();
+        showVerdict("clear",
+            "DPDP Act not engaged — processing proceeds without DPDP obligations.",
+            "Because the data is not personal data (it does not relate to an identifiable living individual), the Digital Personal Data Protection Act 2023 does not apply to this collection. You are still subject to other applicable laws (copyright, CFAA equivalents, ToS, IT Act, etc.).",
+            "This assumes your anonymisation/aggregation is robust. Re-identify risk should be evaluated separately."
+        );
+        return;
+    }
+
+    if (stepId === "q2" && answerKey === "yes") {
+        // Public availability exemption may apply
+        dpdpCurrentStep = stepIndex;
+        renderDPDP();
+        showVerdict("caution",
+            "Likely permissible under the DPDP Act's public-availability carve-out — but verify the scope.",
+            "Where a Data Principal has themselves made personal data publicly available (e.g., posting a public profile), the DPDP Act's obligations are reduced for that data. Processing such data for a purpose consistent with the context in which it was shared is generally permissible without separate consent.",
+            "Caveat: (1) The Act's rules are not yet finalised — implement cautiously. (2) The exemption covers data the individual published; data about them published by others may not qualify. (3) Even exempted data must be used proportionately and not in a manner that violates other rights. Not legal advice."
+        );
+        return;
+    }
+
+    if (stepId === "q2" && answerKey === "no") {
+        // Advance to Q3
+        dpdpCurrentStep = stepIndex + 1;
+        renderDPDP();
+        return;
+    }
+
+    if (stepId === "q3") {
+        dpdpCurrentStep = stepIndex;
+        renderDPDP();
+        if (answerKey === "yes") {
+            showVerdict("caution",
+                "Potentially lawful — provided your consent/legitimate use is valid and documented.",
+                "Processing personal data with a valid DPDP lawful basis (consent meeting the Act's requirements, or a §7 legitimate use) is permissible. You must also comply with the Data Principal's rights (access, correction, erasure, grievance redressal) and security obligations.",
+                "Caveat: Consent for scraping-derived data is difficult in practice — you usually cannot obtain prior consent from data subjects whose data is being scraped. Ensure your claimed basis is genuine and defensible. Rules under the Act are pending; obligations may tighten. Not legal advice."
+            );
+        } else if (answerKey === "no") {
+            showVerdict("risk",
+                "High risk of DPDP non-compliance — do not proceed without a lawful basis.",
+                "Processing personal data of Indian residents without consent or a recognised legitimate use is a violation of the Digital Personal Data Protection Act 2023. Penalties under the Act can reach ₹250 crore for certain breaches.",
+                "You should either: (a) obtain valid consent before collecting; (b) establish a §7 legitimate-use ground; or (c) restructure the collection so personal data is not retained. Not legal advice — seek qualified legal counsel."
+            );
+        } else {
+            showVerdict("caution",
+                "Uncertain — conduct a lawful-basis review before proceeding.",
+                "You need to identify a valid lawful basis under the DPDP Act before collecting or processing this personal data. Proceeding without one is non-compliant. Review §6 (consent) and §7 (legitimate uses) carefully against your specific use case.",
+                "The Act's implementing rules are still pending as of 2025. Not legal advice — seek qualified legal counsel."
+            );
+        }
+    }
+}
+
+function showVerdict(type, title, text, caveat) {
+    const box = document.getElementById("verdictBox");
+    box.className = "verdict-box show " + type;
+    document.getElementById("verdictTitle").textContent = title;
+    document.getElementById("verdictText").textContent = text;
+    document.getElementById("verdictCaveat").textContent = "Note: " + caveat;
+    box.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function resetDPDP() {
+    dpdpAnswers = {};
+    dpdpCurrentStep = 0;
+    document.getElementById("verdictBox").className = "verdict-box";
+    renderDPDP();
+}
+
+/* init */
+renderDPDP();
+</script>
+
+<style>
+/* ===== DA2402 theme overrides (applied after the demo's own stylesheet) ===== */
+html{background:var(--surround)}
+body{background:var(--surround);color:var(--ink);font-family:var(--body);padding:22px 20px 26px;
+  -webkit-font-smoothing:antialiased}
+.container{background:var(--paper);border-radius:0;border-top:3px solid var(--ink);
+  box-shadow:0 20px 70px rgba(0,0,0,.5);padding:26px 34px 0}
+.da-eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin:0 0 10px;display:flex;gap:10px;align-items:center}
+.da-eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+.da-eyebrow .jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+h1{font-family:var(--disp);font-weight:700;letter-spacing:-.018em;line-height:1.1;font-size:30px;
+  text-align:left;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;margin:0 0 4px}
+.subtitle{text-align:left;font-family:var(--body);color:var(--soft);font-size:14.5px;line-height:1.42;
+  margin:0 0 18px;max-width:900px}
+h2,h3,h4{font-family:var(--disp);letter-spacing:-.005em}
+button,.ex-btn,.step,.mode-tab,.chip,.tab,.tab-btn,.case-card,.run-btn,.q-option{border-radius:3px!important;
+  transform:none!important;box-shadow:none!important}
+button:hover:not(:disabled),.ex-btn:hover,.step:hover,.mode-tab:hover,.chip:hover{transform:none!important;box-shadow:none!important}
+pre,code,kbd,.code-panel,.code-row code,.result-item,.selector-input,.entropy-banner,.results-panel,
+.panel,.card,.stagebar,.note,.explain,.good,.tip,.warn,.xpath-hint,.match-badge,.tag,#sample-frame,
+table,td,th{border-radius:0!important}
+.note,.explain,.good,.tip,.warn,.xpath-hint,.stagebar{border-radius:0!important}
+.container>*:last-child{margin-bottom:0}
+/* byline rail, same text as the decks */
+.da-rail{margin:26px -34px 0;height:30px;background:var(--card);border-top:1.5px solid var(--ink);
+  display:flex;align-items:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--soft)}
+.da-rail .a{padding:0 16px;flex:1}
+.da-rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.da-rail .c{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;white-space:nowrap}
+</style>
+<style>
+/* embedded inside a lecture deck slide: drop chrome the slide already provides */
+body.embed{padding:0;zoom:.86}
+body.embed .container{box-shadow:none;border-top:0;padding:18px 26px 0}
+body.embed .da-eyebrow,body.embed .da-rail{display:none}
+body.embed h1{font-size:24px}
+</style>
+<script>if(window.self!==window.top||/[?&]embed/.test(location.search))document.body.classList.add('embed');</script>
+</body>
+</html>

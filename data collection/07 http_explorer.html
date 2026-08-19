@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP Request / Response Explorer — DA2402</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+/* ===== DA2402 deck theme tokens (shared with the lecture decks) ===== */
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+/* ligatures OFF: code full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+</style>
+<style>
+    /* ---- house style ---- */
+    body{font-family:var(--body);margin:0;padding:20px;
+        background:var(--surround);min-height:100vh;color:var(--ink);}
+    .container{max-width:1280px;margin:0 auto;background:#fff;border-radius:3px;padding:30px;
+        box-shadow:0 20px 40px rgba(0,0,0,.1);}
+    h1{text-align:center;color:var(--ink);margin:0 0 6px;font-size:2.2em;
+        background:var(--ink);-webkit-background-clip:text;
+        -webkit-text-fill-color:transparent;background-clip:text;}
+    .subtitle{text-align:center;color:var(--soft);margin:0 0 18px;font-size:.95em;}
+
+    /* Example picker */
+    .example-bar{display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+    .example-bar label{font-weight:600;color:var(--ink);font-size:.96em;}
+    .ex-btn{background:var(--card);padding:9px 18px;border-radius:3px;border:2px solid var(--hair);
+        font-weight:600;font-size:.88em;cursor:pointer;transition:.25s;white-space:nowrap;}
+    .ex-btn:hover{border-color:var(--soft);}
+    .ex-btn.active{background:var(--ink);color:#fff;border-color:var(--t-cls);}
+
+    /* Stepper chips */
+    .steps{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 26px;margin-bottom:24px;}
+    .step{background:var(--card);padding:10px 16px;border-radius:3px;border:2px solid var(--hair);
+        font-weight:600;font-size:.92em;cursor:pointer;transition:.25s;position:relative;white-space:nowrap;}
+    .step:hover{border-color:var(--soft);}
+    .step.active{background:var(--ink);color:#fff;border-color:var(--t-cls);transform:scale(1.06);}
+    .step.done{border-color:var(--t-grp);}
+    .step::after{content:"→";position:absolute;right:-19px;top:50%;transform:translateY(-50%);color:#8FA0A9;font-size:15px;}
+    .step:last-child::after{display:none;}
+
+    /* Stage banner */
+    .stagebar{background:var(--card);border-left:5px solid var(--t-cls);border-radius:3px;padding:16px 22px;margin-bottom:22px;}
+    .stagebar h2{margin:0 0 4px;color:var(--ink);font-size:1.25em;}
+    .stagebar p{margin:0;color:#31444F;font-size:.96em;}
+    .stagebar .ref{color:var(--soft);font-size:.82em;font-style:italic;}
+
+    /* Content panel */
+    .panel{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:22px;min-height:280px;}
+    .panel h3{margin:4px 0 14px;color:var(--t-cls);}
+    .panel h4{margin:18px 0 8px;color:#31444F;}
+
+    /* Method cards */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
+    .card{background:#fff;border:2px solid var(--hair);border-radius:3px;padding:16px;cursor:default;transition:.25s;}
+    .card.highlight{border-color:var(--t-cls);box-shadow:0 6px 16px rgba(18,95,158,.22);background:var(--card);}
+    .method-badge{display:inline-block;font-size:1.05em;font-weight:700;padding:4px 14px;border-radius:3px;
+        margin-bottom:8px;letter-spacing:.03em;}
+    .m-get   {background:#EEF5FA;color:var(--t-cls);}
+    .m-post  {background:#F3FBF7;color:var(--t-grp);}
+    .m-put   {background:#FFFBF2;color:var(--t-anc);}
+    .m-delete{background:#FFF5F5;color:var(--t-asr);}
+    .m-head  {background:#F1ECFA;color:var(--t-dot);}
+    .m-patch {background:#EAF6F1;color:var(--t-grp);}
+
+    /* Code / pre blocks */
+    pre{background:var(--code-bg);color:var(--code-ink);border-radius:3px;padding:18px 20px;
+        font-family:var(--mono);font-size:.92em;overflow-x:auto;
+        line-height:1.65;margin:10px 0;}
+    .hl-method{color:#8FB8FF;font-weight:700;}
+    .hl-path  {color:#B7E39B;}
+    .hl-proto {color:#C0A6F5;}
+    .hl-hname {color:#FF9090;}
+    .hl-hval  {color:#F0C46B;}
+    .hl-body  {color:#E9F2F6;}
+    .hl-status{color:#B7E39B;font-weight:700;}
+    .hl-code  {color:#8FB8FF;font-weight:700;font-size:1.1em;}
+    .hl-comment{color:#6F8896;font-style:italic;}
+
+    /* Tables */
+    table.dt{border-collapse:collapse;width:100%;margin:8px 0 4px;background:#fff;
+        box-shadow:0 3px 10px rgba(0,0,0,.06);border-radius:3px;overflow:hidden;font-size:.9em;}
+    table.dt th{background:var(--ink);color:#fff;padding:9px 12px;text-align:left;}
+    table.dt td{padding:7px 12px;border-bottom:1px solid var(--hair);vertical-align:top;}
+    table.dt tr:nth-child(even){background:var(--paper);}
+
+    /* Status badge */
+    .status-ok  {display:inline-block;background:#F3FBF7;color:var(--t-grp);border:2px solid var(--t-grp);
+        border-radius:3px;padding:4px 16px;font-weight:700;font-size:1.4em;margin-bottom:6px;}
+    .status-redir{display:inline-block;background:#FFFBF2;color:var(--t-anc);border:2px solid var(--t-anc);
+        border-radius:3px;padding:4px 16px;font-weight:700;font-size:1.4em;margin-bottom:6px;}
+    .status-err {display:inline-block;background:#FFF5F5;color:var(--t-asr);border:2px solid var(--t-asr);
+        border-radius:3px;padding:4px 16px;font-weight:700;font-size:1.4em;margin-bottom:6px;}
+
+    /* Callout boxes */
+    .note   {background:#FFFBF2;border-left:4px solid var(--t-anc);border-radius:3px;padding:11px 16px;margin:14px 0;font-size:.92em;color:var(--t-anc);}
+    .explain{background:#EEF5FA;border-left:4px solid var(--t-cls);border-radius:3px;padding:11px 16px;margin:14px 0;font-size:.92em;color:var(--t-cls);}
+    .good   {background:#F3FBF7;border-left:4px solid var(--t-grp);border-radius:3px;padding:11px 16px;margin:14px 0;font-size:.92em;color:var(--t-grp);}
+
+    /* Flex layout */
+    .flex{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;}
+    .flex-col{flex:1;min-width:240px;}
+
+    /* Buttons */
+    .btnrow{display:flex;justify-content:space-between;margin-top:24px;}
+    button{background:var(--ink);color:#fff;border:none;padding:11px 24px;
+        border-radius:3px;cursor:pointer;font-size:15px;transition:.25s;margin:4px;}
+    button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 15px rgba(18,95,158,.4);}
+    button:disabled{opacity:.35;cursor:not-allowed;}
+
+    /* Tag pill */
+    .tag{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:3px;
+        padding:2px 10px;font-size:.82em;color:var(--ink);margin:2px;}
+
+    @media(max-width:768px){.flex{flex-direction:column;}.grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="da-eyebrow">Data collection · interactive demo <span class="jsbadge">Runs in your browser</span></div><h1>HTTP Request / Response Explorer</h1>
+    <p class="subtitle">How a browser talks to a server — and what comes back &nbsp;·&nbsp; DA2402 · Data Collection</p>
+
+    <!-- Example picker -->
+    <div class="example-bar">
+        <label>Pick an example:</label>
+        <div class="ex-btn active" id="ex0" onclick="selectExample(0)">1 · Simple HTML page (GET)</div>
+        <div class="ex-btn"        id="ex1" onclick="selectExample(1)">2 · JSON API (GET)</div>
+        <div class="ex-btn"        id="ex2" onclick="selectExample(2)">3 · Form submit (POST)</div>
+    </div>
+
+    <!-- Stepper chips -->
+    <div class="steps" id="steps"></div>
+
+    <!-- Stage banner -->
+    <div class="stagebar">
+        <h2 id="stageTitle"></h2>
+        <p  id="stageDesc"></p>
+        <p class="ref" id="stageRef"></p>
+    </div>
+
+    <!-- Content panel -->
+    <div class="panel" id="panel"></div>
+
+    <!-- Prev / Next -->
+    <div class="btnrow">
+        <button id="prevBtn" onclick="go(stage-1)">&#8592; Previous</button>
+        <button id="nextBtn" onclick="go(stage+1)">Next &#8594;</button>
+    </div>
+<div class="da-rail"><div class="a">DA2402 · Data Curation and Visualization</div><div class="n">Dr. Arun B Ayyar</div><div class="c">Interactive demo · HTTP request / response explorer</div></div></div>
+
+<script>
+/* ================================================================
+   Hard-coded example request / response pairs
+   ================================================================ */
+const EXAMPLES = [
+
+  /* ── Example 0 ── Simple HTML page (GET) ───────────────────── */
+  { label: "GET an HTML page",
+    method: "GET", safe: true, idempotent: true, hasBody: false,
+
+    /* Step 1 data */
+    methodDesc: "GET asks the server to <em>send back</em> a resource — an HTML page, image, CSS file, etc. "
+              + "The browser uses GET for almost every page load. No changes are made on the server; "
+              + "you can repeat it as many times as you like.",
+
+    /* Step 2 data */
+    requestHeaders: [
+      ["Host",            "www.example.com",                          "The domain name — mandatory in HTTP/1.1; tells a shared server which site you want."],
+      ["User-Agent",      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0",
+                                                                      "Identifies the browser/client. Web scrapers often set this to look like a normal browser."],
+      ["Accept",          "text/html,application/xhtml+xml,*/*;q=0.8","Tells the server which content types the client can handle (MIME negotiation)."],
+      ["Accept-Language", "en-IN,en;q=0.9",                          "Preferred language(s) for the response content."],
+      ["Accept-Encoding", "gzip, deflate, br",                       "Compression formats the client supports — saves bandwidth."],
+      ["Connection",      "keep-alive",                               "Reuse the TCP connection for subsequent requests (HTTP/1.1 default)."],
+    ],
+
+    /* Step 3 — full request text */
+    requestLine:    "GET /index.html HTTP/1.1",
+    requestRawHdrs: "Host: www.example.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0\r\nAccept: text/html,application/xhtml+xml,*/*;q=0.8\r\nAccept-Language: en-IN,en;q=0.9\r\nAccept-Encoding: gzip, deflate, br\r\nConnection: keep-alive",
+    requestBody:    null,
+
+    /* Step 4 — response */
+    statusCode: 200, statusText: "OK", statusClass: "ok",
+    statusMeaning: "The request succeeded and the response body contains the resource that was requested.",
+    responseHeaders: [
+      ["HTTP/1.1 200 OK",   "",                    "The status line — protocol version, numeric status code, and reason phrase."],
+      ["Date",              "Wed, 20 May 2026 08:00:00 GMT",  "When the server generated this response (UTC)."],
+      ["Server",            "Apache/2.4.58 (Ubuntu)",         "Web-server software. Scrapers use this to detect the tech stack."],
+      ["Content-Type",      "text/html; charset=UTF-8",       "The MIME type + encoding of the body. The browser uses this to decide how to render it."],
+      ["Content-Length",    "3247",                           "Body size in bytes. Lets the client know when the transfer is complete."],
+      ["Content-Encoding",  "gzip",                          "The body is compressed; the client must decompress it before parsing."],
+      ["Cache-Control",     "max-age=3600",                   "Cache for up to 1 hour — the browser won't re-fetch within that window."],
+      ["Last-Modified",     "Tue, 19 May 2026 14:23:00 GMT", "When the resource was last changed — used for conditional re-validation."],
+      ["ETag",              "\"a3f82b4c\"",                  "A fingerprint for this exact version of the resource."],
+    ],
+    responseBodyLang: "html",
+    responseBody: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Example Domain</title>
+</head>
+<body>
+  <h1>Example Domain</h1>
+  <p>This domain is for use in illustrative examples.</p>
+  <p><a href="https://www.iana.org/domains/reserved">More information...</a></p>
+
+</body>
+</html>`,
+  },
+
+  /* ── Example 1 ── JSON API (GET) ───────────────────────────── */
+  { label: "GET a JSON API",
+    method: "GET", safe: true, idempotent: true, hasBody: false,
+
+    methodDesc: "APIs also use GET — but instead of HTML they return structured data (JSON, XML) that your "
+              + "code can parse directly. This is the foundation of <em>API scraping</em>: send a GET, "
+              + "parse the JSON, extract the fields you need.",
+
+    requestHeaders: [
+      ["Host",          "api.openweathermap.org",                          "Target server."],
+      ["User-Agent",    "python-requests/2.31.0",                          "The Python <code>requests</code> library sets this automatically — a clear signal to the server that this is a programmatic client, not a browser."],
+      ["Accept",        "application/json",                                "Tells the API: respond with JSON, not HTML."],
+      ["Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...",         "A JWT bearer token — proves the client has a valid API key. Many public APIs require this."],
+      ["Connection",    "keep-alive",                                      "Reuse the TCP connection (Python <code>requests.Session</code> does this by default)."],
+    ],
+
+    requestLine:    "GET /data/2.5/weather?q=Chennai&units=metric HTTP/1.1",
+    requestRawHdrs: "Host: api.openweathermap.org\r\nUser-Agent: python-requests/2.31.0\r\nAccept: application/json\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...\r\nConnection: keep-alive",
+    requestBody: null,
+
+    statusCode: 200, statusText: "OK", statusClass: "ok",
+    statusMeaning: "The API call succeeded. The response body is a JSON object containing the weather data.",
+    responseHeaders: [
+      ["HTTP/1.1 200 OK",  "",                              "Success."],
+      ["Date",             "Wed, 20 May 2026 08:00:05 GMT", "Response timestamp."],
+      ["Content-Type",     "application/json; charset=utf-8","Body is JSON — your scraper calls <code>response.json()</code> to parse it."],
+      ["Content-Length",   "512",                           "Body is 512 bytes."],
+      ["X-RateLimit-Limit","60",                            "Custom header: this API key allows 60 calls per minute."],
+      ["X-RateLimit-Remaining","57",                        "Calls remaining this minute — important to check when scraping at scale."],
+      ["Cache-Control",    "no-cache",                      "Don't cache — weather data changes often."],
+    ],
+    responseBodyLang: "json",
+    responseBody: `{
+  "coord": { "lon": 80.2785, "lat": 13.0878 },
+  "weather": [{ "id": 800, "main": "Clear", "description": "clear sky" }],
+  "main": {
+    "temp": 34.2,
+    "feels_like": 38.7,
+    "humidity": 62,
+    "pressure": 1008
+  },
+  "wind": { "speed": 4.1, "deg": 230 },
+  "name": "Chennai",
+  "cod": 200
+}`,
+  },
+
+  /* ── Example 2 ── POST a form ───────────────────────────────── */
+  { label: "POST a form",
+    method: "POST", safe: false, idempotent: false, hasBody: true,
+
+    methodDesc: "POST <em>sends</em> data to the server to create or process something — a login, a search "
+              + "query, a purchase. Unlike GET, the data travels in the <strong>request body</strong>, "
+              + "not the URL. Repeating the same POST may create duplicate records, so it is neither "
+              + "safe nor idempotent. Scrapers often need to send POSTs to access search results "
+              + "or authenticate.",
+
+    requestHeaders: [
+      ["Host",           "www.example.com",                              "Target server."],
+      ["User-Agent",     "Mozilla/5.0 (Windows NT 10.0) Chrome/124.0",  "Mimicking a browser — a common scraper tactic."],
+      ["Accept",         "text/html,*/*;q=0.8",                         "Expecting an HTML redirect after login."],
+      ["Content-Type",   "application/x-www-form-urlencoded",           "Tells the server how the body is encoded — key=value pairs separated by &amp;, URL-encoded."],
+      ["Content-Length", "37",                                           "The body is 37 bytes — server won't read past this."],
+      ["Origin",         "https://www.example.com",                     "Anti-CSRF check: the browser sets this; the server may reject requests from unexpected origins."],
+      ["Referer",        "https://www.example.com/login",               "The page the form was on. Servers sometimes reject POSTs without a matching Referer."],
+      ["Cookie",         "sessionid=abc123; csrftoken=xyz789",          "Session + CSRF token cookies — the CSRF token must usually match a hidden form field."],
+    ],
+
+    requestLine:    "POST /login HTTP/1.1",
+    requestRawHdrs: "Host: www.example.com\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0) Chrome/124.0\r\nAccept: text/html,*/*;q=0.8\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 37\r\nOrigin: https://www.example.com\r\nReferer: https://www.example.com/login\r\nCookie: sessionid=abc123; csrftoken=xyz789",
+    requestBody: "username=alice&password=s3cr3t&remember=1",
+
+    statusCode: 302, statusText: "Found", statusClass: "redir",
+    statusMeaning: "The login succeeded. The server is redirecting the browser to the dashboard page. "
+                 + "The browser automatically follows the Location header and sends a GET to /dashboard.",
+    responseHeaders: [
+      ["HTTP/1.1 302 Found",  "",                                  "Redirect — the resource is temporarily at a different URL."],
+      ["Date",                "Wed, 20 May 2026 08:01:00 GMT",     "Response timestamp."],
+      ["Location",            "https://www.example.com/dashboard", "Where to go next. The browser (or scraper using <code>allow_redirects=True</code>) follows this automatically."],
+      ["Set-Cookie",          "sessionid=newtoken456; HttpOnly; Secure; SameSite=Lax",
+                                                                   "A new authenticated session cookie. HttpOnly prevents JavaScript from reading it; Secure means HTTPS only."],
+      ["Content-Length",      "0",                                 "No body on a redirect response."],
+    ],
+    responseBodyLang: null,
+    responseBody: null,
+  },
+];
+
+/* ================================================================
+   Stage definitions (4 steps — same for every example)
+   ================================================================ */
+const STAGE_DEFS = [
+  { chip: "1 · Method",
+    title: "Step 1 — Choose an HTTP method",
+    desc:  "Every request starts with a verb that declares the client's intent.",
+    ref:   "HTTP/1.1 RFC 9110 §9 · Mitchell, Web Scraping with Python, Ch. 1",
+    render(ex){ return renderMethod(ex); } },
+
+  { chip: "2 · Request headers",
+    title: "Step 2 — Attach request headers",
+    desc:  "Headers carry metadata about the client and the request — before a single byte of body is sent.",
+    ref:   "RFC 9110 §6.3 · every header name is case-insensitive",
+    render(ex){ return renderReqHeaders(ex); } },
+
+  { chip: "3 · Send request",
+    title: "Step 3 — Send the full HTTP request",
+    desc:  "The client assembles request line + headers + (optional) body and writes it to the TCP socket.",
+    ref:   "RFC 9110 §6 · RFC 9112 §3 (HTTP/1.1 wire format)",
+    render(ex){ return renderSendRequest(ex); } },
+
+  { chip: "4 · Inspect response",
+    title: "Step 4 — Read the server response",
+    desc:  "The server writes back a status line + response headers + (optional) body.",
+    ref:   "RFC 9110 §15 (status codes) · RFC 9112 §4",
+    render(ex){ return renderResponse(ex); } },
+];
+
+/* ================================================================
+   Step render functions
+   ================================================================ */
+
+/* ── Step 1: Method ─────────────────────────────────────────── */
+const ALL_METHODS = [
+  { name:"GET",    cls:"m-get",    safe:true,  idem:true,  body:false,
+    summary:"Retrieve a resource (page, image, data). The most common HTTP method. Safe + idempotent.",
+    scraping:"The default method for all browser page loads and most API calls. <code>requests.get(url)</code>." },
+  { name:"POST",   cls:"m-post",   safe:false, idem:false, body:true,
+    summary:"Submit data to create or process something (login form, search query, API mutation).",
+    scraping:"Needed to submit forms, log in, or call REST APIs that create data. <code>requests.post(url, data=…)</code>." },
+  { name:"PUT",    cls:"m-put",    safe:false, idem:true,  body:true,
+    summary:"Replace a resource at a known URL entirely. Idempotent: the second PUT has the same effect as the first.",
+    scraping:"Used by REST APIs to update resources. Less common in scraping, but relevant when interacting with APIs." },
+  { name:"DELETE", cls:"m-delete", safe:false, idem:true,  body:false,
+    summary:"Remove the resource at the given URL. Idempotent.",
+    scraping:"REST APIs for resource deletion. Very rarely needed in data collection." },
+  { name:"HEAD",   cls:"m-head",   safe:true,  idem:true,  body:false,
+    summary:"Same as GET but the server returns <em>only headers</em> — no body.",
+    scraping:"Check if a URL is alive, get content-length, or get the Last-Modified date without downloading the body. Fast link-checker." },
+  { name:"PATCH",  cls:"m-patch",  safe:false, idem:false, body:true,
+    summary:"Apply a partial update to a resource (contrast with PUT, which replaces it entirely).",
+    scraping:"Used by some modern REST APIs for partial updates." },
+];
+
+function renderMethod(ex){
+    const cards = ALL_METHODS.map(m => {
+        const isSelected = (m.name === ex.method);
+        return `<div class="card${isSelected?' highlight':''}">
+          <div class="method-badge ${m.cls}">${m.name}</div>
+          <div style="font-size:.88em;color:#31444F;margin-bottom:6px;">${m.summary}</div>
+          <div style="font-size:.83em;color:#31444F;">
+            <span class="tag">${m.safe?'Safe':'Not safe'}</span>
+            <span class="tag">${m.idem?'Idempotent':'Not idempotent'}</span>
+            ${m.body?'<span class="tag">Has body</span>':'<span class="tag" style="color:#53666F">No body</span>'}
+          </div>
+          <div style="font-size:.82em;color:#14222B;margin-top:6px;">\u{1F50D} <em>${m.scraping}</em></div>
+        </div>`;
+    }).join('');
+
+    return `<h3>HTTP Methods — <span class="method-badge ${ALL_METHODS.find(m=>m.name===ex.method).cls}" style="font-size:.9em">${ex.method}</span> is used in this example</h3>
+    <div class="grid">${cards}</div>
+    <div class="explain" style="margin-top:16px">
+      <b>This example uses ${ex.method}.</b> ${ex.methodDesc}
+    </div>
+    <div class="note">
+      <b>Safe</b> = the request does not modify server state (browsers can prefetch freely).
+      &nbsp; <b>Idempotent</b> = repeating the request has the same effect as sending it once
+      (safe for retries). &nbsp; <b>Has body</b> = data can be sent in the request payload.
+    </div>`;
+}
+
+/* ── Step 2: Request headers ────────────────────────────────── */
+function renderReqHeaders(ex){
+    const rows = ex.requestHeaders.map(([name, val, meaning]) =>
+        `<tr><td><code style="color:#125F9E;font-weight:600">${name}</code></td>
+             <td><code>${escHtml(val)}</code></td>
+             <td>${meaning}</td></tr>`
+    ).join('');
+
+    return `<h3>Request headers for this ${ex.method}</h3>
+    <table class="dt">
+      <tr><th style="width:18%">Header</th><th style="width:38%">Value in this example</th><th>What it means / why it matters for scraping</th></tr>
+      ${rows}
+    </table>
+    <div class="explain">
+      Headers are plain <code>Name: Value</code> text lines, one per line, separated from the body by a blank line.
+      Every HTTP/1.1 request <em>must</em> include <code>Host</code>; everything else is optional — but servers
+      often check <code>User-Agent</code>, <code>Accept</code>, and <code>Referer</code> to decide whether to
+      serve the request at all.
+    </div>
+    <div class="note">
+      <b>Scraping tip:</b> if a site returns empty results or a 403, try setting a realistic
+      <code>User-Agent</code> string and matching the <code>Accept</code> / <code>Accept-Language</code>
+      headers that a real browser would send.
+    </div>`;
+}
+
+/* ── Step 3: Send request ───────────────────────────────────── */
+function renderSendRequest(ex){
+    const hdrLines = ex.requestRawHdrs.split('\r\n').map(line => {
+        const colon = line.indexOf(':');
+        if(colon === -1) return `<span class="hl-hname">${escHtml(line)}</span>`;
+        const name = line.slice(0, colon);
+        const val  = line.slice(colon+1);
+        return `<span class="hl-hname">${escHtml(name)}</span>:<span class="hl-hval">${escHtml(val)}</span>`;
+    }).join('\n');
+
+    const [methodTok, pathTok, protoTok] = ex.requestLine.split(' ');
+    const statusLine = `<span class="hl-method">${escHtml(methodTok)}</span> `
+                     + `<span class="hl-path">${escHtml(pathTok)}</span> `
+                     + `<span class="hl-proto">${escHtml(protoTok)}</span>`;
+
+    const bodySection = ex.requestBody
+        ? `\n<span class="hl-comment">                              ← blank line separates headers from body</span>\n<span class="hl-body">${escHtml(ex.requestBody)}</span>`
+        : `\n<span class="hl-comment">                              ← blank line (no body for ${ex.method})</span>`;
+
+    const wireFormat = `${statusLine}\n${hdrLines}${bodySection}`;
+
+    const pythonSnippet = ex.method === 'GET'
+        ? `import requests\n\nresponse = requests.get(\n    "https://${ex.requestHeaders[0][1]}${ex.requestLine.split(' ')[1]}",\n    headers={\n        "User-Agent": "python-requests/2.31.0",\n        "Accept":     "application/json",\n    }\n)\nprint(response.status_code)`
+        : `import requests\n\nresponse = requests.post(\n    "https://www.example.com/login",\n    data={"username": "alice", "password": "s3cr3t", "remember": "1"},\n    headers={"User-Agent": "Mozilla/5.0 Chrome/124.0"},\n    allow_redirects=True\n)\nprint(response.status_code)  # 302 before redirect, 200 after`;
+
+    return `<h3>The complete HTTP request — on the wire</h3>
+    <div class="flex">
+      <div class="flex-col" style="flex:2;min-width:300px">
+        <h4>Raw bytes sent to the TCP socket</h4>
+        <pre>${wireFormat}</pre>
+        <div class="explain">
+          Structure: <strong>(1) request line</strong> — method + path + protocol version;
+          <strong>(2) headers</strong> — one <code>Name: Value</code> per line;
+          <strong>(3) blank line</strong> — mandatory separator;
+          ${ex.requestBody
+            ? '<strong>(4) body</strong> — the payload, whose length was declared in <code>Content-Length</code>.'
+            : '<strong>(no body)</strong> — ' + ex.method + ' requests carry no body.'}
+        </div>
+      </div>
+      <div class="flex-col" style="flex:1;min-width:240px">
+        <h4>Python equivalent (<code>requests</code> library)</h4>
+        <pre style="font-size:.82em">${escHtml(pythonSnippet)}</pre>
+        <div class="note" style="font-size:.85em">
+          The <code>requests</code> library assembles the wire format automatically —
+          you just pass a URL and optional headers/data dictionaries.
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ── Step 4: Response ───────────────────────────────────────── */
+function renderResponse(ex){
+    const codeClass = ex.statusClass === 'ok'   ? 'status-ok'
+                    : ex.statusClass === 'redir' ? 'status-redir'
+                    : 'status-err';
+
+    const hdrRows = ex.responseHeaders.map(([name, val, meaning]) => {
+        if(!val) return `<tr><td colspan="3" style="background:#2e2e3e;color:#D9E4E9;font-family:JetBrains Mono, Consolas, monospace;font-weight:700">${escHtml(name)}</td></tr>`;
+        return `<tr><td><code style="color:#125F9E;font-weight:600">${escHtml(name)}</code></td>
+                    <td><code>${escHtml(val)}</code></td>
+                    <td>${meaning}</td></tr>`;
+    }).join('');
+
+    const bodySection = ex.responseBody
+        ? `<h4>Response body</h4>
+           <pre>${escHtml(ex.responseBody)}</pre>`
+        : `<div class="note">No response body — this is normal for a ${ex.statusCode} redirect.
+           The client reads the <code>Location</code> header and sends a new GET.</div>`;
+
+    const classExplain = {
+        ok:   'A <strong>2xx</strong> status means success — the server understood the request and fulfilled it.',
+        redir:'A <strong>3xx</strong> status means redirection — the client must follow the <code>Location</code> header to get the actual content. Python <code>requests</code> follows redirects automatically by default.',
+        err:  'A <strong>4xx</strong> status means client error; <strong>5xx</strong> means server error.'
+    }[ex.statusClass];
+
+    return `<h3>Server response</h3>
+    <div class="flex">
+      <div style="flex:0 0 auto">
+        <span class="${codeClass}">${ex.statusCode} ${escHtml(ex.statusText)}</span>
+        <div style="font-size:.9em;color:#31444F;margin-top:4px;max-width:340px">${ex.statusMeaning}</div>
+        <div class="explain" style="max-width:340px;margin-top:10px">${classExplain}</div>
+      </div>
+    </div>
+    <h4>Response headers</h4>
+    <table class="dt">
+      <tr><th style="width:18%">Header</th><th style="width:38%">Value in this example</th><th>Meaning / scraping relevance</th></tr>
+      ${hdrRows}
+    </table>
+    ${bodySection}
+    <div class="good" style="margin-top:14px">
+      <b>What a scraper does next:</b>
+      ${ex.statusCode === 200 && ex.responseBodyLang === 'html'
+          ? 'Parse the HTML body with BeautifulSoup: <code>soup = BeautifulSoup(response.text, "html.parser")</code>. Then navigate the DOM to extract the data you need.'
+          : ex.statusCode === 200 && ex.responseBodyLang === 'json'
+          ? 'Parse the JSON body: <code>data = response.json()</code> — then access fields like <code>data["main"]["temp"]</code> directly.'
+          : 'Follow the redirect automatically (<code>allow_redirects=True</code> in <code>requests</code>) and then parse the destination page.'
+      }
+    </div>`;
+}
+
+/* ================================================================
+   Utility
+   ================================================================ */
+function escHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ================================================================
+   Navigation — example picker + stepper
+   ================================================================ */
+let currentEx = 0;
+let stage = 0;
+
+function selectExample(idx){
+    currentEx = idx;
+    [0,1,2].forEach(i => {
+        document.getElementById('ex'+i).classList.toggle('active', i===idx);
+    });
+    go(stage);   // re-render current step with new example
+}
+
+function buildSteps(){
+    const c = document.getElementById('steps');
+    STAGE_DEFS.forEach((s,i)=>{
+        const div = document.createElement('div');
+        div.className = 'step';
+        div.id = 'st'+i;
+        div.textContent = s.chip;
+        div.onclick = () => go(i);
+        c.appendChild(div);
+    });
+}
+
+function go(i){
+    if(i < 0 || i >= STAGE_DEFS.length) return;
+    stage = i;
+    const s = STAGE_DEFS[i];
+    const ex = EXAMPLES[currentEx];
+
+    document.querySelectorAll('.step').forEach((el, idx)=>{
+        el.classList.toggle('active', idx === i);
+        el.classList.toggle('done',   idx < i);
+    });
+    document.getElementById('stageTitle').textContent = s.title;
+    document.getElementById('stageDesc').textContent  = s.desc;
+    document.getElementById('stageRef').textContent   = s.ref;
+    document.getElementById('panel').innerHTML         = s.render(ex);
+
+    document.getElementById('prevBtn').disabled = (i === 0);
+    document.getElementById('nextBtn').disabled = (i === STAGE_DEFS.length - 1);
+    document.getElementById('nextBtn').textContent =
+        i === STAGE_DEFS.length - 1 ? '— end —' : 'Next →';
+}
+
+buildSteps();
+go(0);   // default: example 0, step 0
+</script>
+
+<style>
+/* ===== DA2402 theme overrides (applied after the demo's own stylesheet) ===== */
+html{background:var(--surround)}
+body{background:var(--surround);color:var(--ink);font-family:var(--body);padding:22px 20px 26px;
+  -webkit-font-smoothing:antialiased}
+.container{background:var(--paper);border-radius:0;border-top:3px solid var(--ink);
+  box-shadow:0 20px 70px rgba(0,0,0,.5);padding:26px 34px 0}
+.da-eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin:0 0 10px;display:flex;gap:10px;align-items:center}
+.da-eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+.da-eyebrow .jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+h1{font-family:var(--disp);font-weight:700;letter-spacing:-.018em;line-height:1.1;font-size:30px;
+  text-align:left;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;margin:0 0 4px}
+.subtitle{text-align:left;font-family:var(--body);color:var(--soft);font-size:14.5px;line-height:1.42;
+  margin:0 0 18px;max-width:900px}
+h2,h3,h4{font-family:var(--disp);letter-spacing:-.005em}
+button,.ex-btn,.step,.mode-tab,.chip,.tab,.tab-btn,.case-card,.run-btn,.q-option{border-radius:3px!important;
+  transform:none!important;box-shadow:none!important}
+button:hover:not(:disabled),.ex-btn:hover,.step:hover,.mode-tab:hover,.chip:hover{transform:none!important;box-shadow:none!important}
+pre,code,kbd,.code-panel,.code-row code,.result-item,.selector-input,.entropy-banner,.results-panel,
+.panel,.card,.stagebar,.note,.explain,.good,.tip,.warn,.xpath-hint,.match-badge,.tag,#sample-frame,
+table,td,th{border-radius:0!important}
+.note,.explain,.good,.tip,.warn,.xpath-hint,.stagebar{border-radius:0!important}
+.container>*:last-child{margin-bottom:0}
+/* byline rail, same text as the decks */
+.da-rail{margin:26px -34px 0;height:30px;background:var(--card);border-top:1.5px solid var(--ink);
+  display:flex;align-items:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--soft)}
+.da-rail .a{padding:0 16px;flex:1}
+.da-rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.da-rail .c{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;white-space:nowrap}
+</style>
+<style>
+/* ===== DA2402 theme overrides (applied after the demo's own stylesheet) ===== */
+html{background:#0E1A21}
+body{background:#0E1A21;color:#14222B;font-family:Public Sans, system-ui, sans-serif;padding:22px 20px 26px;
+  -webkit-font-smoothing:antialiased}
+.container{background:#E9EDEF;border-radius:0;border-top:3px solid #14222B;
+  box-shadow:0 20px 70px rgba(0,0,0,.5);padding:26px 34px 0}
+.da-eyebrow{font-family:JetBrains Mono, Consolas, monospace;font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:#53666F;margin:0 0 10px;display:flex;gap:10px;align-items:center}
+.da-eyebrow::after{content:"";flex:1;height:1px;background:#C3CFD5}
+.da-eyebrow .jsbadge{font-family:JetBrains Mono, Consolas, monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:#8F5D0A;color:#fff;padding:2px 6px;border-radius:2px}
+h1{font-family:Bricolage Grotesque, Public Sans, sans-serif;font-weight:700;letter-spacing:-.018em;line-height:1.1;font-size:30px;
+  text-align:left;color:#14222B;background:none;-webkit-text-fill-color:currentColor;margin:0 0 4px}
+.subtitle{text-align:left;font-family:Public Sans, system-ui, sans-serif;color:#53666F;font-size:14.5px;line-height:1.42;
+  margin:0 0 18px;max-width:900px}
+h2,h3,h4{font-family:Bricolage Grotesque, Public Sans, sans-serif;letter-spacing:-.005em}
+button,.ex-btn,.step,.mode-tab,.chip,.tab,.tab-btn,.case-card,.run-btn,.q-option{border-radius:3px!important;
+  transform:none!important;box-shadow:none!important}
+button:hover:not(:disabled),.ex-btn:hover,.step:hover,.mode-tab:hover,.chip:hover{transform:none!important;box-shadow:none!important}
+pre,code,kbd,.code-panel,.code-row code,.result-item,.selector-input,.entropy-banner,.results-panel,
+.panel,.card,.stagebar,.note,.explain,.good,.tip,.warn,.xpath-hint,.match-badge,.tag,#sample-frame,
+table,td,th{border-radius:0!important}
+.note,.explain,.good,.tip,.warn,.xpath-hint,.stagebar{border-radius:0!important}
+.container>*:last-child{margin-bottom:0}
+/* byline rail, same text as the decks */
+.da-rail{margin:26px -34px 0;height:30px;background:#FFFFFF;border-top:1.5px solid #14222B;
+  display:flex;align-items:center;font-family:JetBrains Mono, Consolas, monospace;font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:#53666F}
+.da-rail .a{padding:0 16px;flex:1}
+.da-rail .n{padding:0 16px;border-left:1px solid #DCE4E8;color:#14222B;white-space:nowrap}
+.da-rail .c{padding:0 16px;border-left:1px solid #DCE4E8;color:#14222B;font-weight:500;white-space:nowrap}
+</style>
+<style>
+/* embedded inside a lecture deck slide: drop chrome the slide already provides */
+body.embed{padding:0;zoom:.86}
+body.embed .container{box-shadow:none;border-top:0;padding:18px 26px 0}
+body.embed .da-eyebrow,body.embed .da-rail{display:none}
+body.embed h1{font-size:24px}
+</style>
+<script>if(window.self!==window.top||/[?&]embed/.test(location.search))document.body.classList.add('embed');</script>
+</body>
+</html>

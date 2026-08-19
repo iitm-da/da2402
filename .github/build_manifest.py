@@ -6,12 +6,15 @@ just: commit the file, push, done. Nothing here needs editing when new
 material arrives — only if you want a new file type listed.
 """
 import datetime
+import re
 import json
 import os
 import subprocess
 
 SKIP_DIRS = {".git", ".github", "node_modules", "__pycache__", "data"}  # "data" = raw files notebooks fetch, not course material
 KINDS = {".html": "deck", ".ipynb": "notebook", ".pdf": "pdf"}
+# HTML files named like "07 http_explorer.html" are interactive demos, not decks
+DEMO_RE = re.compile(r"^\d\d ")
 
 # Optional: nicer names for folders. Anything not listed falls back to the
 # folder name with dashes/underscores turned into spaces and title-cased.
@@ -53,7 +56,7 @@ def main():
                 "name": name,
                 "folder": folder,
                 "section": SECTION_TITLES.get(folder, folder.replace("-", " ").replace("_", " ").title()),
-                "kind": KINDS[ext],
+                "kind": "demo" if (ext == ".html" and DEMO_RE.match(name)) else KINDS[ext],
                 "size": os.path.getsize(rel),
                 "updated": last_commit_date(rel),
             })
