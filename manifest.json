@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-08-19 07:30 UTC",
+ "generated": "2026-08-19 07:48 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -49,12 +49,57 @@
    "updated": "2026-08-13"
   },
   {
+   "path": "data collection/07 http_explorer.html",
+   "name": "07 http_explorer.html",
+   "folder": "data collection",
+   "section": "Data collection \u00b7 web scraping",
+   "kind": "demo",
+   "size": 39042,
+   "updated": "2026-08-19"
+  },
+  {
+   "path": "data collection/08 dom_selector_playground.html",
+   "name": "08 dom_selector_playground.html",
+   "folder": "data collection",
+   "section": "Data collection \u00b7 web scraping",
+   "kind": "demo",
+   "size": 38563,
+   "updated": "2026-08-19"
+  },
+  {
+   "path": "data collection/09 static_vs_dynamic.html",
+   "name": "09 static_vs_dynamic.html",
+   "folder": "data collection",
+   "section": "Data collection \u00b7 web scraping",
+   "kind": "demo",
+   "size": 40606,
+   "updated": "2026-08-19"
+  },
+  {
+   "path": "data collection/10 browser_fingerprint.html",
+   "name": "10 browser_fingerprint.html",
+   "folder": "data collection",
+   "section": "Data collection \u00b7 web scraping",
+   "kind": "demo",
+   "size": 39245,
+   "updated": "2026-08-19"
+  },
+  {
+   "path": "data collection/11 scraping_case_law.html",
+   "name": "11 scraping_case_law.html",
+   "folder": "data collection",
+   "section": "Data collection \u00b7 web scraping",
+   "kind": "demo",
+   "size": 35788,
+   "updated": "2026-08-19"
+  },
+  {
    "path": "data collection/data_collection_1_apis.html",
    "name": "data_collection_1_apis.html",
    "folder": "data collection",
    "section": "Data collection \u00b7 web scraping",
    "kind": "deck",
-   "size": 117440,
+   "size": 159885,
    "updated": "2026-08-19"
   },
   {
@@ -63,7 +108,7 @@
    "folder": "data collection",
    "section": "Data collection \u00b7 web scraping",
    "kind": "deck",
-   "size": 136221,
+   "size": 178193,
    "updated": "2026-08-19"
   },
   {
