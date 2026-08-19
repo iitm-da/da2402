@@ -10,7 +10,7 @@ import json
 import os
 import subprocess
 
-SKIP_DIRS = {".git", ".github", "node_modules", "__pycache__"}
+SKIP_DIRS = {".git", ".github", "node_modules", "__pycache__", "data"}  # "data" = raw files notebooks fetch, not course material
 KINDS = {".html": "deck", ".ipynb": "notebook", ".pdf": "pdf"}
 
 # Optional: nicer names for folders. Anything not listed falls back to the
