@@ -31,8 +31,15 @@ header .eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
 h1{font-family:var(--disp);font-weight:800;font-size:clamp(30px,5vw,44px);line-height:1.08;
   letter-spacing:-.02em;margin-bottom:10px}
 header p.lede{font-size:15.5px;color:#31444F;max-width:70ch}
-header .who{font-family:var(--mono);font-size:12px;color:var(--soft);margin-top:14px;
-  padding-top:12px;border-top:1px solid var(--line)}
+header .who{display:flex;align-items:center;gap:18px;margin-top:22px;
+  padding-top:18px;border-top:1px solid var(--line)}
+header .who img{width:76px;height:76px;border-radius:50%;object-fit:cover;flex:none;
+  border:2px solid var(--card);box-shadow:0 0 0 1.5px var(--ink)}
+header .who .name{font-family:var(--disp);font-weight:700;font-size:24px;line-height:1.1;
+  letter-spacing:-.015em;color:var(--ink)}
+header .who .role{font-size:14px;color:var(--soft);margin-top:5px}
+header .who .role a{color:var(--t-cls);text-decoration:none;border-bottom:1px solid currentColor}
+header .who .role a:hover{color:var(--ink)}
 
 /* ---- the four-column course table -------------------------------------- */
 .tablewrap{margin-top:30px;background:var(--card);border:1px solid var(--hair);
@@ -136,7 +143,13 @@ footer a{color:var(--soft)}
     <p class="lede">Lecture decks and notebooks. The decks are self-contained pages — arrow keys or
     space to move, <b>F</b> for fullscreen, <b>P</b> to print, and <b>T</b> on any slide with a
     <i>Trace</i> button to run its animation.</p>
-    <div class="who">Dr. Arun B Ayyar</div>
+    <div class="who">
+      <img src="https://github.com/oldmonkABA.png?size=160" alt="Dr. Arun B Ayyar" width="76" height="76"/>
+      <div>
+        <div class="name">Dr. Arun B Ayyar</div>
+        <div class="role"><a href="https://wsai.iitm.ac.in/faculty/arun-ayyar/" target="_blank" rel="noopener">Adjunct Faculty, DS&amp;AI, IITM</a></div>
+      </div>
+    </div>
   </header>
 
   <div id="out"></div>
