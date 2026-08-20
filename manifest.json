@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-08-20 07:06 UTC",
+ "generated": "2026-08-20 07:09 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -81,8 +81,8 @@
    "folder": "data collection",
    "section": "Data collection \u00b7 web scraping",
    "kind": "notebook",
-   "size": 5434,
-   "updated": "2026-08-19"
+   "size": 18805,
+   "updated": "2026-08-20"
   },
   {
    "path": "data collection/rss_feed_scraper.ipynb",
