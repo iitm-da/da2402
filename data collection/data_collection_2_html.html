@@ -1019,7 +1019,7 @@ soup.select(<span class="py-str">'.prime-highlights li:last-child strong'</span>
         <div class="callout warn sm"><b>Where <code class="k">select</code> cannot follow.</b> CSS can only
           describe descent, so there is no parent selector and no "the sibling <i>before</i> this one".
           When you need to go upwards you leave CSS and use <code class="k">.parent</code> or
-          <code class="k">find_parent()</code> — slide 19.</div>
+          <code class="k">find_parent()</code>.</div>
         <div class="callout sm"><b>Naming, so the error messages make sense.</b>
           <code class="k">soup.select</code> is soupsieve; <code class="k">soup.find_all</code> is
           BeautifulSoup itself. A <code class="k">SelectorSyntaxError</code> comes from the former and means
@@ -1092,6 +1092,14 @@ soup.select(<span class="py-str">'.prime-highlights li:last-child strong'</span>
 
 
 <!-- ============ 16 · NAVIGATION ============ -->
+<!-- ======================================================================
+     SLIDES 19-32 (tree-walking, extraction, the 8-slide case study,
+     the rewrite, limits) are COMMENTED OUT below - Arun, 2026-08-20.
+     The same material lives in html_scraper.ipynb for a separate
+     code-along session. To restore a slide, remove its two marker
+     lines: "DISABLED SLIDE n ..." and "END DISABLED SLIDE".
+     ====================================================================== -->
+<!-- DISABLED SLIDE 19 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="BeautifulSoup">
   <div class="eyebrow">BeautifulSoup · 8 of 8</div>
   <h1 class="t">Walking the tree, and the whitespace that ruins it
@@ -1141,8 +1149,10 @@ None
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 17 · TEXT ============ -->
+<!-- DISABLED SLIDE 20 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Extraction">
   <div class="eyebrow">Extraction · 1 of 2</div>
   <h1 class="t">Getting the text out is three different questions
@@ -1196,8 +1206,10 @@ None            <span class="h-bad">&lt;-- more than one child</span>
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 18 · ATTRIBUTES ============ -->
+<!-- DISABLED SLIDE 21 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Extraction">
   <div class="eyebrow">Extraction · 2 of 2</div>
   <h1 class="t">Attributes, and the one that is a list
@@ -1255,8 +1267,10 @@ True                        <span class="h-ok">&lt;-- the right test</span></pre
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 19 · THE TARGET ============ -->
+<!-- DISABLED SLIDE 22 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 1 of 8 · <code style="font-family:var(--mono);text-transform:none">html_scraper.ipynb</code></div>
   <h1 class="t">One page, ten cards, ten fields each
@@ -1320,8 +1334,10 @@ True                        <span class="h-ok">&lt;-- the right test</span></pre
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 20 · FETCH AND PARSE ============ -->
+<!-- DISABLED SLIDE 23 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 2 of 8</div>
   <h1 class="t">Fetch once, parse many times
@@ -1377,8 +1393,10 @@ soup = bs(snapshot.read_bytes(), <span class="py-str">&#x27;lxml&#x27;</span>)</
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 21 · THE CARD LOOP ============ -->
+<!-- DISABLED SLIDE 24 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 3 of 8</div>
   <h1 class="t">Find the container — and not its parent's design system
@@ -1431,8 +1449,10 @@ cards = soup.select(<span class="py-str">&#x27;div.listing-card&#x27;</span>)
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 22 · GUARDS ============ -->
+<!-- DISABLED SLIDE 25 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 4 of 8</div>
   <h1 class="t">Guarded in one place, unguarded in the next
@@ -1481,8 +1501,10 @@ card 5      <span class="h-bad">AttributeError: 'NoneType' object has no attribu
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 23 · THE TYPO ============ -->
+<!-- DISABLED SLIDE 26 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 5 of 8</div>
   <h1 class="t">A typo that has never once caused a failure
@@ -1534,8 +1556,10 @@ listing_info[<span class="py-str">&#x27;chips&#x27;</span>] = chips</pre>
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 24 · LABEL-TEXT EXTRACTION ============ -->
+<!-- DISABLED SLIDE 27 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 6 of 8</div>
   <h1 class="t">When the only handle is the label itself
@@ -1587,8 +1611,10 @@ plot :  <span class="h-bad">['Direction Facing', 'Boundary Wall Constructed',
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 25 · THE DICT BUG ============ -->
+<!-- DISABLED SLIDE 28 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 7 of 8</div>
   <h1 class="t">One dictionary, reused ten times
@@ -1642,8 +1668,10 @@ plot :  <span class="h-bad">['Direction Facing', 'Boundary Wall Constructed',
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 26 · FRAGILITY AUDIT ============ -->
+<!-- DISABLED SLIDE 29 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 8 of 8</div>
   <h1 class="t">The whole file, scored
@@ -1683,8 +1711,10 @@ plot :  <span class="h-bad">['Direction Facing', 'Boundary Wall Constructed',
       not crashing — it is succeeding with the wrong numbers.</b></div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 27 · THE REWRITE ============ -->
+<!-- DISABLED SLIDE 30 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="The rewrite">
   <div class="eyebrow">The rewrite · 1 of 2</div>
   <h1 class="t">Same logic, three habits
@@ -1746,8 +1776,10 @@ plot row:  config=None  sale_type=None  chips=''   <span class="h-ok">&lt;-- hon
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 28 · SOUP TO DATAFRAME ============ -->
+<!-- DISABLED SLIDE 31 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="The rewrite">
   <div class="eyebrow">The rewrite · 2 of 2</div>
   <h1 class="t">Everything you scraped is a string
@@ -1814,8 +1846,10 @@ df[<span class="py-str">&#x27;photos&#x27;</span>] = pd.to_numeric(df[<span clas
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 29 · WHEN IT FAILS ============ -->
+<!-- DISABLED SLIDE 32 — commented out 2026-08-20 (covered in html_scraper.ipynb); delete this line and the closing marker to restore
 <section class="slide" data-sec="Limits">
   <div class="eyebrow">Limits</div>
   <h1 class="t">Four ways rung 3 runs out
@@ -1850,6 +1884,7 @@ df[<span class="py-str">&#x27;photos&#x27;</span>] = pd.to_numeric(df[<span clas
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 30 · RECAP ============ -->
 <section class="slide" data-sec="Recap">
@@ -1946,7 +1981,7 @@ validate(pd.DataFrame(rows))  <span class="py-cm"># Lecture 1</span></pre></div>
     <div class="cols">
       <div class="colstack">
         <div class="card sm b"><h3><span class="num">01</span>Selector drills</h3>
-          <p>Against the card markup from slide 22, write selectors for: every chip; the price only;
+          <p>Against the case-study card in <code class="k">html_scraper.ipynb</code>, write selectors for: every chip; the price only;
           the ad id; the EMI value without its label; and every card <b>without</b> a photo counter. Do
           the last one twice — once with <code class="k">:not(:has(...))</code>, once with a
           <code class="k">find_all</code> predicate.</p></div>
@@ -1958,7 +1993,7 @@ validate(pd.DataFrame(rows))  <span class="py-cm"># Lecture 1</span></pre></div>
           <code class="k">select('.prime-highlights')</code> match each. <b>Write down the rule in your own
           words.</b></p></div>
         <div class="card sm r"><h3><span class="num">03</span>Reproduce the invented data</h3>
-          <p>Run the hoisted-dict loop from slide 28 on the saved page and confirm the five-acre plot
+          <p>Run the hoisted-dict loop from <code class="k">html_scraper.ipynb</code> on the saved page and confirm the five-acre plot
           reports the previous flat's config. Then remove <code class="k">copy()</code> and confirm all ten
           rows become the last card. <b>Two different bugs from one hoisted dictionary; explain how each
           arises.</b></p></div>
