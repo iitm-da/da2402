@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-08-20 09:09 UTC",
+ "generated": "2026-08-20 09:12 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -72,16 +72,16 @@
    "folder": "data collection",
    "section": "Data collection \u00b7 web scraping",
    "kind": "deck",
-   "size": 272311,
+   "size": 272251,
    "updated": "2026-08-20"
   },
   {
-   "path": "data collection/property_listing_scraper.ipynb",
-   "name": "property_listing_scraper.ipynb",
+   "path": "data collection/html_scraper.ipynb",
+   "name": "html_scraper.ipynb",
    "folder": "data collection",
    "section": "Data collection \u00b7 web scraping",
    "kind": "notebook",
-   "size": 43034,
+   "size": 43022,
    "updated": "2026-08-20"
   },
   {
