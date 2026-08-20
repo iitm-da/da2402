@@ -512,7 +512,7 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
 <span class="g">│</span>
 <span class="g">└──</span> div<span class="a"> .key-points .light</span>
 <span class="g">     ├──</span> span &rarr; "Response Time " <span class="g">+</span> b &rarr; <span class="want">"15 mins"</span>
-<span class="g">     └──</span> span &rarr; "Sulekha score " <span class="g">+</span> b &rarr; <span class="want">"8.7"</span></div>
+<span class="g">     └──</span> span &rarr; "Servico score " <span class="g">+</span> b &rarr; <span class="want">"8.7"</span></div>
       <div class="colstack">
         <ul class="b sm">
           <li><strong>Everything is a node.</strong> Tags are nodes; so is the text inside them. In
@@ -685,7 +685,7 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
 <section class="slide" data-sec="Selectors · Live">
   <div class="eyebrow">CSS selectors · interactive</div>
   <h1 class="t sm">Try a selector against a real card
-    <small class="tight">Left is markup taken from the Sulekha listing page; type a selector and matches
+    <small class="tight">Left is markup taken from the Servico listing page; type a selector and matches
     highlight live. <span class="jsbadge">Browser engine</span> This runs the browser's own
     <code class="k">querySelectorAll</code>, which agrees with BeautifulSoup's
     <code class="k">.select()</code> on everything shown here — the differences are on slide 15.</small></h1>
@@ -772,7 +772,7 @@ lxml           192.7 ms   cards=400</pre>
 soup = bs(html_string, <span class="py-str">'lxml'</span>)
 
 <span class="py-cm"># 2 · from a file on disk</span>
-<span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">'sulekha.html'</span>, encoding=<span class="py-str">'utf-8'</span>) <span class="py-kw">as</span> f:
+<span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">'service_listings.html'</span>, encoding=<span class="py-str">'utf-8'</span>) <span class="py-kw">as</span> f:
     soup = bs(f, <span class="py-str">'lxml'</span>)
 
 <span class="py-cm"># 3 · straight from a response</span>
@@ -860,7 +860,7 @@ price = (card.select_one(<span class="py-str">'.price'</span>) <span class="py-k
 <section class="slide" data-sec="BeautifulSoup">
   <div class="eyebrow">BeautifulSoup · 4 of 8 · from our own scraper</div>
   <h1 class="t">Why <code class="k" style="font-size:.78em">find('div', 'ratings-group')</code> works
-    <small>Read that line in <code class="k">scraper_sulekha.py</code> and it looks like a mistake — a bare
+    <small>Read that line in <code class="k">html_listing_scraper.ipynb</code> and it looks like a mistake — a bare
     string where a keyword should be. It is not, and the reason is worth knowing, because the shorthand
     behaves differently from the keyword in a way that bites two slides from now.</small></h1>
   <div class="wrap">
@@ -882,7 +882,7 @@ price = (card.select_one(<span class="py-str">'.price'</span>) <span class="py-k
             shorthand exists.</li>
         </ul>
         <div class="callout sm"><b>Both spellings appear in the same file.</b>
-          <code class="k">scraper_sulekha.py</code> uses <code class="k">class_=</code> in some places and
+          <code class="k">html_listing_scraper.ipynb</code> uses <code class="k">class_=</code> in some places and
           the positional form in others. It is not a bug — but pick one and stay with it, because the reader
           of your code has to re-derive this every time.</div>
       </div>
@@ -1199,7 +1199,7 @@ card.attrs
 card.has_attr(<span class="py-str">'businesslat'</span>)     <span class="py-cm"># True / False</span>
 card.name                       <span class="py-cm"># 'div'</span></pre>
         <div class="callout good sm"><b>Our scraper gets this right.</b> Every attribute read in
-          <code class="k">scraper_sulekha.py</code> uses <code class="k">.get(name, "")</code> with a
+          <code class="k">html_listing_scraper.ipynb</code> uses <code class="k">.get(name, "")</code> with a
           default. It is the one thing that file is consistently careful about — and the reason it survives
           cards that are missing a field, rather than dying on the first one.</div>
       </div>
@@ -1233,7 +1233,7 @@ True                        <span class="h-ok">&lt;-- the right test</span></pre
 
 <!-- ============ 19 · THE TARGET ============ -->
 <section class="slide" data-sec="Case study">
-  <div class="eyebrow">Case study · 1 of 8 · <code style="font-family:var(--mono);text-transform:none">scraper_sulekha.py</code></div>
+  <div class="eyebrow">Case study · 1 of 8 · <code style="font-family:var(--mono);text-transform:none">html_listing_scraper.ipynb</code></div>
   <h1 class="t">One page, forty cards, eight fields each
     <small>A business listings page: home cleaning services in Chennai. It is a good teaching target because
     the markup is ordinary, the values are genuinely in the HTML, and the script that reads it contains
@@ -1253,7 +1253,7 @@ True                        <span class="h-ok">&lt;-- the right test</span></pre
           <tr class="wr"><td>rating</td><td>a <code class="k">&lt;b&gt;</code> inside
             <code class="k">.ratings-group</code> — no class of its own</td></tr>
           <tr class="wr"><td>services</td><td>every <code class="k">.tag-link-item</code>, as a list</td></tr>
-          <tr class="hl"><td>response time<br/>sulekha score</td><td><b>identified only by their label text</b>,
+          <tr class="hl"><td>response time<br/>servico score</td><td><b>identified only by their label text</b>,
             inside sibling spans that look identical</td></tr>
         </table>
       </div>
@@ -1274,7 +1274,7 @@ True                        <span class="h-ok">&lt;-- the right test</span></pre
   &lt;/<span class="ht-tag">div</span>&gt;
   &lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"key-points light"</span>&gt;
     &lt;<span class="ht-tag">span</span>&gt;<span class="ht-txt">Response Time </span>&lt;<span class="ht-tag">b</span>&gt;<span class="ht-txt">15 mins</span>&lt;/<span class="ht-tag">b</span>&gt;&lt;/<span class="ht-tag">span</span>&gt;
-    &lt;<span class="ht-tag">span</span>&gt;<span class="ht-txt">Sulekha score </span>&lt;<span class="ht-tag">b</span>&gt;<span class="ht-txt">8.7</span>&lt;/<span class="ht-tag">b</span>&gt;&lt;/<span class="ht-tag">span</span>&gt;
+    &lt;<span class="ht-tag">span</span>&gt;<span class="ht-txt">Servico score </span>&lt;<span class="ht-tag">b</span>&gt;<span class="ht-txt">8.7</span>&lt;/<span class="ht-tag">b</span>&gt;&lt;/<span class="ht-tag">span</span>&gt;
   &lt;/<span class="ht-tag">div</span>&gt;
 &lt;/<span class="ht-tag">div</span>&gt;</pre>
       </div>
@@ -1294,13 +1294,13 @@ True                        <span class="h-ok">&lt;-- the right test</span></pre
         <pre class="code sm"><span class="py-kw">import</span> requests
 <span class="py-kw">from</span> bs4 <span class="py-kw">import</span> BeautifulSoup <span class="py-kw">as</span> bs
 
-url = <span class="py-str">"https://www.sulekha.com/home-cleaning-services/chennai"</span>
+url = <span class="py-str">"https://www.servico.example/home-cleaning-services/chennai"</span>
 response = requests.get(url)
 <span class="py-kw">if</span> response.status_code == <span class="py-num">200</span>:
-    <span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">"sulekha.html"</span>, <span class="py-str">"w"</span>, encoding=<span class="py-str">"utf-8"</span>) <span class="py-kw">as</span> f:
+    <span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">"service_listings.html"</span>, <span class="py-str">"w"</span>, encoding=<span class="py-str">"utf-8"</span>) <span class="py-kw">as</span> f:
         f.write(response.text)
 
-<span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">'sulekha.html'</span>, <span class="py-str">'r'</span>, encoding=<span class="py-str">'utf-8'</span>) <span class="py-kw">as</span> file:
+<span class="py-kw">with</span> <span class="py-bi">open</span>(<span class="py-str">'service_listings.html'</span>, <span class="py-str">'r'</span>, encoding=<span class="py-str">'utf-8'</span>) <span class="py-kw">as</span> file:
     html_content = file.read()
 
 soup = bs(html_content, <span class="py-str">'lxml'</span>)</pre>
@@ -1317,7 +1317,7 @@ soup = bs(html_content, <span class="py-str">'lxml'</span>)</pre>
       <div class="colstack">
         <div class="callout bad"><b>Three problems with it as written.</b><br/><br/>
           <b>1.</b> If the request fails, the <code class="k">if</code> is skipped — and the script then
-          reads <b>yesterday's</b> <code class="k">sulekha.html</code> without a word. You get a full,
+          reads <b>yesterday's</b> <code class="k">service_listings.html</code> without a word. You get a full,
           plausible, <i>stale</i> CSV.<br/><br/>
           <b>2.</b> No <code class="k">timeout=</code>, no <code class="k">User-Agent</code>, no delay.<br/><br/>
           <b>3.</b> One fixed filename, so each run destroys the previous evidence.</div>
@@ -1327,7 +1327,7 @@ soup = bs(html_content, <span class="py-str">'lxml'</span>)</pre>
 r = requests.get(url, headers=HDRS, timeout=<span class="py-num">30</span>)
 r.raise_for_status()                  <span class="py-cm"># stop here, loudly</span>
 
-snapshot = Path(<span class="py-str">f"snapshots/sulekha-{date.today()}.html"</span>)
+snapshot = Path(<span class="py-str">f"snapshots/listings-{date.today()}.html"</span>)
 snapshot.parent.mkdir(exist_ok=<span class="py-bi">True</span>)
 snapshot.write_bytes(r.<span class="py-bi">content</span>)     <span class="py-cm"># bytes, not text</span>
 
@@ -1349,7 +1349,7 @@ soup = bs(snapshot.read_bytes(), <span class="py-str">'lxml'</span>)</pre>
     <div class="cols">
       <div class="colstack">
         <pre class="code sm">cards = soup.find_all(<span class="py-str">'div'</span>, class_=<span class="py-str">"sk-card"</span>)
-sulekha_data = []
+servico_data = []
 business_info = {}
 
 <span class="py-kw">for</span> card <span class="py-kw">in</span> cards:
@@ -1497,7 +1497,7 @@ business_info[<span class="py-str">'services'</span>] = services</pre>
 <section class="slide" data-sec="Case study">
   <div class="eyebrow">Case study · 6 of 8</div>
   <h1 class="t">When the only handle is the label itself
-    <small>Response time and Sulekha score sit in sibling spans with no classes, no ids and no distinguishing
+    <small>Response time and Servico score sit in sibling spans with no classes, no ids and no distinguishing
     tags. The only thing separating them is the English word printed next to the number.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
@@ -1509,9 +1509,9 @@ key_point_span = key_points.find_all(<span class="py-str">'span'</span>)
     <span class="py-kw">if</span> <span class="py-str">'Response Time'</span> <span class="py-kw">in</span> key_point.get_text():
         b_tag = key_point.find(<span class="py-str">'b'</span>)
         business_info[<span class="py-str">'response_time'</span>] = b_tag.get_text()
-    <span class="py-kw">if</span> <span class="py-str">'Sulekha score'</span> <span class="py-kw">in</span> key_point.get_text():
+    <span class="py-kw">if</span> <span class="py-str">'Servico score'</span> <span class="py-kw">in</span> key_point.get_text():
         b_tag = key_point.find(<span class="py-str">'b'</span>)
-        business_info[<span class="py-str">'sulekha_score'</span>] = b_tag.get_text()</pre>
+        business_info[<span class="py-str">'servico_score'</span>] = b_tag.get_text()</pre>
         <div class="callout sm"><b>The approach is correct.</b> Iterate the candidates, test each one's text
           for the label, take the value from inside it. There is no better option when the markup gives you
           nothing else — and this pattern appears constantly on specification tables, product attributes and
@@ -1554,7 +1554,7 @@ key_point_span = key_points.find_all(<span class="py-str">'span'</span>)
     <div class="cols">
       <div class="colstack">
         <div class="outlbl">The bug that was fixed</div>
-        <pre class="code xs">    sulekha_data.append(copy(business_info))
+        <pre class="code xs">    servico_data.append(copy(business_info))
                         <span class="h-ok">^^^^</span></pre>
         <pre class="out xs"><span class="h-bad">WITHOUT copy() — every row identical:</span>
  id  name
@@ -1572,7 +1572,7 @@ key_point_span = key_points.find_all(<span class="py-str">'span'</span>)
       <div class="colstack">
         <div class="outlbl">The bug that was not</div>
         <pre class="out xs"><span class="h-bad">AS WRITTEN — card 2 has no Response Time:</span>
- id  name  response_time  sulekha_score
+ id  name  response_time  servico_score
   1 Alpha        10 mins            8.1
   2  Beta        <span class="h-bad">10 mins</span>            8.2
   3 Gamma        30 mins            8.3</pre>
@@ -1610,7 +1610,7 @@ key_point_span = key_points.find_all(<span class="py-str">'span'</span>)
       <tr class="hl"><td class="c">1</td><td>Dict hoisted above the loop, fields never cleared</td>
         <td><b>wrong data</b></td><td>A card missing a field inherits the previous card's value. Invented,
           plausible, undetectable downstream.</td></tr>
-      <tr class="hl"><td class="c">2</td><td>Stale <code class="k">sulekha.html</code> read when the fetch fails</td>
+      <tr class="hl"><td class="c">2</td><td>Stale <code class="k">service_listings.html</code> read when the fetch fails</td>
         <td><b>wrong data</b></td><td>The <code class="k">if status==200</code> has no <code class="k">else</code>,
           so a failed request silently re-parses yesterday's page.</td></tr>
       <tr class="wr"><td class="c">3</td><td>Five of six containers unguarded</td><td>crash</td>
@@ -1669,7 +1669,7 @@ key_point_span = key_points.find_all(<span class="py-str">'span'</span>)
                             text_of(s) <span class="py-kw">for</span> s <span class="py-kw">in</span>
                             card.select(<span class="py-str">'.tag-link-item'</span>))),
         <span class="py-str">'response_time'</span>: labelled(card, <span class="py-str">'response time'</span>),
-        <span class="py-str">'sulekha_score'</span>: labelled(card, <span class="py-str">'sulekha score'</span>),
+        <span class="py-str">'servico_score'</span>: labelled(card, <span class="py-str">'servico score'</span>),
     }</pre>
       <div class="colstack">
         <pre class="code xs">cards = soup.select(<span class="py-str">'div.sk-card'</span>)
@@ -1721,7 +1721,7 @@ long             object      <span class="h-bad">&lt;-- a coordinate</span>
 rating           object      <span class="h-bad">&lt;-- a number</span>
 services         object      <span class="h-bad">&lt;-- a list!</span>
 response_time    object
-sulekha_score    object</pre>
+servico_score    object</pre>
         <div class="outlbl" style="margin-top:6px">What a list column does to a CSV</div>
         <pre class="out xxs">id,name,...,services,response_time
 4821,Sparkle Home Cleaning,...,<span class="h-bad">"['Sofa Cleaning', 'Bathroom Cleaning']"</span>,15 mins
@@ -1741,7 +1741,7 @@ sulekha_score    object</pre>
 <span class="py-cm">#   or write JSON/Parquet, which keep real lists</span>
 
 <span class="py-cm"># 2 · cast on purpose, and see what fails</span>
-num = [<span class="py-str">'lat'</span>, <span class="py-str">'long'</span>, <span class="py-str">'rating'</span>, <span class="py-str">'sulekha_score'</span>]
+num = [<span class="py-str">'lat'</span>, <span class="py-str">'long'</span>, <span class="py-str">'rating'</span>, <span class="py-str">'servico_score'</span>]
 <span class="py-kw">for</span> c <span class="py-kw">in</span> num:
     bad = df[c].notna() &amp; pd.to_numeric(df[c], errors=<span class="py-str">'coerce'</span>).isna()
     <span class="py-kw">if</span> bad.any():
@@ -1989,13 +1989,13 @@ const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
     </div>
     <div class="ratings-group"><b>4.6</b><span>(212 reviews)</span></div>
     <div class="tags-link"><span class="tag-link-item">Sofa Cleaning</span><span class="tag-link-item">Bathroom Cleaning</span></div>
-    <div class="key-points light"><span>Response Time <b>15 mins</b></span><span>Sulekha score <b>8.7</b></span></div>
+    <div class="key-points light"><span>Response Time <b>15 mins</b></span><span>Servico score <b>8.7</b></span></div>
   </div>
   <div class="sk-card" businessid="4822" businessname="FreshNest Services">
     <div class="locality"><span>T. Nagar, Chennai</span></div>
     <div class="ratings-group"><b>4.1</b><span>(38 reviews)</span></div>
     <div class="tags-link"><span class="tag-link-item">Kitchen Cleaning</span></div>
-    <div class="key-points light"><span>Sulekha score <b>7.9</b></span></div>
+    <div class="key-points light"><span>Servico score <b>7.9</b></span></div>
   </div>
 </div>`;
 
