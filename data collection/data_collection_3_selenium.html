@@ -411,7 +411,7 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
       </div>
       <div class="callout warn"><b>Rung 4 is last for a reason.</b> A browser per request costs roughly
         twenty times the memory and a thousand times the wall-clock of <code class="k">requests</code>
-        (slide 17 has the measurement). Students who meet Selenium first reach for it always. Try the three
+        (~690&nbsp;MB vs 36&nbsp;MB, measured). Students who meet Selenium first reach for it always. Try the three
         cheaper rungs first, every time.</div>
       </div>
       <div class="colstack">
@@ -649,7 +649,7 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
     opts.add_argument(<span class="py-str">"--headless=new"</span>)           <span class="py-cm"># no window</span>
     opts.add_argument(<span class="py-str">"--no-sandbox"</span>)             <span class="py-cm"># containers</span>
     opts.add_argument(<span class="py-str">"--disable-dev-shm-usage"</span>)  <span class="py-cm"># containers</span>
-    opts.add_argument(<span class="py-str">"--window-size=1366,768"</span>)   <span class="py-cm"># slide 18</span>
+    opts.add_argument(<span class="py-str">"--window-size=1366,768"</span>)   <span class="py-cm"># bot tell</span>
 
     service = <span class="py-fn">Service</span>(<span class="py-fn">ChromeDriverManager</span>().install())
     driver = webdriver.<span class="py-fn">Chrome</span>(service=service, options=opts)
@@ -669,9 +669,9 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
           <tr><td class="m">--no-sandbox<br/>--disable-dev-shm-usage</td><td>Needed when Chrome runs as root in a
             container or where <code class="k">/dev/shm</code> is tiny (Docker's default is 64 MB). Harmless elsewhere.</td></tr>
           <tr><td class="m">--window-size=W,H</td><td>Headless defaults to 800×600. Responsive layouts hide elements
-            at that width, and the size itself is a bot tell (slide 18).</td></tr>
+            at that width, and the size itself is a bot tell — sites check it.</td></tr>
           <tr><td class="m">--user-agent=...</td><td>Replaces <code class="k">HeadlessChrome/126</code> in the UA
-            string. Slide 24 says what that does and does not achieve.</td></tr>
+            string. It changes one header — the rest of the browser still answers honestly.</td></tr>
           <tr><td class="m">set_page_load_timeout</td><td>Not a flag — a method. Without it a hung page blocks
             <code class="k">get()</code> forever.</td></tr>
         </table>
@@ -1057,7 +1057,14 @@ first.text
   </div>
 </section>
 
+<!-- ======================================================================
+     SLIDES 17-28 DISABLED 2026-08-27 — Arun trimmed L3 to slides 1-16.
+     Each slide below is wrapped in its own marker pair:
+     "DISABLED SLIDE n ..." and "END DISABLED SLIDE".
+     Restore a slide by deleting its two marker lines.
+     ====================================================================== -->
 <!-- ============ 17 · THE BILL ============ -->
+<!-- DISABLED SLIDE 17 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="Real output">
   <div class="eyebrow">Real output · the two routes, measured on the same fixture</div>
   <h1 class="t">The bill: same six rows, two very different receipts
@@ -1102,8 +1109,10 @@ first.text
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 18 · WHAT THE SITE SEES ============ -->
+<!-- DISABLED SLIDE 18 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="The wall">
   <div class="eyebrow">The wall · 1 of 7 · measured</div>
   <h1 class="t">The site gets to run code on your client now. It uses that.
@@ -1144,8 +1153,10 @@ window.chrome            -> True</div>
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 19 · FINGERPRINTING ============ -->
+<!-- DISABLED SLIDE 19 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="The wall">
   <div class="eyebrow">The wall · 2 of 7</div>
   <h1 class="t">A fingerprint is a combination, not a secret
@@ -1183,8 +1194,10 @@ window.chrome            -> True</div>
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 20 · DEMO · FINGERPRINT ============ -->
+<!-- DISABLED SLIDE 20 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="Fingerprint · Demo">
   <div class="eyebrow">The wall · 3 of 7 · interactive demo</div>
   <h1 class="t sm">What a page script can learn about this browser, right now
@@ -1197,7 +1210,9 @@ window.chrome            -> True</div>
     <iframe class="demo-frame" data-demo="demo-10" title="Browser fingerprint"></iframe>
   </div>
 </section>
+END DISABLED SLIDE -->
 <!-- ============ 21 · ENTROPY ============ -->
+<!-- DISABLED SLIDE 21 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="The wall">
   <div class="eyebrow">The wall · 4 of 7</div>
   <h1 class="t">The arithmetic of uniqueness
@@ -1251,8 +1266,10 @@ canvas ~8  + WebGL ~7.5 + fonts ~6.5 + audio ~4
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 22 · THREE SCENARIOS ============ -->
+<!-- DISABLED SLIDE 22 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="The wall">
   <div class="eyebrow">The wall · 5 of 7 · IndexBoard, the stricter deployment</div>
   <h1 class="t">Three ways to ask for the same URL, again
@@ -1296,8 +1313,10 @@ driver.get(<span class="py-str">".../api/history?..."</span>)
       does the work. Whether the fingerprint is re-checked per request decides how long that lasts.</div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 23 · FOUR LAYERS ============ -->
+<!-- DISABLED SLIDE 23 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="The wall">
   <div class="eyebrow">The wall · 6 of 7</div>
   <h1 class="t">Four layers, checked in order, and the order is the lesson
@@ -1334,8 +1353,10 @@ driver.get(<span class="py-str">".../api/history?..."</span>)
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 24 · EVASION, HONESTLY ============ -->
+<!-- DISABLED SLIDE 24 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="The wall">
   <div class="eyebrow">The wall · 7 of 7 · evasion, described honestly</div>
   <h1 class="t">What each disguise actually changes
@@ -1374,8 +1395,10 @@ driver.get(<span class="py-str">".../api/history?..."</span>)
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 25 · COST AND DISCIPLINE ============ -->
+<!-- DISABLED SLIDE 25 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="Discipline">
   <div class="eyebrow">Discipline</div>
   <h1 class="t">Rung-4 hygiene: seven habits, and three tools you should know exist
@@ -1417,8 +1440,10 @@ driver.get(<span class="py-str">".../api/history?..."</span>)
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 26 · RECAP · LADDER ============ -->
+<!-- DISABLED SLIDE 26 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="Recap">
   <div class="eyebrow">Recap</div>
   <h1 class="t">All four rungs, and what each one costs
@@ -1470,8 +1495,10 @@ validate(pd.DataFrame(rows))           <span class="py-cm"># Lecture 1</span></p
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 27 · TAKEAWAYS ============ -->
+<!-- DISABLED SLIDE 27 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="Recap">
   <div class="eyebrow">Key takeaways</div>
   <h1 class="t">Six things worth keeping</h1>
@@ -1503,8 +1530,10 @@ validate(pd.DataFrame(rows))           <span class="py-cm"># Lecture 1</span></p
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 <!-- ============ 28 · PRACTICE ============ -->
+<!-- DISABLED SLIDE 28 — commented out 2026-08-27 (deck trimmed to 16 slides); delete this line and the closing marker to restore
 <section class="slide" data-sec="Practice">
   <div class="eyebrow">Practice</div>
   <h1 class="t">Five exercises
@@ -1549,6 +1578,7 @@ validate(pd.DataFrame(rows))           <span class="py-cm"># Lecture 1</span></p
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
 </div></div>
 <div id="hint">← → navigate · F fullscreen · P print</div>
