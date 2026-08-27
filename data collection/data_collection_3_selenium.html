@@ -199,9 +199,11 @@ table.d td.c{text-align:center;font-family:var(--mono)}
   border-top:5px solid transparent;border-bottom:5px solid transparent}
 .wire .ar.back{background:var(--t-grp)}
 .wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
-.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+.wire .ar b{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);
   font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+  color:var(--soft);white-space:normal;width:max-content;max-width:78px;text-align:center;
+  line-height:1.6;background:var(--paper);padding:0 5px}
+.wire .ar.back b{bottom:auto;top:6px}
 /* ---------- widget: request inspector ---------- */
 .insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
 .insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
