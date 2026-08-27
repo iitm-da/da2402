@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-08-20 09:31 UTC",
+ "generated": "2026-08-27 08:33 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -74,6 +74,24 @@
    "kind": "deck",
    "size": 275021,
    "updated": "2026-08-20"
+  },
+  {
+   "path": "data collection/data_collection_3_selenium.html",
+   "name": "data_collection_3_selenium.html",
+   "folder": "data collection",
+   "section": "Data collection \u00b7 web scraping",
+   "kind": "deck",
+   "size": 194467,
+   "updated": "2026-08-27"
+  },
+  {
+   "path": "data collection/data_collection_4_ethics_legal.html",
+   "name": "data_collection_4_ethics_legal.html",
+   "folder": "data collection",
+   "section": "Data collection \u00b7 web scraping",
+   "kind": "deck",
+   "size": 150425,
+   "updated": "2026-08-27"
   },
   {
    "path": "data collection/html_scraper.ipynb",
