@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Collection · Part 3: Dynamic Pages and Selenium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, >=, != and <= must show them as typed.
+   It also stops JetBrains Mono turning the CSS child combinator "div > p" into a glyph. */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- embedded demo ---------- */
+.demo-frame{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--line);
+  background:var(--paper)}
+.demo-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--t-cls);
+  text-decoration:none;border-bottom:1px solid currentColor;margin-left:8px;white-space:nowrap}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+
+/* ---------- html token colours, dark ground ---------- */
+pre.code .ht-tag{color:#6FB6F0}
+pre.code .ht-att{color:#F58ACE}
+pre.code .ht-val{color:#B7E39B}
+pre.code .ht-txt{color:#E9F2F6}
+pre.code .ht-cm{color:#6F8896;font-style:italic}
+pre.code .ht-pun{color:#8CA3AF}
+.out .ht-tag{color:#125F9E}
+.out .ht-att{color:#9B2C7E}
+.out .ht-val{color:#0E7A55}
+/* ---------- css-selector token colours ---------- */
+.cs-tag{color:var(--t-cls);font-weight:500}
+.cs-cls{color:var(--t-qnt);font-weight:700}
+.cs-id{color:var(--t-asr);font-weight:700}
+.cs-att{color:var(--t-grp);font-weight:500}
+.cs-com{color:var(--t-dot);font-weight:700}
+.cs-pse{color:var(--t-anc);font-weight:700}
+pre.code .cs-tag{color:#6FB6F0}
+pre.code .cs-cls{color:#F58ACE}
+pre.code .cs-id{color:#FF9090}
+pre.code .cs-att{color:#55D6A2}
+pre.code .cs-com{color:#C0A6F5}
+pre.code .cs-pse{color:#F0C46B}
+/* ---------- dom tree diagram ---------- */
+/* white-space:pre is load-bearing — this block is drawn with newlines and
+   box-drawing characters, and without it the whole tree reflows into a paragraph */
+.tree{font-family:var(--mono);font-size:11.5px;line-height:1.85;background:var(--card);
+  border:1px solid var(--hair);padding:12px 15px;color:#26404E;
+  white-space:pre;overflow:auto}
+.tree .n{color:var(--t-cls);font-weight:500}
+.tree .a{color:var(--t-qnt)}
+.tree .v{color:var(--t-grp)}
+.tree .g{color:#9BAAB3}
+.tree .want{background:#BFE3F2;border-radius:2px;padding:0 3px;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.tree .lbl{color:var(--soft);font-size:10px;letter-spacing:.06em}
+/* ---------- selector playground ---------- */
+.pg{display:grid;grid-template-columns:1fr 330px;gap:14px;flex:1;min-height:0}
+.pgl{display:flex;flex-direction:column;gap:8px;min-height:0}
+.pgrow{display:flex;gap:8px;align-items:center}
+.pgrow label{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);width:66px;flex:none}
+input.sel,textarea.src{font-family:var(--mono);font-size:13px;border:1px solid var(--line);
+  background:var(--card);padding:8px 10px;color:var(--ink);width:100%;resize:none;line-height:1.5}
+input.sel{font-size:14.5px;font-weight:500}
+input.sel:focus,textarea.src:focus{outline:2px solid var(--t-cls);outline-offset:-1px;border-color:var(--t-cls)}
+input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
+.preset{display:flex;gap:5px;flex-wrap:wrap}
+.preset button{font-family:var(--mono);font-size:10.5px;padding:3px 8px;cursor:pointer;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px}
+.preset button:hover{background:#EAF4FA}
+.preset button:focus-visible{outline:2px solid var(--t-cls);outline-offset:2px}
+.hlbox{flex:1;min-height:0;overflow:auto;background:var(--card);border:1px solid var(--hair);
+  font-family:var(--mono);font-size:10.2px;line-height:1.62;padding:10px 12px;white-space:pre;
+  color:#26404E}
+.hlbox .tx{color:#31444F}
+.hlbox .tv{color:var(--t-grp)}
+.hlbox .el{border-radius:2px;padding:1px 0}
+.hlbox .el.m1{background:#BFE3F2;box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hlbox .el.m2{background:#CDEFDD;box-shadow:0 1px 0 #0E7A55 inset,0 -2px 0 #0E7A55 inset}
+.pgr{display:flex;flex-direction:column;gap:8px;min-height:0}
+.pgr .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft)}
+.mlist{flex:1;min-height:0;overflow:auto;background:var(--card);border:1px solid var(--hair);
+  font-family:var(--mono);font-size:10.6px;line-height:1.5}
+.mlist div.m{padding:5px 9px;border-bottom:1px solid var(--hair)}
+.mlist div.m b{color:#12556F}
+.mlist div.m i{color:var(--soft);font-style:normal;display:block}
+.mlist div.m em{color:var(--t-grp);font-style:normal}
+.pgnote{font-size:11.3px;line-height:1.4;color:var(--soft);background:#FFFBF2;
+  border-left:3px solid var(--t-anc);padding:7px 10px}
+.pgnote b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+<!-- ============ 1 · COVER ============ -->
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat" id="cvp"></div>
+  <div class="kicker">DA2402 · Data Curation and Visualization</div>
+  <h1>Data<br/>Collection</h1>
+  <div class="pt">Part 3 — Pages that are assembled in the browser</div>
+  <div class="rule"></div>
+  <p class="sub">What <code class="k">requests</code> sees when the HTML arrives empty, the XHR you should look
+  for before you reach for a browser, and then Selenium properly: waits, locators, staleness, cleanup — and
+  what the bot manager on the other side can tell about the browser you are driving.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 · BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data collection from the web</td></tr>
+    <tr><td>Part</td><td>3 of 4 · Dynamic pages and Selenium</td></tr>
+    <tr><td>Toolkit</td><td>selenium · webdriver-manager · Chrome</td></tr>
+  </table>
+</section>
+
+<!-- ============ 2 · WHERE WE ARE ============ -->
+<section class="slide" data-sec="Orientation">
+  <div class="eyebrow">Orientation · 1 of 2</div>
+  <h1 class="t">Rung 4, and the one test that puts you here
+    <small>Lecture 2's diagnostic had two outcomes. This lecture is the second one: you can see the value on the
+    screen, and view-source does not contain it. The document the server sent is a shell; the content was
+    built afterwards, by JavaScript, inside the browser.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+      <div class="ladder">
+        <div class="rung"><div class="num">1</div>
+          <div class="txt"><h4>Documented API or feed <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p><code class="k">feedparser</code>, published REST APIs, bulk downloads.</p></div></div>
+        <div class="rung"><div class="num">2</div>
+          <div class="txt"><h4>Undocumented endpoint <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>Network tab, Fetch/XHR, sessions and warm-up requests.</p></div></div>
+        <div class="rung"><div class="num">3</div>
+          <div class="txt"><h4>Parse the HTML the server sends <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>One <code class="k">requests.get</code>, then a parse tree.</p></div></div>
+        <div class="rung"><div class="num on">4</div>
+          <div class="txt on"><h4>Drive a real browser <span class="tag r" style="margin-left:6px">here</span></h4>
+          <p>Let a browser run the page's JavaScript, then read the DOM it built. Slow, heavy, and the only
+          route when the HTML is empty. <b>This lecture.</b></p></div></div>
+      </div>
+      <div class="callout warn"><b>Rung 4 is last for a reason.</b> A browser per request costs roughly
+        twenty times the memory and a thousand times the wall-clock of <code class="k">requests</code>
+        (slide 17 has the measurement). Students who meet Selenium first reach for it always. Try the three
+        cheaper rungs first, every time.</div>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>The test, again</h3>
+          <p><b>1.</b> Copy a value you can see on the page.<br/>
+          <b>2.</b> <code class="k">Ctrl+U</code> — view-source, the raw bytes the server sent.<br/>
+          <b>3.</b> <code class="k">Ctrl+F</code> for the value.</p>
+          <p style="margin-top:7px"><b>Found it</b> &rarr; rung 3, Lecture 2.<br/>
+          <b>Not there</b> &rarr; you are on this slide. But read slide 5 before you open Selenium.</p></div>
+        <div class="callout bad"><b>The symptom from Python.</b> Your selector is right, your code is right,
+          and <code class="k">soup.find_all('div', class_='product-card')</code> returns
+          <code class="k">[]</code>. Nothing raises. Lecture 2 told you to assert the container count — this
+          is the failure that assertion was for.</div>
+        <div class="callout good"><b>Two questions this lecture answers.</b> How do I get the document the
+          browser built? And what does the site learn about me when I do?</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · TWO DOCUMENTS, ONE URL ============ -->
+<section class="slide" data-sec="Orientation">
+  <div class="eyebrow">Orientation · 2 of 2</div>
+  <h1 class="t">Two documents, one URL
+    <small>The server's response and the browser's DOM are different objects. On a server-rendered site they
+    happen to agree. On a client-rendered one the response is a few lines of scaffolding and a script tag, and
+    everything you wanted is a side effect of running that script.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">what the server sent · requests.get(url).text</div>
+        <pre class="code">&lt;<span class="ht-tag">body</span>&gt;
+  &lt;<span class="ht-tag">nav</span> <span class="ht-att">class</span>=<span class="ht-val">"navbar"</span>&gt;DailyLedger Shop&lt;/<span class="ht-tag">nav</span>&gt;
+
+  <span class="ht-cm">&lt;!-- the app mounts here — nothing inside at page-load time --&gt;</span>
+  &lt;<span class="ht-tag">div</span> <span class="ht-att">id</span>=<span class="ht-val">"app"</span>&gt;&lt;/<span class="ht-tag">div</span>&gt;
+
+  &lt;<span class="ht-tag">div</span> <span class="ht-att">id</span>=<span class="ht-val">"product-listing"</span> <span class="ht-att">class</span>=<span class="ht-val">"grid"</span>&gt;
+    <span class="ht-cm">&lt;!-- products will be injected by JavaScript --&gt;</span>
+  &lt;/<span class="ht-tag">div</span>&gt;
+
+  &lt;<span class="ht-tag">script</span> <span class="ht-att">src</span>=<span class="ht-val">"/static/app.bundle.js"</span> <span class="ht-att">defer</span>&gt;&lt;/<span class="ht-tag">script</span>&gt;
+&lt;/<span class="ht-tag">body</span>&gt;</pre>
+        <div class="callout"><b>Three tells, all visible in view-source.</b> An empty container with an
+          <code class="k">id</code> like <code class="k">app</code> or <code class="k">root</code>; a comment
+          saying the content is injected; and a single large script bundle that is the only substantial thing
+          on the page.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">what the browser built · after the bundle ran</div>
+        <pre class="code">&lt;<span class="ht-tag">div</span> <span class="ht-att">id</span>=<span class="ht-val">"product-listing"</span> <span class="ht-att">class</span>=<span class="ht-val">"grid"</span>&gt;
+  &lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"product-card"</span>&gt;
+    &lt;<span class="ht-tag">h3</span> <span class="ht-att">class</span>=<span class="ht-val">"name"</span>&gt;ThinkBook 14&lt;/<span class="ht-tag">h3</span>&gt;
+    &lt;<span class="ht-tag">span</span> <span class="ht-att">class</span>=<span class="ht-val">"price"</span>&gt;₹58,990&lt;/<span class="ht-tag">span</span>&gt;
+    &lt;<span class="ht-tag">span</span> <span class="ht-att">class</span>=<span class="ht-val">"rating"</span>&gt;4.4&lt;/<span class="ht-tag">span</span>&gt;
+  &lt;/<span class="ht-tag">div</span>&gt;
+  &lt;<span class="ht-tag">div</span> <span class="ht-att">class</span>=<span class="ht-val">"product-card"</span>&gt; <span class="ht-cm">... five more ...</span></pre>
+        <table class="d free">
+          <tr><th style="width:150px">Question</th><th>Server response</th><th>Browser DOM</th></tr>
+          <tr><td>Who produced it</td><td>The server, once</td><td>Scripts, in the client, over time</td></tr>
+          <tr><td>What shows it</td><td class="m">view-source · requests</td><td class="m">Inspect Element · Selenium</td></tr>
+          <tr><td>Does it change</td><td>No — it is bytes</td><td>Constantly; it is a live object</td></tr>
+          <tr class="hl"><td>Where the data is</td><td><b>Not here</b> on this site</td><td><b>Here</b>, about 300 ms after load</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4 · DEMO · STATIC VS DYNAMIC ============ -->
+<section class="slide" data-sec="Rendering · Demo">
+  <div class="eyebrow">Rendering · interactive demo</div>
+  <h1 class="t sm">See the same page through both eyes
+    <small class="tight">Tab A is the document <code class="k">requests</code> receives: an empty listing and
+    a script tag. Press <b>Run JavaScript</b> to simulate the browser and watch the cards appear; Tab B shows
+    what Selenium would then see, Tab C says when each route is the right one.
+    <span class="jsbadge">Simulated</span> The "bundle" here is a few lines of inline script; the principle is
+    the same on a real SPA.
+    <a class="demo-link" href="#" data-demo="demo-09">open full page &#8599;</a></small></h1>
+  <div class="wrap" style="margin-top:10px">
+    <iframe class="demo-frame" data-demo="demo-09" title="Static vs dynamic pages"></iframe>
+  </div>
+</section>
+
+<!-- ============ 5 · THE FORK ============ -->
+<section class="slide" data-sec="The fork">
+  <div class="eyebrow">Before Selenium</div>
+  <h1 class="t">The page already made the request you want. Go and look at it.
+    <small>If JavaScript filled the page, JavaScript fetched the data from somewhere — and that somewhere is
+    listed in the Network panel. Replaying that call is rung 2, which you already know. It is ten to a hundred
+    times cheaper than driving a browser, and it returns JSON instead of markup.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <div class="card b"><h3>The two-minute check</h3>
+          <ol class="n" style="margin-top:4px">
+            <li>DevTools &rarr; <b>Network</b> &rarr; filter <b>Fetch/XHR</b>. Reload.</li>
+            <li>Click the row whose <b>Response</b> tab contains your value. Usually it is JSON.</li>
+            <li><b>Headers</b> tab: method, URL, query string, and which cookies and headers went with it.</li>
+            <li>Right-click &rarr; <b>Copy as cURL</b>, then reproduce it with a
+              <code class="k">requests.Session</code>, warm-up requests first (Lecture 1, slides 17–19).</li>
+          </ol></div>
+        <div class="callout good"><b>If that works, you are done, and you are not in this lecture.</b>
+          Most "dynamic" sites fall here. The data was JSON all along; the page is just the last consumer of
+          it.</div>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:46%">What you find in the Network panel</th><th>Route</th></tr>
+          <tr class="ok"><td>A plain GET or POST returning JSON, working with a warmed-up session</td>
+            <td><b>Rung 2.</b> Replay it with <code class="k">requests</code>.</td></tr>
+          <tr class="ok"><td>The call needs a token that is visible in the page source or a cookie</td>
+            <td><b>Rung 2.</b> Fetch the page, pull the token, then call.</td></tr>
+          <tr class="wr"><td>The token is computed by obfuscated JavaScript and changes every request</td>
+            <td><b>Rung 4.</b> Let the browser compute it.</td></tr>
+          <tr class="wr"><td>The session is only valid after scripts have run on the page (a cookie set by JavaScript, a fingerprint posted back)</td>
+            <td><b>Rung 4.</b> Next slide.</td></tr>
+          <tr class="wr"><td>The data arrives over a WebSocket, or is rendered from state that no single call returns</td>
+            <td><b>Rung 4</b>, or reconsider whether you need it.</td></tr>
+          <tr class="hl"><td>No network call at all — the data is baked into the bundle</td>
+            <td>Search the JS source for it; it is text.</td></tr>
+        </table>
+        <div class="callout warn"><b>Honest accounting.</b> A replayed XHR can break when the site changes
+          its API. A driven browser breaks when it changes its markup <i>or</i> its API <i>or</i> its bot
+          rules. Rung 4 is not more robust; it is more capable.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · WHEN THE SESSION IS BORN IN JAVASCRIPT ============ -->
+<section class="slide" data-sec="The fork">
+  <div class="eyebrow">Sessions · recap, and the case that needs a browser</div>
+  <h1 class="t">When the session itself needs JavaScript to be born
+    <small>Lecture 1: HTTP forgets you, so the server hands you cookies and asks to see them on every request.
+    IndexBoard handed them out on the first GET, which is why two warm-up requests were enough. Some sites
+    only mint the cookie that matters <i>after</i> a script on the page has run.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">IndexBoard, Lecture 1 · cookies issued by the server</div>
+        <pre class="code"><span class="h-mth">GET</span> <span class="h-url">/</span>
+<span class="h-ok">200 OK</span>
+<span class="h-hdr">Set-Cookie</span>: <span class="h-val">ibsess=7f3a...; Path=/; HttpOnly</span>
+<span class="h-hdr">Set-Cookie</span>: <span class="h-val">EDGE_A2=A; Max-Age=7200</span>
+<span class="h-hdr">Set-Cookie</span>: <span class="h-val">bm_seq=1F2C...</span>
+<span class="h-dim">→ requests.Session stores all three. Rung 2 works.</span></pre>
+        <div class="outlbl" style="margin-top:4px">a stricter deployment · one cookie set by the page's own script</div>
+        <pre class="code"><span class="h-mth">GET</span> <span class="h-url">/reports/historical</span>
+<span class="h-ok">200 OK</span>   <span class="h-dim">(html, with a script tag)</span>
+<span class="h-dim">...the script runs in the browser and executes:</span>
+<span class="h-hdr">document.cookie</span> = <span class="h-val">"ibappid=" + fingerprint(...)</span>
+<span class="h-dim">→ requests never runs the script, never gets ibappid,</span>
+<span class="h-dim">  and every API call answers 403 — or a 200 challenge page.</span></pre>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3>What changed</h3>
+          <p>The server can only set cookies in a response header. A <i>script</i> can set them from inside
+          the page, and can compute their value from things only a browser has: screen size, canvas output,
+          timing. <code class="k">requests</code> receives the script as text and does nothing with it.</p></div>
+        <div class="card o"><h3>Three options, in cost order</h3>
+          <p><b>1.</b> Read the script. If the value is a constant or a simple function of the page, compute it
+          in Python. Rung 2 survives.<br/>
+          <b>2.</b> Drive a browser once, copy its cookies into a <code class="k">requests.Session</code>,
+          carry on at rung 2 until they expire. Cheap and common.<br/>
+          <b>3.</b> Drive a browser for every request. The rest of this lecture.</p></div>
+        <div class="callout"><b>The vocabulary.</b> "Dynamic" is used for two different things: content
+          rendered by JavaScript (slide 3) and sessions established by JavaScript (this slide). Either one puts
+          you on rung 4; the second is the one that also gets you blocked — slides 18–24.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 · WHAT SELENIUM IS ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 1 of 9</div>
+  <h1 class="t">Selenium is a remote control for a real browser
+    <small>Built in 2004 to test web applications, adopted by scrapers because it does the one thing
+    <code class="k">requests</code> cannot: run the page. Your code never touches the page directly. It sends
+    commands over HTTP to a driver process, which operates the browser through its automation interface.</small></h1>
+  <div class="wrap">
+    <div class="wire" style="grid-template-columns:1fr 80px 1fr 80px 1fr 80px 1fr">
+      <div class="box"><h4>Your Python</h4><p style="font-size:12px;color:#31444F;line-height:1.45">
+        <code class="k">selenium</code> bindings. <code class="k">driver.get()</code>,
+        <code class="k">find_element()</code>, <code class="k">.text</code>.</p></div>
+      <div class="arrows"><div class="ar"><b>W3C WebDriver · HTTP + JSON</b></div><div class="ar back"><b>result</b></div></div>
+      <div class="box"><h4>Driver process</h4><p style="font-size:12px;color:#31444F;line-height:1.45">
+        <code class="k">chromedriver</code>, <code class="k">geckodriver</code>. A tiny HTTP server that speaks
+        the protocol on one side and the browser's native automation API on the other.</p></div>
+      <div class="arrows"><div class="ar"><b>DevTools / Marionette</b></div><div class="ar back"><b>events</b></div></div>
+      <div class="box"><h4>Browser</h4><p style="font-size:12px;color:#31444F;line-height:1.45">
+        A real Chrome or Firefox, headless or not. Loads the page, runs every script, builds the DOM,
+        executes the XHRs.</p></div>
+      <div class="arrows"><div class="ar"><b>ordinary HTTP</b></div><div class="ar back"><b>html · js · json</b></div></div>
+      <div class="box"><h4>The site</h4><p style="font-size:12px;color:#31444F;line-height:1.45">
+        Sees a browser. Sends everything it would send a person — including the scripts that inspect the
+        browser back.</p></div>
+    </div>
+    <div class="cols3" style="flex:1">
+      <div class="card b"><h3>What that buys you</h3>
+        <p>JavaScript runs. Cookies set by scripts exist. Redirect chains, consent banners, infinite scroll,
+        "Load more" — all become things you <i>do</i> rather than things you reverse-engineer. And every CSS
+        selector from Lecture 2 works unchanged.</p></div>
+      <div class="card o"><h3>What it costs</h3>
+        <p>Every command is an HTTP round trip to the driver. A browser process tree in memory. Seconds per
+        page instead of milliseconds. And a client that is far easier to fingerprint than
+        <code class="k">requests</code>, because it <i>is</i> a browser and answers every question honestly.</p></div>
+      <div class="card g"><h3>The three names you will meet</h3>
+        <p><b>WebDriver</b> — the protocol and the Python object. <b>Selenium Manager</b> (4.6+) — fetches
+        the matching driver binary for you; <code class="k">webdriver-manager</code> is the older third-party
+        package that did the same. <b>Grid</b> — many browsers on many machines; not today.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 · SETUP ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 2 of 9</div>
+  <h1 class="t">Setup: three objects, and the flags that matter
+    <small><code class="k">Options</code> configures the browser before it launches. <code class="k">Service</code>
+    points at the driver binary. <code class="k">webdriver.Chrome</code> ties them together and starts both
+    processes. Everything else is a flag on <code class="k">Options</code>.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code"><span class="py-kw">from</span> selenium <span class="py-kw">import</span> webdriver
+<span class="py-kw">from</span> selenium.webdriver.chrome.options <span class="py-kw">import</span> Options
+<span class="py-kw">from</span> selenium.webdriver.chrome.service <span class="py-kw">import</span> Service
+<span class="py-kw">from</span> webdriver_manager.chrome <span class="py-kw">import</span> ChromeDriverManager
+
+<span class="py-kw">def</span> <span class="py-fn">setup_driver</span>():
+    <span class="py-str">"""Chrome, configured once, returned ready."""</span>
+    opts = <span class="py-fn">Options</span>()
+    opts.add_argument(<span class="py-str">"--headless=new"</span>)           <span class="py-cm"># no window</span>
+    opts.add_argument(<span class="py-str">"--no-sandbox"</span>)             <span class="py-cm"># containers</span>
+    opts.add_argument(<span class="py-str">"--disable-dev-shm-usage"</span>)  <span class="py-cm"># containers</span>
+    opts.add_argument(<span class="py-str">"--window-size=1366,768"</span>)   <span class="py-cm"># slide 18</span>
+
+    service = <span class="py-fn">Service</span>(<span class="py-fn">ChromeDriverManager</span>().install())
+    driver = webdriver.<span class="py-fn">Chrome</span>(service=service, options=opts)
+    driver.set_page_load_timeout(<span class="py-num">30</span>)
+    <span class="py-kw">return</span> driver</pre>
+        <div class="callout"><b>On Selenium 4.6 and later you can drop two lines.</b>
+          <code class="k">webdriver.Chrome(options=opts)</code> alone makes Selenium Manager find or download
+          the right chromedriver. The course script uses <code class="k">webdriver-manager</code>, which does
+          the same thing from PyPI; both are fine, neither is magic — both fetch a binary over the network
+          the first time.</div>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:44%">Flag</th><th>Why</th></tr>
+          <tr><td class="m">--headless=new</td><td>No window. The <i>new</i> headless mode is real Chrome without a
+            display; the old one was a separate, more detectable build.</td></tr>
+          <tr><td class="m">--no-sandbox<br/>--disable-dev-shm-usage</td><td>Needed when Chrome runs as root in a
+            container or where <code class="k">/dev/shm</code> is tiny (Docker's default is 64 MB). Harmless elsewhere.</td></tr>
+          <tr><td class="m">--window-size=W,H</td><td>Headless defaults to 800×600. Responsive layouts hide elements
+            at that width, and the size itself is a bot tell (slide 18).</td></tr>
+          <tr><td class="m">--user-agent=...</td><td>Replaces <code class="k">HeadlessChrome/126</code> in the UA
+            string. Slide 24 says what that does and does not achieve.</td></tr>
+          <tr><td class="m">set_page_load_timeout</td><td>Not a flag — a method. Without it a hung page blocks
+            <code class="k">get()</code> forever.</td></tr>
+        </table>
+        <div class="callout warn"><b>Versions must match.</b> chromedriver 126 drives Chrome 126. Chrome
+          auto-updates; your driver does not. The managers exist to make that somebody else's problem; when a
+          scraper that worked last month fails with <code class="k">SessionNotCreatedException</code>, this is
+          why.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9 · GET WAITS FOR ONLOAD ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 3 of 9 · measured</div>
+  <h1 class="t"><code class="k" style="font-size:.8em">driver.get()</code> returns when the page has loaded, not when it is finished
+    <small>It blocks until the browser fires <code class="k">onload</code> — the HTML is parsed and the
+    synchronous scripts have run. The XHRs those scripts started, and anything on a timer, are still in flight.
+    On a client-rendered page that is exactly the content you came for.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <pre class="code">driver = setup_driver()
+driver.get(url)                 <span class="py-cm"># returns at onload</span>
+
+cards = driver.find_elements(
+    By.CSS_SELECTOR, <span class="py-str">".product-card"</span>)
+<span class="py-bi">print</span>(<span class="py-bi">len</span>(cards))              <span class="py-cm"># ?</span></pre>
+        <div class="callout bad"><b>The classic rung-4 bug.</b> The scraper "works" on a fast network and
+          returns zero rows on a slow one, or returns zero rows on the first page and full rows on the second
+          because the bundle was cached by then. Nothing raises. The fix is not
+          <code class="k">time.sleep(3)</code>; it is the next slide.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">real output · the fixture from slide 3, headless Chrome 126, this machine</div>
+        <div class="out">[b] driver.get returned after <span class="h-ok">92 ms</span>
+[b] immediately: find_elements(By.CSS_SELECTOR, '.product-card') -> <span class="h-bad">0</span>
+[b] WebDriverWait(... presence_of_element_located('.product-card'))
+    satisfied after <span class="h-ok">524 ms</span>
+[b] find_elements -> <span class="h-ok">6 elements</span>
+     ThinkBook 14   | ₹58,990 | 4.4
+     Aspire 5       | ₹47,499 | 4.1
+     IdeaPad Slim 3 | ₹42,990 | 4.2</div>
+        <div class="card b"><h3>Read the timeline</h3>
+          <p><code class="k">get()</code> came back at 92 ms with the shell parsed and the script scheduled.
+          The script injected the cards 300 ms later. Anything you did in that gap saw an empty listing and
+          had no way of knowing it was early. <b>The explicit wait is the protocol for that gap.</b></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 · WAITS ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 4 of 9</div>
+  <h1 class="t">Waits: say what you are waiting for, not how long
+    <small>An explicit wait polls a condition every 500 ms until it holds or the timeout expires. It is the
+    difference between "three seconds ought to do it" and "until the card exists" — the second one is right on
+    a slow day and fast on a fast one.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <pre class="code"><span class="py-kw">from</span> selenium.webdriver.common.by <span class="py-kw">import</span> By
+<span class="py-kw">from</span> selenium.webdriver.support.ui <span class="py-kw">import</span> WebDriverWait
+<span class="py-kw">from</span> selenium.webdriver.support <span class="py-kw">import</span> expected_conditions <span class="py-kw">as</span> EC
+
+driver.get(url)
+<span class="py-fn">WebDriverWait</span>(driver, <span class="py-num">10</span>).until(
+    EC.presence_of_element_located(
+        (By.CSS_SELECTOR, <span class="py-str">".product-card"</span>)))   <span class="py-cm"># a tuple</span>
+cards = driver.find_elements(By.CSS_SELECTOR, <span class="py-str">".product-card"</span>)</pre>
+        <div class="outlbl" style="margin-top:2px">real output · when the condition never holds</div>
+        <div class="out">WebDriverWait(driver, 1).until(... '.never' ...)
+-> <span class="h-bad">TimeoutException</span> after 1036 ms</div>
+        <div class="callout warn"><b>Implicit waits exist; do not mix them in.</b>
+          <code class="k">driver.implicitly_wait(10)</code> makes <i>every</i> <code class="k">find_*</code>
+          retry for up to ten seconds — including the ones you <i>want</i> to fail fast, like "is there a
+          next-page button?". Mixed with explicit waits the timeouts add in undocumented ways. Pick explicit,
+          once, at the top of the file.</div>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:50%">Expected condition</th><th>Holds when</th></tr>
+          <tr class="ok"><td class="m">presence_of_element_located</td><td>It is in the DOM. Visible or not. The usual one for scraping.</td></tr>
+          <tr><td class="m">visibility_of_element_located</td><td>In the DOM <i>and</i> rendered with size — for things you are about to click.</td></tr>
+          <tr><td class="m">element_to_be_clickable</td><td>Visible and enabled. Buttons, "Load more".</td></tr>
+          <tr><td class="m">text_to_be_present_in_element</td><td>A specific string has appeared — for placeholders that become values.</td></tr>
+          <tr><td class="m">staleness_of(old_element)</td><td>The old element has been replaced — the right wait after clicking "next".</td></tr>
+          <tr><td class="m">any callable(driver)</td><td>Your own test. <code class="k">lambda d: len(d.find_elements(...)) &gt;= 20</code>.</td></tr>
+        </table>
+        <div class="callout good"><b>The one people miss.</b> Presence of <i>an</i> element is not presence
+          of <i>all</i> of them. If the page renders cards in batches, wait for a count, or for a "loaded"
+          marker the page itself uses. Then assert the count, as in Lecture 2.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============ 11 · LOCATING ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 5 of 9</div>
+  <h1 class="t">Locating: the selector travels, the method changes
+    <small>Every CSS selector from Lecture 2 works here unchanged — that was the argument for learning them
+    rather than BeautifulSoup's own syntax. <code class="k">By</code> names the strategy; the string is the
+    same one you would have passed to <code class="k">soup.select()</code>.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code"><span class="py-cm"># the same selector, three libraries (Lecture 2's playground)</span>
+soup.select(<span class="py-str">".product-card .price"</span>)
+driver.find_elements(By.CSS_SELECTOR, <span class="py-str">".product-card .price"</span>)
+tree.cssselect(<span class="py-str">".product-card .price"</span>)
+
+<span class="py-cm"># scope to a container, exactly as in Lecture 2</span>
+<span class="py-kw">for</span> card <span class="py-kw">in</span> driver.find_elements(By.CSS_SELECTOR, <span class="py-str">".product-card"</span>):
+    name  = card.find_element(By.CSS_SELECTOR, <span class="py-str">".name"</span>).text
+    price = card.find_element(By.CSS_SELECTOR, <span class="py-str">".price"</span>).text
+
+<span class="py-cm"># XPath, for the one thing CSS cannot say: "by its text"</span>
+driver.find_element(By.XPATH,
+    <span class="py-str">"//span[contains(., 'Response Time')]/b"</span>)</pre>
+        <div class="callout good"><b>Scope, then search.</b> <code class="k">card.find_element(...)</code>
+          searches inside <code class="k">card</code>. Lecture 2's rule — one container selector, every field
+          selector run against that element — is the same rule here, and it prevents the same misaligned
+          rows.</div>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:40%">Strategy</th><th>Use it for</th></tr>
+          <tr class="ok"><td class="m">By.CSS_SELECTOR</td><td><b>Default.</b> Everything Lecture 2 taught. Fast, and the same string works in bs4 and lxml.</td></tr>
+          <tr><td class="m">By.XPATH</td><td>Text matching, walking <i>up</i> the tree (<code class="k">..</code>), or markup with no handles at all. Slower, and a different language.</td></tr>
+          <tr><td class="m">By.ID</td><td>When there is one. Equivalent to <code class="k">#id</code>.</td></tr>
+          <tr><td class="m">By.CLASS_NAME</td><td>One class, no spaces. <code class="k">By.CLASS_NAME, "key-points light"</code> fails — the same trap as Lecture 2 slide 13, from the other side.</td></tr>
+          <tr><td class="m">By.TAG_NAME</td><td><code class="k">"p"</code>, <code class="k">"a"</code>. Inside a scoped container it is often enough.</td></tr>
+          <tr class="wr"><td class="m">By.LINK_TEXT</td><td>Visible anchor text. Brittle across languages and A/B tests.</td></tr>
+        </table>
+        <div class="callout warn"><b>"Copy selector" in DevTools gives you a path,</b>
+          <code class="k">#root &gt; div:nth-child(3) &gt; div &gt; span</code>, not a handle. It matches
+          today's layout and nothing else. Lecture 2 slide 5's ranking of handles applies exactly.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · ONE VS MANY ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 6 of 9 · measured</div>
+  <h1 class="t"><code class="k" style="font-size:.8em">find_element</code> raises, <code class="k" style="font-size:.8em">find_elements</code> returns a list
+    <small>The same shape as <code class="k">find</code> and <code class="k">find_all</code> in Lecture 2, with
+    one difference that matters more here: <code class="k">find</code> returned <code class="k">None</code>
+    quietly; <code class="k">find_element</code> throws. Choose by what a miss should mean.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">real output</div>
+        <div class="out">driver.find_element(By.CSS_SELECTOR, ".does-not-exist")
+-> raises <span class="h-bad">NoSuchElementException</span>
+
+driver.find_elements(By.CSS_SELECTOR, ".does-not-exist")
+-> <span class="h-ok">[]</span></div>
+        <table class="d free" style="margin-top:4px">
+          <tr><th style="width:34%"></th><th>find_element</th><th>find_elements</th></tr>
+          <tr><td><b>Returns</b></td><td>first match, a WebElement</td><td>list, possibly empty</td></tr>
+          <tr><td><b>On no match</b></td><td class="hl">raises</td><td>empty list, silently</td></tr>
+          <tr><td><b>Use for</b></td><td>fields that must exist</td><td>repeating rows; optional fields</td></tr>
+          <tr><td><b>bs4 twin</b></td><td class="m">find / select_one</td><td class="m">find_all / select</td></tr>
+        </table>
+      </div>
+      <div class="colstack">
+        <pre class="code"><span class="py-cm"># required field: let it raise, catch per row</span>
+<span class="py-kw">for</span> card <span class="py-kw">in</span> cards:
+    <span class="py-kw">try</span>:
+        row = {
+          <span class="py-str">"name"</span>:  card.find_element(By.CSS_SELECTOR, <span class="py-str">".name"</span>).text,
+          <span class="py-str">"price"</span>: card.find_element(By.CSS_SELECTOR, <span class="py-str">".price"</span>).text,
+        }
+    <span class="py-kw">except</span> NoSuchElementException <span class="py-kw">as</span> e:
+        failed.append((card.get_attribute(<span class="py-str">"id"</span>), e)); <span class="py-kw">continue</span>
+
+    <span class="py-cm"># optional field: ask for a list, take it if there</span>
+    r = card.find_elements(By.CSS_SELECTOR, <span class="py-str">".rating"</span>)
+    row[<span class="py-str">"rating"</span>] = r[<span class="py-num">0</span>].text <span class="py-kw">if</span> r <span class="py-kw">else</span> <span class="py-kw">None</span>
+    rows.append(row)</pre>
+        <div class="callout"><b>Catch the narrow exception, per row.</b> The course's browser script
+          wrapped each element in <code class="k">except Exception: continue</code>. That swallows a
+          stale-element error, a driver crash and a typo in your selector identically. Lecture 2's rule —
+          lose a row, never a field, and say which — still holds.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 · EXTRACTING ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 7 of 9 · measured</div>
+  <h1 class="t"><code class="k" style="font-size:.8em">.text</code> is what a person would see, and nothing else
+    <small>That is a different contract from BeautifulSoup's <code class="k">get_text()</code>, which returns
+    every text node in the subtree. A hidden element, a collapsed section, a tab that is not selected — all
+    give you an empty string, with no error.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">real output · the first card's name</div>
+        <div class="out">first = driver.find_element(By.CSS_SELECTOR, ".product-card .name")
+first.text                          -> <span class="h-ok">'ThinkBook 14'</span>
+
+<span class="h-dim"># hide it with CSS, the way a collapsed panel would be</span>
+first.text                          -> <span class="h-bad">''</span>
+first.get_attribute('textContent')  -> <span class="h-ok">'ThinkBook 14'</span>
+
+card.get_attribute('innerHTML')     -> '&lt;h3 class="name" ...'
+card.get_attribute('href')          -> <span class="h-dim">None</span>   <span class="h-dim"># absent attribute</span></div>
+        <div class="callout warn"><b>So "it returned blank" has two meanings on rung 4.</b> The value is
+          missing, or the value is there and not displayed. <code class="k">textContent</code> tells them
+          apart. Your CSV cannot.</div>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:42%">Call</th><th>Gives you</th></tr>
+          <tr class="ok"><td class="m">el.text</td><td>Rendered, visible text. Whitespace collapsed, hidden nodes excluded.</td></tr>
+          <tr><td class="m">el.get_attribute("textContent")</td><td>All text nodes in the subtree — bs4's <code class="k">get_text()</code>.</td></tr>
+          <tr><td class="m">el.get_attribute("href")</td><td>The attribute; for <code class="k">href</code>/<code class="k">src</code> it is <b>resolved to an absolute URL</b>. <code class="k">None</code> if absent.</td></tr>
+          <tr><td class="m">el.get_attribute("innerHTML")</td><td>Markup inside the element — hand it to BeautifulSoup if the structure is complex.</td></tr>
+          <tr><td class="m">el.get_dom_attribute("href")</td><td>The attribute exactly as written in the markup, unresolved. Selenium 4.</td></tr>
+          <tr><td class="m">driver.page_source</td><td>The whole <i>current</i> DOM serialised. The rung-4 equivalent of <code class="k">r.text</code> — and a good hand-off to Lecture 2's code.</td></tr>
+        </table>
+        <div class="callout good"><b>A hybrid that is often best.</b> Drive the browser only until the
+          content exists, then <code class="k">bs(driver.page_source, 'lxml')</code> and parse with the tools
+          you already have. One round trip instead of one per field, and your Lecture 2 code is reused
+          verbatim.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 · EXCEPTIONS ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 8 of 9 · measured</div>
+  <h1 class="t">Four exceptions, and the one that only exists on rung 4
+    <small>Three of these have Lecture 2 equivalents. <code class="k">StaleElementReferenceException</code>
+    does not: it can only happen when the document is alive and changes under you — which, on a page that is
+    assembled by JavaScript, it does.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <div class="outlbl">real output · a reference that outlived its element</div>
+        <div class="out">first = driver.find_element(By.CSS_SELECTOR,
+            ".product-card .name")
+first.text  -> 'ThinkBook 14'
+
+<span class="h-dim"># the page re-renders the listing (a filter, a sort,
+# a "live price" tick — or the framework, for no reason)</span>
+first.text
+-> <span class="h-bad">StaleElementReferenceException</span></div>
+        <div class="card r"><h3>What a WebElement is</h3>
+          <p>A handle to one DOM node, not a copy of it. When the framework replaces the node with an identical
+          one, the handle points at nothing. <b>Fix:</b> find again, after the change; or wait on
+          <code class="k">EC.staleness_of(old)</code> then re-find; or extract values immediately and keep
+          strings, not elements.</p></div>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:44%">Exception</th><th>Means · and what to do</th></tr>
+          <tr><td class="m">NoSuchElementException</td><td>Selector matched nothing <i>right now</i>. Wrong selector, or too early. Wait, then decide whether it is required.</td></tr>
+          <tr><td class="m">TimeoutException</td><td>Your wait expired. The page is slow, blocked, or the thing never comes. Log the URL and the page title — a challenge page has a recognisable one.</td></tr>
+          <tr class="hl"><td class="m">StaleElementReferenceException</td><td>The node you held was replaced. Re-find. Never retry the same handle.</td></tr>
+          <tr><td class="m">ElementNotInteractableException</td><td>It exists but cannot be clicked — off-screen, covered, hidden. Scroll into view, or wait for <code class="k">element_to_be_clickable</code>.</td></tr>
+          <tr><td class="m">SessionNotCreatedException</td><td>Driver and browser versions disagree. Slide 8.</td></tr>
+          <tr><td class="m">WebDriverException</td><td>The parent of all of them, and the browser or driver having died. Catch it only at the outermost level, to quit cleanly.</td></tr>
+        </table>
+        <div class="callout"><b>Catch by name.</b> The same discipline as Lecture 2: the narrow exception
+          at the narrow place, the broad one once at the top with a <code class="k">finally</code>.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15 · CLEANUP ============ -->
+<section class="slide" data-sec="Selenium">
+  <div class="eyebrow">Selenium · 9 of 9</div>
+  <h1 class="t">Always quit, and quit in a <code class="k" style="font-size:.8em">finally</code>
+    <small>A <code class="k">requests</code> scraper that crashes leaves nothing behind. A Selenium scraper that
+    crashes leaves a browser process tree — hundreds of megabytes, every time — until somebody notices.
+    On a server nobody notices.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <pre class="code"><span class="py-kw">def</span> <span class="py-fn">scrape_listing</span>(url):
+    driver = setup_driver()
+    <span class="py-kw">try</span>:
+        driver.get(url)
+        <span class="py-fn">WebDriverWait</span>(driver, <span class="py-num">10</span>).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, <span class="py-str">".product-card"</span>)))
+        rows = [parse(card) <span class="py-kw">for</span> card
+                <span class="py-kw">in</span> driver.find_elements(By.CSS_SELECTOR, <span class="py-str">".product-card"</span>)]
+        <span class="py-kw">assert</span> <span class="py-bi">len</span>(rows) &gt;= <span class="py-num">20</span>, <span class="py-str">f"only {len(rows)} cards"</span>
+        <span class="py-kw">return</span> rows
+    <span class="py-kw">finally</span>:
+        driver.quit()                 <span class="py-cm"># runs on return AND on raise</span>
+
+<span class="py-cm"># or, the same guarantee with less ceremony</span>
+<span class="py-kw">with</span> webdriver.Chrome(options=opts) <span class="py-kw">as</span> driver:
+    driver.get(url)
+    ...                               <span class="py-cm"># quit() on exit, whatever happens</span></pre>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:30%"></th><th>driver.close()</th><th>driver.quit()</th></tr>
+          <tr><td><b>Closes</b></td><td>the current window/tab</td><td>every window, the session, the driver process</td></tr>
+          <tr><td><b>Leaves behind</b></td><td class="hl">the browser and chromedriver, if other windows exist</td><td>nothing</td></tr>
+          <tr><td><b>Use</b></td><td>closing a popup you opened</td><td>always, at the end</td></tr>
+        </table>
+        <div class="card o"><h3>One browser, many pages</h3>
+          <p>The course's browser script calls <code class="k">setup_driver()</code> inside <i>each</i>
+          function — a fresh Chrome per article, ~2 s of launch each time. Open one driver, visit many
+          URLs, quit once. If you need isolation between pages, <code class="k">driver.delete_all_cookies()</code>
+          is cheaper than a new process.</p></div>
+        <div class="callout warn"><b>Check for orphans.</b> <code class="k">ps aux | grep -i chrome</code>
+          after your script exits. If it lists anything, a code path skipped <code class="k">quit()</code>.
+          On a shared machine that is how you make enemies.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16 · THE WHOLE SCRAPER ============ -->
+<section class="slide" data-sec="Case study">
+  <div class="eyebrow">A rung-4 scraper, whole</div>
+  <h1 class="t">A news site, read by a browser
+    <small>The course's browser script, reshaped: one driver, an explicit wait, scoped locators, a narrow catch
+    per row, and a quit that cannot be skipped. The site is invented; the selector names are the kind a real
+    site happens to use — meaningless hashes that a redesign will change.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <pre class="code xs"><span class="py-kw">def</span> <span class="py-fn">scrape_headlines</span>(driver, home=<span class="py-str">"https://www.dailyledger.example"</span>):
+    driver.get(home)
+    <span class="py-fn">WebDriverWait</span>(driver, <span class="py-num">10</span>).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, <span class="py-str">"h1 a, h3 a"</span>)))
+    out = []
+    <span class="py-kw">for</span> a <span class="py-kw">in</span> driver.find_elements(By.CSS_SELECTOR, <span class="py-str">"h1 a, h3 a"</span>):
+        title, link = a.text.strip(), a.get_attribute(<span class="py-str">"href"</span>)
+        <span class="py-kw">if</span> title <span class="py-kw">and</span> link:                 <span class="py-cm"># .text is '' for hidden links</span>
+            out.append({<span class="py-str">"title"</span>: title, <span class="py-str">"link"</span>: link})
+    <span class="py-kw">return</span> out
+
+<span class="py-kw">def</span> <span class="py-fn">scrape_article</span>(driver, url):
+    driver.get(url)
+    <span class="py-fn">WebDriverWait</span>(driver, <span class="py-num">10</span>).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, <span class="py-str">".Art-exp_cn"</span>)))
+    body = driver.find_element(By.CSS_SELECTOR, <span class="py-str">".Art-exp_cn .Art-exp_wr"</span>)
+    paras = [p.text.strip() <span class="py-kw">for</span> p <span class="py-kw">in</span> body.find_elements(By.TAG_NAME, <span class="py-str">"p"</span>)]
+    paras = [t <span class="py-kw">for</span> t <span class="py-kw">in</span> paras <span class="py-kw">if</span> t]                <span class="py-cm"># drop ad slots and empties</span>
+    <span class="py-kw">return</span> {<span class="py-str">"url"</span>: url, <span class="py-str">"content"</span>: <span class="py-str">"\n\n"</span>.join(paras)}
+
+<span class="py-kw">if</span> __name__ == <span class="py-str">"__main__"</span>:
+    <span class="py-kw">with</span> webdriver.Chrome(options=opts) <span class="py-kw">as</span> driver:      <span class="py-cm"># one browser</span>
+        heads = scrape_headlines(driver)
+        <span class="py-kw">assert</span> <span class="py-bi">len</span>(heads) &gt;= <span class="py-num">10</span>, <span class="py-str">f"only {len(heads)} headlines"</span>
+        <span class="py-kw">for</span> h <span class="py-kw">in</span> heads[:<span class="py-num">5</span>]:
+            <span class="py-kw">try</span>:
+                h.update(scrape_article(driver, h[<span class="py-str">"link"</span>]))
+            <span class="py-kw">except</span> (TimeoutException, NoSuchElementException) <span class="py-kw">as</span> e:
+                h[<span class="py-str">"error"</span>] = <span class="py-bi">type</span>(e).__name__  <span class="py-cm"># keep the row, mark it</span>
+            time.sleep(<span class="py-num">2</span>)                       <span class="py-cm"># Lecture 1's discipline still applies</span></pre>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>Against the original</h3>
+          <p>The course script had <code class="k">except Exception: continue</code> around each element,
+          a new driver per function, <code class="k">try/finally</code> in three places, and a fallback
+          list of selectors <code class="k">["h1 a", "h3 a"]</code> tried in turn — the Lecture 2 pattern
+          where a fallback silently carries the feature. Here one selector list is one selector, the catch
+          names its exceptions, and the failure is kept in the row.</p></div>
+        <div class="card o"><h3>The innerHTML filter, and why it is gone</h3>
+          <p>The original checked each paragraph's <code class="k">innerHTML</code> for
+          <code class="k">"script"</code>, <code class="k">"taboola"</code> and two other ad vendors. That
+          is a list of today's advertisers. Scope to the article body and drop empty
+          <code class="k">.text</code> — ad slots render no visible text — and the list is unnecessary.</p></div>
+        <div class="callout warn"><b>Still a rung-4 script.</b> Before running it, ask the slide-5 question:
+          does this site's front page fetch its headlines from a JSON endpoint? Most do. If so, this whole
+          file is a <code class="k">requests</code> call.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17 · THE BILL ============ -->
+<section class="slide" data-sec="Real output">
+  <div class="eyebrow">Real output · the two routes, measured on the same fixture</div>
+  <h1 class="t">The bill: same six rows, two very different receipts
+    <small>One local page, the cards injected 300 ms after load. Route (a) reads the bytes and parses them
+    with BeautifulSoup. Route (b) launches headless Chrome, waits, and reads the DOM. Both were run on the
+    machine this deck was built on; the numbers are the numbers.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">(a) parse the server's bytes · rung 3</div>
+        <div class="out">[a] bytes on disk: 1101 chars
+[a] soup.find_all('div', class_='product-card') -> <span class="h-bad">[]</span>
+[a] soup.find('div', id='product-listing')
+       .get_text(strip=True)                  -> <span class="h-bad">''</span>
+[a] elapsed: <span class="h-ok">2.1 ms</span>
+[a] python RSS: <span class="h-ok">36 MB</span></div>
+        <div class="outlbl" style="margin-top:4px">(b) drive a browser · rung 4</div>
+        <div class="out">[b] launch <span class="h-bad">2235 ms</span> · driver.get 92 ms
+[b] immediately: find_elements -> 0
+[b] explicit wait satisfied after 524 ms
+[b] find_elements -> <span class="h-ok">6 elements</span>
+[b] chrome processes RSS while driving: <span class="h-bad">686 MB</span>
+[b] total: <span class="h-bad">3188 ms</span></div>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:34%"></th><th>(a) requests + bs4</th><th>(b) Selenium</th></tr>
+          <tr><td><b>Rows found</b></td><td class="hl">0 — correct and useless</td><td class="ok">6</td></tr>
+          <tr><td><b>Wall-clock</b></td><td>2 ms</td><td>~3.2 s, of which 2.2 s is launch</td></tr>
+          <tr><td><b>Memory</b></td><td>36 MB</td><td>~690 MB across the browser's processes</td></tr>
+          <tr><td><b>Per page after launch</b></td><td>milliseconds</td><td>~0.6 s + page weight</td></tr>
+          <tr><td><b>Failure modes</b></td><td>markup change</td><td>markup change, API change, bot rules, driver version, timing</td></tr>
+        </table>
+        <div class="callout"><b>What the numbers are for.</b> Not to say rung 4 is bad — on this page it
+          is the only route that works. They are for the <i>next</i> decision: a thousand pages at rung 4 is
+          an hour and a machine; at rung 2 it is a minute and a laptop. Launch once, reuse the driver,
+          and parallelise with care (one Chrome per core is a generous upper bound).</div>
+        <div class="callout warn"><b>Reproducibility note.</b> RSS was summed over every Chrome and
+          chromedriver process on the machine at the moment of measurement; on your machine expect the same
+          order of magnitude, not the same number.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18 · WHAT THE SITE SEES ============ -->
+<section class="slide" data-sec="The wall">
+  <div class="eyebrow">The wall · 1 of 7 · measured</div>
+  <h1 class="t">The site gets to run code on your client now. It uses that.
+    <small>At rung 2 a server saw headers and timing. At rung 4 its scripts execute inside your browser and can
+    ask it anything. The first questions are cheap: does the browser admit to being driven, and does it look
+    like a machine nobody is sitting at?</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <div class="outlbl">real output · headless Chrome 126, default flags</div>
+        <div class="out">navigator.webdriver      -> <span class="h-bad">True</span>
+navigator.userAgent      -> Mozilla/5.0 (X11; Linux x86_64) ...
+                            <span class="h-bad">HeadlessChrome</span>/126.0.0.0 Safari/537.36
+screen.width x height    -> <span class="h-bad">800x600</span>
+WebGL UNMASKED_RENDERER  -> <span class="h-bad">ANGLE (Google, Vulkan 1.3.0 (SwiftShader ...</span>
+navigator.plugins.length -> 5
+navigator.languages      -> ['en-US', 'en']
+window.chrome            -> True</div>
+        <div class="callout bad"><b>Each line is one question a page script can ask in one line of
+          JavaScript.</b> Three of them answer "automation" or "server" outright. The W3C WebDriver
+          specification <i>requires</i> the first one to be true — it is not a bug to be patched, it is the
+          protocol being honest.</div>
+      </div>
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:38%">Signal</th><th>What it says about you</th></tr>
+          <tr class="hl"><td class="m">navigator.webdriver</td><td><code class="k">true</code> under any WebDriver session. The spec mandates it.</td></tr>
+          <tr class="hl"><td class="m">HeadlessChrome in UA</td><td>Headless, and honest about it. Trivially changed; slide 24.</td></tr>
+          <tr class="hl"><td class="m">800×600, devicePixelRatio 1</td><td>Headless default. Almost no human screen is 800×600 in 2026.</td></tr>
+          <tr class="hl"><td class="m">SwiftShader / llvmpipe renderer</td><td>Software GPU: a server or a VM, not a laptop.</td></tr>
+          <tr><td class="m">plugins, languages, chrome</td><td>Looked normal here. Old headless builds failed these; new headless passes them — which is why the old tells have moved down the list.</td></tr>
+          <tr><td class="m">timing and behaviour</td><td>Page loaded, no mouse movement, the exact same click position each time, requests 2.000 s apart.</td></tr>
+        </table>
+        <div class="callout"><b>Then the expensive questions.</b> Canvas, WebGL, audio, fonts — not "is this
+          a bot" but "which machine is this", so that a blocked fingerprint stays blocked through a proxy change.
+          Next three slides.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19 · FINGERPRINTING ============ -->
+<section class="slide" data-sec="The wall">
+  <div class="eyebrow">The wall · 2 of 7</div>
+  <h1 class="t">A fingerprint is a combination, not a secret
+    <small>No single answer identifies a browser: millions run Chrome on Windows at 1920×1080. But each answer
+    rules out a fraction of the world, and fifteen answers multiplied together leave, in practice, one
+    machine. It needs no cookie, survives a cleared cache, and follows you across sites that share the
+    same script.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <table class="d free">
+          <tr><th style="width:26%">Category</th><th>Signals</th><th style="width:26%">How it is read</th></tr>
+          <tr><td><b>Software</b></td><td>UA string, platform, languages, timezone, plugins, Do-Not-Track</td><td class="m">navigator.*, Intl</td></tr>
+          <tr><td><b>Display</b></td><td>Resolution, available area, colour depth, pixel ratio, viewport</td><td class="m">screen.*, window.inner*</td></tr>
+          <tr><td><b>Hardware</b></td><td>CPU cores, device memory, touch points, media devices</td><td class="m">navigator.hardwareConcurrency …</td></tr>
+          <tr class="hl"><td><b>Rendering</b></td><td>Canvas: draw text and shapes, hash the pixels. WebGL: unmasked GPU vendor/renderer, parameters. Fonts: measure text widths to see which are installed.</td><td class="m">canvas.toDataURL(), WEBGL_debug_renderer_info</td></tr>
+          <tr><td><b>Audio</b></td><td>Run an oscillator through an OfflineAudioContext, hash the samples</td><td class="m">AudioContext</td></tr>
+          <tr><td><b>Network</b></td><td>TLS handshake order and extensions, HTTP/2 settings — read <i>before</i> any script runs</td><td class="m">at the edge</td></tr>
+          <tr><td><b>Behaviour</b></td><td>Mouse path, scroll cadence, typing rhythm, time on page</td><td class="m">event listeners</td></tr>
+        </table>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>Why rendering is the strong one</h3>
+          <p>Two machines given the same canvas instructions produce slightly different pixels — GPU, driver,
+          OS font hinting, anti-aliasing all leak in. The hash of those pixels is stable on one machine and
+          different on the next, and there is no setting to "turn off" what your GPU does.</p></div>
+        <div class="card o"><h3>Why it matters to a scraper</h3>
+          <p>Rotating IPs does not rotate your canvas hash. A bot manager that has scored your fingerprint once
+          will recognise the same headless Chrome arriving from a new proxy. This is the single most common
+          reason "I rotate proxies and still get blocked".</p></div>
+        <div class="callout"><b>Who does this, and how much.</b> A blog reads your IP and UA. A bank, an
+          exchange, a ticketing site collects most of the table for fraud control. An ad network collects it to
+          follow you. The next demo shows exactly what a script can read from the browser you are in right now.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20 · DEMO · FINGERPRINT ============ -->
+<section class="slide" data-sec="Fingerprint · Demo">
+  <div class="eyebrow">The wall · 3 of 7 · interactive demo</div>
+  <h1 class="t sm">What a page script can learn about this browser, right now
+    <small class="tight">Every value below is read live from the browser showing this slide, with ordinary
+    JavaScript APIs — nothing is sent anywhere. Scroll to the canvas and WebGL panels, then to the entropy
+    table at the bottom. <span class="jsbadge">Runs in your browser</span> If you are projecting from a
+    laptop, you are looking at your laptop's fingerprint.
+    <a class="demo-link" href="#" data-demo="demo-10">open full page &#8599;</a></small></h1>
+  <div class="wrap" style="margin-top:10px">
+    <iframe class="demo-frame" data-demo="demo-10" title="Browser fingerprint"></iframe>
+  </div>
+</section>
+<!-- ============ 21 · ENTROPY ============ -->
+<section class="slide" data-sec="The wall">
+  <div class="eyebrow">The wall · 4 of 7</div>
+  <h1 class="t">The arithmetic of uniqueness
+    <small>Each signal is worth some number of <i>bits</i>: one bit halves the population it could be, ten bits
+    divide it by a thousand. The bits add. Thirty-three bits is one in eight billion — enough to name one
+    browser on Earth, if the signals were independent. They are not quite, so treat every total as an upper
+    bound.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <div class="card b"><h3>Bits, in one line</h3>
+          <p>A signal that splits browsers into <i>n</i> equally likely groups carries log<sub>2</sub>(<i>n</i>)
+          bits. Chrome-or-not is about 1 bit. A canvas hash with thousands of distinct values is about 8.
+          1 in 1,000,000 ≈ 20 bits; 1 in 8,000,000,000 ≈ 33 bits.</p></div>
+        <div class="out"><span class="h-dim"># the source deck's worked example</span>
+P(Chrome)       ≈ 0.65
+P(1920×1080)    ≈ 0.20
+P(Windows 11)   ≈ 0.25
+all three       ≈ 0.0325   <span class="h-dim">(~5 bits; still millions of browsers)</span>
+
+<span class="h-dim"># add the hard signals and the estimate climbs</span>
+canvas ~8  + WebGL ~7.5 + fonts ~6.5 + audio ~4
+           + UA ~10.5 + screen ~5.5 + ...   ≈ <span class="h-bad">56 bits</span></div>
+        <div class="callout warn"><b>Illustrative, not measured.</b> The per-signal bits on this slide and
+          in the demo are rough figures from the published fingerprinting literature (Eckersley 2010 found a
+          median of ~18 bits from a handful of signals; later studies add the rendering ones). Real uniqueness
+          depends on the population you compare against and on how correlated the signals are — a Mac user's
+          fonts and GPU are not independent of "Mac".</div>
+      </div>
+      <div class="colstack">
+        <table class="d">
+          <tr><th>Signal group</th><th style="width:30%">Sampled here</th><th style="width:16%">≈ bits</th></tr>
+          <tr><td>User-agent string</td><td>Chrome 131 / Linux</td><td class="c">10.5</td></tr>
+          <tr><td>Platform, vendor</td><td>Linux x86_64</td><td class="c">3.5</td></tr>
+          <tr><td>Languages</td><td>en-US</td><td class="c">2.5</td></tr>
+          <tr><td>Timezone</td><td>Asia/Calcutta</td><td class="c">3.0</td></tr>
+          <tr><td>Screen + pixel ratio</td><td>1280×900 @1</td><td class="c">5.5</td></tr>
+          <tr><td>Colour depth</td><td>24</td><td class="c">1.5</td></tr>
+          <tr><td>Cores + memory</td><td>16 / 8 GB</td><td class="c">2.5</td></tr>
+          <tr class="hl"><td>Canvas hash</td><td class="m">318360C4</td><td class="c">8.0</td></tr>
+          <tr class="hl"><td>WebGL renderer strings</td><td>SwiftShader</td><td class="c">7.5</td></tr>
+          <tr><td>Audio hash</td><td class="m">824397C4</td><td class="c">4.0</td></tr>
+          <tr class="hl"><td>Installed fonts</td><td>28 of 42 probed</td><td class="c">6.5</td></tr>
+          <tr><td>Touch, media devices</td><td>0 / 1 / 1</td><td class="c">1.5</td></tr>
+          <tr><td><b>Sum</b> (ignoring correlation)</td><td></td><td class="c"><b>56.5</b></td></tr>
+        </table>
+        <div class="callout"><b>The practical reading.</b> You do not need the total to be exact. Anything
+          past ~33 bits means the site can tell <i>this</i> headless Chrome from every other visitor, and keep
+          telling, through proxy changes and cleared cookies.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22 · THREE SCENARIOS ============ -->
+<section class="slide" data-sec="The wall">
+  <div class="eyebrow">The wall · 5 of 7 · IndexBoard, the stricter deployment</div>
+  <h1 class="t">Three ways to ask for the same URL, again
+    <small>Lecture 1 ran this on headers alone. Here is the same endpoint behind the stricter wall from
+    slide 6, where the cookie that matters is minted by the page's script. Same three clients; only one gets
+    data.</small></h1>
+  <div class="wrap">
+    <div class="cols3" style="flex:1">
+      <div class="card r"><h3><span class="num">1</span>Python, straight at the API</h3>
+        <pre class="code xxs" style="margin:6px 0">requests.get(
+  <span class="py-str">"https://www.indexboard.example"</span>
+  <span class="py-str">"/api/history?index=BLUE%2050&amp;..."</span>)
+<span class="h-bad"># 403, or 200 + challenge HTML</span></pre>
+        <p><b>No session</b> — no <code class="k">ibsess</code>, no <code class="k">ibappid</code>.
+        <b>No fingerprint</b> — the script that computes it never ran. <b>Wrong shape</b> — a
+        <code class="k">python-requests</code> UA, no Referer, a TLS handshake that is not Chrome's. The
+        edge answers before the application ever sees the request.</p></div>
+      <div class="card o"><h3><span class="num">2</span>A browser, URL typed into the bar</h3>
+        <pre class="code xxs" style="margin:6px 0"><span class="h-dim">address bar:</span>
+www.indexboard.example/api/history?...
+<span class="h-bad"># 403, or the challenge page</span></pre>
+        <p>A real browser, a real fingerprint, a plausible TLS handshake — and <b>still refused</b>. Fresh
+        profile: no cookies were ever issued, and the page script that mints <code class="k">ibappid</code>
+        never ran because you skipped the page. The wall is not "are you a browser"; it is "have you been
+        through the front door".</p></div>
+      <div class="card g"><h3><span class="num">3</span>A browser, after visiting the site</h3>
+        <pre class="code xxs" style="margin:6px 0">driver.get(<span class="py-str">"https://www.indexboard.example"</span>)
+driver.get(<span class="py-str">".../reports/historical"</span>)
+<span class="h-dim"># scripts run: fingerprint posted,</span>
+<span class="h-dim"># ibappid set, session marked 'seen'</span>
+driver.get(<span class="py-str">".../api/history?..."</span>)
+<span class="h-ok"># 200, JSON</span></pre>
+        <p><b>Session</b>: <code class="k">ibsess</code>, <code class="k">EDGE_A2</code>,
+        <code class="k">bm_seq</code> from the responses, <code class="k">ibappid</code> from the script.
+        <b>Fingerprint</b>: computed by the site's own code, in a real renderer. <b>Referer</b>: the report
+        page. Every box ticked, because the browser did the ticking.</p></div>
+    </div>
+    <div class="callout"><b>And the cheap version of 3.</b> Do exactly this once, then
+      <code class="k">for c in driver.get_cookies(): session.cookies.set(c['name'], c['value'])</code> and
+      continue at rung 2 until the cookies expire. The browser paid the entry fee; <code class="k">requests</code>
+      does the work. Whether the fingerprint is re-checked per request decides how long that lasts.</div>
+  </div>
+</section>
+
+<!-- ============ 23 · FOUR LAYERS ============ -->
+<section class="slide" data-sec="The wall">
+  <div class="eyebrow">The wall · 6 of 7</div>
+  <h1 class="t">Four layers, checked in order, and the order is the lesson
+    <small>A serious site does not run one test. It runs a cheap one at the network edge, then session checks,
+    then the fingerprint, then the headers — and it fails you at the <i>first</i> one that fails. Lecture 1's
+    live widget made this point with three headers; here is the full stack.</small></h1>
+  <div class="wrap">
+    <table class="d free">
+      <tr><th style="width:16%">Layer</th><th style="width:30%">What is examined</th><th style="width:27%">What fails it</th><th>Where it lives</th></tr>
+      <tr><td><b>1 · Edge</b></td>
+        <td>TLS handshake shape, HTTP/2 settings, IP reputation, request rate, known-automation signatures; a JavaScript challenge for anything doubtful</td>
+        <td><code class="k">requests</code> with a browser UA (the handshake gives it away); a data-centre IP; 50 requests a second; an unsolved challenge</td>
+        <td>The CDN's bot manager, in front of the origin. Answers before the site's own code runs.</td></tr>
+      <tr><td><b>2 · Session</b></td>
+        <td>Required cookies present, consistent with each other, not expired, issued to this client</td>
+        <td>Missing <code class="k">ibsess</code>; a cookie issued yesterday; a cookie copied from a different fingerprint</td>
+        <td>Session store behind the application — Lecture 1's "forgetful protocol with a memory bolted on".</td></tr>
+      <tr class="hl"><td><b>3 · Fingerprint</b></td>
+        <td>The signals from slide 19, posted by the page script, scored; <code class="k">navigator.webdriver</code>; headless tells</td>
+        <td>A driven browser that admits it; a software GPU; a fingerprint already on the block list; no script ever ran</td>
+        <td>A script on every page, plus a scoring service. <b>The layer that exists because rung 4 exists.</b></td></tr>
+      <tr><td><b>4 · Headers</b></td>
+        <td><code class="k">Referer</code> from this site, a UA that matches the fingerprint, the header <i>order</i> a real browser sends</td>
+        <td>No Referer on an API call; Chrome's UA with Python's header order; <code class="k">Accept: */*</code> on a JSON route</td>
+        <td>The application, last. The easiest layer to satisfy and the one students spend all their time on.</td></tr>
+    </table>
+    <div class="cols">
+      <div class="callout warn"><b>Why order matters to you.</b> The status code is the same whichever
+        layer refused you. Forge the headers first and you will keep getting the same 403, learn nothing, and
+        conclude the site is "impossible". Work from the top: is the request even reaching the site?</div>
+      <div class="callout"><b>Rung 4 trades layers.</b> A browser passes layers 1, 2 and 4 for free — it is
+        a browser — and then walks straight into layer 3, which was built for it. <code class="k">requests</code>
+        never reaches layer 3 and fails at 1. Neither is a free lunch.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24 · EVASION, HONESTLY ============ -->
+<section class="slide" data-sec="The wall">
+  <div class="eyebrow">The wall · 7 of 7 · evasion, described honestly</div>
+  <h1 class="t">What each disguise actually changes
+    <small>You will find all of these in the first search result. Here is what each one defeats and what it
+    leaves untouched — so that you can read a block message and know which layer sent it. Whether you
+    <i>should</i> do any of this is Lecture 4's question, and it has a specific answer.</small></h1>
+  <div class="wrap">
+    <table class="d free">
+      <tr><th style="width:25%">Technique</th><th style="width:37%">Defeats</th><th>Leaves standing</th></tr>
+      <tr><td class="m">--user-agent=Mozilla/5.0 ... Chrome/126</td>
+        <td>The <code class="k">HeadlessChrome</code> substring. Layer 4's simplest check.</td>
+        <td>Everything else. The UA now claims Windows while the fingerprint says Linux, SwiftShader and 800×600 — a <i>stronger</i> signal than before.</td></tr>
+      <tr><td class="m">--disable-blink-features=AutomationControlled</td>
+        <td><code class="k">navigator.webdriver</code> — measured: <code class="k">True</code> &rarr; <code class="k">False</code>.</td>
+        <td>The renderer, the screen, the window size, the CDP artefacts a script can probe, behaviour.</td></tr>
+      <tr><td class="m">--window-size=1366,768</td>
+        <td>The 800×600 tell. Cheap, and also fixes responsive layouts hiding elements.</td>
+        <td>Everything else.</td></tr>
+      <tr><td class="m">undetected-chromedriver, selenium-stealth</td>
+        <td>A bundle of the above plus patches to the driver binary's known fingerprints. Works against layer 3 as deployed <i>last year</i>.</td>
+        <td>The arms race. Each release is answered; a real GPU and a real screen are not in the package.</td></tr>
+      <tr><td class="m">proxy rotation, residential IPs</td>
+        <td>Layer 1's IP reputation and per-IP rate limits.</td>
+        <td>Layer 3 entirely — the fingerprint travels with the browser, not the address (slide 19). And Lecture 4, slide on <i>Craigslist v. 3Taps</i>: rotating past an IP block is the act a court treated as unauthorised access.</td></tr>
+      <tr><td class="m">random sleeps, mouse movement, scrolling</td>
+        <td>The crudest behavioural checks: perfectly regular timing, no pointer events.</td>
+        <td>Behavioural models trained on millions of sessions; and the cost — you are now spending seconds per page simulating a person.</td></tr>
+    </table>
+    <div class="cols">
+      <div class="callout bad"><b>The pattern.</b> Every technique narrows one tell and widens the
+        inconsistency between the others. A site that is looking will notice. A site that is not looking did
+        not need the disguise.</div>
+      <div class="callout warn"><b>The rule we will land next week.</b> Once a site has told you no — a
+        block, a ban, a cease-and-desist — working around it changes the legal character of what you are
+        doing. Until then, the question is etiquette and load. After, it is not.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25 · COST AND DISCIPLINE ============ -->
+<section class="slide" data-sec="Discipline">
+  <div class="eyebrow">Discipline</div>
+  <h1 class="t">Rung-4 hygiene: seven habits, and three tools you should know exist
+    <small>Everything Lecture 1 said about politeness is still true and now costs more — a browser fetches the
+    images, the fonts and the ads as well as the page. The habits below are what separates a scraper that
+    runs for a month from one that gets its office IP banned by Tuesday.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <ol class="n">
+          <li><b>Rungs 1–3 first, every time.</b> Slide 5's two-minute check before any
+            <code class="k">import selenium</code>.</li>
+          <li><b>One browser, many pages.</b> Launch once (2 s), reuse, <code class="k">quit()</code> in a
+            <code class="k">finally</code> or a <code class="k">with</code>.</li>
+          <li><b>Explicit waits, on the thing you need.</b> Never <code class="k">sleep()</code> as a
+            synchronisation tool. <code class="k">sleep()</code> between pages as a courtesy — yes.</li>
+          <li><b>Scope locators; extract to strings immediately.</b> Elements go stale; strings do not.</li>
+          <li><b>Turn off what you do not need.</b> Images and fonts are most of the bytes:
+            <code class="k">prefs = {"profile.managed_default_content_settings.images": 2}</code>.</li>
+          <li><b>Save <code class="k">page_source</code> to disk</b> for every page, dated. Debug against the
+            file, as in Lecture 2; re-parse without re-driving.</li>
+          <li><b>Assert the count, log the title.</b> A challenge page has a title; a block page has a title.
+            Lecture 1's six validations run on the resulting frame unchanged.</li>
+        </ol>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>Playwright</h3>
+          <p>Microsoft's newer browser-automation library. Same idea, a cleaner API, auto-waiting locators, and
+          it drives Chromium, Firefox and WebKit from one package. For new projects it is the better default;
+          everything on these slides transfers, including the selectors and the wall.</p></div>
+        <div class="card o"><h3>Parallelism</h3>
+          <p>A thread pool of drivers works (Lecture 1's pattern) — budget ~700 MB and one core per browser.
+          Four headless Chromes on a laptop is realistic; forty is not. Selenium Grid and hosted browser farms
+          exist for the forty case and are priced accordingly.</p></div>
+        <div class="card g"><h3>The hybrid, once more</h3>
+          <p>Browser for the entry fee — cookies, tokens, a rendered page — then <code class="k">requests</code>
+          or BeautifulSoup for the volume. Most production rung-4 scrapers are this shape.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26 · RECAP · LADDER ============ -->
+<section class="slide" data-sec="Recap">
+  <div class="eyebrow">Recap</div>
+  <h1 class="t">All four rungs, and what each one costs
+    <small>You can now collect from any page a browser can show you. The ladder is complete; what remains is
+    the question the ladder does not answer — whether you may.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+      <div class="ladder">
+        <div class="rung"><div class="num">1</div>
+          <div class="txt"><h4>Documented API or feed <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p><code class="k">feedparser</code>, published REST APIs, bulk downloads. Milliseconds, stable, sanctioned.</p></div></div>
+        <div class="rung"><div class="num">2</div>
+          <div class="txt"><h4>Undocumented endpoint <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>Network tab, warm-up requests, sessions. Milliseconds; breaks when the API changes.</p></div></div>
+        <div class="rung"><div class="num">3</div>
+          <div class="txt"><h4>Parse the server's HTML <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>Container first, scoped selectors, a fresh dict per row. Milliseconds; breaks on redesign.</p></div></div>
+        <div class="rung"><div class="num on">4</div>
+          <div class="txt on"><h4>Drive a real browser <span class="tag g" style="margin-left:6px">done</span></h4>
+          <p>Explicit waits, scoped locators, strings not handles, quit in a finally. Seconds and ~700 MB;
+          breaks on redesign, API change, driver version, <i>and</i> the wall. <b>Last resort, by design.</b></p></div></div>
+      </div>
+      <div class="callout warn"><b>Next week is not a fifth rung.</b> Lecture 4 is <code class="k">robots.txt</code>,
+        <code class="k">llms.txt</code>, terms of service, the DPDP Act and GDPR, and the case law — the rules
+        that apply to all four rungs, and the one that turns slide 24's table from etiquette into a
+        decision about authorisation.</div>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>The rung-4 loop, as a shape</h3>
+          <pre class="code xxs" style="margin:6px 0"><span class="py-kw">with</span> webdriver.Chrome(options=opts) <span class="py-kw">as</span> d:
+    d.get(url)
+    <span class="py-fn">WebDriverWait</span>(d, <span class="py-num">10</span>).until(EC.presence_of_element_located(CONTAINER))
+    save(d.page_source)                <span class="py-cm"># dated snapshot</span>
+    cards = d.find_elements(*CONTAINER)
+    <span class="py-kw">assert</span> <span class="py-bi">len</span>(cards) &gt;= MINIMUM, d.title
+    <span class="py-kw">for</span> card <span class="py-kw">in</span> cards:                <span class="py-cm"># scoped</span>
+        <span class="py-kw">try</span>:
+            rows.append(parse(card))   <span class="py-cm"># strings, fresh dict</span>
+        <span class="py-kw">except</span> (NoSuchElementException,
+                StaleElementReferenceException) <span class="py-kw">as</span> e:
+            failed.append((card.id, e))
+validate(pd.DataFrame(rows))           <span class="py-cm"># Lecture 1</span></pre></div>
+        <div class="callout good"><b>Before next week.</b> Take the page you chose in Lecture 2. Open the
+          Network panel and answer slide 5's question honestly. If the answer is "rung 2", you have just saved
+          yourself a browser. If it is "rung 4", run the fixture experiment from slide 17 on <i>your</i> page
+          and write down the bill.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27 · TAKEAWAYS ============ -->
+<section class="slide" data-sec="Recap">
+  <div class="eyebrow">Key takeaways</div>
+  <h1 class="t">Six things worth keeping</h1>
+  <div class="wrap">
+    <div class="cols3" style="flex:1">
+      <div class="card b"><h3><span class="num">01</span>Two documents, one URL</h3>
+        <p>The server's response and the browser's DOM are different objects. view-source and
+        <code class="k">requests</code> see the first; Inspect Element and Selenium see the second. Rung 4
+        exists because, on some sites, only the second has the data.</p></div>
+      <div class="card g"><h3><span class="num">02</span>Look for the XHR before the browser</h3>
+        <p>JavaScript that filled the page fetched the data from somewhere visible in the Network panel.
+        Replaying it is rung 2 — cheaper by two orders of magnitude and it returns JSON.</p></div>
+      <div class="card o"><h3><span class="num">03</span><code class="k">get()</code> returns at onload, not at done</h3>
+        <p>Measured: back in 92 ms with zero cards, six cards at 524 ms. Wait for the condition you need,
+        never for a number of seconds, and never mix implicit waits in.</p></div>
+    </div>
+    <div class="cols3" style="flex:1">
+      <div class="card p"><h3><span class="num">04</span>Same selectors, new failure modes</h3>
+        <p>Every CSS string from Lecture 2 works in <code class="k">find_element</code>. New on rung 4:
+        <code class="k">.text</code> is visible text only, and a handle can go stale the moment the page
+        re-renders. Extract to strings at once.</p></div>
+      <div class="card r"><h3><span class="num">05</span>The site runs code on your client now</h3>
+        <p><code class="k">navigator.webdriver</code>, 800×600, a software GPU: a driven browser answers
+        honestly, and the combination of answers identifies the machine through any proxy. Disguises narrow one
+        tell and widen the inconsistency.</p></div>
+      <div class="card"><h3><span class="num">06</span>Quit in a finally, and count the bill</h3>
+        <p>~2 s and ~700 MB per browser; one launch, many pages; save <code class="k">page_source</code>
+        and parse offline. A thousand pages at rung 4 is an hour and a machine — decide that on purpose.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 28 · PRACTICE ============ -->
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Five exercises
+    <small>All of them run against local files or the demos in this deck. None of them needs, or should touch,
+    a live site.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card b"><h3><span class="num">01</span>Reproduce the bill</h3>
+          <p>Save the fixture from slide 3 (or write your own: an empty container, a script that injects ten
+          rows after a <code class="k">setTimeout</code>). Run route (a) and route (b) as on slide 17 and
+          record: rows found, wall-clock, memory. Then change the delay to 3 s and show that
+          <code class="k">presence_of_element_located</code> still works while a
+          <code class="k">sleep(1)</code> does not.</p></div>
+        <div class="card o"><h3><span class="num">02</span>Make an element go stale on purpose</h3>
+          <p>Hold a reference to a card, then re-render the listing with
+          <code class="k">driver.execute_script(...)</code>. Catch the exception, then fix the scraper two
+          ways: re-find, and extract-to-strings-first. <b>Say which you would use in a loop and why.</b></p></div>
+        <div class="card r"><h3><span class="num">03</span>The visible-text trap</h3>
+          <p>In your fixture, hide one field with <code class="k">display:none</code> and put a second in a
+          collapsed <code class="k">&lt;details&gt;</code>. Show what <code class="k">.text</code>,
+          <code class="k">textContent</code> and BeautifulSoup's <code class="k">get_text()</code> each return
+          for both. Write the rule in your own words.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card p"><h3><span class="num">04</span>Read your own fingerprint</h3>
+          <p>Open the slide-20 demo in a normal browser and in headless Chrome driven by Selenium
+          (<code class="k">driver.get(...)</code> on the saved file, then <code class="k">execute_script</code>
+          to read the values). Tabulate the differences. Then add <code class="k">--window-size</code> and
+          <code class="k">--disable-blink-features=AutomationControlled</code> and re-tabulate. <b>Which tells
+          did you remove, and which did you make worse?</b></p></div>
+        <div class="card g"><h3><span class="num">05</span>The hybrid, end to end</h3>
+          <p>Build a two-page local "site": page 1 sets a cookie from JavaScript, page 2 is a JSON endpoint
+          (served with <code class="k">python -m http.server</code> plus a tiny handler, or Flask) that refuses
+          requests without it. Get the cookie with Selenium once, copy it into a
+          <code class="k">requests.Session</code>, fetch page 2 fifty times. <b>Report the time with and
+          without the hand-off.</b></p></div>
+        <div class="callout warn"><b>Ground rules, unchanged.</b> Local fixtures only. If you do point any of
+          this at a real site for the project: one browser, a real delay, a timeout, <code class="k">robots.txt</code>
+          read first — and none of slide 24's table until you have heard Lecture 4.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div>
+<div id="hint">← → navigate · F fullscreen · P print</div>
+<div id="nav"><button id="prev" aria-label="Previous slide">‹</button><button id="next" aria-label="Next slide">›</button></div>
+
+<script type="application/json" id="demo-09">"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Static vs Dynamic Pages — DA2402<\/title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"/>\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin/>\n<link href=\"https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap\" rel=\"stylesheet\"/>\n<style>\n/* ===== DA2402 deck theme tokens (shared with the lecture decks) ===== */\n:root{\n  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;\n  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;\n  --code-bg:#122029; --code-ink:#D9E4E9;\n  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;\n  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;\n  --mono:\"JetBrains Mono\",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;\n  --disp:\"Bricolage Grotesque\",\"Public Sans\",system-ui,sans-serif;\n  --body:\"Public Sans\",system-ui,-apple-system,Segoe UI,sans-serif;\n}\n/* ligatures OFF: code full of ->, =>, != and <= must show them as typed */\n*,*::before,*::after{font-variant-ligatures:none;font-feature-settings:\"liga\" 0,\"clig\" 0,\"calt\" 0,\"dlig\" 0}\n<\/style>\n<style>\n    body{font-family:var(--body);margin:0;padding:20px;\n        background:var(--surround);min-height:100vh;color:var(--ink);\n        font-size:18px;}\n    .container{max-width:1300px;margin:0 auto;background:#fff;border-radius:3px;padding:30px 36px;\n        box-shadow:0 20px 40px rgba(0,0,0,.13);}\n    h1{text-align:center;color:var(--ink);margin:0 0 6px;font-size:2.2em;\n        background:var(--ink);-webkit-background-clip:text;\n        -webkit-text-fill-color:transparent;background-clip:text;}\n    .subtitle{text-align:center;color:var(--soft);margin:0 0 26px;font-size:.95em;letter-spacing:.01em;}\n\n    /* ---- tab bar ---- */\n    .tabs{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-bottom:28px;\n        background:var(--card);border-radius:3px;padding:7px;}\n    .tab{padding:12px 24px;background:#fff;border:2px solid var(--hair);border-radius:3px;cursor:pointer;\n        transition:all .25s ease;font-size:15px;font-weight:700;color:#31444F;white-space:nowrap;}\n    .tab:hover{border-color:var(--soft);background:var(--card);}\n    .tab.active{background:var(--ink);color:#fff;border-color:var(--t-cls);\n        transform:translateY(-2px);box-shadow:0 5px 15px rgba(18,95,158,.4);}\n\n    /* ---- content panels ---- */\n    .content{display:none;}\n    .content.active{display:block;}\n\n    /* ---- common layout ---- */\n    .stagebar{background:var(--card);border-left:5px solid var(--t-cls);border-radius:3px;\n        padding:15px 22px;margin-bottom:22px;}\n    .stagebar h2{margin:0 0 4px;color:var(--ink);font-size:1.2em;}\n    .stagebar p{margin:0;color:#31444F;font-size:.94em;line-height:1.5;}\n\n    .two-col{display:flex;gap:24px;align-items:flex-start;}\n    .col-code{flex:1 1 56%;min-width:0;}\n    .col-explain{flex:1 1 38%;min-width:260px;}\n\n    /* ---- fake browser chrome ---- */\n    .browser-chrome{border-radius:3px 12px 0 0;background:var(--hair);padding:8px 14px;\n        display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-bottom:none;}\n    .browser-dots{display:flex;gap:5px;}\n    .browser-dot{width:11px;height:11px;border-radius:50%;}\n    .browser-dot.red{background:#ff5f57;}\n    .browser-dot.yellow{background:#febc2e;}\n    .browser-dot.green{background:#28c840;}\n    .browser-addr{flex:1;background:#fff;border-radius:3px;padding:4px 14px;\n        font-size:13px;color:#31444F;border:1px solid var(--line);font-family:var(--mono);}\n    .browser-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--soft);}\n\n    /* ---- code view (monospace box) ---- */\n    .code-view{background:var(--code-bg);border-radius:0 0 10px 10px;border:1px solid var(--line);\n        padding:18px 20px;font-family:var(--mono);font-size:14px;\n        line-height:1.65;color:var(--code-ink);overflow-x:auto;min-height:320px;max-height:520px;\n        overflow-y:auto;white-space:pre;}\n    .code-view .tag{color:#8FB8FF;}\n    .code-view .attr{color:#B7E39B;}\n    .code-view .val{color:#E9F2F6;}\n    .code-view .cmt{color:#6F8896;font-style:italic;}\n    .code-view .empty{color:#6F8896;}\n    .code-view .script{color:#C0A6F5;}\n    .code-view .highlight{background:#1B2E39;border-radius:3px;}\n\n    /* ---- rendered view (fake page) ---- */\n    .rendered-view{background:#fff;border-radius:0 0 10px 10px;border:1px solid var(--line);\n        padding:20px 22px;min-height:320px;}\n    .rendered-view h3{margin:0 0 14px;color:var(--code-bg);font-size:1.1em;border-bottom:1px solid var(--hair);padding-bottom:8px;}\n    .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:14px;}\n    .product-card{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:14px;\n        text-align:center;font-size:14px;}\n    .product-card .pname{font-weight:700;color:var(--ink);margin-bottom:5px;font-size:15px;}\n    .product-card .pprice{color:var(--t-asr);font-weight:700;font-size:1.1em;}\n    .product-card .prating{color:var(--t-anc);font-size:13px;margin-top:3px;}\n    .product-card .pbadge{display:inline-block;background:#F3FBF7;color:var(--t-grp);\n        font-size:11px;font-weight:700;border-radius:3px;padding:1px 8px;margin-top:4px;}\n    .rendered-view .page-footer{margin-top:14px;font-size:12px;color:#8FA0A9;border-top:1px solid var(--hair);\n        padding-top:8px;text-align:center;}\n\n    /* ---- callout boxes ---- */\n    .note{background:#FFFBF2;border-left:4px solid var(--t-anc);border-radius:3px;\n        padding:12px 16px;margin:14px 0;font-size:.9em;color:var(--t-anc);line-height:1.55;}\n    .explain{background:#EEF5FA;border-left:4px solid var(--t-cls);border-radius:3px;\n        padding:12px 16px;margin:14px 0;font-size:.9em;color:var(--t-cls);line-height:1.55;}\n    .warn{background:#FFF5F5;border-left:4px solid var(--t-asr);border-radius:3px;\n        padding:12px 16px;margin:14px 0;font-size:.9em;color:var(--t-asr);line-height:1.55;}\n\n    /* ---- info panel ---- */\n    .info-panel{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:18px 20px;}\n    .info-panel h3{margin:0 0 12px;color:var(--t-cls);font-size:1.02em;}\n    .info-panel p{font-size:.9em;line-height:1.6;color:#31444F;margin:0 0 12px;}\n    .info-panel ul{font-size:.9em;line-height:1.7;color:#31444F;padding-left:20px;margin:0 0 12px;}\n    .info-panel ul li{margin-bottom:4px;}\n\n    /* ---- diff annotation ---- */\n    .diff-row{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:14px;\n        font-family:var(--mono);}\n    .diff-marker{min-width:18px;font-weight:700;font-size:1.1em;}\n    .diff-marker.add{color:var(--t-grp);}\n    .diff-marker.rem{color:var(--t-asr);}\n    .diff-line{flex:1;border-radius:3px;padding:2px 8px;}\n    .diff-line.add-bg{background:#F3FBF7;color:var(--t-grp);}\n    .diff-line.rem-bg{background:#FFF5F5;color:var(--t-asr);}\n\n    /* ---- action button row ---- */\n    .action-row{display:flex;align-items:center;gap:14px;margin:16px 0 6px;flex-wrap:wrap;}\n    button{background:var(--ink);color:#fff;border:none;\n        padding:11px 22px;border-radius:3px;cursor:pointer;font-size:15px;\n        font-weight:600;transition:.25s;font-family:inherit;}\n    button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 15px rgba(18,95,158,.4);}\n    button:disabled{opacity:.4;cursor:not-allowed;}\n    button.green-btn{background:var(--t-grp);}\n    button.green-btn:hover{box-shadow:0 5px 15px rgba(14,122,85,.4);}\n    button.reset-btn{background:var(--soft);}\n    .status-badge{font-size:13px;font-weight:700;padding:5px 14px;border-radius:3px;\n        background:#FFFBF2;color:var(--t-anc);border:1px solid var(--t-anc);}\n    .status-badge.running{background:#EEF5FA;color:var(--t-cls);border-color:var(--t-cls);}\n    .status-badge.done{background:#F3FBF7;color:var(--t-grp);border-color:var(--t-grp);}\n\n    /* ---- rule of thumb table ---- */\n    table.thumb-table{border-collapse:collapse;width:100%;margin:10px 0;\n        box-shadow:0 3px 10px rgba(0,0,0,.07);border-radius:3px;overflow:hidden;}\n    table.thumb-table th{background:var(--ink);color:#fff;\n        padding:11px 14px;text-align:left;font-size:.95em;}\n    table.thumb-table td{padding:10px 14px;border-bottom:1px solid var(--hair);font-size:.9em;vertical-align:top;}\n    table.thumb-table tr:nth-child(even) td{background:var(--paper);}\n    table.thumb-table td.yes{color:var(--t-grp);font-weight:700;}\n    table.thumb-table td.no{color:var(--t-asr);font-weight:700;}\n\n    /* ---- animation for JS-run simulation ---- */\n    @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}\n    .fade-in{animation:fadeIn .4s ease forwards;}\n\n    @media(max-width:900px){\n        .two-col{flex-direction:column;}\n        .col-code,.col-explain{flex:1 1 100%;}\n    }\n<\/style>\n<\/head>\n<body>\n<div class=\"container\">\n\n    <div class=\"da-eyebrow\">Data collection · interactive demo <span class=\"jsbadge\">Runs in your browser<\/span><\/div><h1>Static vs Dynamic Pages<\/h1>\n    <p class=\"subtitle\">What <code>requests<\/code> sees vs what a browser sees &nbsp;·&nbsp; DA2402 · Data Collection<\/p>\n\n    <!-- ======================================================\n         TAB BAR\n         ====================================================== -->\n    <div class=\"tabs\">\n        <button class=\"tab active\" id=\"tab-requests\" onclick=\"showTab('requests')\">\n            🐍 Tab A — What <code>requests<\/code> sees\n        <\/button>\n        <button class=\"tab\" id=\"tab-browser\" onclick=\"showTab('browser')\">\n            🌐 Tab B — What the browser / Selenium sees\n        <\/button>\n        <button class=\"tab\" id=\"tab-explainer\" onclick=\"showTab('explainer')\">\n            📖 Why they differ &amp; when to use what\n        <\/button>\n    <\/div>\n\n    <!-- ======================================================\n         TAB A — raw HTML from the server (requests view)\n         ====================================================== -->\n    <div class=\"content active\" id=\"content-requests\">\n        <div class=\"stagebar\">\n            <h2>What <code>requests.get(url).text<\/code> returns<\/h2>\n            <p>The server sends back the page's <strong>initial HTML skeleton<\/strong> — no JavaScript has run yet. The product listing container is empty; all the data will be injected later by the browser running the site's JS bundle.<\/p>\n        <\/div>\n\n        <div class=\"two-col\">\n            <div class=\"col-code\">\n                <!-- fake browser showing raw source -->\n                <div class=\"browser-chrome\">\n                    <div class=\"browser-dots\">\n                        <div class=\"browser-dot red\"><\/div>\n                        <div class=\"browser-dot yellow\"><\/div>\n                        <div class=\"browser-dot green\"><\/div>\n                    <\/div>\n                    <div class=\"browser-addr\">view-source:https://shopnow.example.com/laptops<\/div>\n                    <span class=\"browser-label\">Server response (raw HTML)<\/span>\n                <\/div>\n<div class=\"code-view\" id=\"rawSourceView\"><span class=\"tag\">&lt;!DOCTYPE html&gt;<\/span>\n<span class=\"tag\">&lt;html<\/span> <span class=\"attr\">lang<\/span>=<span class=\"val\">\"en\"<\/span><span class=\"tag\">&gt;<\/span>\n<span class=\"tag\">&lt;head&gt;<\/span>\n  <span class=\"tag\">&lt;meta<\/span> <span class=\"attr\">charset<\/span>=<span class=\"val\">\"UTF-8\"<\/span><span class=\"tag\">&gt;<\/span>\n  <span class=\"tag\">&lt;title&gt;<\/span>ShopNow — Laptops<span class=\"tag\">&lt;/title&gt;<\/span>\n  <span class=\"tag\">&lt;link<\/span> <span class=\"attr\">rel<\/span>=<span class=\"val\">\"stylesheet\"<\/span> <span class=\"attr\">href<\/span>=<span class=\"val\">\"/static/app.css\"<\/span><span class=\"tag\">&gt;<\/span>\n<span class=\"tag\">&lt;/head&gt;<\/span>\n<span class=\"tag\">&lt;body&gt;<\/span>\n  <span class=\"tag\">&lt;nav<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"navbar\"<\/span><span class=\"tag\">&gt;<\/span>ShopNow<span class=\"tag\">&lt;/nav&gt;<\/span>\n\n  <span class=\"cmt\">&lt;!-- React/Vue app mounts here — nothing inside at page-load time --&gt;<\/span>\n  <span class=\"highlight\"><span class=\"tag\">&lt;div<\/span> <span class=\"attr\">id<\/span>=<span class=\"val\">\"app\"<\/span><span class=\"tag\">&gt;<\/span><span class=\"empty\">                          <\/span><span class=\"tag\">&lt;/div&gt;<\/span>  <span class=\"cmt\">&lt;!-- ← EMPTY! --&gt;<\/span><\/span>\n\n  <span class=\"highlight\"><span class=\"tag\">&lt;div<\/span> <span class=\"attr\">id<\/span>=<span class=\"val\">\"product-listing\"<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"grid\"<\/span><span class=\"tag\">&gt;<\/span>\n    <span class=\"empty\">  &lt;!-- products will be injected by JavaScript --&gt;  <\/span>\n  <span class=\"tag\">&lt;/div&gt;<\/span>  <span class=\"cmt\">&lt;!-- ← EMPTY! --&gt;<\/span><\/span>\n\n  <span class=\"script\"><span class=\"tag\">&lt;script<\/span> <span class=\"attr\">src<\/span>=<span class=\"val\">\"/static/vendor.bundle.js\"<\/span> <span class=\"attr\">defer<\/span><span class=\"tag\">&gt;&lt;/script&gt;<\/span>\n  <span class=\"tag\">&lt;script<\/span> <span class=\"attr\">src<\/span>=<span class=\"val\">\"/static/app.bundle.js\"<\/span> <span class=\"attr\">defer<\/span><span class=\"tag\">&gt;&lt;/script&gt;<\/span>  <span class=\"cmt\">&lt;!-- all the logic lives here --&gt;<\/span><\/span>\n<span class=\"tag\">&lt;/body&gt;<\/span>\n<span class=\"tag\">&lt;/html&gt;<\/span><\/div>\n\n                <div class=\"action-row\" id=\"actionRowA\">\n                    <button class=\"green-btn\" id=\"runJsBtn\" onclick=\"runJavaScript()\">▶ Run JavaScript (simulate browser)<\/button>\n                    <span class=\"status-badge\" id=\"statusBadge\">JS not yet run<\/span>\n                <\/div>\n                <div id=\"jsProgressArea\"><\/div>\n            <\/div>\n\n            <div class=\"col-explain\">\n                <div class=\"info-panel\">\n                    <h3>What BeautifulSoup finds when it parses this<\/h3>\n                    <div class=\"explain\">\n                        <strong>soup.find_all('div', class_='product-card')<\/strong><br>\n                        → returns <code>[]<\/code> — an empty list.<br><br>\n                        The container div is there, but it has <strong>no children<\/strong>. There are no product names, no prices, no ratings.\n                    <\/div>\n\n                    <div style=\"margin-top:16px;\">\n                        <div class=\"diff-row\"><span class=\"diff-marker rem\">✗<\/span><span class=\"diff-line rem-bg\">soup.find('div', id='product-listing').text  →  \"\"<\/span><\/div>\n                        <div class=\"diff-row\"><span class=\"diff-marker rem\">✗<\/span><span class=\"diff-line rem-bg\">len(soup.find_all('div', class_='product-card'))  →  0<\/span><\/div>\n                        <div class=\"diff-row\"><span class=\"diff-marker rem\">✗<\/span><span class=\"diff-line rem-bg\">soup.find('span', class_='price')  →  None<\/span><\/div>\n                    <\/div>\n\n                    <div class=\"note\" style=\"margin-top:16px;\">\n                        <strong>Why?<\/strong> This is a <strong>Single-Page Application (SPA)<\/strong> built with React. The server returns only a thin shell. Product data is fetched from a JSON API (<code>/api/products?cat=laptops<\/code>) <em>after<\/em> the browser parses and executes the JS bundle. <code>requests<\/code> never sees that API call happen.\n                    <\/div>\n\n                    <p style=\"font-size:.88em;color:var(--soft);margin-top:12px;\">The highlighted lines are the clue: an <code>id=\"app\"<\/code> div or an empty container with a comment like \"injected by JS\" is a tell-tale sign of client-side rendering.<\/p>\n                <\/div>\n            <\/div>\n        <\/div>\n    <\/div><!-- /content-requests -->\n\n    <!-- ======================================================\n         TAB B — fully rendered DOM (browser / Selenium view)\n         ====================================================== -->\n    <div class=\"content\" id=\"content-browser\">\n        <div class=\"stagebar\">\n            <h2>What <code>driver.page_source<\/code> returns after Selenium loads the page<\/h2>\n            <p>After the browser loads all scripts and the JS has fetched data from the API, the DOM is fully populated. Selenium's <code>driver.page_source<\/code> (or <code>driver.find_elements()<\/code>) now sees the real content.<\/p>\n        <\/div>\n\n        <div class=\"two-col\">\n            <div class=\"col-code\">\n                <div class=\"browser-chrome\">\n                    <div class=\"browser-dots\">\n                        <div class=\"browser-dot red\"><\/div>\n                        <div class=\"browser-dot yellow\"><\/div>\n                        <div class=\"browser-dot green\"><\/div>\n                    <\/div>\n                    <div class=\"browser-addr\">https://shopnow.example.com/laptops<\/div>\n                    <span class=\"browser-label\">Live DOM (after JS runs)<\/span>\n                <\/div>\n                <!-- Rendered page visual -->\n                <div class=\"rendered-view\">\n                    <h3>ShopNow — Laptops (4 results)<\/h3>\n                    <div class=\"product-grid\">\n                        <div class=\"product-card\">\n                            <div class=\"pname\">Dell XPS 15<\/div>\n                            <div class=\"pprice\">₹1,19,990<\/div>\n                            <div class=\"prating\">★★★★☆ (312 reviews)<\/div>\n                            <span class=\"pbadge\">In Stock<\/span>\n                        <\/div>\n                        <div class=\"product-card\">\n                            <div class=\"pname\">MacBook Air M3<\/div>\n                            <div class=\"pprice\">₹1,14,900<\/div>\n                            <div class=\"prating\">★★★★★ (841 reviews)<\/div>\n                            <span class=\"pbadge\">In Stock<\/span>\n                        <\/div>\n                        <div class=\"product-card\">\n                            <div class=\"pname\">Lenovo ThinkPad E15<\/div>\n                            <div class=\"pprice\">₹67,990<\/div>\n                            <div class=\"prating\">★★★★☆ (196 reviews)<\/div>\n                            <span class=\"pbadge\">In Stock<\/span>\n                        <\/div>\n                        <div class=\"product-card\">\n                            <div class=\"pname\">HP Pavilion 15<\/div>\n                            <div class=\"pprice\">₹54,490<\/div>\n                            <div class=\"prating\">★★★☆☆ (88 reviews)<\/div>\n                            <span class=\"pbadge\">In Stock<\/span>\n                        <\/div>\n                    <\/div>\n                    <div class=\"page-footer\">© 2026 ShopNow · All prices include GST · Data fetched via AJAX from /api/products?cat=laptops<\/div>\n                <\/div>\n            <\/div>\n\n            <div class=\"col-explain\">\n                <div class=\"info-panel\">\n                    <h3>What Selenium + BeautifulSoup now finds<\/h3>\n                    <div class=\"explain\">\n                        After waiting for the JS to execute (<code>WebDriverWait<\/code> until element visible), the DOM is fully populated.\n                    <\/div>\n\n                    <div style=\"margin-top:12px;\">\n                        <div class=\"diff-row\"><span class=\"diff-marker add\">✓<\/span><span class=\"diff-line add-bg\">len(driver.find_elements(By.CLASS_NAME, 'product-card'))  →  4<\/span><\/div>\n                        <div class=\"diff-row\"><span class=\"diff-marker add\">✓<\/span><span class=\"diff-line add-bg\">driver.find_element(By.CLASS_NAME, 'pprice').text  →  \"₹1,19,990\"<\/span><\/div>\n                        <div class=\"diff-row\"><span class=\"diff-marker add\">✓<\/span><span class=\"diff-line add-bg\">soup.find('div', class_='pname').text  →  \"Dell XPS 15\"<\/span><\/div>\n                    <\/div>\n\n                    <div class=\"note\" style=\"margin-top:16px;\">\n                        <strong>Typical Selenium pattern:<\/strong>\n                        <pre style=\"background:var(--code-bg);color:var(--code-ink);border-radius:7px;padding:10px 12px;font-size:12.5px;margin:8px 0 0;line-height:1.6;overflow-x:auto;\">from selenium import webdriver\nfrom selenium.webdriver.common.by import By\nfrom selenium.webdriver.support.ui import \\\n    WebDriverWait\nfrom selenium.webdriver.support import \\\n    expected_conditions as EC\nfrom bs4 import BeautifulSoup\n\ndriver = webdriver.Chrome()\ndriver.get(\"https://shopnow.example.com/laptops\")\n\n# wait until at least one card appears\nWebDriverWait(driver, 10).until(\n    EC.presence_of_element_located(\n        (By.CLASS_NAME, \"product-card\")\n    )\n)\nsoup = BeautifulSoup(driver.page_source, \"html.parser\")\ncards = soup.find_all(\"div\", class_=\"product-card\")\nfor c in cards:\n    print(c.find(\"div\", class_=\"pname\").text,\n          c.find(\"div\", class_=\"pprice\").text)<\/pre>\n                    <\/div>\n                <\/div>\n            <\/div>\n        <\/div>\n    <\/div><!-- /content-browser -->\n\n    <!-- ======================================================\n         TAB C — explainer panel\n         ====================================================== -->\n    <div class=\"content\" id=\"content-explainer\">\n        <div class=\"stagebar\">\n            <h2>Why do they differ? — Client-side rendering &amp; AJAX<\/h2>\n            <p>The web has two broad patterns for how pages are built. Knowing which one you're dealing with determines your scraping strategy before you write a single line of code.<\/p>\n        <\/div>\n\n        <div class=\"explain\" style=\"font-size:1em;\">\n            <strong>Server-Side Rendering (SSR) — \"Static\" from the scraper's point of view<\/strong><br>\n            The server builds the complete HTML and sends it. <code>requests.get(url).text<\/code> already contains all the data. BeautifulSoup can parse it immediately. This is the traditional model (PHP, Django templates, older Rails sites, Wikipedia, most government portals).\n        <\/div>\n\n        <div class=\"warn\" style=\"font-size:1em;\">\n            <strong>Client-Side Rendering (CSR / SPA) — \"Dynamic\" — needs a real browser<\/strong><br>\n            The server sends a thin HTML shell + JavaScript bundle. The JS runs in the browser, calls a JSON API (AJAX / <code>fetch<\/code>), and writes the product/content HTML into the DOM <em>after<\/em> page load. <code>requests<\/code> never executes that JS, so it sees the empty shell. You need Selenium (or Playwright, Puppeteer) to drive a real browser.\n        <\/div>\n\n        <h3 style=\"color:var(--ink);margin:26px 0 12px;font-size:1.1em;\">Rule of thumb: which tool do you need?<\/h3>\n        <table class=\"thumb-table\">\n            <thead>\n                <tr>\n                    <th>Signal you observe<\/th>\n                    <th>Likely rendering model<\/th>\n                    <th>Use <code>requests<\/code>?<\/th>\n                    <th>Use Selenium?<\/th>\n                <\/tr>\n            <\/thead>\n            <tbody>\n                <tr>\n                    <td>Page source (<strong>Ctrl-U<\/strong>) already has the data you want<\/td>\n                    <td>Server-side / static HTML<\/td>\n                    <td class=\"yes\">Yes ✓<\/td>\n                    <td class=\"no\">Not needed<\/td>\n                <\/tr>\n                <tr>\n                    <td>Source has <code>&lt;div id=\"app\"&gt;&lt;/div&gt;<\/code> or <code>&lt;!-- injected --&gt;<\/code><\/td>\n                    <td>Single-Page App (React / Vue / Angular)<\/td>\n                    <td class=\"no\">No ✗<\/td>\n                    <td class=\"yes\">Yes ✓<\/td>\n                <\/tr>\n                <tr>\n                    <td>Network tab shows XHR / <code>fetch<\/code> calls to <code>/api/…<\/code><\/td>\n                    <td>AJAX data loading<\/td>\n                    <td>Maybe — hit the API directly<\/td>\n                    <td>Or use Selenium<\/td>\n                <\/tr>\n                <tr>\n                    <td>Content appears only after scrolling (infinite scroll)<\/td>\n                    <td>Lazy-load / virtual DOM<\/td>\n                    <td class=\"no\">No ✗<\/td>\n                    <td class=\"yes\">Yes ✓ (scroll + wait)<\/td>\n                <\/tr>\n                <tr>\n                    <td>Login, button click, or dropdown selection required<\/td>\n                    <td>Dynamic interaction needed<\/td>\n                    <td class=\"no\">No ✗<\/td>\n                    <td class=\"yes\">Yes ✓<\/td>\n                <\/tr>\n                <tr>\n                    <td>Well-documented public REST / GraphQL API available<\/td>\n                    <td>Any<\/td>\n                    <td class=\"yes\">Yes ✓ (hit API directly)<\/td>\n                    <td class=\"no\">Overkill<\/td>\n                <\/tr>\n            <\/tbody>\n        <\/table>\n\n        <h3 style=\"color:var(--ink);margin:26px 0 12px;font-size:1.1em;\">Quick diagnostic checklist — before you write code<\/h3>\n        <div class=\"explain\" style=\"font-size:.95em;\">\n            <ol style=\"margin:0;padding-left:22px;line-height:2;\">\n                <li><strong>View source (Ctrl-U / Cmd-U)<\/strong> — is your data in there? If yes, <code>requests<\/code> + BeautifulSoup works.<\/li>\n                <li><strong>Inspect element → Network tab → reload<\/strong> — look for XHR/Fetch requests returning JSON. If the data comes from <code>/api/…<\/code>, you might be able to call that API directly (much faster than Selenium).<\/li>\n                <li><strong>Check for framework fingerprints<\/strong> — <code>id=\"root\"<\/code>, <code>id=\"app\"<\/code>, <code>data-reactroot<\/code>, <code>__NEXT_DATA__<\/code>, <code>nuxt<\/code> in the source → SPA → use Selenium.<\/li>\n                <li><strong>Try <code>requests<\/code> first<\/strong> — if <code>response.text<\/code> has your data, you're done. It's 10–100× faster than spinning up a browser.<\/li>\n            <\/ol>\n        <\/div>\n\n        <div class=\"note\" style=\"font-size:.95em;margin-top:10px;\">\n            <strong>Performance trade-off:<\/strong> <code>requests<\/code> + BeautifulSoup can scrape thousands of pages per minute. Selenium is limited to ~5–20 pages per minute (browser startup, JS execution, waits). Only pay the Selenium cost when you truly need it.\n        <\/div>\n\n        <div class=\"explain\" style=\"font-size:.95em;\">\n            <strong>Reference:<\/strong> Mitchell, <em>Web Scraping with Python<\/em>, Ch. 10 \"Scraping JavaScript\"; Selenium docs \"WebDriverWait &amp; expected_conditions\". See also the official Playwright docs for a modern Selenium alternative.\n        <\/div>\n    <\/div><!-- /content-explainer -->\n\n<div class=\"da-rail\"><div class=\"a\">DA2402 · Data Curation and Visualization<\/div><div class=\"n\">Dr. Arun B Ayyar<\/div><div class=\"c\">Interactive demo · Static vs dynamic pages<\/div><\/div><\/div><!-- /.container -->\n\n<script>\n/* =========================================================\n   TAB SWITCHING\n   ========================================================= */\nconst TAB_KEYS = ['requests','browser','explainer'];\nconst tabsBuilt = {requests:true, browser:false, explainer:false};\n\nfunction showTab(key){\n    TAB_KEYS.forEach(k=>{\n        document.getElementById('tab-'+k).classList.toggle('active', k===key);\n        document.getElementById('content-'+k).classList.toggle('active', k===key);\n    });\n    // mark as built on first show (content is static here, but the pattern is correct)\n    tabsBuilt[key] = true;\n}\n\n/* =========================================================\n   SIMULATE \"RUN JAVASCRIPT\" on Tab A\n   Shows an animated step-by-step transformation of the\n   raw source into the rendered state — visually in-place.\n   ========================================================= */\nlet jsRunning = false;\nlet jsAnimTimer = null;\n\nfunction runJavaScript(){\n    if(jsRunning) return;\n    jsRunning = true;\n\n    const btn = document.getElementById('runJsBtn');\n    const badge = document.getElementById('statusBadge');\n    const progressArea = document.getElementById('jsProgressArea');\n\n    btn.disabled = true;\n    badge.className = 'status-badge running';\n    badge.textContent = 'JS running…';\n    progressArea.innerHTML = '';\n\n    const steps = [\n        {delay:200,  msg:'Browser parses HTML → builds initial DOM (empty #product-listing)', icon:'🔍'},\n        {delay:700,  msg:'Executes vendor.bundle.js — React framework initialises', icon:'⚙️'},\n        {delay:1300, msg:'Executes app.bundle.js — component tree mounted', icon:'🌳'},\n        {delay:1900, msg:'fetch(\"/api/products?cat=laptops\") sent to server…', icon:'📡'},\n        {delay:2600, msg:'API responds with JSON: [ {name:\"Dell XPS 15\", price:119990}, … ]', icon:'📦'},\n        {delay:3200, msg:'React reconciler writes 4 product cards into #product-listing DOM', icon:'✏️'},\n        {delay:3800, msg:'DOM fully populated — Selenium / driver.page_source now works!', icon:'✅'},\n    ];\n\n    steps.forEach(step=>{\n        jsAnimTimer = setTimeout(()=>{\n            const line = document.createElement('div');\n            line.className = 'fade-in';\n            line.style.cssText = 'font-size:14px;padding:5px 12px;background:#FFFFFF;border-radius:7px;margin:5px 0;border-left:3px solid #125F9E;line-height:1.5;';\n            line.textContent = step.icon + '  ' + step.msg;\n            progressArea.appendChild(line);\n            progressArea.scrollTop = progressArea.scrollHeight;\n        }, step.delay);\n    });\n\n    setTimeout(()=>{\n        badge.className = 'status-badge done';\n        badge.textContent = 'DOM fully rendered ✓';\n\n        // Replace the raw-source view with a \"now populated\" annotated version\n        const rawView = document.getElementById('rawSourceView');\n        rawView.innerHTML =\n`<span class=\"tag\">&lt;!DOCTYPE html&gt;<\/span>\n<span class=\"tag\">&lt;html<\/span> <span class=\"attr\">lang<\/span>=<span class=\"val\">\"en\"<\/span><span class=\"tag\">&gt;<\/span>\n<span class=\"tag\">&lt;head&gt;<\/span>\n  <span class=\"tag\">&lt;meta<\/span> <span class=\"attr\">charset<\/span>=<span class=\"val\">\"UTF-8\"<\/span><span class=\"tag\">&gt;<\/span>\n  <span class=\"tag\">&lt;title&gt;<\/span>ShopNow — Laptops<span class=\"tag\">&lt;/title&gt;<\/span>\n<span class=\"tag\">&lt;/head&gt;<\/span>\n<span class=\"tag\">&lt;body&gt;<\/span>\n  <span class=\"tag\">&lt;nav&gt;<\/span>ShopNow<span class=\"tag\">&lt;/nav&gt;<\/span>\n\n  <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">id<\/span>=<span class=\"val\">\"app\"<\/span><span class=\"tag\">&gt;<\/span>  <span class=\"cmt\">&lt;!-- React root --&gt;<\/span>\n    <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"app-wrapper\"<\/span><span class=\"tag\">&gt;<\/span>\n      <span class=\"tag\">&lt;nav<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"nav-inner\"<\/span><span class=\"tag\">&gt;<\/span>…<span class=\"tag\">&lt;/nav&gt;<\/span>\n    <span class=\"tag\">&lt;/div&gt;<\/span>\n  <span class=\"tag\">&lt;/div&gt;<\/span>\n\n  <span class=\"highlight\"><span class=\"tag\">&lt;div<\/span> <span class=\"attr\">id<\/span>=<span class=\"val\">\"product-listing\"<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"grid\"<\/span><span class=\"tag\">&gt;<\/span>  <span class=\"cmt\">&lt;!-- NOW POPULATED ↓ --&gt;<\/span>\n    <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"product-card\"<\/span><span class=\"tag\">&gt;<\/span>\n      <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"pname\"<\/span><span class=\"tag\">&gt;<\/span>Dell XPS 15<span class=\"tag\">&lt;/div&gt;<\/span>\n      <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"pprice\"<\/span><span class=\"tag\">&gt;<\/span>₹1,19,990<span class=\"tag\">&lt;/div&gt;<\/span>\n    <span class=\"tag\">&lt;/div&gt;<\/span>\n    <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"product-card\"<\/span><span class=\"tag\">&gt;<\/span>\n      <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"pname\"<\/span><span class=\"tag\">&gt;<\/span>MacBook Air M3<span class=\"tag\">&lt;/div&gt;<\/span>\n      <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"pprice\"<\/span><span class=\"tag\">&gt;<\/span>₹1,14,900<span class=\"tag\">&lt;/div&gt;<\/span>\n    <span class=\"tag\">&lt;/div&gt;<\/span>\n    <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"product-card\"<\/span><span class=\"tag\">&gt;<\/span>\n      <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"pname\"<\/span><span class=\"tag\">&gt;<\/span>Lenovo ThinkPad E15<span class=\"tag\">&lt;/div&gt;<\/span>\n      <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"pprice\"<\/span><span class=\"tag\">&gt;<\/span>₹67,990<span class=\"tag\">&lt;/div&gt;<\/span>\n    <span class=\"tag\">&lt;/div&gt;<\/span>\n    <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"product-card\"<\/span><span class=\"tag\">&gt;<\/span>\n      <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"pname\"<\/span><span class=\"tag\">&gt;<\/span>HP Pavilion 15<span class=\"tag\">&lt;/div&gt;<\/span>\n      <span class=\"tag\">&lt;div<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"pprice\"<\/span><span class=\"tag\">&gt;<\/span>₹54,490<span class=\"tag\">&lt;/div&gt;<\/span>\n    <span class=\"tag\">&lt;/div&gt;<\/span>\n  <span class=\"tag\">&lt;/div&gt;<\/span><\/span>\n\n  <span class=\"script\"><span class=\"tag\">&lt;script<\/span> <span class=\"attr\">src<\/span>=<span class=\"val\">\"/static/vendor.bundle.js\"<\/span> <span class=\"attr\">defer<\/span><span class=\"tag\">&gt;&lt;/script&gt;<\/span>\n  <span class=\"tag\">&lt;script<\/span> <span class=\"attr\">src<\/span>=<span class=\"val\">\"/static/app.bundle.js\"<\/span> <span class=\"attr\">defer<\/span><span class=\"tag\">&gt;&lt;/script&gt;<\/span><\/span>\n<span class=\"tag\">&lt;/body&gt;<\/span>\n<span class=\"tag\">&lt;/html&gt;<\/span>`;\n\n        // Add a reset button\n        const actionRow = document.getElementById('actionRowA');\n        const resetBtn = document.createElement('button');\n        resetBtn.className = 'reset-btn';\n        resetBtn.textContent = '↺ Reset to server response';\n        resetBtn.onclick = resetToRaw;\n        actionRow.appendChild(resetBtn);\n\n        jsRunning = false;\n    }, 4200);\n}\n\nfunction resetToRaw(){\n    const badge = document.getElementById('statusBadge');\n    const progressArea = document.getElementById('jsProgressArea');\n    const btn = document.getElementById('runJsBtn');\n    const actionRow = document.getElementById('actionRowA');\n\n    // Remove the reset button\n    const resetBtn = actionRow.querySelector('.reset-btn');\n    if(resetBtn) resetBtn.remove();\n\n    badge.className = 'status-badge';\n    badge.textContent = 'JS not yet run';\n    btn.disabled = false;\n    progressArea.innerHTML = '';\n\n    const rawView = document.getElementById('rawSourceView');\n    rawView.innerHTML =\n`<span class=\"tag\">&lt;!DOCTYPE html&gt;<\/span>\n<span class=\"tag\">&lt;html<\/span> <span class=\"attr\">lang<\/span>=<span class=\"val\">\"en\"<\/span><span class=\"tag\">&gt;<\/span>\n<span class=\"tag\">&lt;head&gt;<\/span>\n  <span class=\"tag\">&lt;meta<\/span> <span class=\"attr\">charset<\/span>=<span class=\"val\">\"UTF-8\"<\/span><span class=\"tag\">&gt;<\/span>\n  <span class=\"tag\">&lt;title&gt;<\/span>ShopNow — Laptops<span class=\"tag\">&lt;/title&gt;<\/span>\n  <span class=\"tag\">&lt;link<\/span> <span class=\"attr\">rel<\/span>=<span class=\"val\">\"stylesheet\"<\/span> <span class=\"attr\">href<\/span>=<span class=\"val\">\"/static/app.css\"<\/span><span class=\"tag\">&gt;<\/span>\n<span class=\"tag\">&lt;/head&gt;<\/span>\n<span class=\"tag\">&lt;body&gt;<\/span>\n  <span class=\"tag\">&lt;nav<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"navbar\"<\/span><span class=\"tag\">&gt;<\/span>ShopNow<span class=\"tag\">&lt;/nav&gt;<\/span>\n\n  <span class=\"cmt\">&lt;!-- React/Vue app mounts here — nothing inside at page-load time --&gt;<\/span>\n  <span class=\"highlight\"><span class=\"tag\">&lt;div<\/span> <span class=\"attr\">id<\/span>=<span class=\"val\">\"app\"<\/span><span class=\"tag\">&gt;<\/span><span class=\"empty\">                          <\/span><span class=\"tag\">&lt;/div&gt;<\/span>  <span class=\"cmt\">&lt;!-- ← EMPTY! --&gt;<\/span><\/span>\n\n  <span class=\"highlight\"><span class=\"tag\">&lt;div<\/span> <span class=\"attr\">id<\/span>=<span class=\"val\">\"product-listing\"<\/span> <span class=\"attr\">class<\/span>=<span class=\"val\">\"grid\"<\/span><span class=\"tag\">&gt;<\/span>\n    <span class=\"empty\">  &lt;!-- products will be injected by JavaScript --&gt;  <\/span>\n  <span class=\"tag\">&lt;/div&gt;<\/span>  <span class=\"cmt\">&lt;!-- ← EMPTY! --&gt;<\/span><\/span>\n\n  <span class=\"script\"><span class=\"tag\">&lt;script<\/span> <span class=\"attr\">src<\/span>=<span class=\"val\">\"/static/vendor.bundle.js\"<\/span> <span class=\"attr\">defer<\/span><span class=\"tag\">&gt;&lt;/script&gt;<\/span>\n  <span class=\"tag\">&lt;script<\/span> <span class=\"attr\">src<\/span>=<span class=\"val\">\"/static/app.bundle.js\"<\/span> <span class=\"attr\">defer<\/span><span class=\"tag\">&gt;&lt;/script&gt;<\/span>  <span class=\"cmt\">&lt;!-- all the logic lives here --&gt;<\/span><\/span>\n<span class=\"tag\">&lt;/body&gt;<\/span>\n<span class=\"tag\">&lt;/html&gt;<\/span>`;\n}\n\n/* =========================================================\n   INIT — default to Tab A already shown\n   ========================================================= */\n// Tab A is already active via the .active class set in HTML\n// Nothing lazy to build; all content is static HTML in the panels.\n<\/script>\n\n<style>\n/* ===== DA2402 theme overrides (applied after the demo's own stylesheet) ===== */\nhtml{background:var(--surround)}\nbody{background:var(--surround);color:var(--ink);font-family:var(--body);padding:22px 20px 26px;\n  -webkit-font-smoothing:antialiased}\n.container{background:var(--paper);border-radius:0;border-top:3px solid var(--ink);\n  box-shadow:0 20px 70px rgba(0,0,0,.5);padding:26px 34px 0}\n.da-eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;\n  text-transform:uppercase;color:var(--soft);margin:0 0 10px;display:flex;gap:10px;align-items:center}\n.da-eyebrow::after{content:\"\";flex:1;height:1px;background:var(--line)}\n.da-eyebrow .jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;\n  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}\nh1{font-family:var(--disp);font-weight:700;letter-spacing:-.018em;line-height:1.1;font-size:30px;\n  text-align:left;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;margin:0 0 4px}\n.subtitle{text-align:left;font-family:var(--body);color:var(--soft);font-size:14.5px;line-height:1.42;\n  margin:0 0 18px;max-width:900px}\nh2,h3,h4{font-family:var(--disp);letter-spacing:-.005em}\nbutton,.ex-btn,.step,.mode-tab,.chip,.tab,.tab-btn,.case-card,.run-btn,.q-option{border-radius:3px!important;\n  transform:none!important;box-shadow:none!important}\nbutton:hover:not(:disabled),.ex-btn:hover,.step:hover,.mode-tab:hover,.chip:hover{transform:none!important;box-shadow:none!important}\npre,code,kbd,.code-panel,.code-row code,.result-item,.selector-input,.entropy-banner,.results-panel,\n.panel,.card,.stagebar,.note,.explain,.good,.tip,.warn,.xpath-hint,.match-badge,.tag,#sample-frame,\ntable,td,th{border-radius:0!important}\n.note,.explain,.good,.tip,.warn,.xpath-hint,.stagebar{border-radius:0!important}\n.container>*:last-child{margin-bottom:0}\n/* byline rail, same text as the decks */\n.da-rail{margin:26px -34px 0;height:30px;background:var(--card);border-top:1.5px solid var(--ink);\n  display:flex;align-items:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;\n  text-transform:uppercase;color:var(--soft)}\n.da-rail .a{padding:0 16px;flex:1}\n.da-rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}\n.da-rail .c{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;white-space:nowrap}\n<\/style>\n<style>\n/* embedded inside a lecture deck slide: drop chrome the slide already provides */\nbody.embed{padding:0;zoom:.86}\nbody.embed .container{box-shadow:none;border-top:0;padding:18px 26px 0}\nbody.embed .da-eyebrow,body.embed .da-rail{display:none}\nbody.embed h1{font-size:24px}\n<\/style>\n<script>if(window.self!==window.top||/[?&]embed/.test(location.search))document.body.classList.add('embed');<\/script>\n<\/body>\n<\/html>\n"</script>
+<script type="application/json" id="demo-10">"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Browser Fingerprint — DA2402<\/title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"/>\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin/>\n<link href=\"https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap\" rel=\"stylesheet\"/>\n<style>\n/* ===== DA2402 deck theme tokens (shared with the lecture decks) ===== */\n:root{\n  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;\n  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;\n  --code-bg:#122029; --code-ink:#D9E4E9;\n  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;\n  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;\n  --mono:\"JetBrains Mono\",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;\n  --disp:\"Bricolage Grotesque\",\"Public Sans\",system-ui,sans-serif;\n  --body:\"Public Sans\",system-ui,-apple-system,Segoe UI,sans-serif;\n}\n/* ligatures OFF: code full of ->, =>, != and <= must show them as typed */\n*,*::before,*::after{font-variant-ligatures:none;font-feature-settings:\"liga\" 0,\"clig\" 0,\"calt\" 0,\"dlig\" 0}\n<\/style>\n<style>\n/* ---- house style ---- */\nbody{font-family:var(--body);margin:0;padding:20px;\n    background:var(--surround);min-height:100vh;color:var(--ink);font-size:16px;}\n.container{max-width:1280px;margin:0 auto;background:#fff;border-radius:3px;padding:30px;\n    box-shadow:0 20px 40px rgba(0,0,0,.1);}\nh1{text-align:center;color:var(--ink);margin:0 0 6px;font-size:2.2em;\n    background:var(--ink);-webkit-background-clip:text;\n    -webkit-text-fill-color:transparent;background-clip:text;}\n.subtitle{text-align:center;color:var(--soft);margin:0 0 26px;font-size:.97em;}\n\n/* privacy badge */\n.privacy-badge{display:flex;align-items:center;gap:10px;background:var(--card);\n    border-left:5px solid var(--t-cls);border-radius:3px;padding:13px 20px;margin-bottom:26px;\n    font-size:.95em;color:var(--ink);}\n.privacy-badge .icon{font-size:1.4em;flex-shrink:0;}\n\n/* entropy hero */\n.entropy-hero{background:var(--ink);border-radius:3px;\n    padding:24px 30px;margin-bottom:26px;color:#fff;text-align:center;\n    box-shadow:0 8px 24px rgba(18,95,158,.35);}\n.entropy-hero h2{margin:0 0 4px;font-size:1.1em;font-weight:600;opacity:.9;letter-spacing:.04em;text-transform:uppercase;}\n.entropy-num{font-size:3.2em;font-weight:800;line-height:1.0;margin:6px 0;}\n.entropy-sub{font-size:.92em;opacity:.85;margin:0;}\n.entropy-bar-wrap{background:rgba(255,255,255,.25);border-radius:3px;height:12px;margin:14px auto 0;max-width:520px;}\n.entropy-bar{height:12px;border-radius:3px;background:rgba(255,255,255,.85);transition:width .8s ease;}\n\n/* cards grid */\n.section-label{font-size:.78em;font-weight:700;letter-spacing:.1em;text-transform:uppercase;\n    color:var(--t-dot);margin:22px 0 10px;}\n.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-bottom:22px;}\n.fp-card{background:var(--card);border:1.5px solid var(--hair);border-radius:3px;padding:16px 18px;\n    transition:.2s;}\n.fp-card:hover{border-color:var(--soft);transform:translateY(-2px);box-shadow:0 6px 16px rgba(18,95,158,.13);}\n.fp-card .card-title{font-size:.75em;font-weight:700;letter-spacing:.07em;text-transform:uppercase;\n    color:#fff;background:var(--ink);display:inline-block;\n    padding:3px 11px;border-radius:3px;margin-bottom:10px;}\n.fp-card .card-title.green{background:var(--t-grp);}\n.fp-card .card-title.amber{background:var(--t-anc);}\n.fp-card .card-title.teal{background:var(--t-cls);}\n.fp-card .card-title.red{background:var(--t-asr);}\n.fp-card .signal-row{display:flex;justify-content:space-between;align-items:baseline;\n    padding:4px 0;border-bottom:1px solid var(--paper);font-size:.93em;gap:10px;}\n.fp-card .signal-row:last-child{border-bottom:none;}\n.fp-card .sig-label{color:#31444F;flex-shrink:0;font-size:.9em;}\n.fp-card .sig-value{color:var(--ink);font-weight:600;text-align:right;word-break:break-all;font-size:.88em;}\n.fp-card .sig-value.mono{font-family:var(--mono);font-size:.83em;color:var(--ink);}\n.fp-card .sig-value.na{color:#8FA0A9;font-style:italic;font-weight:400;}\n.fp-card .sig-value.good{color:var(--t-grp);}\n.fp-card .sig-value.warn{color:var(--t-anc);}\n\n/* hash card */\n.hash-display{font-family:var(--mono);font-size:1.05em;font-weight:700;\n    color:var(--ink);background:var(--card);border-radius:3px;padding:8px 14px;\n    word-break:break-all;margin-top:4px;letter-spacing:.04em;}\n\n/* fonts card */\n.fonts-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}\n.font-pill{background:var(--card);border:1px solid var(--line);border-radius:3px;\n    padding:3px 10px;font-size:.82em;color:var(--ink);}\n.font-pill.absent{background:var(--card);border-color:var(--hair);color:#8FA0A9;text-decoration:line-through;}\n\n/* callout boxes */\n.note{background:#FFFBF2;border-left:4px solid var(--t-anc);border-radius:3px;\n    padding:12px 16px;margin:0 0 18px;font-size:.92em;color:var(--t-anc);}\n.explain{background:#EEF5FA;border-left:4px solid var(--t-cls);border-radius:3px;\n    padding:12px 16px;margin:22px 0 8px;font-size:.93em;color:var(--t-cls);}\n\n/* entropy table */\ntable.dt{border-collapse:collapse;width:100%;margin:14px 0 6px;background:#fff;\n    box-shadow:0 3px 10px rgba(0,0,0,.06);border-radius:3px;overflow:hidden;font-size:.88em;}\ntable.dt th{background:var(--ink);color:#fff;padding:9px 12px;text-align:left;}\ntable.dt td{padding:7px 12px;border-bottom:1px solid var(--hair);vertical-align:top;}\ntable.dt tr:nth-child(even){background:var(--paper);}\ntable.dt .bits{font-weight:700;color:var(--t-cls);text-align:right;}\n\n/* canvas hidden */\n#fingerprintCanvas{display:none;}\n<\/style>\n<\/head>\n<body>\n<div class=\"container\">\n    <div class=\"da-eyebrow\">Data collection · interactive demo <span class=\"jsbadge\">Runs in your browser<\/span><\/div><h1>Your Browser Fingerprint<\/h1>\n    <p class=\"subtitle\">Live browser-side data collection &nbsp;·&nbsp; DA2402 · Data Collection<\/p>\n\n    <div class=\"privacy-badge\">\n        <span class=\"icon\">🔒<\/span>\n        <span>\n            <strong>Everything runs in your browser. Nothing is sent anywhere.<\/strong>\n            All signals are read by JavaScript from standard browser APIs on this device —\n            no network requests are made. This demo shows exactly what a third-party script\n            on any web page can learn about you.\n        <\/span>\n    <\/div>\n\n    <!-- Entropy hero -->\n    <div class=\"entropy-hero\" id=\"entropyHero\">\n        <h2>Estimated Identifying Information<\/h2>\n        <div class=\"entropy-num\" id=\"entropyNum\">—<\/div>\n        <p class=\"entropy-sub\" id=\"entropySub\">bits of entropy (illustration — not a real measurement)<\/p>\n        <div class=\"entropy-bar-wrap\">\n            <div class=\"entropy-bar\" id=\"entropyBar\" style=\"width:0%\"><\/div>\n        <\/div>\n    <\/div>\n\n    <div class=\"note\">\n        <strong>What \"bits of entropy\" means here:<\/strong>\n        Each signal contributes an estimate of how many bits of information it carries\n        about a particular browser. 33 bits ≈ 1 in 8 billion; 20 bits ≈ 1 in 1 million.\n        These estimates are rough and illustrative — real uniqueness depends on the\n        population of browsers you compare against (e.g., EFF Panopticlick data).\n    <\/div>\n\n    <!-- ===== SECTION 1: IDENTITY SIGNALS ===== -->\n    <div class=\"section-label\">Identity &amp; Platform<\/div>\n    <div class=\"cards-grid\">\n        <div class=\"fp-card\">\n            <span class=\"card-title\">User Agent<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">userAgent<\/span><span class=\"sig-value mono\" id=\"ua\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">platform<\/span><span class=\"sig-value\" id=\"platform\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">vendor<\/span><span class=\"sig-value\" id=\"vendor\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">appVersion<\/span><span class=\"sig-value mono\" id=\"appVersion\">—<\/span><\/div>\n        <\/div>\n        <div class=\"fp-card\">\n            <span class=\"card-title teal\">Locale &amp; Time<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">language<\/span><span class=\"sig-value\" id=\"lang\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">languages<\/span><span class=\"sig-value\" id=\"langs\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">timezone<\/span><span class=\"sig-value\" id=\"tz\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">UTC offset<\/span><span class=\"sig-value\" id=\"tzOffset\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Do-Not-Track<\/span><span class=\"sig-value\" id=\"dnt\">—<\/span><\/div>\n        <\/div>\n        <div class=\"fp-card\">\n            <span class=\"card-title amber\">Hardware<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">CPU cores (logical)<\/span><span class=\"sig-value\" id=\"cpuCores\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Device memory (GB)<\/span><span class=\"sig-value\" id=\"devMem\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Max touch points<\/span><span class=\"sig-value\" id=\"touch\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Touch device?<\/span><span class=\"sig-value\" id=\"touchDevice\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Cookies enabled<\/span><span class=\"sig-value\" id=\"cookies\">—<\/span><\/div>\n        <\/div>\n    <\/div>\n\n    <!-- ===== SECTION 2: SCREEN & DISPLAY ===== -->\n    <div class=\"section-label\">Screen &amp; Display<\/div>\n    <div class=\"cards-grid\">\n        <div class=\"fp-card\">\n            <span class=\"card-title\">Screen<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">Total resolution<\/span><span class=\"sig-value\" id=\"screenRes\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Available area<\/span><span class=\"sig-value\" id=\"screenAvail\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Color depth (bits)<\/span><span class=\"sig-value\" id=\"colorDepth\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Pixel depth<\/span><span class=\"sig-value\" id=\"pixelDepth\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">devicePixelRatio<\/span><span class=\"sig-value\" id=\"dpr\">—<\/span><\/div>\n        <\/div>\n        <div class=\"fp-card\">\n            <span class=\"card-title teal\">Viewport<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">Inner size (WxH)<\/span><span class=\"sig-value\" id=\"winInner\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Outer size (WxH)<\/span><span class=\"sig-value\" id=\"winOuter\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Color scheme pref<\/span><span class=\"sig-value\" id=\"colorScheme\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Reduced motion<\/span><span class=\"sig-value\" id=\"reducedMotion\">—<\/span><\/div>\n        <\/div>\n    <\/div>\n\n    <!-- ===== SECTION 3: CANVAS FINGERPRINT ===== -->\n    <div class=\"section-label\">Canvas Fingerprint<\/div>\n    <div class=\"cards-grid\">\n        <div class=\"fp-card\">\n            <span class=\"card-title red\">Canvas Hash<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">Method<\/span><span class=\"sig-value\">Draw text + shapes → toDataURL() → hash<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Hash (FNV-1a 32-bit)<\/span><\/div>\n            <div class=\"hash-display\" id=\"canvasHash\">computing…<\/div>\n            <div class=\"signal-row\" style=\"margin-top:8px\"><span class=\"sig-label\">Status<\/span><span class=\"sig-value\" id=\"canvasStatus\">—<\/span><\/div>\n        <\/div>\n        <div class=\"fp-card\">\n            <span class=\"card-title\">Canvas Preview<\/span>\n            <p style=\"font-size:.85em;color:#31444F;margin:0 0 8px;\">The exact pixels drawn vary by OS/GPU/browser. Even the same phrase looks slightly different — that difference is the fingerprint.<\/p>\n            <canvas id=\"canvasPreview\" width=\"240\" height=\"90\"\n                style=\"border:1.5px solid var(--hair);border-radius:8px;max-width:100%;\"><\/canvas>\n        <\/div>\n    <\/div>\n\n    <!-- ===== SECTION 4: WebGL ===== -->\n    <div class=\"section-label\">WebGL Fingerprint<\/div>\n    <div class=\"cards-grid\">\n        <div class=\"fp-card\">\n            <span class=\"card-title amber\">WebGL Renderer<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">Vendor (unmasked)<\/span><span class=\"sig-value mono\" id=\"glVendor\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Renderer (unmasked)<\/span><span class=\"sig-value mono\" id=\"glRenderer\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Vendor (standard)<\/span><span class=\"sig-value mono\" id=\"glVendorStd\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Renderer (standard)<\/span><span class=\"sig-value mono\" id=\"glRendererStd\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Version<\/span><span class=\"sig-value mono\" id=\"glVersion\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Shading lang.<\/span><span class=\"sig-value mono\" id=\"glSL\">—<\/span><\/div>\n        <\/div>\n        <div class=\"fp-card\">\n            <span class=\"card-title teal\">WebGL Parameters<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">Max texture size<\/span><span class=\"sig-value\" id=\"glMaxTex\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Max viewport dims<\/span><span class=\"sig-value\" id=\"glMaxViewport\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Max vertex attribs<\/span><span class=\"sig-value\" id=\"glMaxVA\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Antialiasing<\/span><span class=\"sig-value\" id=\"glAA\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Extensions count<\/span><span class=\"sig-value\" id=\"glExtCount\">—<\/span><\/div>\n        <\/div>\n    <\/div>\n\n    <!-- ===== SECTION 5: AUDIO ===== -->\n    <div class=\"section-label\">Audio Stack<\/div>\n    <div class=\"cards-grid\">\n        <div class=\"fp-card\">\n            <span class=\"card-title\">Audio Context<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">AudioContext supported<\/span><span class=\"sig-value\" id=\"audioSupport\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Sample rate (Hz)<\/span><span class=\"sig-value\" id=\"audioSampleRate\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Max channel count<\/span><span class=\"sig-value\" id=\"audioChannels\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">State<\/span><span class=\"sig-value\" id=\"audioState\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Audio hash hint<\/span><span class=\"sig-value mono\" id=\"audioHash\">—<\/span><\/div>\n        <\/div>\n        <div class=\"fp-card\">\n            <span class=\"card-title teal\">Media Capabilities<\/span>\n            <div class=\"signal-row\"><span class=\"sig-label\">Input devices count<\/span><span class=\"sig-value\" id=\"mediaInputs\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Output devices count<\/span><span class=\"sig-value\" id=\"mediaOutputs\">—<\/span><\/div>\n            <div class=\"signal-row\"><span class=\"sig-label\">Video inputs<\/span><span class=\"sig-value\" id=\"mediaVideos\">—<\/span><\/div>\n        <\/div>\n    <\/div>\n\n    <!-- ===== SECTION 6: FONTS ===== -->\n    <div class=\"section-label\">Installed Fonts Probe<\/div>\n    <div class=\"fp-card\" style=\"margin-bottom:22px;\">\n        <span class=\"card-title\">Font Detection via Text Metrics<\/span>\n        <p style=\"font-size:.88em;color:#31444F;margin:4px 0 8px;\">\n            Each font is tested by measuring the pixel width of a test string rendered in that font\n            vs. a fallback. A different width means the font is installed.\n        <\/p>\n        <div class=\"signal-row\"><span class=\"sig-label\">Detected fonts<\/span><span class=\"sig-value\" id=\"fontCount\">—<\/span><\/div>\n        <div class=\"fonts-list\" id=\"fontsList\"><\/div>\n    <\/div>\n\n    <!-- ===== SECTION 7: ENTROPY TABLE ===== -->\n    <div class=\"explain\">\n        <strong>How the entropy estimate is computed:<\/strong>\n        Each signal category is assigned an estimated bit-contribution based on published browser\n        fingerprinting research (Eckersley 2010, Laperdrix et al. 2016). The total is a rough\n        lower bound — many signals are correlated, so the effective entropy is lower.\n        <em>This is a teaching illustration, not a surveillance tool.<\/em>\n    <\/div>\n\n    <div class=\"section-label\">Entropy Breakdown<\/div>\n    <table class=\"dt\" id=\"entropyTable\">\n        <thead><tr><th>Signal group<\/th><th>Signal(s) sampled<\/th><th style=\"text-align:right\">Est. bits<\/th><\/tr><\/thead>\n        <tbody id=\"entropyTbody\"><\/tbody>\n        <tfoot>\n            <tr style=\"background:var(--card);\">\n                <td colspan=\"2\"><strong>Total (sum — not accounting for correlation)<\/strong><\/td>\n                <td class=\"bits\" id=\"entropyTotal\">—<\/td>\n            <\/tr>\n        <\/tfoot>\n    <\/table>\n    <p style=\"font-size:.82em;color:var(--soft);margin:4px 0 22px;\">\n        Real uniqueness benchmark: 33 bits ≈ 1 in 8 billion browsers; 20 bits ≈ 1 in 1 million.\n        The EFF Panopticlick study (2010) found the median browser carried ~18.9 bits.\n        Modern browsers with privacy protections (Firefox, Brave, Safari ITP) reduce this significantly.\n    <\/p>\n<div class=\"da-rail\"><div class=\"a\">DA2402 · Data Curation and Visualization<\/div><div class=\"n\">Dr. Arun B Ayyar<\/div><div class=\"c\">Interactive demo · Browser fingerprint<\/div><\/div><\/div>\n\n<!-- Hidden canvas for fingerprinting -->\n<canvas id=\"fingerprintCanvas\" width=\"400\" height=\"100\"><\/canvas>\n\n<script>\n/* =========================================================\n   UTILITY\n   ========================================================= */\nfunction safe(fn) {\n    try { return fn(); } catch(e) { return null; }\n}\n\nfunction na(val, fallback) {\n    if (val === null || val === undefined || val === '') return fallback || 'unavailable';\n    return val;\n}\n\nfunction setEl(id, val, cls) {\n    const el = document.getElementById(id);\n    if (!el) return;\n    el.textContent = (val === null || val === undefined || val === '') ? 'unavailable' : String(val);\n    if (val === null || val === undefined || val === '') {\n        el.classList.add('na');\n    } else if (cls) {\n        el.classList.add(cls);\n    }\n}\n\n/* Simple FNV-1a 32-bit hash (JS, no crypto API needed) */\nfunction fnv1a32(str) {\n    let hash = 0x811c9dc5;\n    for (let i = 0; i < str.length; i++) {\n        hash ^= str.charCodeAt(i);\n        hash = (hash * 0x01000193) >>> 0;\n    }\n    return ('0000000' + hash.toString(16)).slice(-8).toUpperCase();\n}\n\n/* =========================================================\n   1. IDENTITY SIGNALS\n   ========================================================= */\nfunction collectIdentity() {\n    const nav = navigator;\n    setEl('ua',         safe(() => nav.userAgent) || null);\n    setEl('platform',   safe(() => nav.platform) || null);\n    setEl('vendor',     safe(() => nav.vendor) || null);\n    setEl('appVersion', safe(() => nav.appVersion) || null);\n\n    setEl('lang',     safe(() => nav.language) || null);\n    setEl('langs',    safe(() => (nav.languages || []).join(', ')) || null);\n    setEl('tz',       safe(() => Intl.DateTimeFormat().resolvedOptions().timeZone) || null);\n    const offsetMin  = safe(() => -(new Date().getTimezoneOffset()));\n    setEl('tzOffset', offsetMin !== null\n        ? `UTC${offsetMin >= 0 ? '+' : ''}${(offsetMin/60).toFixed(2).replace(/\\.00$/,'')}` : null);\n    const dntVal = safe(() => nav.doNotTrack);\n    setEl('dnt', dntVal === '1' ? 'Enabled (1)' : dntVal === '0' ? 'Disabled (0)' : 'Not set');\n\n    const cores = safe(() => nav.hardwareConcurrency);\n    setEl('cpuCores', cores || null);\n\n    const mem = safe(() => nav.deviceMemory);\n    setEl('devMem', mem !== undefined && mem !== null ? mem : null);\n\n    const touchPts = safe(() => nav.maxTouchPoints);\n    setEl('touch', touchPts !== undefined ? touchPts : null);\n    setEl('touchDevice', touchPts > 0 ? 'Yes' : 'No', touchPts > 0 ? 'warn' : '');\n\n    setEl('cookies', safe(() => nav.cookieEnabled) ? 'Yes' : 'No',\n          safe(() => nav.cookieEnabled) ? 'good' : 'warn');\n}\n\n/* =========================================================\n   2. SCREEN & DISPLAY\n   ========================================================= */\nfunction collectScreen() {\n    const s = safe(() => window.screen);\n    setEl('screenRes',   s ? `${s.width} × ${s.height}` : null);\n    setEl('screenAvail', s ? `${s.availWidth} × ${s.availHeight}` : null);\n    setEl('colorDepth',  s ? s.colorDepth : null);\n    setEl('pixelDepth',  s ? s.pixelDepth : null);\n    setEl('dpr',         safe(() => window.devicePixelRatio));\n    setEl('winInner',    `${window.innerWidth} × ${window.innerHeight}`);\n    setEl('winOuter',    `${window.outerWidth} × ${window.outerHeight}`);\n\n    const darkMode = safe(() => window.matchMedia('(prefers-color-scheme: dark)').matches);\n    setEl('colorScheme', darkMode === true ? 'Dark' : darkMode === false ? 'Light' : null);\n\n    const reducedMotion = safe(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);\n    setEl('reducedMotion', reducedMotion === true ? 'Preferred' : reducedMotion === false ? 'No preference' : null);\n}\n\n/* =========================================================\n   3. CANVAS FINGERPRINT\n   ========================================================= */\nfunction collectCanvas() {\n    // Draw on the preview canvas (visible)\n    const prev = document.getElementById('canvasPreview');\n    const ctx2 = safe(() => prev.getContext('2d'));\n    if (!ctx2) {\n        setEl('canvasHash',   'Canvas API unavailable');\n        setEl('canvasStatus', null);\n        return;\n    }\n\n    // Draw the fingerprint drawing on the hidden canvas too\n    const hid = document.getElementById('fingerprintCanvas');\n    const ctx  = safe(() => hid.getContext('2d'));\n\n    [ctx, ctx2].forEach(function(c, idx) {\n        if (!c) return;\n        const w = c.canvas.width, h = c.canvas.height;\n        // Background\n        c.fillStyle = idx === 0 ? '#ffffff' : '#f8f9ff';\n        c.fillRect(0, 0, w, h);\n\n        // Text: different fonts, sizes, emoji — rendering varies per GPU/OS\n        c.fillStyle = '#125F9E';\n        c.font = 'bold 16px \"Segoe UI\", Arial, sans-serif';\n        c.fillText('DA2402 — Browser Fingerprint \\u{1F50D}', 8, 22);\n\n        c.fillStyle = '#6A4CA8';\n        c.font = 'italic 13px Georgia, serif';\n        c.fillText('The quick brown fox jumps over the lazy dog', 8, 42);\n\n        // Shapes\n        c.beginPath();\n        c.arc(320, 50, 28, 0, Math.PI * 2);\n        c.fillStyle = 'rgba(18,95,158,0.4)';\n        c.fill();\n\n        c.beginPath();\n        c.moveTo(180, 58); c.lineTo(210, 78); c.lineTo(150, 78);\n        c.fillStyle = 'rgba(118,75,162,0.5)';\n        c.fill();\n\n        // Gradient rect\n        const grd = c.createLinearGradient(8, 60, 130, 90);\n        grd.addColorStop(0, '#4ecdc4');\n        grd.addColorStop(1, '#125F9E');\n        c.fillStyle = grd;\n        c.fillRect(8, 62, 120, 18);\n\n        // Small text with special chars\n        c.fillStyle = '#B02F3B';\n        c.font = '11px monospace';\n        c.fillText('Ω α β ∑ ∞ ♥', 8, 88);\n    });\n\n    // Read the hidden canvas data and hash it\n    const dataURL = safe(() => hid.toDataURL('image/png'));\n    if (!dataURL) {\n        setEl('canvasHash',   'toDataURL() blocked');\n        setEl('canvasStatus', null);\n        return;\n    }\n    const hash = fnv1a32(dataURL);\n    document.getElementById('canvasHash').textContent = hash;\n    setEl('canvasStatus', 'OK — data URL hashed (' + dataURL.length + ' chars)', 'good');\n}\n\n/* =========================================================\n   4. WebGL FINGERPRINT\n   ========================================================= */\nfunction collectWebGL() {\n    const canvas = document.createElement('canvas');\n    const gl = safe(() => canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));\n    if (!gl) {\n        ['glVendor','glRenderer','glVendorStd','glRendererStd','glVersion',\n         'glSL','glMaxTex','glMaxViewport','glMaxVA','glAA','glExtCount'].forEach(id => setEl(id, null));\n        return;\n    }\n\n    // Unmasked strings (may be null if WEBGL_debug_renderer_info not exposed)\n    const dbgExt = safe(() => gl.getExtension('WEBGL_debug_renderer_info'));\n    setEl('glVendor',   dbgExt ? safe(() => gl.getParameter(dbgExt.UNMASKED_VENDOR_WEBGL)) : null);\n    setEl('glRenderer', dbgExt ? safe(() => gl.getParameter(dbgExt.UNMASKED_RENDERER_WEBGL)) : null);\n\n    // Standard (possibly masked) strings\n    setEl('glVendorStd',   safe(() => gl.getParameter(gl.VENDOR)));\n    setEl('glRendererStd', safe(() => gl.getParameter(gl.RENDERER)));\n    setEl('glVersion',     safe(() => gl.getParameter(gl.VERSION)));\n    setEl('glSL',          safe(() => gl.getParameter(gl.SHADING_LANGUAGE_VERSION)));\n\n    // Numeric parameters\n    setEl('glMaxTex',      safe(() => gl.getParameter(gl.MAX_TEXTURE_SIZE)));\n    const vp = safe(() => gl.getParameter(gl.MAX_VIEWPORT_DIMS));\n    setEl('glMaxViewport', vp ? `${vp[0]} × ${vp[1]}` : null);\n    setEl('glMaxVA',       safe(() => gl.getParameter(gl.MAX_VERTEX_ATTRIBS)));\n\n    const ctxAttribs = safe(() => gl.getContextAttributes());\n    setEl('glAA', ctxAttribs ? (ctxAttribs.antialias ? 'Yes' : 'No') : null);\n\n    const exts = safe(() => gl.getSupportedExtensions());\n    setEl('glExtCount', exts ? exts.length : null);\n}\n\n/* =========================================================\n   5. AUDIO FINGERPRINT HINT\n   ========================================================= */\nfunction collectAudio() {\n    const AC = window.AudioContext || window.webkitAudioContext;\n    if (!AC) {\n        setEl('audioSupport', 'No');\n        ['audioSampleRate','audioChannels','audioState','audioHash'].forEach(id => setEl(id, null));\n    } else {\n        setEl('audioSupport', 'Yes', 'good');\n        const ctx = safe(() => new AC());\n        if (ctx) {\n            setEl('audioSampleRate', safe(() => ctx.sampleRate));\n            setEl('audioChannels',   safe(() => ctx.destination.maxChannelCount));\n            setEl('audioState',      safe(() => ctx.state));\n\n            // Minimal oscillator hash: run a short buffer offline and hash the sample values\n            const offlineCtx = safe(() => new OfflineAudioContext(1, 4096, 44100));\n            if (offlineCtx) {\n                try {\n                    const osc = offlineCtx.createOscillator();\n                    const comp = offlineCtx.createDynamicsCompressor();\n                    osc.connect(comp);\n                    comp.connect(offlineCtx.destination);\n                    osc.start(0);\n                    offlineCtx.startRendering().then(function(buf) {\n                        const data = buf.getChannelData(0).subarray(0, 64);\n                        let s = '';\n                        for (let i = 0; i < data.length; i++) s += data[i].toFixed(6) + ',';\n                        document.getElementById('audioHash').textContent = fnv1a32(s);\n                    }).catch(function() {\n                        setEl('audioHash', null);\n                    });\n                } catch(e) {\n                    setEl('audioHash', null);\n                }\n            } else {\n                setEl('audioHash', null);\n            }\n\n            safe(() => ctx.close());\n        }\n    }\n\n    // Media devices (counts only — no actual streams)\n    const enumDevices = safe(() => navigator.mediaDevices && navigator.mediaDevices.enumerateDevices);\n    if (enumDevices) {\n        navigator.mediaDevices.enumerateDevices().then(function(devices) {\n            let audioIn = 0, audioOut = 0, videoIn = 0;\n            devices.forEach(function(d) {\n                if (d.kind === 'audioinput')  audioIn++;\n                if (d.kind === 'audiooutput') audioOut++;\n                if (d.kind === 'videoinput')  videoIn++;\n            });\n            setEl('mediaInputs',  audioIn);\n            setEl('mediaOutputs', audioOut);\n            setEl('mediaVideos',  videoIn);\n        }).catch(function() {\n            ['mediaInputs','mediaOutputs','mediaVideos'].forEach(id => setEl(id, null));\n        });\n    } else {\n        ['mediaInputs','mediaOutputs','mediaVideos'].forEach(id => setEl(id, null));\n    }\n}\n\n/* =========================================================\n   6. INSTALLED FONTS PROBE\n   ========================================================= */\nfunction collectFonts() {\n    // Candidate fonts — a representative cross-platform list\n    const CANDIDATES = [\n        'Arial','Arial Black','Arial Narrow','Comic Sans MS','Courier New',\n        'Georgia','Impact','Lucida Console','Lucida Sans Unicode',\n        'Microsoft Sans Serif','Palatino Linotype','Tahoma','Times New Roman',\n        'Trebuchet MS','Verdana',\n        // Mac / Apple\n        'Helvetica Neue','Helvetica','Geneva','Monaco','Optima','Futura',\n        'Gill Sans','Baskerville',\n        // Windows extras\n        'Calibri','Cambria','Candara','Consolas','Constantia','Corbel',\n        'Franklin Gothic Medium','Segoe UI','Segoe Print',\n        // Linux\n        'DejaVu Sans','DejaVu Serif','Liberation Mono','Ubuntu','Noto Sans',\n        // Widely installed extras\n        'Roboto','Open Sans','Lato','Montserrat','Source Code Pro'\n    ];\n\n    const BASELINE_FONTS = ['monospace', 'serif', 'sans-serif'];\n    const TEST_STR = 'mmmmmmmmmmlli';\n    const FONT_SIZE = '48px';\n\n    // Measure baseline widths\n    const canvas = document.createElement('canvas');\n    const ctx = canvas.getContext('2d');\n    if (!ctx) {\n        setEl('fontCount', null);\n        return;\n    }\n\n    function getWidth(font) {\n        ctx.font = FONT_SIZE + ' ' + font;\n        return ctx.measureText(TEST_STR).width;\n    }\n\n    const baseWidths = BASELINE_FONTS.map(f => getWidth(f));\n\n    const detected = [];\n    const absent = [];\n\n    CANDIDATES.forEach(function(font) {\n        let found = false;\n        for (let i = 0; i < BASELINE_FONTS.length; i++) {\n            const testFont = FONT_SIZE + ' \"' + font + '\",' + BASELINE_FONTS[i];\n            ctx.font = testFont;\n            const w = ctx.measureText(TEST_STR).width;\n            if (Math.abs(w - baseWidths[i]) > 0.5) {\n                found = true;\n                break;\n            }\n        }\n        if (found) detected.push(font);\n        else absent.push(font);\n    });\n\n    setEl('fontCount', detected.length + ' of ' + CANDIDATES.length + ' probed');\n\n    const list = document.getElementById('fontsList');\n    detected.sort().forEach(function(f) {\n        const pill = document.createElement('span');\n        pill.className = 'font-pill';\n        pill.textContent = f;\n        list.appendChild(pill);\n    });\n    // Show a few absent ones (greyed)\n    absent.slice(0, 6).forEach(function(f) {\n        const pill = document.createElement('span');\n        pill.className = 'font-pill absent';\n        pill.textContent = f;\n        list.appendChild(pill);\n    });\n}\n\n/* =========================================================\n   7. ENTROPY TABLE\n   ========================================================= */\nfunction buildEntropyTable() {\n    // Estimated bits based on Eckersley (2010) and Laperdrix et al. (2016)\n    // Values shown are ILLUSTRATIVE; real values depend on the reference population\n    const SIGNALS = [\n        { group: 'User agent string',     sample: safe(() => navigator.userAgent) || '',    bits: 10.5,\n          note: 'Encodes browser version, OS, engine, renderer' },\n        { group: 'Platform / vendor',     sample: safe(() => navigator.platform + ' / ' + navigator.vendor) || '', bits: 3.5,\n          note: 'Narrows down OS family' },\n        { group: 'Language(s)',           sample: safe(() => (navigator.languages || [navigator.language]).join(', ')) || '', bits: 2.5,\n          note: 'Language and locale preferences' },\n        { group: 'Timezone',              sample: safe(() => Intl.DateTimeFormat().resolvedOptions().timeZone) || '', bits: 3.0,\n          note: 'Geographic region indicator' },\n        { group: 'Screen resolution + DPR',\n          sample: safe(() => screen.width + '×' + screen.height + ' @' + window.devicePixelRatio + 'x') || '', bits: 5.5,\n          note: 'Hundreds of distinct combinations' },\n        { group: 'Color depth',           sample: safe(() => String(screen.colorDepth) + '-bit') || '', bits: 1.5,\n          note: 'Usually 24-bit today, but still varies' },\n        { group: 'CPU cores / device memory',\n          sample: safe(() => navigator.hardwareConcurrency + ' cores, ' + (navigator.deviceMemory || '?') + ' GB') || '', bits: 2.5,\n          note: 'Hardware tier indicator' },\n        { group: 'Canvas fingerprint',    sample: 'FNV-1a hash of toDataURL()',             bits: 8.0,\n          note: 'GPU/font rendering variation is highly discriminating' },\n        { group: 'WebGL renderer strings', sample: 'Unmasked vendor + renderer',            bits: 7.5,\n          note: 'GPU model often uniquely identifies a machine class' },\n        { group: 'Audio fingerprint',     sample: 'OfflineAudioContext oscillator hash',    bits: 4.0,\n          note: 'DSP implementation varies across audio stacks' },\n        { group: 'Installed fonts',       sample: document.getElementById('fontCount') ? document.getElementById('fontCount').textContent : 'pending', bits: 6.5,\n          note: 'Font set is highly personal (work, language, software installs)' },\n        { group: 'Touch support / media devices', sample: safe(() => 'max touch: ' + navigator.maxTouchPoints) || '', bits: 1.5,\n          note: 'Mobile vs desktop distinction + peripheral setup' },\n    ];\n\n    const tbody = document.getElementById('entropyTbody');\n    let total = 0;\n    SIGNALS.forEach(function(s) {\n        total += s.bits;\n        const tr = document.createElement('tr');\n        tr.innerHTML = '<td>' + s.group + '<br><span style=\"font-size:.8em;color:#53666F;\">' + s.note + '<\/span><\/td>' +\n                       '<td style=\"font-size:.83em;color:#31444F;\">' +\n                           (s.sample.length > 80 ? s.sample.slice(0,78) + '…' : s.sample) + '<\/td>' +\n                       '<td class=\"bits\">' + s.bits.toFixed(1) + '<\/td>';\n        tbody.appendChild(tr);\n    });\n\n    document.getElementById('entropyTotal').textContent = total.toFixed(1) + ' bits';\n\n    // Update hero\n    const maxBits = 58;\n    document.getElementById('entropyNum').textContent = total.toFixed(1) + ' bits';\n    const pct = Math.min(100, (total / maxBits) * 100);\n    document.getElementById('entropyBar').style.width = pct + '%';\n\n    const oneIn = Math.pow(2, total);\n    let label;\n    if (total > 30)      label = 'near-unique in a global browser population';\n    else if (total > 20) label = 'distinguishable in ~1 in ' + Math.round(oneIn / 1e6).toLocaleString() + 'M browsers';\n    else                 label = 'distinguishable in ~1 in ' + Math.round(oneIn).toLocaleString() + ' browsers';\n    document.getElementById('entropySub').textContent =\n        total.toFixed(1) + ' bits estimated (' + label + ') — illustration only, not a real measurement';\n}\n\n/* =========================================================\n   MAIN: run all collectors\n   ========================================================= */\n(function init() {\n    collectIdentity();\n    collectScreen();\n    collectCanvas();\n    collectWebGL();\n    collectAudio();\n    collectFonts();\n    // Build entropy table last so font count is available\n    setTimeout(buildEntropyTable, 200);\n})();\n<\/script>\n\n<style>\n/* ===== DA2402 theme overrides (applied after the demo's own stylesheet) ===== */\nhtml{background:var(--surround)}\nbody{background:var(--surround);color:var(--ink);font-family:var(--body);padding:22px 20px 26px;\n  -webkit-font-smoothing:antialiased}\n.container{background:var(--paper);border-radius:0;border-top:3px solid var(--ink);\n  box-shadow:0 20px 70px rgba(0,0,0,.5);padding:26px 34px 0}\n.da-eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;\n  text-transform:uppercase;color:var(--soft);margin:0 0 10px;display:flex;gap:10px;align-items:center}\n.da-eyebrow::after{content:\"\";flex:1;height:1px;background:var(--line)}\n.da-eyebrow .jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;\n  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}\nh1{font-family:var(--disp);font-weight:700;letter-spacing:-.018em;line-height:1.1;font-size:30px;\n  text-align:left;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;margin:0 0 4px}\n.subtitle{text-align:left;font-family:var(--body);color:var(--soft);font-size:14.5px;line-height:1.42;\n  margin:0 0 18px;max-width:900px}\nh2,h3,h4{font-family:var(--disp);letter-spacing:-.005em}\nbutton,.ex-btn,.step,.mode-tab,.chip,.tab,.tab-btn,.case-card,.run-btn,.q-option{border-radius:3px!important;\n  transform:none!important;box-shadow:none!important}\nbutton:hover:not(:disabled),.ex-btn:hover,.step:hover,.mode-tab:hover,.chip:hover{transform:none!important;box-shadow:none!important}\npre,code,kbd,.code-panel,.code-row code,.result-item,.selector-input,.entropy-banner,.results-panel,\n.panel,.card,.stagebar,.note,.explain,.good,.tip,.warn,.xpath-hint,.match-badge,.tag,#sample-frame,\ntable,td,th{border-radius:0!important}\n.note,.explain,.good,.tip,.warn,.xpath-hint,.stagebar{border-radius:0!important}\n.container>*:last-child{margin-bottom:0}\n/* byline rail, same text as the decks */\n.da-rail{margin:26px -34px 0;height:30px;background:var(--card);border-top:1.5px solid var(--ink);\n  display:flex;align-items:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;\n  text-transform:uppercase;color:var(--soft)}\n.da-rail .a{padding:0 16px;flex:1}\n.da-rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}\n.da-rail .c{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;white-space:nowrap}\n<\/style>\n<style>\n/* embedded inside a lecture deck slide: drop chrome the slide already provides */\nbody.embed{padding:0;zoom:.86}\nbody.embed .container{box-shadow:none;border-top:0;padding:18px 26px 0}\nbody.embed .da-eyebrow,body.embed .da-rail{display:none}\nbody.embed h1{font-size:24px}\n<\/style>\n<script>if(window.self!==window.top||/[?&]embed/.test(location.search))document.body.classList.add('embed');<\/script>\n<\/body>\n<\/html>\n"</script>
+<script>
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ============================================================
+   cover ornament — a wall of driver calls and bot-manager verdicts
+   ============================================================ */
+(function(){
+  const box=document.getElementById('cvp'); if(!box) return;
+  const L=[
+    ['h-mth','driver'],['h-dim','.get('],['h-val','"https://www.indexboard.example"'],['h-dim',')'],null,
+    ['h-hdr','WebDriverWait'],['h-dim','(driver, 10).until(...)'],null,
+    ['h-dim','EC.'],['h-hdr','presence_of_element_located'],['h-dim','((By.CSS_SELECTOR, '],['h-val','".product-card"'],['h-dim','))'],null,
+    ['h-mth','navigator.webdriver'],['h-dim',' -> '],['h-bad','true'],null,
+    ['h-dim','User-Agent: '],['h-bad','HeadlessChrome'],['h-dim','/126.0.0.0'],null,
+    ['h-hdr','find_elements'],['h-dim','(By.CSS_SELECTOR, '],['h-val','".product-card"'],['h-dim',')  -> 0'],null,
+    ['h-dim','... 524 ms later                     -> 6'],null,
+    ['h-mth','Set-Cookie'],['h-dim',': '],['h-hdr','ibsess'],['h-dim','=...; '],['h-hdr','bm_seq'],['h-dim','=...'],null,
+    ['h-dim','screen: '],['h-bad','800x600'],['h-dim','  renderer: '],['h-bad','SwiftShader'],null,
+    ['h-hdr','StaleElementReferenceException'],null,
+    ['h-mth','driver'],['h-dim','.quit()'],null,
+    ['h-dim','canvas hash '],['h-val','318360C4'],['h-dim','  ~8 bits'],null,
+    ['h-mth','--headless=new'],['h-dim',' --no-sandbox --disable-dev-shm-usage'],null,
+    ['h-dim','edge verdict: '],['h-bad','challenge'],['h-dim','  reason: session'],null,
+    ['h-hdr','element.text'],['h-dim','  (visible only)'],null,
+    ['h-mth','driver'],['h-dim','.execute_script('],['h-val','"return document.readyState"'],['h-dim',')'],null,
+    ['h-dim','36 MB'],['h-hdr','  vs  '],['h-bad','686 MB'],null,
+    ['h-mth','By.XPATH'],['h-dim',', '],['h-val','"//span[contains(., \'Response\')]/b"'],null,
+    ['h-dim','TLS fingerprint  HTTP/2 SETTINGS  timing'],null,
+    ['h-hdr','TimeoutException'],['h-dim','  after 1036 ms'],null,
+    ['h-mth','driver'],['h-dim','.get('],['h-val','"file:///.../laptops.html"'],['h-dim',')'],null,
+    ['h-dim','<div id="app">'],['h-bad','</div>'],['h-dim','  <!-- empty -->'],null
+  ];
+  const lines=[]; let cur='';
+  for(const t of L){ if(t===null){lines.push(cur);cur='';continue;} cur+='<span class="'+t[0]+'">'+esc(t[1])+'</span>'; }
+  if(cur) lines.push(cur);
+  box.innerHTML=lines.map(l=>'<div>'+l+'</div>').join('');
+})();
+
+/* ============================================================
+   deck mechanics
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 · Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 3 · '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  // demo iframes: the demo page is embedded in this file as JSON; load it into the frame on first show
+  const demoHtml=k=>JSON.parse(document.getElementById(k).textContent);
+  document.querySelectorAll('iframe.demo-frame[data-demo]').forEach(f=>{
+    f.closest('.slide').addEventListener('shown',()=>{ if(!f.srcdoc) f.srcdoc=demoHtml(f.dataset.demo); });
+  });
+  document.querySelectorAll('a.demo-link[data-demo]').forEach(a=>{
+    a.addEventListener('click',e=>{ e.preventDefault();
+      const u=URL.createObjectURL(new Blob([demoHtml(a.dataset.demo)],{type:'text/html'})); window.open(u,'_blank'); });
+  });
+  function show(n){
+    const prev=i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(slides[i]) slides[i].dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+
+</script>
+</body>
+</html>
