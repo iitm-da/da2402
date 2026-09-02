@@ -720,12 +720,12 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
       <div class="colstack">
         <div class="card b"><h3>What a ToS breach actually is</h3>
           <p>A <b>contract</b> claim — damages, injunction, account termination. Not a crime. After
-          <i>Van Buren</i> (slide 11), breaking a purpose rule you agreed to is not, by itself, "unauthorised
+          <i>Van Buren</i> (slide 10), breaking a purpose rule you agreed to is not, by itself, "unauthorised
           access" under the CFAA. That is the single most important thing the last decade of cases
           settled.</p></div>
         <div class="callout warn"><b>But do not read that as "ToS is toothless".</b> It is the claim that
           <i>survived</i> in <i>hiQ</i> — a $500,000 judgment and a permanent injunction — and in the EU,
-          <i>Ryanair v. PR Aviation</i> (slide 14) made a website's terms the winning theory. A contract you
+          <i>Ryanair v. PR Aviation</i> (slide 11) made a website's terms the winning theory. A contract you
           actually agreed to is the most ordinary law there is.</div>
         <div class="callout"><b>Practical test, in order.</b> (1) Did I log in or create an account? If
           yes, the ToS binds me; read its scraping clause. (2) If no, am I being shown the terms in a way a
@@ -774,331 +774,151 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 10 · CASES 1/8 · THE DOCTRINE ============ -->
+<!-- ============ 10 · CASES 1/3 · ACCESS ============ -->
 <section class="slide roomy" data-sec="Cases">
-  <div class="eyebrow">The decided cases · 1 of 8 · the doctrine</div>
-  <h1 class="t">Copying: facts are free, expression is not, and a database is a thin thing
-    <small>Q1 was about the request. Q2 is about the response — the bytes you saved to
-    <code class="k">property_listings.html</code> and the rows you wrote to CSV. Copyright attaches to some of that
-    and not to the rest, and the line is older than the web.</small></h1>
+  <div class="eyebrow">The decided cases · 1 of 3 · Q1, access</div>
+  <h1 class="t">Four cases, one argument: the gate is up, or the gate is down
+    <small>The facts of each case are in the gallery three slides on. What a gallery cannot show you is
+    that these four are a <i>sequence</i> — each one answers the question the previous one left
+    open.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card b"><h3><span class="num">1</span><i>Van Buren</i> (2021) draws the line</h3>
+          <p>A police officer looked up a licence plate he was entitled to look up, for money he was not
+          entitled to take. The Supreme Court held the CFAA punishes going where you may not go, not
+          going where you may go <i>for the wrong reason</i>. <b>Gates, not purposes.</b></p>
+          <p style="margin-top:5px"><span class="tag b">leaves open</span>What counts as a gate on a page
+          nobody has to log in to?</p></div>
+        <div class="card o"><h3><span class="num">2</span><i>hiQ</i> (2019–2022) answers it — and loses anyway</h3>
+          <p>The Ninth Circuit: a public page is not a gate, so scraping it is not "without
+          authorization", C&amp;D letter or no. hiQ won the point. Then the district court found it had
+          scraped with <b>fake accounts</b> — so it had logged in, so the User Agreement bound it.
+          $500,000 and a permanent injunction.</p>
+          <p style="margin-top:5px"><span class="tag o">leaves open</span>What if the site blocks you and
+          you go around the block?</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3><span class="num">3</span><i>3Taps</i> (2013) answers <i>that</i></h3>
+          <p>Craigslist sent a C&amp;D and blocked 3Taps' IP addresses. 3Taps kept scraping through
+          proxies. Judge Breyer: a C&amp;D plus a block is a clear enough revocation that continued
+          access by any route is unauthorised. Settled for $1,000,000.</p>
+          <p style="margin-top:5px"><span class="tag r">leaves open</span>Does a contract reach someone
+          who never had an account at all?</p></div>
+        <div class="card g"><h3><span class="num">4</span><i>Meta v. Bright Data</i> (2024) closes the loop</h3>
+          <p>Meta lost on contract: the evidence showed only <b>logged-off</b> scraping of public pages,
+          and someone who is not logged in is not "using" the service the terms govern. Meta dropped the
+          case and waived appeal.</p></div>
+        <div class="callout"><b>Read the four together and the rule is one sentence.</b> Public page,
+          logged out, nothing circumvented, nobody has told you to stop — you are outside all four cases.
+          Break any one of those and you are inside one of them, and the deck can tell you which.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 · CASES 2/3 · PROTECTABLE ============ -->
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 2 of 3 · Q2, what is protectable</div>
+  <h1 class="t">Three cases, one argument: facts are free, so the terms get harsh
+    <small>This chain runs the opposite way round from the last one. It starts with good news for a
+    scraper and ends by explaining why every data site you will ever touch has a hostile terms
+    page.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card g"><h3><span class="num">1</span><i>Feist</i> (1991) · facts cannot be owned</h3>
+          <p>Feist copied 1,309 listings out of a phone directory. The US Supreme Court, unanimously:
+          <b>facts are never copyrightable</b>, because nobody authors a fact. A compilation is protected
+          only in its selection or arrangement, and only where that shows a <b>modicum of creativity</b>.
+          Alphabetical order shows none. <b>Sweat of the brow is not a theory of copyright.</b></p></div>
+        <div class="card b"><h3><span class="num">2</span><i>EBC v. Modak</i> (2008) · India says the same</h3>
+          <p>The Supreme Court of India rejected sweat of the brow and adopted a skill-and-judgment
+          standard, following <i>Feist</i> and <i>CCH Canadian</i>. Raw judgments: no copyright. Routine
+          copy-editing: not original. Only a narrow set of genuinely judgment-laden additions survived.</p>
+          <p style="margin-top:5px"><span class="tag b">and</span>India has <b>no <i>sui generis</i>
+          database right</b> — the EU's separate protection for investment has no Indian counterpart.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3><span class="num">3</span><i>Ryanair</i> (2015) · so the contract does the work</h3>
+          <p>PR Aviation scraped Ryanair's fares. The CJEU held the Database Directive's user protections
+          apply only to databases that qualify for copyright or the <i>sui generis</i> right — and
+          Ryanair's fares qualified for neither. A database outside the Directive is outside its user
+          protections too. Nothing stopped Ryanair's <b>contract</b> from binding a user who accepted
+          it.</p></div>
+        <div class="callout warn"><b>The counter-intuitive rule, and the point of the chain.</b> The
+          <i>weaker</i> the intellectual property in the data, the <i>freer</i> the owner is to rely on
+          terms. Prices, fares, index levels, listings: no copyright, no database right, so the terms of
+          use are not one weapon among several — they are the <b>only</b> one. That is why they read the
+          way they do, and why the contract question on slide 15 matters more than the copyright one.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · CASES 3/3 · COPYING AT SCALE ============ -->
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 3 of 3 · Q2, copying at scale</div>
+  <h1 class="t">Four cases, one argument: factor 4 decides, and acquisition is judged separately
+    <small>Two decided within four months of each other, reaching opposite results. Two still pending.
+    The disagreement is not confusion — it is one factor doing all the work.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
       <div class="colstack">
         <table class="d sm free">
-          <tr><th style="width:150px">What you copied</th><th>Protected?</th><th style="width:150px">Why</th></tr>
-          <tr class="ok"><td>A price, a date, a rating, a phone number</td><td><b>No.</b> Facts are not
-            copyrightable anywhere.</td><td>US <i>Feist</i> (1991); India <i>EBC v. Modak</i> (2008)</td></tr>
-          <tr class="wr"><td>A table of such facts, selected and arranged</td><td><b>Thinly.</b> The
-            selection/arrangement can be, if it shows a "modicum of creativity"; the facts inside still are
-            not.</td><td>same cases; EU adds a separate <i>sui generis</i> database right for
-            substantial investment</td></tr>
-          <tr class="hl"><td>An article, a review, a description, a photo</td><td><b>Yes.</b> Original
-            expression. The description text on each listing card is someone's copyright.</td>
-            <td>Copyright Act 1957 (India); Title 17 (US)</td></tr>
-          <tr class="wr"><td>The HTML page itself</td><td>Yes, as a literary work — but a transient or
-            research copy is usually excused.</td><td>fair dealing §52 (India); fair use §107 (US)</td></tr>
+          <tr><th style="width:132px">Case</th><th style="width:104px">Training</th><th>Why</th></tr>
+          <tr class="hl"><td><i>Ross</i><br><span style="font-size:.86em;color:#53666F">D. Del., Feb 2025</span></td>
+            <td><b>Not fair use</b></td>
+            <td>Westlaw headnotes used "to make it easier to develop a competing legal research tool" —
+              same purpose, same customers. Non-generative: the tool returns existing opinions. On appeal
+              to the Third Circuit.</td></tr>
+          <tr class="ok"><td><i>Bartz</i><br><span style="font-size:.86em;color:#53666F">N.D. Cal., Jun 2025</span></td>
+            <td><b>Fair use</b></td>
+            <td>Training on books is "exceedingly transformative"; the model does not reproduce or
+              substitute for them.</td></tr>
+          <tr class="ok"><td><i>Kadrey v. Meta</i><br><span style="font-size:.86em;color:#53666F">N.D. Cal., Jun 2025</span></td>
+            <td><b>Fair use</b> on that record</td><td>Torrenting claim left open — same pattern as
+              <i>Bartz</i>.</td></tr>
         </table>
-        <div class="callout good"><b>Good news for most data scraping.</b> A CSV of prices, names and
-          ratings is a collection of facts. What you must be careful with is <i>text</i> — descriptions,
-          reviews, articles — and <i>republishing</i> the whole thing as a dataset.</div>
+        <div class="callout"><b>Factor 4 is the whole difference.</b> Does the output compete with the
+          input? A model that writes new text is not the books it read. A research tool trained on
+          headnotes to answer the same queries <i>is</i> the headnotes' market. Same four factors,
+          opposite facts on one of them.</div>
       </div>
       <div class="colstack">
-        <div class="card o"><h3>The excuse: fair use (US) · fair dealing (India)</h3>
-          <p><b>US §107, four factors:</b> (1) purpose and character — is the use <i>transformative</i>, is
-          it commercial; (2) nature of the work — factual or creative; (3) amount taken; (4) <b>effect on
-          the market</b> for the original. Factor 4 and the "transformative" half of factor 1 decide most
-          cases.</p>
-          <p style="margin-top:6px"><b>India §52:</b> a closed list, not a balancing test — private or
-          personal use <i>including research</i>, criticism, reporting, education in the course of
-          instruction. Narrower than US fair use; a course project sits inside it, a commercial dataset
-          usually does not.</p></div>
-        <div class="callout"><b>Where the AI cases fit.</b> Every "AI training" lawsuit on the next
-          slides is a Q2 fight about factors 1 and 4 — is turning text into weights transformative, and does
-          the model substitute for the source? The scraping that gathered the text is rarely the claim.</div>
+        <div class="card r"><h3>The second lesson in <i>Bartz</i> is the one for scrapers</h3>
+          <p>Alsup held the training fair — and held that building a permanent library from roughly seven
+          million <b>pirated</b> copies was not excused by it. That piece settled for
+          <b>$1.5 billion</b>, about $3,000 per work; final approval July 2026.</p>
+          <p style="margin-top:6px"><b>The transformative use did not launder the acquisition.</b>
+          Translated: a legitimate analysis does not retroactively make an unauthorised scrape
+          authorised. How you got the copy is judged on its own.</p></div>
+        <div class="card o sm"><h3>Two still pending, in different boxes</h3>
+          <p><b><i>NYT v. OpenAI</i></b> — copyright. Whether factor 4, shown by near-verbatim
+          regurgitation, beats "transformative" for news. <b><i>Reddit v. Anthropic</i></b> — deliberately
+          <i>no</i> copyright claim: contract, trespass and unfair competition, remanded to state court
+          in March 2026. Anything you read calling either "decided" is wrong.</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 11 · CASES 2/8 · VAN BUREN ============ -->
-<section class="slide roomy" data-sec="Cases">
-  <div class="eyebrow">The decided cases · 2 of 8</div>
-  <h1 class="t">"Without authorization": the gate is up or the gate is down
-    <small>The US Computer Fraud and Abuse Act (1986) makes it an offence to access a computer "without
-    authorization" or to "exceed authorized access". For thirty years nobody agreed what that meant for
-    the web. In 2021 the Supreme Court drew a picture.</small></h1>
-  <div class="wrap">
-    <div class="cols w6040">
-      <div class="colstack">
-        <div class="card b"><h3><i>Van Buren v. United States</i> · Supreme Court · 3 June 2021 · 6–3</h3>
-          <p>A police officer with valid credentials looked up a licence plate for money. Convicted under
-          the CFAA for "exceeding authorised access". Reversed. Justice Barrett for the majority: the
-          statute is about <b>where</b> you may go in a system, not <b>why</b> you went there. If you are
-          allowed to open the folder, opening it for a bad reason is not a federal crime.</p>
-          <p style="margin-top:7px"><b>The "gates-up-or-down" picture.</b> Gate up: you have authorisation,
-          whatever the purpose. Gate down: you do not, and going through is the offence. Purpose
-          restrictions, ToS clauses and internal policies do not lower a gate.</p></div>
-        <div class="callout good"><b>What it means for scraping.</b> A public page has no gate. Fetching it
-          against a ToS clause, or for a purpose the owner dislikes, is not CFAA "unauthorised access" — that
-          is the reasoning the Ninth Circuit re-applied to <i>hiQ</i> in 2022 (next slide).</div>
-      </div>
-      <div class="colstack">
-        <table class="d sm free">
-          <tr><th>Situation</th><th style="width:190px">Gate</th></tr>
-          <tr class="ok"><td>Public page, no login, nobody has told you to stop</td><td><b>Up</b></td></tr>
-          <tr class="ok"><td>Public page, ToS footer says "no bots", you never agreed</td><td><b>Up</b> (contract
-            question at most)</td></tr>
-          <tr class="wr"><td>Undocumented <code class="k">/api/</code> the page calls, no auth required</td>
-            <td><b>Up</b>, probably — unadvertised is not locked. Courts have not squarely ruled.</td></tr>
-          <tr class="hl"><td>Behind a login you obtained with a fake account</td><td><b>Down</b> (hiQ's
-            consent judgment named exactly this)</td></tr>
-          <tr class="hl"><td>IP blocked + cease-and-desist, and you route around it</td><td><b>Down</b> (slide
-            12)</td></tr>
-        </table>
-        <div class="callout"><b>India has no <i>Van Buren</i>.</b> IT Act §43 uses "without permission of
-          the owner" and there is no reported scraping judgment construing it. Slide 13 — assume the stricter
-          reading until a court says otherwise.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 12 · CASES 3/8 · HIQ ============ -->
-<section class="slide roomy" data-sec="Cases">
-  <div class="eyebrow">The decided cases · 3 of 8</div>
-  <h1 class="t">hiQ won the CFAA point and lost the case
-    <small>The most-cited scraping case is usually told as a victory for scrapers. Read to the end: it is
-    a victory for the <i>public-data</i> principle and a defeat for the company that relied on it.</small></h1>
-  <div class="wrap">
-    <div class="cols w6040">
-      <div class="colstack">
-        <table class="d sm free">
-          <tr><th style="width:74px">When</th><th>What happened</th><th style="width:64px">Box</th></tr>
-          <tr><td>2017</td><td>hiQ scrapes public LinkedIn profiles for workforce analytics. LinkedIn sends a
-            cease-and-desist and blocks hiQ's IPs. hiQ sues for an injunction and <b>wins it</b> in the
-            district court.</td><td>Q1</td></tr>
-          <tr class="ok"><td>2019</td><td>Ninth Circuit affirms: scraping data that is public — no password, no
-            gate — is likely <b>not</b> "without authorization" under the CFAA, even after a C&amp;D.</td><td>Q1</td></tr>
-          <tr><td>2021</td><td>Supreme Court vacates and sends it back to be reconsidered in light of
-            <i>Van Buren</i>.</td><td>Q1</td></tr>
-          <tr class="ok"><td>Apr 2022</td><td>Ninth Circuit <b>reaffirms</b>: <i>Van Buren</i>'s gates-up-or-down
-            reasoning supports the same result. The CFAA does not reach public web pages.</td><td>Q1</td></tr>
-          <tr class="hl"><td>Nov 2022</td><td>Back in the district court, on the <b>contract</b> claim: LinkedIn's
-            User Agreement bans on scraping and fake accounts are enforceable; hiQ had used fake accounts
-            and turked workers to log in. hiQ loses.</td><td>Q1-contract</td></tr>
-          <tr class="hl"><td>Dec 2022</td><td>Consent judgment: <b>$500,000</b> against hiQ for breach of
-            contract, CFAA (for the <i>logged-in</i> fake-account access), California's computer-access
-            statute, trespass and misappropriation; permanent injunction; delete everything.</td><td>—</td></tr>
-        </table>
-      </div>
-      <div class="colstack">
-        <div class="card g"><h3>What it settled</h3>
-          <p>In the Ninth Circuit, fetching a <b>public</b> page is not a CFAA offence, and a ToS clause or
-          a C&amp;D letter does not make it one. That is the rule the Lecture 2 scraper relies on.</p></div>
-        <div class="card r"><h3>What it did not settle, and how hiQ lost</h3>
-          <p>Everything <i>behind</i> the login. The moment hiQ's contractors signed in with fake profiles,
-          the gate was down (CFAA) and the User Agreement applied (contract). The public-data win was
-          real and irrelevant to the claims that finished the company.</p></div>
-        <div class="callout warn"><b>The lesson is not "scraping is legal".</b> It is: <i>the legal
-          position changes at the login prompt</i>. Keep your scraper on the public side of it and the
-          2019/2022 rulings protect you. Cross it and you have agreed to the terms you are breaking.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 13 · CASES 4/8 · 3TAPS ============ -->
-<section class="slide" data-sec="Cases">
-  <div class="eyebrow">The decided cases · 4 of 8 · the ruling on Lectures 1 and 3</div>
-  <h1 class="t">The IP block is the revocation. Routing around it is the offence.
-    <small>Lecture 1 read a <code class="k">get_proxy()</code> function whose only job was to present a
-    different source address. Lecture 3 showed how to make headless Chrome look like a person. Here is
-    the case that decides what those techniques are, legally, once a site has said no.</small></h1>
-  <div class="wrap">
-    <div class="cols w6040">
-      <div class="colstack">
-        <div class="card r"><h3><i>Craigslist v. 3Taps</i> · N.D. Cal. · filed 2012 · ruling 16 Aug 2013 · settled 2015</h3>
-          <p>3Taps scraped Craigslist listings and resold them through an API (PadMapper was a customer).
-          Craigslist sent a cease-and-desist letter and <b>blocked 3Taps' IP addresses</b>. 3Taps kept
-          scraping <b>through proxies</b>. Judge Breyer refused to dismiss the CFAA claim: a C&amp;D plus an
-          IP block is a clear enough revocation of authorisation that continued access — by any route — is
-          access "without authorization". The case settled in June 2015: 3Taps paid <b>$1,000,000</b>,
-          which Craigslist pledged to the EFF over ten years, and agreed never to take Craigslist content
-          again.</p></div>
-        <div class="callout bad"><b>Apply it to our scripts.</b> The parallel session-walled scraper's
-          <code class="k">get_proxy()</code> (Lecture 1, slide 23) — written, tested, and <i>disabled by its
-          own author</i>. The stealth flags and UA string in Lecture 3. None of these is illegal to know or
-          to type. Each becomes the fact pattern of <i>3Taps</i> the moment it is used <b>to get past a
-          block the site put in your way</b>. A 403, a captcha, a ban: those are the gate coming down. The
-          proxy is you climbing it.</div>
-      </div>
-      <div class="colstack">
-        <div class="card o"><h3>How this sits with <i>hiQ</i></h3>
-          <p>hiQ also got a C&amp;D and an IP block, and the Ninth Circuit still said public data is not
-          CFAA territory. <i>3Taps</i> is an earlier district-court ruling; <i>hiQ</i> is a later appellate
-          one. The law between them is <b>genuinely unsettled</b>. What is settled is the shape of the
-          losing case: <i>told to stop, blocked, evaded</i>. hiQ lost on the facts that looked like 3Taps
-          (fake logins); 3Taps never got to argue the public-data point that saved hiQ on appeal.</p></div>
-        <table class="d sm free">
-          <tr><th>Technique</th><th>Before any block</th><th>After a block / C&amp;D</th></tr>
-          <tr><td>Browser-like UA string</td><td>Politeness: say who you are</td><td>Evasion</td></tr>
-          <tr><td>Rotating proxies</td><td>Pointless (no speed-up)</td><td><b>The 3Taps fact pattern</b></td></tr>
-          <tr><td>Headless-stealth flags</td><td>Needed for rendering only</td><td>Evasion</td></tr>
-          <tr><td>Slower requests</td><td>Good manners</td><td>Still good manners — and still after a
-            revocation</td></tr>
-        </table>
-        <div class="callout"><b>The rule for this course:</b> a block is an answer, not a puzzle. Stop,
-          keep your saved snapshot, and write to the owner.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 14 · CASES 5/8 · RYANAIR (EU) ============ -->
-<section class="slide roomy" data-sec="Cases">
-  <div class="eyebrow">The decided cases · 5 of 8 · the EU counterpoint</div>
-  <h1 class="t">Ryanair: when the data is not protected, the contract does the work
-    <small>Every case so far has been American. One European ruling matters more than the rest, because
-    it decides what happens when the copyright claim fails — which, for a table of numbers, it usually
-    does.</small></h1>
-  <div class="wrap">
-    <div class="cols w6040">
-      <div class="colstack">
-        <div class="card o"><h3><i>Ryanair v. PR Aviation</i> · CJEU C-30/14 · 15 January 2015</h3>
-          <p>PR Aviation ran a fare-comparison site that scraped Ryanair's flight data. Ryanair's terms
-          forbade screen-scraping. The Dutch courts asked Luxembourg whether the Database Directive's
-          protections for <i>lawful users</i> stopped Ryanair enforcing those terms.</p>
-          <p style="margin-top:6px">The answer: the Directive only shields databases that qualify for
-          copyright or the <i>sui generis</i> right — and Ryanair's flight data qualified for neither.
-          A database outside the Directive is outside its user protections too. So nothing in EU database
-          law stopped Ryanair's <b>contract</b> from binding a user who had accepted it.</p></div>
-        <div class="callout warn"><b>The counter-intuitive rule.</b> The <i>weaker</i> the intellectual
-          property in the data, the <i>freer</i> the owner is to rely on terms. Facts are unprotectable —
-          which is exactly why sites that publish facts write the harshest terms of use.</div>
-        <div class="callout good"><b>Hold on to this for slide 25.</b> An exchange publishes index
-          levels — facts, uncopyrightable, and in India not even covered by a database right. Its Terms
-          of Use are therefore not one weapon among several. They are the <b>only</b> one it has.</div>
-      </div>
-      <div class="colstack">
-        <div class="card b"><h3>Where that leaves the three jurisdictions</h3>
-          <p><b>US.</b> No gate → no crime; contract only if you agreed. <b>EU.</b> Contract is taken
-          seriously and a database right sits on top of copyright — the harshest of the three.
-          <b>India.</b> Broad statute, empty case law, strict privacy regime. The next five slides are
-          what it actually says.</p></div>
-        <table class="d sm free">
-          <tr><th style="width:74px"></th><th>Copyright in the facts</th><th>Database right</th><th>Contract lever</th></tr>
-          <tr class="ok"><td><b>US</b></td><td>No — <i>Feist</i></td><td>None</td>
-            <td>Weak against a logged-off stranger</td></tr>
-          <tr class="wr"><td><b>EU</b></td><td>No</td><td><b>Yes</b> — 15 years, for substantial
-            investment</td><td><b>Strong</b> — <i>Ryanair</i></td></tr>
-          <tr class="hl"><td><b>India</b></td><td>No — <i>EBC v. Modak</i></td><td>None</td>
-            <td><b>Untested</b></td></tr>
-        </table>
-        <div class="callout"><b>Design for the strictest regime your data touches</b> — the site's, your
-          own, and that of any person in the rows.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 15 · CASES 6/8 · AI TRAINING ============ -->
-<section class="slide roomy" data-sec="Cases">
-  <div class="eyebrow">The decided cases · 6 of 8</div>
-  <h1 class="t">Training on scraped text: two courts, two answers, one factor
-    <small>Within four months of each other, two US federal judges reached opposite conclusions on whether
-    training a model on copyrighted text is fair use. Read them together and the difference is not
-    confusion — it is factor 4.</small></h1>
-  <div class="wrap">
-    <div class="cols">
-      <div class="colstack">
-        <div class="card r"><h3><i>Thomson Reuters v. Ross Intelligence</i> · D. Del. · Feb 2025</h3>
-          <p>Ross trained a legal-research AI on Westlaw headnotes. Judge Bibas, on summary judgment:
-          <b>not fair use</b>. The headnotes were original enough to protect; Ross used them "to make it
-          easier to develop a <i>competing</i> legal research tool" — the same purpose as the original,
-          aimed at the same market. Factor 4 sank it. (On appeal to the Third Circuit.)</p></div>
-        <div class="card g"><h3><i>Bartz v. Anthropic</i> · N.D. Cal. · 23 June 2025</h3>
-          <p>Authors sued over books used to train Claude. Judge Alsup, on summary judgment: <b>training
-          is fair use</b> — "exceedingly transformative", the model does not reproduce or substitute for the
-          books. <b>But</b> building a permanent library from ~7 million <i>pirated</i> copies was not
-          excused by the later training. That piece went to trial posture, and settled: <b>$1.5 billion</b>,
-          about $3,000 per work — the largest copyright settlement in US history, preliminarily approved Sept
-          2025, final approval July 2026.</p></div>
-      </div>
-      <div class="colstack">
-        <div class="callout"><b>The factor that decided both.</b> Does the output compete with the input?
-          A model that writes new text ≠ the books it read (Alsup). A research tool trained on headnotes to
-          answer the same queries = the headnotes' market (Bibas). Same four factors, opposite facts on
-          factor 4.</div>
-        <div class="callout warn"><b>The second lesson in <i>Bartz</i> is the one for scrapers.</b> The
-          transformative use did not launder the <i>acquisition</i>. How you obtained the copy is judged on
-          its own: a pirate library is a pirate library even if what you do with it is fair. Translate:
-          a legitimate analysis does not retroactively make an unauthorised scrape authorised. Q1 and Q2 are
-          separate questions, and the court treated them that way.</div>
-        <table class="d sm free">
-          <tr><th>Case</th><th>Training</th><th>Acquisition</th></tr>
-          <tr><td><i>Ross</i></td><td class="c">not fair use</td><td class="c">—</td></tr>
-          <tr><td><i>Bartz</i></td><td class="c">fair use</td><td class="c">pirated copies: not excused</td></tr>
-          <tr><td><i>Kadrey v. Meta</i> (N.D. Cal., June 2025)</td><td class="c">fair use on that record</td>
-            <td class="c">torrenting claim left open</td></tr>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 16 · CASES 7/8 · STILL COPYING ============ -->
-<section class="slide" data-sec="Cases">
-  <div class="eyebrow">The decided cases · 7 of 8</div>
-  <h1 class="t">You are not training a model. You are still copying.
-    <small>It is tempting to file the AI cases under "not my problem". Map your own actions onto the same
-    four factors and the same three questions, and most of a student project is fine — for reasons you
-    should be able to state.</small></h1>
-  <div class="wrap">
-    <table class="d free">
-      <tr><th style="width:240px">What you do</th><th style="width:70px">Box</th><th>Risk</th><th style="width:270px">What makes it defensible</th></tr>
-      <tr class="ok"><td>Save a dated snapshot of a public page to disk and parse it</td><td class="c">Q2</td>
-        <td>Low. A transient research copy of a page you were allowed to fetch.</td>
-        <td>Fair dealing for research (§52); you keep it, you do not redistribute it.</td></tr>
-      <tr class="ok"><td>Build a CSV of prices, names, ratings, coordinates</td><td class="c">Q2</td>
-        <td>Low. Facts are not protected; your arrangement is yours.</td>
-        <td>Keep provenance (URL, timestamp) per row — it is also your Q1 evidence.</td></tr>
-      <tr class="wr"><td>Copy the 500-word business descriptions into the CSV</td><td class="c">Q2</td>
-        <td>Moderate. Original expression, copied whole.</td>
-        <td>Do you need the text, or a feature of it (length, keywords, sentiment)? Extract the feature,
-          drop the text.</td></tr>
-      <tr class="wr"><td>Publish the dataset on GitHub / Kaggle</td><td class="c">Q2 + Q3</td>
-        <td>Moderate to high. You are now the distributor of the expression and of any personal data
-          in it.</td>
-        <td>Facts-only columns; names/phones removed or aggregated; a README stating source, date,
-          robots.txt status and the licence you are claiming.</td></tr>
-      <tr class="hl"><td>Sell access to it, or build a competing listings site</td><td class="c">Q2 + Q1</td>
-        <td>High. Factor 4 in full; this is <i>3Taps</i>' and <i>Ross</i>'s business model.</td>
-        <td>A licence from the source. Nothing else.</td></tr>
-      <tr class="hl"><td>Log in with an account to reach more cards, then do any of the above</td><td class="c">Q1</td>
-        <td>You have agreed to the terms and lowered the gate. Everything above inherits that.</td>
-        <td>Read the clause first; if it forbids it, the project changes.</td></tr>
-    </table>
-    <div class="callout good"><b>Defensible is a sentence you can say.</b> "I fetched public pages, honoured
-      robots.txt, kept a dated snapshot, extracted facts and one derived feature, and did not redistribute
-      the text or the phone numbers." If you cannot say it for your project, one of the rows above is why.</div>
-  </div>
-</section>
-
-<!-- ============ 17 · CASES 8/8 · DEMO GALLERY ============ -->
+<!-- ============ 13 · CASES · THE GALLERY ============ -->
 <section class="slide" data-sec="Cases · Demo">
-  <div class="eyebrow">The decided cases · 8 of 8 · interactive</div>
-  <h1 class="t sm">The cases, one at a time — and a DPDP decision panel
-    <small class="tight">Click a case for its facts, the dispute, the ruling and the takeaway for a scraper.
-    Below the gallery is a guided walk through India's DPDP Act for a scraping scenario — we do it properly
-    on slides 21–22. <span class="jsbadge">Reference</span> The gallery's status notes predate this deck:
-    hiQ's 2022 ending is on slide 12; the open cases sit in the recap table on slide 29.
+  <div class="eyebrow">The decided cases · the gallery</div>
+  <h1 class="t sm">All eleven cases, grouped into the three arguments — and a DPDP decision panel
+    <small class="tight">The three slides you just saw are the arguments. This is where the facts live:
+    click any case for its background, the dispute, the ruling and the takeaway for a scraper. Within each
+    group the cards are ordered so that reading left to right is reading the argument. Below the gallery,
+    a guided walk through India's DPDP Act for a scraping scenario — we do it properly on slides 17-18.
+    <span class="jsbadge">Reference</span>
     <a class="demo-link" href="#" data-demo="demo-11">open full page &#8599;</a></small></h1>
   <div class="wrap" style="margin-top:10px">
     <iframe class="demo-frame" data-demo="demo-11" title="Scraping case-law gallery"></iframe>
   </div>
 </section>
 
-<!-- ============ 18 · INDIA 1/5 · IT ACT ============ -->
+<!-- ============ 14 · INDIA 1/5 · IT ACT ============ -->
 <section class="slide roomy" data-sec="India">
   <div class="eyebrow">India · 1 of 5 · the access statute</div>
   <h1 class="t">IT Act 2000: §43 is civil and broad, §66 is criminal and narrow
@@ -1143,7 +963,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 19 · INDIA 2/5 · CONTRACT ACT ============ -->
+<!-- ============ 15 · INDIA 2/5 · CONTRACT ACT ============ -->
 <section class="slide roomy" data-sec="India">
   <div class="eyebrow">India · 2 of 5 · the contract question</div>
   <h1 class="t">"I never clicked I agree" — does an Indian court care?
@@ -1187,7 +1007,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 20 · INDIA 3/5 · COPYRIGHT ACT ============ -->
+<!-- ============ 16 · INDIA 3/5 · COPYRIGHT ACT ============ -->
 <section class="slide roomy" data-sec="India">
   <div class="eyebrow">India · 3 of 5 · what you may keep</div>
   <h1 class="t">Copyright Act 1957: a database is protected, a price series is not
@@ -1230,7 +1050,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 21 · INDIA 4/5 · DPDP ============ -->
+<!-- ============ 17 · INDIA 4/5 · DPDP ============ -->
 <section class="slide roomy" data-sec="India">
   <div class="eyebrow">India · 4 of 5 · the privacy statute</div>
   <h1 class="t">DPDP: "publicly available" is narrower than "on the internet"
@@ -1276,7 +1096,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 22 · INDIA 5/5 · DPDP RULES ============ -->
+<!-- ============ 18 · INDIA 5/5 · DPDP RULES ============ -->
 <section class="slide" data-sec="India">
   <div class="eyebrow">India · 5 of 5 · the Rules</div>
   <h1 class="t">The Rules are live, the penalties arrive in November
@@ -1324,7 +1144,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 23 · THE QUESTION 1/3 · THE FACTS ============ -->
+<!-- ============ 19 · THE QUESTION 1/3 · THE FACTS ============ -->
 <section class="slide roomy" data-sec="The question">
   <div class="eyebrow">The question · 1 of 3 · the facts</div>
   <h1 class="t">NSE, NIFTY history, and a terms page you never read
@@ -1351,7 +1171,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
           decides the contract question on its own. Fact 3 (no circumvention) is what separates this from
           every Indian prosecution that exists. Fact 4 (numbers only) removes copyright and privacy from
           the case entirely. Change any one of them and you are answering a different question — which is
-          why the answer on slide 25 comes with a list of what would flip it.</div>
+          why the answer on slide 21 comes with a list of what would flip it.</div>
       </div>
       <div class="colstack">
         <div class="card o"><h3>It is not one question. It is four.</h3>
@@ -1372,13 +1192,13 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
         </table>
         <div class="callout warn"><b>Note what fact 1 hides.</b> "Public page" and "internal API" are
           technically identical — both unauthenticated HTTP — but they are <b>not the same fact</b> in a
-          courtroom. We come back to this on slide 25.</div>
+          courtroom. We come back to this on slide 21.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 24 · THE QUESTION 2/3 · ARGUED ============ -->
+<!-- ============ 20 · THE QUESTION 2/3 · ARGUED ============ -->
 <section class="slide roomy" data-sec="The question">
   <div class="eyebrow">The question · 2 of 3 · argued both ways</div>
   <h1 class="t">The case for lawful, and the case against — argued properly
@@ -1434,7 +1254,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 25 · THE QUESTION 3/3 · CONCLUSION ============ -->
+<!-- ============ 21 · THE QUESTION 3/3 · CONCLUSION ============ -->
 <section class="slide roomy" data-sec="The question">
   <div class="eyebrow">The question · 3 of 3 · the conclusion</div>
   <h1 class="t">Lawful — but on an argument, not on a rule
@@ -1487,7 +1307,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 26 · GDPR ============ -->
+<!-- ============ 22 · GDPR ============ -->
 <section class="slide roomy" data-sec="GDPR">
   <div class="eyebrow">GDPR · the EU regime</div>
   <h1 class="t">GDPR: "it was on a public page" is not a lawful basis
@@ -1532,7 +1352,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 27 · HIPAA ============ -->
+<!-- ============ 23 · HIPAA ============ -->
 <section class="slide roomy" data-sec="HIPAA">
   <div class="eyebrow">HIPAA · health data is its own regime</div>
   <h1 class="t">HIPAA: not a privacy law, a sectoral one — and that is the trap
@@ -1573,7 +1393,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 28 · PRIVACY · WORKED EXAMPLE ============ -->
+<!-- ============ 24 · PRIVACY · WORKED EXAMPLE ============ -->
 <section class="slide" data-sec="Privacy">
   <div class="eyebrow">Privacy · worked example</div>
   <h1 class="t sm">Forty business cards with phone numbers: which regime, what must you do
@@ -1586,7 +1406,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
           <tr><th style="width:128px">Question</th><th>Answer for this scrape</th></tr>
           <tr class="ok"><td><b>Q1 access</b></td><td>Public page, no login, one request per page, saved
             snapshot, <code class="k">robots.txt</code> read first. Gate up. If the site later 403s you — stop
-            (slide 12).</td></tr>
+            (slide 10).</td></tr>
           <tr class="ok"><td><b>Q2 copy</b></td><td>Names, localities, numbers, ratings: facts. The long
             descriptions: expression — extract a feature, drop the text. Do not republish the page.</td></tr>
           <tr class="wr"><td><b>Q3 keep</b></td><td>Most cards are <b>businesses</b> — company name, office
@@ -1623,7 +1443,7 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
   </div>
 </section>
 
-<!-- ============ 29 · RECAP TABLE ============ -->
+<!-- ============ 25 · RECAP TABLE ============ -->
 <section class="slide roomy" data-sec="Recap">
   <div class="eyebrow">Recap · 1 of 3</div>
   <h1 class="t">Three questions, and the cases that answer each
@@ -1653,7 +1473,7 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
   </div>
 </section>
 
-<!-- ============ 30 · CHECKLIST ============ -->
+<!-- ============ 26 · CHECKLIST ============ -->
 <section class="slide roomy" data-sec="Discipline">
   <div class="eyebrow">Discipline · 2 of 3 · one page to lift</div>
   <h1 class="t">A checklist you can paste into the project README
@@ -1682,7 +1502,7 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
         &#9744; README: source, date, robots.txt status, fields kept/removed, purpose, deletion date,
         the licence I am claiming for the CSV.<br/>
         &#9744; Raw snapshot stays private.<br/>
-        &#9744; I can say the defensible sentence from slide 16 out loud.</p></div>
+        &#9744; I can say the one-sentence justification from slide 21 out loud.</p></div>
     </div>
     <div class="callout warn"><b>For the course project</b> this checklist, filled in, is submitted with the
       data. A dataset without it is an unverified scrape, the same way a DataFrame without the six assertions
@@ -1690,7 +1510,7 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
   </div>
 </section>
 
-<!-- ============ 31 · PRACTICE ============ -->
+<!-- ============ 27 · PRACTICE ============ -->
 <section class="slide roomy" data-sec="Practice">
   <div class="eyebrow">Practice</div>
   <h1 class="t">Five exercises
@@ -1724,7 +1544,7 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
         <div class="card g"><h3><span class="num">05</span>The ethics paragraph, and the ten lines</h3>
           <p>For your project dataset, fill in the slide-24 checklist, then write the README paragraph:
           source, date, robots.txt status, fields kept and removed and why, purpose, deletion date,
-          licence. Then add the minimise/pseudonymise/feature-extract lines from slide 28 <i>inside the
+          licence. Then add the minimise/pseudonymise/feature-extract lines from slide 24 <i>inside the
           scraper</i>, and submit the before/after column list. <b>The paragraph and the diff are the
           deliverable</b>, not the CSV.</p></div>
         <div class="callout warn"><b>Ground rules, for the last time.</b> No live scraping during these
@@ -1737,14 +1557,332 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
 </section>
 
 <!-- ======================================================================
-     DISABLED 2026-09-02 — L4 reordered to run robots.txt -> llms.txt -> Terms of
-     Use -> decided cases -> Indian law -> the worked NSE question -> GDPR -> HIPAA,
-     and the four overlapping closing slides collapsed into one recap + one checklist.
+     DISABLED 2026-09-02 — L4 runs robots.txt -> llms.txt -> Terms of Use -> the three
+     case-law arguments (+ the gallery, which now holds all eleven cases) -> Indian
+     law -> the worked NSE question -> GDPR -> HIPAA. Per-case facts moved into the
+     demo-11 gallery; the deck keeps only the arguments that chain the cases together.
      Each slide below is wrapped in its own marker pair:
      "DISABLED SLIDE n ..." and "END DISABLED SLIDE".
      Restore a slide by deleting its two marker lines (and re-check its slide refs).
      ====================================================================== -->
-<!-- DISABLED SLIDE (was 13) — India & EU — superseded by the India section (slides 18-22) and the Ryanair slide (14); delete this line and the closing marker to restore
+<!-- DISABLED SLIDE (was 10) — Van Buren, one case per slide — facts now in the gallery, argument on slide 10; delete this line and the closing marker to restore
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 2 of 8</div>
+  <h1 class="t">"Without authorization": the gate is up or the gate is down
+    <small>The US Computer Fraud and Abuse Act (1986) makes it an offence to access a computer "without
+    authorization" or to "exceed authorized access". For thirty years nobody agreed what that meant for
+    the web. In 2021 the Supreme Court drew a picture.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card b"><h3><i>Van Buren v. United States</i> · Supreme Court · 3 June 2021 · 6–3</h3>
+          <p>A police officer with valid credentials looked up a licence plate for money. Convicted under
+          the CFAA for "exceeding authorised access". Reversed. Justice Barrett for the majority: the
+          statute is about <b>where</b> you may go in a system, not <b>why</b> you went there. If you are
+          allowed to open the folder, opening it for a bad reason is not a federal crime.</p>
+          <p style="margin-top:7px"><b>The "gates-up-or-down" picture.</b> Gate up: you have authorisation,
+          whatever the purpose. Gate down: you do not, and going through is the offence. Purpose
+          restrictions, ToS clauses and internal policies do not lower a gate.</p></div>
+        <div class="callout good"><b>What it means for scraping.</b> A public page has no gate. Fetching it
+          against a ToS clause, or for a purpose the owner dislikes, is not CFAA "unauthorised access" — that
+          is the reasoning the Ninth Circuit re-applied to <i>hiQ</i> in 2022 (next slide).</div>
+      </div>
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th>Situation</th><th style="width:190px">Gate</th></tr>
+          <tr class="ok"><td>Public page, no login, nobody has told you to stop</td><td><b>Up</b></td></tr>
+          <tr class="ok"><td>Public page, ToS footer says "no bots", you never agreed</td><td><b>Up</b> (contract
+            question at most)</td></tr>
+          <tr class="wr"><td>Undocumented <code class="k">/api/</code> the page calls, no auth required</td>
+            <td><b>Up</b>, probably — unadvertised is not locked. Courts have not squarely ruled.</td></tr>
+          <tr class="hl"><td>Behind a login you obtained with a fake account</td><td><b>Down</b> (hiQ's
+            consent judgment named exactly this)</td></tr>
+          <tr class="hl"><td>IP blocked + cease-and-desist, and you route around it</td><td><b>Down</b> (slide
+            12)</td></tr>
+        </table>
+        <div class="callout"><b>India has no <i>Van Buren</i>.</b> IT Act §43 uses "without permission of
+          the owner" and there is no reported scraping judgment construing it. Slide 13 — assume the stricter
+          reading until a court says otherwise.</div>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 11) — hiQ, one case per slide — facts now in the gallery, argument on slide 10; delete this line and the closing marker to restore
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 3 of 8</div>
+  <h1 class="t">hiQ won the CFAA point and lost the case
+    <small>The most-cited scraping case is usually told as a victory for scrapers. Read to the end: it is
+    a victory for the <i>public-data</i> principle and a defeat for the company that relied on it.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th style="width:74px">When</th><th>What happened</th><th style="width:64px">Box</th></tr>
+          <tr><td>2017</td><td>hiQ scrapes public LinkedIn profiles for workforce analytics. LinkedIn sends a
+            cease-and-desist and blocks hiQ's IPs. hiQ sues for an injunction and <b>wins it</b> in the
+            district court.</td><td>Q1</td></tr>
+          <tr class="ok"><td>2019</td><td>Ninth Circuit affirms: scraping data that is public — no password, no
+            gate — is likely <b>not</b> "without authorization" under the CFAA, even after a C&amp;D.</td><td>Q1</td></tr>
+          <tr><td>2021</td><td>Supreme Court vacates and sends it back to be reconsidered in light of
+            <i>Van Buren</i>.</td><td>Q1</td></tr>
+          <tr class="ok"><td>Apr 2022</td><td>Ninth Circuit <b>reaffirms</b>: <i>Van Buren</i>'s gates-up-or-down
+            reasoning supports the same result. The CFAA does not reach public web pages.</td><td>Q1</td></tr>
+          <tr class="hl"><td>Nov 2022</td><td>Back in the district court, on the <b>contract</b> claim: LinkedIn's
+            User Agreement bans on scraping and fake accounts are enforceable; hiQ had used fake accounts
+            and turked workers to log in. hiQ loses.</td><td>Q1-contract</td></tr>
+          <tr class="hl"><td>Dec 2022</td><td>Consent judgment: <b>$500,000</b> against hiQ for breach of
+            contract, CFAA (for the <i>logged-in</i> fake-account access), California's computer-access
+            statute, trespass and misappropriation; permanent injunction; delete everything.</td><td>—</td></tr>
+        </table>
+      </div>
+      <div class="colstack">
+        <div class="card g"><h3>What it settled</h3>
+          <p>In the Ninth Circuit, fetching a <b>public</b> page is not a CFAA offence, and a ToS clause or
+          a C&amp;D letter does not make it one. That is the rule the Lecture 2 scraper relies on.</p></div>
+        <div class="card r"><h3>What it did not settle, and how hiQ lost</h3>
+          <p>Everything <i>behind</i> the login. The moment hiQ's contractors signed in with fake profiles,
+          the gate was down (CFAA) and the User Agreement applied (contract). The public-data win was
+          real and irrelevant to the claims that finished the company.</p></div>
+        <div class="callout warn"><b>The lesson is not "scraping is legal".</b> It is: <i>the legal
+          position changes at the login prompt</i>. Keep your scraper on the public side of it and the
+          2019/2022 rulings protect you. Cross it and you have agreed to the terms you are breaking.</div>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 12) — 3Taps, one case per slide — facts now in the gallery, argument on slide 10; delete this line and the closing marker to restore
+<section class="slide" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 4 of 8 · the ruling on Lectures 1 and 3</div>
+  <h1 class="t">The IP block is the revocation. Routing around it is the offence.
+    <small>Lecture 1 read a <code class="k">get_proxy()</code> function whose only job was to present a
+    different source address. Lecture 3 showed how to make headless Chrome look like a person. Here is
+    the case that decides what those techniques are, legally, once a site has said no.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card r"><h3><i>Craigslist v. 3Taps</i> · N.D. Cal. · filed 2012 · ruling 16 Aug 2013 · settled 2015</h3>
+          <p>3Taps scraped Craigslist listings and resold them through an API (PadMapper was a customer).
+          Craigslist sent a cease-and-desist letter and <b>blocked 3Taps' IP addresses</b>. 3Taps kept
+          scraping <b>through proxies</b>. Judge Breyer refused to dismiss the CFAA claim: a C&amp;D plus an
+          IP block is a clear enough revocation of authorisation that continued access — by any route — is
+          access "without authorization". The case settled in June 2015: 3Taps paid <b>$1,000,000</b>,
+          which Craigslist pledged to the EFF over ten years, and agreed never to take Craigslist content
+          again.</p></div>
+        <div class="callout bad"><b>Apply it to our scripts.</b> The parallel session-walled scraper's
+          <code class="k">get_proxy()</code> (Lecture 1, slide 23) — written, tested, and <i>disabled by its
+          own author</i>. The stealth flags and UA string in Lecture 3. None of these is illegal to know or
+          to type. Each becomes the fact pattern of <i>3Taps</i> the moment it is used <b>to get past a
+          block the site put in your way</b>. A 403, a captcha, a ban: those are the gate coming down. The
+          proxy is you climbing it.</div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>How this sits with <i>hiQ</i></h3>
+          <p>hiQ also got a C&amp;D and an IP block, and the Ninth Circuit still said public data is not
+          CFAA territory. <i>3Taps</i> is an earlier district-court ruling; <i>hiQ</i> is a later appellate
+          one. The law between them is <b>genuinely unsettled</b>. What is settled is the shape of the
+          losing case: <i>told to stop, blocked, evaded</i>. hiQ lost on the facts that looked like 3Taps
+          (fake logins); 3Taps never got to argue the public-data point that saved hiQ on appeal.</p></div>
+        <table class="d sm free">
+          <tr><th>Technique</th><th>Before any block</th><th>After a block / C&amp;D</th></tr>
+          <tr><td>Browser-like UA string</td><td>Politeness: say who you are</td><td>Evasion</td></tr>
+          <tr><td>Rotating proxies</td><td>Pointless (no speed-up)</td><td><b>The 3Taps fact pattern</b></td></tr>
+          <tr><td>Headless-stealth flags</td><td>Needed for rendering only</td><td>Evasion</td></tr>
+          <tr><td>Slower requests</td><td>Good manners</td><td>Still good manners — and still after a
+            revocation</td></tr>
+        </table>
+        <div class="callout"><b>The rule for this course:</b> a block is an answer, not a puzzle. Stop,
+          keep your saved snapshot, and write to the owner.</div>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 14) — copyright doctrine primer — folded into the protectable argument on slide 11; delete this line and the closing marker to restore
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 1 of 8 · the doctrine</div>
+  <h1 class="t">Copying: facts are free, expression is not, and a database is a thin thing
+    <small>Q1 was about the request. Q2 is about the response — the bytes you saved to
+    <code class="k">property_listings.html</code> and the rows you wrote to CSV. Copyright attaches to some of that
+    and not to the rest, and the line is older than the web.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th style="width:150px">What you copied</th><th>Protected?</th><th style="width:150px">Why</th></tr>
+          <tr class="ok"><td>A price, a date, a rating, a phone number</td><td><b>No.</b> Facts are not
+            copyrightable anywhere.</td><td>US <i>Feist</i> (1991); India <i>EBC v. Modak</i> (2008)</td></tr>
+          <tr class="wr"><td>A table of such facts, selected and arranged</td><td><b>Thinly.</b> The
+            selection/arrangement can be, if it shows a "modicum of creativity"; the facts inside still are
+            not.</td><td>same cases; EU adds a separate <i>sui generis</i> database right for
+            substantial investment</td></tr>
+          <tr class="hl"><td>An article, a review, a description, a photo</td><td><b>Yes.</b> Original
+            expression. The description text on each listing card is someone's copyright.</td>
+            <td>Copyright Act 1957 (India); Title 17 (US)</td></tr>
+          <tr class="wr"><td>The HTML page itself</td><td>Yes, as a literary work — but a transient or
+            research copy is usually excused.</td><td>fair dealing §52 (India); fair use §107 (US)</td></tr>
+        </table>
+        <div class="callout good"><b>Good news for most data scraping.</b> A CSV of prices, names and
+          ratings is a collection of facts. What you must be careful with is <i>text</i> — descriptions,
+          reviews, articles — and <i>republishing</i> the whole thing as a dataset.</div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>The excuse: fair use (US) · fair dealing (India)</h3>
+          <p><b>US §107, four factors:</b> (1) purpose and character — is the use <i>transformative</i>, is
+          it commercial; (2) nature of the work — factual or creative; (3) amount taken; (4) <b>effect on
+          the market</b> for the original. Factor 4 and the "transformative" half of factor 1 decide most
+          cases.</p>
+          <p style="margin-top:6px"><b>India §52:</b> a closed list, not a balancing test — private or
+          personal use <i>including research</i>, criticism, reporting, education in the course of
+          instruction. Narrower than US fair use; a course project sits inside it, a commercial dataset
+          usually does not.</p></div>
+        <div class="callout"><b>Where the AI cases fit.</b> Every "AI training" lawsuit on the next
+          slides is a Q2 fight about factors 1 and 4 — is turning text into weights transformative, and does
+          the model substitute for the source? The scraping that gathered the text is rarely the claim.</div>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 15) — AI training, two rulings — folded into slide 12 and the gallery; delete this line and the closing marker to restore
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 6 of 8</div>
+  <h1 class="t">Training on scraped text: two courts, two answers, one factor
+    <small>Within four months of each other, two US federal judges reached opposite conclusions on whether
+    training a model on copyrighted text is fair use. Read them together and the difference is not
+    confusion — it is factor 4.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card r"><h3><i>Thomson Reuters v. Ross Intelligence</i> · D. Del. · Feb 2025</h3>
+          <p>Ross trained a legal-research AI on Westlaw headnotes. Judge Bibas, on summary judgment:
+          <b>not fair use</b>. The headnotes were original enough to protect; Ross used them "to make it
+          easier to develop a <i>competing</i> legal research tool" — the same purpose as the original,
+          aimed at the same market. Factor 4 sank it. (On appeal to the Third Circuit.)</p></div>
+        <div class="card g"><h3><i>Bartz v. Anthropic</i> · N.D. Cal. · 23 June 2025</h3>
+          <p>Authors sued over books used to train Claude. Judge Alsup, on summary judgment: <b>training
+          is fair use</b> — "exceedingly transformative", the model does not reproduce or substitute for the
+          books. <b>But</b> building a permanent library from ~7 million <i>pirated</i> copies was not
+          excused by the later training. That piece went to trial posture, and settled: <b>$1.5 billion</b>,
+          about $3,000 per work — the largest copyright settlement in US history, preliminarily approved Sept
+          2025, final approval July 2026.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="callout"><b>The factor that decided both.</b> Does the output compete with the input?
+          A model that writes new text ≠ the books it read (Alsup). A research tool trained on headnotes to
+          answer the same queries = the headnotes' market (Bibas). Same four factors, opposite facts on
+          factor 4.</div>
+        <div class="callout warn"><b>The second lesson in <i>Bartz</i> is the one for scrapers.</b> The
+          transformative use did not launder the <i>acquisition</i>. How you obtained the copy is judged on
+          its own: a pirate library is a pirate library even if what you do with it is fair. Translate:
+          a legitimate analysis does not retroactively make an unauthorised scrape authorised. Q1 and Q2 are
+          separate questions, and the court treated them that way.</div>
+        <table class="d sm free">
+          <tr><th>Case</th><th>Training</th><th>Acquisition</th></tr>
+          <tr><td><i>Ross</i></td><td class="c">not fair use</td><td class="c">—</td></tr>
+          <tr><td><i>Bartz</i></td><td class="c">fair use</td><td class="c">pirated copies: not excused</td></tr>
+          <tr><td><i>Kadrey v. Meta</i> (N.D. Cal., June 2025)</td><td class="c">fair use on that record</td>
+            <td class="c">torrenting claim left open</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 18) — you are still copying — its risk table is folded into slide 12; delete this line and the closing marker to restore
+<section class="slide" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 7 of 8</div>
+  <h1 class="t">You are not training a model. You are still copying.
+    <small>It is tempting to file the AI cases under "not my problem". Map your own actions onto the same
+    four factors and the same three questions, and most of a student project is fine — for reasons you
+    should be able to state.</small></h1>
+  <div class="wrap">
+    <table class="d free">
+      <tr><th style="width:240px">What you do</th><th style="width:70px">Box</th><th>Risk</th><th style="width:270px">What makes it defensible</th></tr>
+      <tr class="ok"><td>Save a dated snapshot of a public page to disk and parse it</td><td class="c">Q2</td>
+        <td>Low. A transient research copy of a page you were allowed to fetch.</td>
+        <td>Fair dealing for research (§52); you keep it, you do not redistribute it.</td></tr>
+      <tr class="ok"><td>Build a CSV of prices, names, ratings, coordinates</td><td class="c">Q2</td>
+        <td>Low. Facts are not protected; your arrangement is yours.</td>
+        <td>Keep provenance (URL, timestamp) per row — it is also your Q1 evidence.</td></tr>
+      <tr class="wr"><td>Copy the 500-word business descriptions into the CSV</td><td class="c">Q2</td>
+        <td>Moderate. Original expression, copied whole.</td>
+        <td>Do you need the text, or a feature of it (length, keywords, sentiment)? Extract the feature,
+          drop the text.</td></tr>
+      <tr class="wr"><td>Publish the dataset on GitHub / Kaggle</td><td class="c">Q2 + Q3</td>
+        <td>Moderate to high. You are now the distributor of the expression and of any personal data
+          in it.</td>
+        <td>Facts-only columns; names/phones removed or aggregated; a README stating source, date,
+          robots.txt status and the licence you are claiming.</td></tr>
+      <tr class="hl"><td>Sell access to it, or build a competing listings site</td><td class="c">Q2 + Q1</td>
+        <td>High. Factor 4 in full; this is <i>3Taps</i>' and <i>Ross</i>'s business model.</td>
+        <td>A licence from the source. Nothing else.</td></tr>
+      <tr class="hl"><td>Log in with an account to reach more cards, then do any of the above</td><td class="c">Q1</td>
+        <td>You have agreed to the terms and lowered the gate. Everything above inherits that.</td>
+        <td>Read the clause first; if it forbids it, the project changes.</td></tr>
+    </table>
+    <div class="callout good"><b>Defensible is a sentence you can say.</b> "I fetched public pages, honoured
+      robots.txt, kept a dated snapshot, extracted facts and one derived feature, and did not redistribute
+      the text or the phone numbers." If you cannot say it for your project, one of the rows above is why.</div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was _ryanair) — standalone Ryanair slide — folded into the protectable argument on slide 11; delete this line and the closing marker to restore
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 5 of 8 · the EU counterpoint</div>
+  <h1 class="t">Ryanair: when the data is not protected, the contract does the work
+    <small>Every case so far has been American. One European ruling matters more than the rest, because
+    it decides what happens when the copyright claim fails — which, for a table of numbers, it usually
+    does.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card o"><h3><i>Ryanair v. PR Aviation</i> · CJEU C-30/14 · 15 January 2015</h3>
+          <p>PR Aviation ran a fare-comparison site that scraped Ryanair's flight data. Ryanair's terms
+          forbade screen-scraping. The Dutch courts asked Luxembourg whether the Database Directive's
+          protections for <i>lawful users</i> stopped Ryanair enforcing those terms.</p>
+          <p style="margin-top:6px">The answer: the Directive only shields databases that qualify for
+          copyright or the <i>sui generis</i> right — and Ryanair's flight data qualified for neither.
+          A database outside the Directive is outside its user protections too. So nothing in EU database
+          law stopped Ryanair's <b>contract</b> from binding a user who had accepted it.</p></div>
+        <div class="callout warn"><b>The counter-intuitive rule.</b> The <i>weaker</i> the intellectual
+          property in the data, the <i>freer</i> the owner is to rely on terms. Facts are unprotectable —
+          which is exactly why sites that publish facts write the harshest terms of use.</div>
+        <div class="callout good"><b>Hold on to this for slide 25.</b> An exchange publishes index
+          levels — facts, uncopyrightable, and in India not even covered by a database right. Its Terms
+          of Use are therefore not one weapon among several. They are the <b>only</b> one it has.</div>
+      </div>
+      <div class="colstack">
+        <div class="card b"><h3>Where that leaves the three jurisdictions</h3>
+          <p><b>US.</b> No gate → no crime; contract only if you agreed. <b>EU.</b> Contract is taken
+          seriously and a database right sits on top of copyright — the harshest of the three.
+          <b>India.</b> Broad statute, empty case law, strict privacy regime. The next five slides are
+          what it actually says.</p></div>
+        <table class="d sm free">
+          <tr><th style="width:74px"></th><th>Copyright in the facts</th><th>Database right</th><th>Contract lever</th></tr>
+          <tr class="ok"><td><b>US</b></td><td>No — <i>Feist</i></td><td>None</td>
+            <td>Weak against a logged-off stranger</td></tr>
+          <tr class="wr"><td><b>EU</b></td><td>No</td><td><b>Yes</b> — 15 years, for substantial
+            investment</td><td><b>Strong</b> — <i>Ryanair</i></td></tr>
+          <tr class="hl"><td><b>India</b></td><td>No — <i>EBC v. Modak</i></td><td>None</td>
+            <td><b>Untested</b></td></tr>
+        </table>
+        <div class="callout"><b>Design for the strictest regime your data touches</b> — the site's, your
+          own, and that of any person in the rows.</div>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 13) — India & EU — superseded by the India section (slides 14-18); delete this line and the closing marker to restore
 <section class="slide roomy" data-sec="Access">
   <div class="eyebrow">Q1 · Access · 4 of 4</div>
   <h1 class="t">India and the EU: §43, §66, and the airline that won on contract
@@ -1788,7 +1926,7 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
 </section>
 END DISABLED SLIDE -->
 
-<!-- DISABLED SLIDE (was 16) — Two cases still open — its content is in the recap table and the case-law demo; delete this line and the closing marker to restore
+<!-- DISABLED SLIDE (was 16) — two cases still open — now gallery cards for NYT and Reddit; delete this line and the closing marker to restore
 <section class="slide roomy" data-sec="Copying">
   <div class="eyebrow">Q2 · Copying · 3 of 4 · status as of Aug 2026</div>
   <h1 class="t">Two cases still open, and what each would settle
@@ -1829,7 +1967,7 @@ END DISABLED SLIDE -->
 </section>
 END DISABLED SLIDE -->
 
-<!-- DISABLED SLIDE (was 21) — GDPR + HIPAA in one slide — split into two slides (26, 27); delete this line and the closing marker to restore
+<!-- DISABLED SLIDE (was 21) — GDPR + HIPAA in one slide — split into two slides (22, 23); delete this line and the closing marker to restore
 <section class="slide" data-sec="Privacy">
   <div class="eyebrow">Q3 · Keep and use · 3 of 4 · elsewhere</div>
   <h1 class="t">GDPR and HIPAA in one slide: public is not free, and health is different
@@ -1874,7 +2012,7 @@ END DISABLED SLIDE -->
 </section>
 END DISABLED SLIDE -->
 
-<!-- DISABLED SLIDE (was 23) — Eight habits — subsumed by the checklist slide; delete this line and the closing marker to restore
+<!-- DISABLED SLIDE (was 23) — eight habits — subsumed by the checklist slide; delete this line and the closing marker to restore
 <section class="slide roomy" data-sec="Discipline">
   <div class="eyebrow">Discipline · 1 of 3</div>
   <h1 class="t">The discipline that follows: eight habits
@@ -1916,7 +2054,7 @@ END DISABLED SLIDE -->
 </section>
 END DISABLED SLIDE -->
 
-<!-- DISABLED SLIDE (was 25) — Decision tree — third restatement of the three questions; delete this line and the closing marker to restore
+<!-- DISABLED SLIDE (was 25) — decision tree — third restatement of the three questions; delete this line and the closing marker to restore
 <section class="slide roomy" data-sec="Discipline">
   <div class="eyebrow">Discipline · 3 of 3 · the questions in order</div>
   <h1 class="t">"May I scrape this?" — asked as three questions, in order
@@ -1963,7 +2101,7 @@ Is there a login, a block, a C&amp;D, or a robots.txt Disallow on the path?
 </section>
 END DISABLED SLIDE -->
 
-<!-- DISABLED SLIDE (was 27) — Ladder recap — the ladder is already on slide 2; delete this line and the closing marker to restore
+<!-- DISABLED SLIDE (was 27) — ladder recap — the ladder is already on slide 2; delete this line and the closing marker to restore
 <section class="slide roomy" data-sec="Recap">
   <div class="eyebrow">Recap · 2 of 3</div>
   <h1 class="t">The ladder, with the rule on every rung
@@ -2007,7 +2145,7 @@ END DISABLED SLIDE -->
 </section>
 END DISABLED SLIDE -->
 
-<!-- DISABLED SLIDE (was 28) — Six takeaways — fourth restatement of the three questions; delete this line and the closing marker to restore
+<!-- DISABLED SLIDE (was 28) — six takeaways — fourth restatement of the three questions; delete this line and the closing marker to restore
 <section class="slide" data-sec="Recap">
   <div class="eyebrow">Recap · 3 of 3 · key takeaways</div>
   <h1 class="t">Six things worth keeping</h1>
@@ -2046,7 +2184,7 @@ END DISABLED SLIDE -->
 <div id="hint">← → navigate · F fullscreen · P print</div>
 <div id="nav"><button id="prev" aria-label="Previous slide">‹</button><button id="next" aria-label="Next slide">›</button></div>
 
-<script type="application/json" id="demo-11">"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Scraping Case-Law Gallery — DA2402<\/title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"/>\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin/>\n<link href=\"https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap\" rel=\"stylesheet\"/>\n<style>\n/* ===== DA2402 deck theme tokens (shared with the lecture decks) ===== */\n:root{\n  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;\n  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;\n  --code-bg:#122029; --code-ink:#D9E4E9;\n  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;\n  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;\n  --mono:\"JetBrains Mono\",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;\n  --disp:\"Bricolage Grotesque\",\"Public Sans\",system-ui,sans-serif;\n  --body:\"Public Sans\",system-ui,-apple-system,Segoe UI,sans-serif;\n}\n/* ligatures OFF: code full of ->, =>, != and <= must show them as typed */\n*,*::before,*::after{font-variant-ligatures:none;font-feature-settings:\"liga\" 0,\"clig\" 0,\"calt\" 0,\"dlig\" 0}\n<\/style>\n<style>\n    body{font-family:var(--body);margin:0;padding:20px;\n        background:var(--surround);min-height:100vh;color:var(--ink);font-size:16px;}\n    .container{max-width:1340px;margin:0 auto;background:#fff;border-radius:3px;padding:30px 36px;\n        box-shadow:0 20px 40px rgba(0,0,0,.15);}\n    h1{text-align:center;margin:0 0 6px;font-size:2.2em;\n        background:var(--ink);-webkit-background-clip:text;\n        -webkit-text-fill-color:transparent;background-clip:text;}\n    .subtitle{text-align:center;color:var(--soft);margin:0 0 26px;font-size:1em;}\n\n    /* ---- case cards grid ---- */\n    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px;}\n    .card{background:var(--card);border:3px solid var(--hair);border-radius:3px;padding:14px 12px;cursor:pointer;\n        transition:.22s;text-align:center;}\n    .card:hover{border-color:var(--soft);transform:translateY(-3px);box-shadow:0 8px 20px rgba(18,95,158,.18);}\n    .card.active{background:var(--ink);color:#fff;border-color:var(--t-cls);transform:scale(1.04);}\n    .card .icon{font-size:1.7em;display:block;margin-bottom:5px;}\n    .card .case-name{font-weight:700;font-size:.92em;margin-bottom:4px;line-height:1.3;}\n    .card .case-year{font-size:.8em;opacity:.8;}\n    .card.active .case-year{opacity:.9;}\n\n    /* ---- status pill ---- */\n    .status-pill{display:inline-block;padding:3px 10px;border-radius:3px;font-size:.77em;font-weight:700;\n        letter-spacing:.04em;margin-left:8px;vertical-align:middle;}\n    .status-decided{background:#F3FBF7;color:var(--t-grp);}\n    .status-ongoing{background:#FFFBF2;color:var(--t-anc);}\n    .status-cfaa{background:#EEF5FA;color:var(--t-cls);}\n    .status-copyright{background:#FFFBF2;color:var(--t-anc);}\n\n    /* ---- detail panel ---- */\n    .detail{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:26px;margin-bottom:28px;min-height:260px;}\n    .detail h2{margin:0 0 4px;color:var(--ink);font-size:1.4em;}\n    .detail .case-meta{color:var(--soft);font-size:.9em;margin-bottom:16px;}\n    .detail-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;}\n    .detail-cols.three{grid-template-columns:1.1fr 1fr 1fr;}\n    .dcol{background:#fff;border:1px solid var(--hair);border-radius:3px;padding:16px 18px;}\n    .dcol h3{margin:0 0 10px;font-size:.78em;letter-spacing:.08em;text-transform:uppercase;color:#fff;\n        background:var(--ink);display:inline-block;padding:5px 12px;border-radius:3px;}\n    .dcol h3.green{background:var(--t-grp);}\n    .dcol h3.amber{background:var(--t-anc);}\n    .dcol h3.red{background:var(--t-asr);}\n    .dcol ul{margin:4px 0 0;padding-left:20px;}\n    .dcol li{margin-bottom:9px;font-size:.94em;line-height:1.5;}\n    .dcol p{font-size:.94em;line-height:1.6;margin:4px 0;}\n    .placeholder{text-align:center;color:#8FA0A9;padding:60px 20px;font-size:1em;}\n    blockquote{margin:10px 0;padding:10px 16px;background:var(--card);border-left:4px solid var(--t-dot);\n        border-radius:3px;font-style:italic;font-size:.9em;color:#31444F;}\n\n    /* ---- callout boxes ---- */\n    .note{background:#FFFBF2;border-left:4px solid var(--t-anc);border-radius:3px;\n        padding:11px 16px;margin:12px 0;font-size:.92em;color:var(--t-anc);}\n    .note b{color:var(--t-anc);}\n    .explain{background:#EEF5FA;border-left:4px solid var(--t-cls);border-radius:3px;\n        padding:11px 16px;margin:12px 0;font-size:.92em;color:var(--t-cls);}\n\n    /* ---- DPDP panel ---- */\n    .dpdp-section{margin-top:8px;}\n    .dpdp-section h2{font-size:1.35em;color:var(--ink);margin:0 0 6px;}\n    .dpdp-section .dpdp-sub{color:var(--soft);font-size:.92em;margin:0 0 20px;}\n    .dpdp-steps{display:flex;flex-direction:column;gap:14px;}\n    .dpdp-step{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:16px 20px;}\n    .dpdp-step .q-label{font-weight:700;color:var(--ink);font-size:1em;margin-bottom:10px;display:block;}\n    .dpdp-options{display:flex;gap:12px;flex-wrap:wrap;}\n    .dpdp-btn{padding:9px 22px;border-radius:3px;border:2px solid var(--line);background:var(--card);\n        cursor:pointer;font-size:.94em;font-weight:600;color:var(--ink);transition:.2s;font-family:inherit;}\n    .dpdp-btn:hover{background:var(--paper);border-color:var(--t-cls);}\n    .dpdp-btn.selected-yes{background:var(--t-grp);color:#fff;border-color:var(--t-grp);}\n    .dpdp-btn.selected-no{background:var(--t-asr);color:#fff;border-color:var(--t-asr);}\n    .dpdp-btn.selected-unsure{background:var(--t-anc);color:#fff;border-color:var(--t-anc);}\n    .dpdp-step.locked{opacity:.45;pointer-events:none;}\n    .dpdp-step.active-step{border-color:var(--t-cls);box-shadow:0 4px 14px rgba(18,95,158,.2);}\n    .verdict-box{border-radius:3px;padding:20px 24px;margin-top:18px;display:none;}\n    .verdict-box.show{display:block;}\n    .verdict-box.clear{background:#F3FBF7;border:2px solid var(--t-grp);}\n    .verdict-box.caution{background:#FFFBF2;border:2px solid var(--t-anc);}\n    .verdict-box.risk{background:#FFF5F5;border:2px solid var(--t-asr);}\n    .verdict-box h3{margin:0 0 8px;font-size:1.05em;}\n    .verdict-box.clear h3{color:var(--t-grp);}\n    .verdict-box.caution h3{color:var(--t-anc);}\n    .verdict-box.risk h3{color:var(--t-asr);}\n    .verdict-box p{margin:4px 0;font-size:.94em;line-height:1.6;}\n    .reset-btn{background:var(--ink);color:#fff;border:none;\n        padding:9px 22px;border-radius:3px;cursor:pointer;font-size:.92em;font-family:inherit;\n        transition:.22s;margin-top:14px;}\n    .reset-btn:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(18,95,158,.4);}\n\n    /* ---- section divider ---- */\n    .section-divider{border:none;border-top:2px solid var(--hair);margin:30px 0;}\n\n    @media(max-width:900px){\n        .detail-cols,.detail-cols.three{grid-template-columns:1fr;}\n    }\n<\/style>\n<\/head>\n<body>\n<div class=\"container\">\n    <div class=\"da-eyebrow\">Data collection · interactive demo <span class=\"jsbadge\">Runs in your browser<\/span><\/div><h1>Scraping &amp; the Law — Case Gallery<\/h1>\n    <p class=\"subtitle\">Key court decisions shaping web-scraping legality &nbsp;·&nbsp; DA2402 · Data Collection<\/p>\n\n    <div class=\"explain\">\n        <b>How to use:<\/b> Click a case card to read the background, dispute, ruling, and the key takeaway for scrapers. After the gallery, try the DPDP Act decision panel to check whether a scraping scenario is lawful under India's data-protection law.\n    <\/div>\n\n    <!-- ========== CASE CARDS ========== -->\n    <div class=\"cards\" id=\"cards\"><\/div>\n\n    <!-- ========== DETAIL PANEL ========== -->\n    <div class=\"detail\" id=\"detail\">\n        <p class=\"placeholder\">← Click a case card above to see details.<\/p>\n    <\/div>\n\n    <hr class=\"section-divider\">\n\n    <!-- ========== DPDP DECISION PANEL ========== -->\n    <div class=\"dpdp-section\">\n        <h2>DPDP Act 2023 — Is this scraping scenario lawful?<\/h2>\n        <p class=\"dpdp-sub\">A guided checklist based on India's Digital Personal Data Protection Act, 2023. Answer each question in turn to receive a plain-language verdict.<\/p>\n\n        <div class=\"dpdp-steps\" id=\"dpdpSteps\">\n            <!-- Steps rendered by JS -->\n        <\/div>\n\n        <div class=\"verdict-box\" id=\"verdictBox\">\n            <h3 id=\"verdictTitle\"><\/h3>\n            <p id=\"verdictText\"><\/p>\n            <p id=\"verdictCaveat\" style=\"font-size:.86em;margin-top:8px;opacity:.8;\"><\/p>\n            <br>\n            <button class=\"reset-btn\" onclick=\"resetDPDP()\">Reset checklist<\/button>\n        <\/div>\n    <\/div>\n\n<div class=\"da-rail\"><div class=\"a\">DA2402 · Data Curation and Visualization<\/div><div class=\"n\">Dr. Arun B Ayyar<\/div><div class=\"c\">Interactive demo · Scraping & the law<\/div><\/div><\/div><!-- /container -->\n\n<script>\n/* ================================================================\n   CASE DATA\n   Sources: PPTX slides extracted + well-established public facts.\n   Ongoing cases are labelled as such; no final rulings are invented.\n   ================================================================ */\nconst CASES = [\n{\n    key:\"hiq\",\n    icon:\"💼\",\n    name:\"hiQ Labs v. LinkedIn\",\n    year:\"2017–2022 · Ninth Circuit\",\n    badge:\"CFAA / Anti-Competitive\",\n    badgeClass:\"status-cfaa\",\n    meta:\"Ninth Circuit 2019 &amp; 2022 (CFAA) · N.D. Cal. Nov 2022 (contract) · Consent judgment Dec 2022\",\n    background:`<p>hiQ Labs was a data-analytics company that scraped <em>publicly visible<\/em> LinkedIn profiles\n        (no login required) to build workforce-analytics products it sold to employers. LinkedIn sent a\n        cease-and-desist letter and deployed technical measures (IP blocks) to stop the scraping.\n        hiQ filed suit seeking an injunction to continue.<\/p>`,\n    dispute:`<ul>\n        <li><b>LinkedIn argued<\/b> that hiQ's scraping violated the Computer Fraud and Abuse Act (CFAA)\n            — specifically, that accessing its servers against an explicit prohibition constituted\n            \"unauthorised access\".<\/li>\n        <li><b>hiQ argued<\/b> the data was public, LinkedIn had no technical access barrier, and blocking\n            a competitor from public data was anti-competitive.<\/li>\n    <\/ul>`,\n    ruling:`<p>The Ninth Circuit ruled in hiQ's favour on the CFAA question, holding that the\n        CFAA does <em>not<\/em> prohibit accessing data that is <strong>publicly available<\/strong> on the\n        open web — even if the website's Terms of Service forbid it. The rationale: \"authorisation\" under\n        the CFAA refers to technical access barriers (gates), not contractual terms alone.\n        After <em>Van Buren<\/em> (2021) the Ninth Circuit reaffirmed this in April 2022.<\/p>\n        <p><strong>How it ended.<\/strong> Back in the district court, LinkedIn won on <em>contract<\/em>:\n        in November 2022 the court held hiQ had breached LinkedIn's User Agreement (it had scraped with\n        fake accounts and used contractors to do so). The parties entered a consent judgment in December\n        2022 — $500,000 to LinkedIn and a permanent injunction against scraping LinkedIn. The public-data\n        CFAA principle survived; hiQ the company did not.<\/p>`,\n    takeaway:`<ul>\n        <li>Scraping publicly accessible pages (no login required) is not a CFAA violation under the\n            Ninth Circuit's reading.<\/li>\n        <li>A ToS clause alone cannot convert public-data access into a CFAA offence.<\/li>\n        <li>But terms you have <em>agreed to<\/em> still bind you as a contract — hiQ's logged-in,\n            fake-account scraping is what lost the case.<\/li>\n    <\/ul>`\n},\n{\n    key:\"vanburen\",\n    icon:\"⚖️\",\n    name:\"Van Buren v. United States\",\n    year:\"2021 · Supreme Court\",\n    badge:\"CFAA Scope\",\n    badgeClass:\"status-cfaa\",\n    meta:\"Supreme Court of the United States · June 3, 2021 · 6–3 decision · Decided\",\n    background:`<p>Nathan Van Buren was a police officer who used his authorised access to a law-enforcement\n        database to look up a licence plate for a personal (improper) purpose — a favour for someone in\n        exchange for money. He was convicted under the CFAA for \"exceeding authorised access\". The case\n        reached the Supreme Court on the question of what \"exceeds authorised access\" means.<\/p>`,\n    dispute:`<ul>\n        <li>The <b>Government<\/b> argued that accessing information for an improper <em>purpose<\/em> — even\n            with technical authorisation to access the system — constitutes \"exceeding authorised access\".<\/li>\n        <li><b>Van Buren<\/b> argued that \"exceeds authorised access\" should be read narrowly: it covers only\n            accessing files/folders/databases the user has <em>no technical right<\/em> to open at all.<\/li>\n    <\/ul>`,\n    ruling:`<p>The Supreme Court (6–3, Justice Barrett writing) adopted the narrower interpretation: the\n        CFAA's \"exceeds authorised access\" provision covers only situations where someone accesses parts of\n        a computer system they are <em>technically prohibited<\/em> from entering — it does <strong>not<\/strong>\n        criminalise misuse of information someone is already authorised to access. The Court offered the\n        \"gates-up-or-down\" analogy: if the gate is up, you have authorisation regardless of purpose.<\/p>`,\n    takeaway:`<ul>\n        <li>Directly narrows CFAA scope: violating a website's <em>purpose restrictions<\/em> or ToS — without\n            bypassing a <em>technical<\/em> barrier — does not constitute a CFAA offence.<\/li>\n        <li>Strengthens the legal foundation for scraping publicly available data where no password or\n            technical lock exists.<\/li>\n        <li>Does not address all scraping scenarios — other laws (copyright, contract) still apply.<\/li>\n    <\/ul>`\n},\n{\n    key:\"brightdata\",\n    icon:\"🌐\",\n    name:\"Meta v. Bright Data\",\n    year:\"2024 · N.D. California\",\n    badge:\"ToS / Public Data\",\n    badgeClass:\"status-cfaa\",\n    meta:\"Case No. 3:23-cv-00077-EMC · N.D. Cal. · Jan 23, 2024 · Judge Edward Chen · Decided (at summary judgment stage)\",\n    background:`<p>Bright Data Ltd. provides scraping infrastructure and sells datasets compiled from publicly\n        accessible web sources, including public Facebook and Instagram pages. Meta sued, arguing that\n        Bright Data's scraping — both while logged in to Meta's platforms <em>and<\/em> while logged off —\n        violated Meta's Terms of Service and constituted computer fraud.<\/p>`,\n    dispute:`<ul>\n        <li><b>Meta<\/b> argued its ToS prohibited scraping whether the user was logged in or logged off, and\n            that accepting terms creates a binding contract whose breach triggers legal liability.<\/li>\n        <li><b>Bright Data<\/b> argued its \"logged-off\" scraping of public pages never involved Meta's systems\n            in a meaningful contractual sense, and that ToS cannot restrict access to information that is\n            otherwise public.<\/li>\n    <\/ul>`,\n    ruling:`<p>The court ruled in favour of Bright Data on the logged-off scraping question: \"Bright Data\n        did not 'use' Facebook and Instagram when it engaged in public logged-off scraping.\" The ToS\n        cannot be enforced against a party that never agreed to them (a non-user scraping public pages).\n        The ruling makes scraping publicly available social-media data significantly less legally risky,\n        and challenges Meta's ability to prevent such scraping through ToS enforcement alone.<\/p>`,\n    takeaway:`<ul>\n        <li>A website's ToS cannot restrict scraping by parties who never logged in and therefore never\n            accepted those terms.<\/li>\n        <li>\"Public\" truly means public: data visible without authentication is fair game under\n            contract-law analysis (though copyright and other claims may still apply).<\/li>\n        <li>Scraping while <em>logged in<\/em> remains legally distinct — ToS violations by authenticated\n            users can still create liability.<\/li>\n    <\/ul>`\n},\n{\n    key:\"3taps\",\n    icon:\"🏠\",\n    name:\"Craigslist v. 3Taps\",\n    year:\"2012–2015 · N.D. California\",\n    badge:\"IP Blocks / CFAA\",\n    badgeClass:\"status-cfaa\",\n    meta:\"N.D. Cal. · filed 2012 · ruling Aug 2013 (Judge Breyer) · settled June 2015 ($1M)\",\n    background:`<p>3Taps scraped housing and other classified ads from Craigslist and re-distributed them\n        via an API to third-party developers (including the apartment-search app PadMapper). Craigslist\n        sent a cease-and-desist letter, blocked 3Taps' IP addresses, and filed suit under the CFAA.<\/p>`,\n    dispute:`<ul>\n        <li><b>Craigslist<\/b> argued that once it had explicitly revoked 3Taps' access via a C&amp;D letter\n            and IP blocks, any further access was \"without authorisation\" under the CFAA.<\/li>\n        <li><b>3Taps<\/b> argued the listings were public and it had no contractual relationship with\n            Craigslist.<\/li>\n    <\/ul>`,\n    ruling:`<p>The court ruled that Craigslist's cease-and-desist letter combined with IP-address blocks\n        was sufficient to revoke authorisation under the CFAA. Continued access after that revocation\n        constituted \"access without authorisation.\" The case settled in 2015 for $1 million paid to\n        Craigslist, which then committed to donating the full amount to the Electronic Frontier Foundation\n        over ten years.<\/p>\n        <div class=\"note\"><b>Note:<\/b> This ruling pre-dates <em>hiQ<\/em> and <em>Van Buren<\/em>. Later decisions have\n        narrowed the CFAA's scope, but the principle that explicit revocation + technical barriers can\n        create liability remains relevant.<\/div>`,\n    takeaway:`<ul>\n        <li>An explicit cease-and-desist letter combined with technical barriers (IP blocks) can\n            constitute access revocation under the CFAA — even for previously public data.<\/li>\n        <li>Using proxies or other methods to bypass IP blocks <em>after<\/em> receiving a C&amp;D letter\n            is legally dangerous.<\/li>\n        <li>Contrast with <em>hiQ<\/em>: 3Taps received an explicit revocation notice; hiQ had not (initially).<\/li>\n    <\/ul>`\n},\n{\n    key:\"nytimes\",\n    icon:\"📰\",\n    name:\"NYT v. OpenAI\",\n    year:\"2023 · Ongoing\",\n    badge:\"Copyright / AI Training\",\n    badgeClass:\"status-copyright\",\n    meta:\"S.D.N.Y. · Filed December 27, 2023 · Ongoing — no final ruling\",\n    background:`<p>The New York Times filed suit in federal court against OpenAI and Microsoft, alleging\n        that millions of NYT articles were used — without permission or payment — to train large language\n        models including GPT-4, which underpins ChatGPT and Microsoft Copilot.<\/p>`,\n    dispute:`<ul>\n        <li><b>NYT<\/b> argues the use does not qualify as \"fair use\" because it is not transformative:\n            ChatGPT can reproduce NYT articles almost verbatim, substituting for the original and\n            diverting readers and revenue.<\/li>\n        <li><b>OpenAI<\/b> argues that training on publicly accessible text is protected under the fair-use\n            doctrine, which permits use of copyrighted material for research, analysis, and transformative\n            purposes.<\/li>\n        <li>NYT also alleged that ChatGPT's outputs can harm the newspaper's market by acting as a\n            substitute for visiting the NYT website.<\/li>\n    <\/ul>`,\n    ruling:`<p><strong>Ongoing — no final ruling as of the knowledge cutoff.<\/strong> The case is in\n        pretrial stages. It could set a landmark precedent for whether training AI systems on\n        copyrighted web content constitutes copyright infringement. In early 2025, a separate court\n        ruled AI training is <em>not<\/em> fair use, while other decisions have reached different conclusions\n        — the area is actively contested.<\/p>\n        <blockquote>\"There is nothing 'transformative' about using The Times's content without payment\n        to create products that substitute for The Times and steal audiences away from it.\"\n        — NYT Legal Team<\/blockquote>`,\n    takeaway:`<ul>\n        <li>Copyright law is a <em>separate<\/em> constraint from the CFAA: even if scraping public pages\n            is lawful under CFAA/contract law, the <em>use<\/em> of copyrighted content may still infringe.<\/li>\n        <li>The \"fair use\" question for AI training is unsettled — scrapers building training corpora\n            face genuine legal uncertainty.<\/li>\n        <li>Verbatim reproduction of scraped content in AI outputs heightens infringement risk.<\/li>\n    <\/ul>`\n},\n{\n    key:\"reddit\",\n    icon:\"💬\",\n    name:\"Reddit v. Anthropic\",\n    year:\"2025 · Ongoing\",\n    badge:\"ToS / Unfair Competition\",\n    badgeClass:\"status-ongoing\",\n    meta:\"California Superior Court, San Francisco · Filed June 4, 2025 · Ongoing — no final ruling\",\n    background:`<p>Reddit filed suit against Anthropic (creator of the Claude AI) alleging that Anthropic\n        scraped millions of Reddit user comments without permission to train its AI chatbot. Reddit\n        argued this violated its Terms of Service and constituted unfair competition.<\/p>`,\n    dispute:`<ul>\n        <li><b>Reddit<\/b> alleged breach of Terms of Service and unfair competition. Notably, the\n            lawsuit does <em>not<\/em> allege copyright infringement — a significant legal distinction.\n            Reddit also pointed out it has licensing agreements with Google, OpenAI, and others who\n            pay for data access and include user-protection and privacy safeguards.<\/li>\n        <li><b>Anthropic<\/b> denied the claims, stating it \"disagrees with Reddit's claims and will\n            defend itself vigorously.\"<\/li>\n    <\/ul>`,\n    ruling:`<p><strong>Ongoing — no final ruling as of the knowledge cutoff.<\/strong><\/p>\n        <blockquote>\"AI companies should not be allowed to scrape information and content from people\n        without clear limitations on how they can use that data.\"\n        — Ben Lee, Reddit Chief Legal Officer<\/blockquote>`,\n    takeaway:`<ul>\n        <li>User-generated content platforms are increasingly monetising their data through licensing\n            agreements — scraping that bypasses these deals faces legal and reputational risk.<\/li>\n        <li>Even without a copyright claim, ToS-violation and unfair-competition theories may create\n            liability for large-scale AI training scrapes.<\/li>\n        <li>The case illustrates the emerging tension between open-web scraping norms and the\n            commercial value of community-generated data.<\/li>\n    <\/ul>`\n}\n];\n\n/* ================================================================\n   RENDER CASE CARDS\n   ================================================================ */\nconst cardsDiv = document.getElementById(\"cards\");\nCASES.forEach((c, i) => {\n    const div = document.createElement(\"div\");\n    div.className = \"card\";\n    div.id = \"card-\" + c.key;\n    div.innerHTML = `<span class=\"icon\">${c.icon}<\/span>\n        <span class=\"case-name\">${c.name}<\/span>\n        <span class=\"case-year\">${c.year}<\/span>`;\n    div.addEventListener(\"click\", () => selectCase(i));\n    cardsDiv.appendChild(div);\n});\n\nfunction selectCase(i) {\n    const c = CASES[i];\n    document.querySelectorAll(\".card\").forEach(el => el.classList.remove(\"active\"));\n    document.getElementById(\"card-\" + c.key).classList.add(\"active\");\n\n    document.getElementById(\"detail\").innerHTML = `\n        <h2>${c.icon} ${c.name} <span class=\"status-pill ${c.badgeClass}\">${c.badge}<\/span><\/h2>\n        <p class=\"case-meta\">${c.meta}<\/p>\n        <div class=\"detail-cols three\">\n            <div class=\"dcol\">\n                <h3>Background &amp; Facts<\/h3>\n                ${c.background}\n            <\/div>\n            <div class=\"dcol\">\n                <h3 class=\"amber\">The Dispute<\/h3>\n                ${c.dispute}\n            <\/div>\n            <div class=\"dcol\">\n                <h3 class=\"green\">Ruling / Status<\/h3>\n                ${c.ruling}\n            <\/div>\n        <\/div>\n        <div class=\"dcol\" style=\"margin-top:16px;\">\n            <h3 class=\"red\">Takeaway for Scrapers<\/h3>\n            ${c.takeaway}\n        <\/div>`;\n}\n\n/* Default: select first card on load */\nselectCase(0);\n\n\n/* ================================================================\n   DPDP ACT 2023 — DECISION PANEL\n   Based on the Digital Personal Data Protection Act, 2023 (India).\n   Key provisions used:\n     - §2(t): \"personal data\" = data about an identifiable living individual\n     - §3 read with §4: applies to processing of digital personal data\n     - §4 proviso: does NOT apply to data \"made available by the Data\n       Principal\" themselves or under a legal obligation (publicly\n       volunteered data exemption — often called the \"public availability\"\n       carve-out in DPDP policy discussions).\n     - §6: Consent as a lawful basis\n     - §7: \"Legitimate uses\" as an alternative to consent\n   NOTE: The DPDP Rules were notified on 13 Nov 2025 and switch on in phases (Board Nov 2025; consent-manager and penalty provisions Nov 2026; full compliance May 2027).\n   This panel reflects the statutory text; implementation guidance may\n   evolve. Do NOT treat this as legal advice.\n   ================================================================ */\n\nconst DPDP_STEPS = [\n    {\n        id: \"q1\",\n        label: \"Q1 — Is the data you are collecting personal data?\",\n        hint: \"Personal data = any data about an identifiable living individual (name, contact details, IP address, browsing profile, profile photo, etc.).\",\n        options: [\"Yes — it identifies or can identify a living person\", \"No — purely aggregated / anonymised / non-personal data\"],\n        keys: [\"yes\",\"no\"]\n    },\n    {\n        id: \"q2\",\n        label: \"Q2 — Was this data made publicly available by the Data Principal themselves (or under a legal obligation)?\",\n        hint: \"Data Principal = the individual the data is about. 'Publicly available' here means the person themselves chose to publish it (e.g., a public LinkedIn profile, a public tweet) OR it was disclosed under a statutory requirement. Data posted by a third party about someone does NOT qualify.\",\n        options: [\"Yes — the individual themselves published it publicly\", \"No — posted by others, or behind a login, or unclear\"],\n        keys: [\"yes\",\"no\"]\n    },\n    {\n        id: \"q3\",\n        label: \"Q3 — Do you have a lawful basis for processing this personal data?\",\n        hint: \"Under the DPDP Act, processing requires either (a) Consent: free, specific, informed, unconditional and unambiguous consent from the Data Principal; OR (b) a 'Legitimate Use' listed in §7 (e.g., a State function, compliance with a legal obligation, employment-related processing, or an emergency involving threat to life).\",\n        options: [\"Yes — I have consent OR a §7 legitimate use\", \"No — I have neither consent nor a clear §7 ground\", \"Unsure / need to check\"],\n        keys: [\"yes\",\"no\",\"unsure\"]\n    }\n];\n\nlet dpdpAnswers = {}; // key: step id, value: answer key\nlet dpdpCurrentStep = 0;\n\nfunction renderDPDP() {\n    const container = document.getElementById(\"dpdpSteps\");\n    container.innerHTML = \"\";\n    DPDP_STEPS.forEach((step, i) => {\n        const div = document.createElement(\"div\");\n        div.className = \"dpdp-step\" + (i > dpdpCurrentStep ? \" locked\" : \"\") + (i === dpdpCurrentStep ? \" active-step\" : \"\");\n        div.id = \"dpdp-\" + step.id;\n\n        const answered = dpdpAnswers[step.id];\n        const optionsHtml = step.options.map((opt, oi) => {\n            const key = step.keys[oi];\n            let btnClass = \"dpdp-btn\";\n            if (answered === key) {\n                if (key === \"yes\") btnClass += \" selected-yes\";\n                else if (key === \"no\") btnClass += \" selected-no\";\n                else btnClass += \" selected-unsure\";\n            }\n            return `<button class=\"${btnClass}\" onclick=\"answerDPDP('${step.id}', '${key}', ${i})\">${opt}<\/button>`;\n        }).join(\"\");\n\n        div.innerHTML = `\n            <span class=\"q-label\">${step.label}<\/span>\n            <div class=\"explain\" style=\"margin:0 0 10px;font-size:.88em;\">${step.hint}<\/div>\n            <div class=\"dpdp-options\">${optionsHtml}<\/div>`;\n        container.appendChild(div);\n    });\n}\n\nfunction answerDPDP(stepId, answerKey, stepIndex) {\n    dpdpAnswers[stepId] = answerKey;\n\n    // Determine if we should short-circuit or advance\n    const verdictBox = document.getElementById(\"verdictBox\");\n    verdictBox.className = \"verdict-box\";\n    verdictBox.style.display = \"none\";\n\n    if (stepId === \"q1\" && answerKey === \"no\") {\n        // DPDP not engaged\n        dpdpCurrentStep = stepIndex; // stay here but show verdict\n        renderDPDP();\n        showVerdict(\"clear\",\n            \"DPDP Act not engaged — processing proceeds without DPDP obligations.\",\n            \"Because the data is not personal data (it does not relate to an identifiable living individual), the Digital Personal Data Protection Act 2023 does not apply to this collection. You are still subject to other applicable laws (copyright, CFAA equivalents, ToS, IT Act, etc.).\",\n            \"This assumes your anonymisation/aggregation is robust. Re-identify risk should be evaluated separately.\"\n        );\n        return;\n    }\n\n    if (stepId === \"q2\" && answerKey === \"yes\") {\n        // Public availability exemption may apply\n        dpdpCurrentStep = stepIndex;\n        renderDPDP();\n        showVerdict(\"caution\",\n            \"Likely permissible under the DPDP Act's public-availability carve-out — but verify the scope.\",\n            \"Where a Data Principal has themselves made personal data publicly available (e.g., posting a public profile), the DPDP Act's obligations are reduced for that data. Processing such data for a purpose consistent with the context in which it was shared is generally permissible without separate consent.\",\n            \"Caveat: (1) The DPDP Rules (notified Nov 2025) phase in through May 2027 — obligations tighten over that window. (2) The exemption covers data the individual published; data about them published by others may not qualify. (3) Even exempted data must be used proportionately and not in a manner that violates other rights. Not legal advice.\"\n        );\n        return;\n    }\n\n    if (stepId === \"q2\" && answerKey === \"no\") {\n        // Advance to Q3\n        dpdpCurrentStep = stepIndex + 1;\n        renderDPDP();\n        return;\n    }\n\n    if (stepId === \"q3\") {\n        dpdpCurrentStep = stepIndex;\n        renderDPDP();\n        if (answerKey === \"yes\") {\n            showVerdict(\"caution\",\n                \"Potentially lawful — provided your consent/legitimate use is valid and documented.\",\n                \"Processing personal data with a valid DPDP lawful basis (consent meeting the Act's requirements, or a §7 legitimate use) is permissible. You must also comply with the Data Principal's rights (access, correction, erasure, grievance redressal) and security obligations.\",\n                \"Caveat: Consent for scraping-derived data is difficult in practice — you usually cannot obtain prior consent from data subjects whose data is being scraped. Ensure your claimed basis is genuine and defensible. The Rules phase in through May 2027; obligations tighten over that window. Not legal advice.\"\n            );\n        } else if (answerKey === \"no\") {\n            showVerdict(\"risk\",\n                \"High risk of DPDP non-compliance — do not proceed without a lawful basis.\",\n                \"Processing personal data of Indian residents without consent or a recognised legitimate use is a violation of the Digital Personal Data Protection Act 2023. Penalties under the Act can reach ₹250 crore for certain breaches.\",\n                \"You should either: (a) obtain valid consent before collecting; (b) establish a §7 legitimate-use ground; or (c) restructure the collection so personal data is not retained. Not legal advice — seek qualified legal counsel.\"\n            );\n        } else {\n            showVerdict(\"caution\",\n                \"Uncertain — conduct a lawful-basis review before proceeding.\",\n                \"You need to identify a valid lawful basis under the DPDP Act before collecting or processing this personal data. Proceeding without one is non-compliant. Review §6 (consent) and §7 (legitimate uses) carefully against your specific use case.\",\n                \"The Rules were notified in Nov 2025 and phase in through May 2027. Not legal advice — seek qualified legal counsel.\"\n            );\n        }\n    }\n}\n\nfunction showVerdict(type, title, text, caveat) {\n    const box = document.getElementById(\"verdictBox\");\n    box.className = \"verdict-box show \" + type;\n    document.getElementById(\"verdictTitle\").textContent = title;\n    document.getElementById(\"verdictText\").textContent = text;\n    document.getElementById(\"verdictCaveat\").textContent = \"Note: \" + caveat;\n    box.scrollIntoView({behavior:\"smooth\", block:\"nearest\"});\n}\n\nfunction resetDPDP() {\n    dpdpAnswers = {};\n    dpdpCurrentStep = 0;\n    document.getElementById(\"verdictBox\").className = \"verdict-box\";\n    renderDPDP();\n}\n\n/* init */\nrenderDPDP();\n<\/script>\n\n<style>\n/* ===== DA2402 theme overrides (applied after the demo's own stylesheet) ===== */\nhtml{background:var(--surround)}\nbody{background:var(--surround);color:var(--ink);font-family:var(--body);padding:22px 20px 26px;\n  -webkit-font-smoothing:antialiased}\n.container{background:var(--paper);border-radius:0;border-top:3px solid var(--ink);\n  box-shadow:0 20px 70px rgba(0,0,0,.5);padding:26px 34px 0}\n.da-eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;\n  text-transform:uppercase;color:var(--soft);margin:0 0 10px;display:flex;gap:10px;align-items:center}\n.da-eyebrow::after{content:\"\";flex:1;height:1px;background:var(--line)}\n.da-eyebrow .jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;\n  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}\nh1{font-family:var(--disp);font-weight:700;letter-spacing:-.018em;line-height:1.1;font-size:30px;\n  text-align:left;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;margin:0 0 4px}\n.subtitle{text-align:left;font-family:var(--body);color:var(--soft);font-size:14.5px;line-height:1.42;\n  margin:0 0 18px;max-width:900px}\nh2,h3,h4{font-family:var(--disp);letter-spacing:-.005em}\nbutton,.ex-btn,.step,.mode-tab,.chip,.tab,.tab-btn,.case-card,.run-btn,.q-option{border-radius:3px!important;\n  transform:none!important;box-shadow:none!important}\nbutton:hover:not(:disabled),.ex-btn:hover,.step:hover,.mode-tab:hover,.chip:hover{transform:none!important;box-shadow:none!important}\npre,code,kbd,.code-panel,.code-row code,.result-item,.selector-input,.entropy-banner,.results-panel,\n.panel,.card,.stagebar,.note,.explain,.good,.tip,.warn,.xpath-hint,.match-badge,.tag,#sample-frame,\ntable,td,th{border-radius:0!important}\n.note,.explain,.good,.tip,.warn,.xpath-hint,.stagebar{border-radius:0!important}\n.container>*:last-child{margin-bottom:0}\n/* byline rail, same text as the decks */\n.da-rail{margin:26px -34px 0;height:30px;background:var(--card);border-top:1.5px solid var(--ink);\n  display:flex;align-items:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;\n  text-transform:uppercase;color:var(--soft)}\n.da-rail .a{padding:0 16px;flex:1}\n.da-rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}\n.da-rail .c{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;white-space:nowrap}\n<\/style>\n<style>\n/* embedded inside a lecture deck slide: drop chrome the slide already provides */\nbody.embed{padding:0;zoom:.86}\nbody.embed .container{box-shadow:none;border-top:0;padding:18px 26px 0}\nbody.embed .da-eyebrow,body.embed .da-rail{display:none}\nbody.embed h1{font-size:24px}\n<\/style>\n<script>if(window.self!==window.top||/[?&]embed/.test(location.search))document.body.classList.add('embed');<\/script>\n<\/body>\n<\/html>\n"</script>
+<script type="application/json" id="demo-11">"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Scraping Case-Law Gallery — DA2402<\/title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"/>\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin/>\n<link href=\"https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap\" rel=\"stylesheet\"/>\n<style>\n/* ===== DA2402 deck theme tokens (shared with the lecture decks) ===== */\n:root{\n  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;\n  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;\n  --code-bg:#122029; --code-ink:#D9E4E9;\n  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;\n  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;\n  --mono:\"JetBrains Mono\",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;\n  --disp:\"Bricolage Grotesque\",\"Public Sans\",system-ui,sans-serif;\n  --body:\"Public Sans\",system-ui,-apple-system,Segoe UI,sans-serif;\n}\n/* ligatures OFF: code full of ->, =>, != and <= must show them as typed */\n*,*::before,*::after{font-variant-ligatures:none;font-feature-settings:\"liga\" 0,\"clig\" 0,\"calt\" 0,\"dlig\" 0}\n<\/style>\n<style>\n    body{font-family:var(--body);margin:0;padding:20px;\n        background:var(--surround);min-height:100vh;color:var(--ink);font-size:16px;}\n    .container{max-width:1340px;margin:0 auto;background:#fff;border-radius:3px;padding:30px 36px;\n        box-shadow:0 20px 40px rgba(0,0,0,.15);}\n    h1{text-align:center;margin:0 0 6px;font-size:2.2em;\n        background:var(--ink);-webkit-background-clip:text;\n        -webkit-text-fill-color:transparent;background-clip:text;}\n    .subtitle{text-align:center;color:var(--soft);margin:0 0 26px;font-size:1em;}\n\n    /* ---- case cards grid ---- */\n    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:28px;}\n    .card{background:var(--card);border:3px solid var(--hair);border-radius:3px;padding:14px 12px;cursor:pointer;\n        transition:.22s;text-align:center;}\n    .card:hover{border-color:var(--soft);transform:translateY(-3px);box-shadow:0 8px 20px rgba(18,95,158,.18);}\n    .card.active{background:var(--ink);color:#fff;border-color:var(--t-cls);transform:scale(1.04);}\n    .card .icon{font-size:1.7em;display:block;margin-bottom:5px;}\n    .card .case-name{display:block;font-weight:700;font-size:.92em;margin-bottom:4px;line-height:1.3;}\n    .card .case-year{display:block;font-size:.8em;opacity:.8;}\n    .card.active .case-year{opacity:.9;}\n\n    /* ---- status pill ---- */\n    .status-pill{display:inline-block;padding:3px 10px;border-radius:3px;font-size:.77em;font-weight:700;\n        letter-spacing:.04em;margin-left:8px;vertical-align:middle;}\n    .status-decided{background:#F3FBF7;color:var(--t-grp);}\n    .status-ongoing{background:#FFFBF2;color:var(--t-anc);}\n    .status-cfaa{background:#EEF5FA;color:var(--t-cls);}\n    .status-copyright{background:#FFFBF2;color:var(--t-anc);}\n\n    /* ---- detail panel ---- */\n    .detail{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:26px;margin-bottom:28px;min-height:260px;}\n    .detail h2{margin:0 0 4px;color:var(--ink);font-size:1.4em;}\n    .detail .case-meta{color:var(--soft);font-size:.9em;margin-bottom:16px;}\n    .detail-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;}\n    .detail-cols.three{grid-template-columns:1.1fr 1fr 1fr;}\n    .dcol{background:#fff;border:1px solid var(--hair);border-radius:3px;padding:16px 18px;}\n    .dcol h3{margin:0 0 10px;font-size:.78em;letter-spacing:.08em;text-transform:uppercase;color:#fff;\n        background:var(--ink);display:inline-block;padding:5px 12px;border-radius:3px;}\n    .dcol h3.green{background:var(--t-grp);}\n    .dcol h3.amber{background:var(--t-anc);}\n    .dcol h3.red{background:var(--t-asr);}\n    .dcol ul{margin:4px 0 0;padding-left:20px;}\n    .dcol li{margin-bottom:9px;font-size:.94em;line-height:1.5;}\n    .dcol p{font-size:.94em;line-height:1.6;margin:4px 0;}\n    .placeholder{text-align:center;color:#8FA0A9;padding:60px 20px;font-size:1em;}\n    blockquote{margin:10px 0;padding:10px 16px;background:var(--card);border-left:4px solid var(--t-dot);\n        border-radius:3px;font-style:italic;font-size:.9em;color:#31444F;}\n\n    /* ---- callout boxes ---- */\n    .note{background:#FFFBF2;border-left:4px solid var(--t-anc);border-radius:3px;\n        padding:11px 16px;margin:12px 0;font-size:.92em;color:var(--t-anc);}\n    .note b{color:var(--t-anc);}\n    .explain{background:#EEF5FA;border-left:4px solid var(--t-cls);border-radius:3px;\n        padding:11px 16px;margin:12px 0;font-size:.92em;color:var(--t-cls);}\n\n    /* ---- DPDP panel ---- */\n    .dpdp-section{margin-top:8px;}\n    .dpdp-section h2{font-size:1.35em;color:var(--ink);margin:0 0 6px;}\n    .dpdp-section .dpdp-sub{color:var(--soft);font-size:.92em;margin:0 0 20px;}\n    .dpdp-steps{display:flex;flex-direction:column;gap:14px;}\n    .dpdp-step{background:var(--card);border:1px solid var(--hair);border-radius:3px;padding:16px 20px;}\n    .dpdp-step .q-label{font-weight:700;color:var(--ink);font-size:1em;margin-bottom:10px;display:block;}\n    .dpdp-options{display:flex;gap:12px;flex-wrap:wrap;}\n    .dpdp-btn{padding:9px 22px;border-radius:3px;border:2px solid var(--line);background:var(--card);\n        cursor:pointer;font-size:.94em;font-weight:600;color:var(--ink);transition:.2s;font-family:inherit;}\n    .dpdp-btn:hover{background:var(--paper);border-color:var(--t-cls);}\n    .dpdp-btn.selected-yes{background:var(--t-grp);color:#fff;border-color:var(--t-grp);}\n    .dpdp-btn.selected-no{background:var(--t-asr);color:#fff;border-color:var(--t-asr);}\n    .dpdp-btn.selected-unsure{background:var(--t-anc);color:#fff;border-color:var(--t-anc);}\n    .dpdp-step.locked{opacity:.45;pointer-events:none;}\n    .dpdp-step.active-step{border-color:var(--t-cls);box-shadow:0 4px 14px rgba(18,95,158,.2);}\n    .verdict-box{border-radius:3px;padding:20px 24px;margin-top:18px;display:none;}\n    .verdict-box.show{display:block;}\n    .verdict-box.clear{background:#F3FBF7;border:2px solid var(--t-grp);}\n    .verdict-box.caution{background:#FFFBF2;border:2px solid var(--t-anc);}\n    .verdict-box.risk{background:#FFF5F5;border:2px solid var(--t-asr);}\n    .verdict-box h3{margin:0 0 8px;font-size:1.05em;}\n    .verdict-box.clear h3{color:var(--t-grp);}\n    .verdict-box.caution h3{color:var(--t-anc);}\n    .verdict-box.risk h3{color:var(--t-asr);}\n    .verdict-box p{margin:4px 0;font-size:.94em;line-height:1.6;}\n    .reset-btn{background:var(--ink);color:#fff;border:none;\n        padding:9px 22px;border-radius:3px;cursor:pointer;font-size:.92em;font-family:inherit;\n        transition:.22s;margin-top:14px;}\n    .reset-btn:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(18,95,158,.4);}\n\n    /* ---- section divider ---- */\n    /* ---- chain groups: the gallery is three arguments, not eleven facts ---- */\n    .chain{margin-bottom:22px;}\n    .chain-hd{display:flex;align-items:baseline;gap:10px;margin:0 0 9px;padding-bottom:6px;\n        border-bottom:2px solid var(--hair);}\n    .chain-hd .q{font-family:var(--mono);font-size:.72em;letter-spacing:.14em;text-transform:uppercase;\n        color:var(--t-cls);font-weight:700;}\n    .chain-hd .ttl{font-weight:700;font-size:1.02em;color:var(--ink);}\n    .chain-hd .cl{font-size:.86em;color:var(--soft);margin-left:auto;text-align:right;}\n    .chain .cards{margin-bottom:0;}\n    .section-divider{border:none;border-top:2px solid var(--hair);margin:30px 0;}\n\n    @media(max-width:900px){\n        .detail-cols,.detail-cols.three{grid-template-columns:1fr;}\n    }\n<\/style>\n<\/head>\n<body>\n<div class=\"container\">\n    <div class=\"da-eyebrow\">Data collection · interactive demo <span class=\"jsbadge\">Runs in your browser<\/span><\/div><h1>Scraping &amp; the Law — Case Gallery<\/h1>\n    <p class=\"subtitle\">Eleven decisions, grouped into the three arguments they answer &nbsp;·&nbsp; DA2402 · Data Collection<\/p>\n\n    <div class=\"explain\">\n        <b>How to use:<\/b> The eleven cases are grouped into the <b>three arguments<\/b> they belong to, and within each group they are ordered so that reading left to right is reading the argument. Click any card for its background, the dispute, the ruling and the takeaway for a scraper. Below the gallery, the DPDP Act decision panel walks a scraping scenario through India&rsquo;s data-protection law.\n    <\/div>\n\n    <!-- ========== CASE CARDS, GROUPED BY ARGUMENT ========== -->\n    <div id=\"chains\"><\/div>\n\n    <!-- ========== DETAIL PANEL ========== -->\n    <div class=\"detail\" id=\"detail\">\n        <p class=\"placeholder\">← Click a case card above to see details.<\/p>\n    <\/div>\n\n    <hr class=\"section-divider\">\n\n    <!-- ========== DPDP DECISION PANEL ========== -->\n    <div class=\"dpdp-section\">\n        <h2>DPDP Act 2023 — Is this scraping scenario lawful?<\/h2>\n        <p class=\"dpdp-sub\">A guided checklist based on India's Digital Personal Data Protection Act, 2023. Answer each question in turn to receive a plain-language verdict.<\/p>\n\n        <div class=\"dpdp-steps\" id=\"dpdpSteps\">\n            <!-- Steps rendered by JS -->\n        <\/div>\n\n        <div class=\"verdict-box\" id=\"verdictBox\">\n            <h3 id=\"verdictTitle\"><\/h3>\n            <p id=\"verdictText\"><\/p>\n            <p id=\"verdictCaveat\" style=\"font-size:.86em;margin-top:8px;opacity:.8;\"><\/p>\n            <br>\n            <button class=\"reset-btn\" onclick=\"resetDPDP()\">Reset checklist<\/button>\n        <\/div>\n    <\/div>\n\n<div class=\"da-rail\"><div class=\"a\">DA2402 · Data Curation and Visualization<\/div><div class=\"n\">Dr. Arun B Ayyar<\/div><div class=\"c\">Interactive demo · Scraping & the law<\/div><\/div><\/div><!-- /container -->\n\n<script>\n/* ================================================================\n   CASE DATA\n   Sources: PPTX slides extracted + well-established public facts.\n   Ongoing cases are labelled as such; no final rulings are invented.\n   ================================================================ */\nconst CASES = [\n{\n    key:\"hiq\",\n    chain:\"access\",\n    icon:\"💼\",\n    name:\"hiQ Labs v. LinkedIn\",\n    year:\"2017–2022 · Ninth Circuit\",\n    badge:\"CFAA / Anti-Competitive\",\n    badgeClass:\"status-cfaa\",\n    meta:\"Ninth Circuit 2019 &amp; 2022 (CFAA) · N.D. Cal. Nov 2022 (contract) · Consent judgment Dec 2022\",\n    background:`<p>hiQ Labs was a data-analytics company that scraped <em>publicly visible<\/em> LinkedIn profiles\n        (no login required) to build workforce-analytics products it sold to employers. LinkedIn sent a\n        cease-and-desist letter and deployed technical measures (IP blocks) to stop the scraping.\n        hiQ filed suit seeking an injunction to continue.<\/p>`,\n    dispute:`<ul>\n        <li><b>LinkedIn argued<\/b> that hiQ's scraping violated the Computer Fraud and Abuse Act (CFAA)\n            — specifically, that accessing its servers against an explicit prohibition constituted\n            \"unauthorised access\".<\/li>\n        <li><b>hiQ argued<\/b> the data was public, LinkedIn had no technical access barrier, and blocking\n            a competitor from public data was anti-competitive.<\/li>\n    <\/ul>`,\n    ruling:`<p>The Ninth Circuit ruled in hiQ's favour on the CFAA question, holding that the\n        CFAA does <em>not<\/em> prohibit accessing data that is <strong>publicly available<\/strong> on the\n        open web — even if the website's Terms of Service forbid it. The rationale: \"authorisation\" under\n        the CFAA refers to technical access barriers (gates), not contractual terms alone.\n        After <em>Van Buren<\/em> (2021) the Ninth Circuit reaffirmed this in April 2022.<\/p>\n        <p><strong>How it ended.<\/strong> Back in the district court, LinkedIn won on <em>contract<\/em>:\n        in November 2022 the court held hiQ had breached LinkedIn's User Agreement (it had scraped with\n        fake accounts and used contractors to do so). The parties entered a consent judgment in December\n        2022 — $500,000 to LinkedIn and a permanent injunction against scraping LinkedIn. The public-data\n        CFAA principle survived; hiQ the company did not.<\/p>`,\n    takeaway:`<ul>\n        <li>Scraping publicly accessible pages (no login required) is not a CFAA violation under the\n            Ninth Circuit's reading.<\/li>\n        <li>A ToS clause alone cannot convert public-data access into a CFAA offence.<\/li>\n        <li>But terms you have <em>agreed to<\/em> still bind you as a contract — hiQ's logged-in,\n            fake-account scraping is what lost the case.<\/li>\n    <\/ul>`\n},\n{\n    key:\"vanburen\",\n    chain:\"access\",\n    icon:\"⚖️\",\n    name:\"Van Buren v. United States\",\n    year:\"2021 · Supreme Court\",\n    badge:\"CFAA Scope\",\n    badgeClass:\"status-cfaa\",\n    meta:\"Supreme Court of the United States · June 3, 2021 · 6–3 decision · Decided\",\n    background:`<p>Nathan Van Buren was a police officer who used his authorised access to a law-enforcement\n        database to look up a licence plate for a personal (improper) purpose — a favour for someone in\n        exchange for money. He was convicted under the CFAA for \"exceeding authorised access\". The case\n        reached the Supreme Court on the question of what \"exceeds authorised access\" means.<\/p>`,\n    dispute:`<ul>\n        <li>The <b>Government<\/b> argued that accessing information for an improper <em>purpose<\/em> — even\n            with technical authorisation to access the system — constitutes \"exceeding authorised access\".<\/li>\n        <li><b>Van Buren<\/b> argued that \"exceeds authorised access\" should be read narrowly: it covers only\n            accessing files/folders/databases the user has <em>no technical right<\/em> to open at all.<\/li>\n    <\/ul>`,\n    ruling:`<p>The Supreme Court (6–3, Justice Barrett writing) adopted the narrower interpretation: the\n        CFAA's \"exceeds authorised access\" provision covers only situations where someone accesses parts of\n        a computer system they are <em>technically prohibited<\/em> from entering — it does <strong>not<\/strong>\n        criminalise misuse of information someone is already authorised to access. The Court offered the\n        \"gates-up-or-down\" analogy: if the gate is up, you have authorisation regardless of purpose.<\/p>`,\n    takeaway:`<ul>\n        <li>Directly narrows CFAA scope: violating a website's <em>purpose restrictions<\/em> or ToS — without\n            bypassing a <em>technical<\/em> barrier — does not constitute a CFAA offence.<\/li>\n        <li>Strengthens the legal foundation for scraping publicly available data where no password or\n            technical lock exists.<\/li>\n        <li>Does not address all scraping scenarios — other laws (copyright, contract) still apply.<\/li>\n    <\/ul>`\n},\n{\n    key:\"brightdata\",\n    chain:\"access\",\n    icon:\"🌐\",\n    name:\"Meta v. Bright Data\",\n    year:\"2024 · N.D. California\",\n    badge:\"ToS / Public Data\",\n    badgeClass:\"status-cfaa\",\n    meta:\"Case No. 3:23-cv-00077-EMC · N.D. Cal. · Jan 23, 2024 · Judge Edward Chen · Decided (at summary judgment stage)\",\n    background:`<p>Bright Data Ltd. provides scraping infrastructure and sells datasets compiled from publicly\n        accessible web sources, including public Facebook and Instagram pages. Meta sued, arguing that\n        Bright Data's scraping — both while logged in to Meta's platforms <em>and<\/em> while logged off —\n        violated Meta's Terms of Service and constituted computer fraud.<\/p>`,\n    dispute:`<ul>\n        <li><b>Meta<\/b> argued its ToS prohibited scraping whether the user was logged in or logged off, and\n            that accepting terms creates a binding contract whose breach triggers legal liability.<\/li>\n        <li><b>Bright Data<\/b> argued its \"logged-off\" scraping of public pages never involved Meta's systems\n            in a meaningful contractual sense, and that ToS cannot restrict access to information that is\n            otherwise public.<\/li>\n    <\/ul>`,\n    ruling:`<p>The court ruled in favour of Bright Data on the logged-off scraping question: \"Bright Data\n        did not 'use' Facebook and Instagram when it engaged in public logged-off scraping.\" The ToS\n        cannot be enforced against a party that never agreed to them (a non-user scraping public pages).\n        The ruling makes scraping publicly available social-media data significantly less legally risky,\n        and challenges Meta's ability to prevent such scraping through ToS enforcement alone.<\/p>`,\n    takeaway:`<ul>\n        <li>A website's ToS cannot restrict scraping by parties who never logged in and therefore never\n            accepted those terms.<\/li>\n        <li>\"Public\" truly means public: data visible without authentication is fair game under\n            contract-law analysis (though copyright and other claims may still apply).<\/li>\n        <li>Scraping while <em>logged in<\/em> remains legally distinct — ToS violations by authenticated\n            users can still create liability.<\/li>\n    <\/ul>`\n},\n{\n    key:\"3taps\",\n    chain:\"access\",\n    icon:\"🏠\",\n    name:\"Craigslist v. 3Taps\",\n    year:\"2012–2015 · N.D. California\",\n    badge:\"IP Blocks / CFAA\",\n    badgeClass:\"status-cfaa\",\n    meta:\"N.D. Cal. · filed 2012 · ruling Aug 2013 (Judge Breyer) · settled June 2015 ($1M)\",\n    background:`<p>3Taps scraped housing and other classified ads from Craigslist and re-distributed them\n        via an API to third-party developers (including the apartment-search app PadMapper). Craigslist\n        sent a cease-and-desist letter, blocked 3Taps' IP addresses, and filed suit under the CFAA.<\/p>`,\n    dispute:`<ul>\n        <li><b>Craigslist<\/b> argued that once it had explicitly revoked 3Taps' access via a C&amp;D letter\n            and IP blocks, any further access was \"without authorisation\" under the CFAA.<\/li>\n        <li><b>3Taps<\/b> argued the listings were public and it had no contractual relationship with\n            Craigslist.<\/li>\n    <\/ul>`,\n    ruling:`<p>The court ruled that Craigslist's cease-and-desist letter combined with IP-address blocks\n        was sufficient to revoke authorisation under the CFAA. Continued access after that revocation\n        constituted \"access without authorisation.\" The case settled in 2015 for $1 million paid to\n        Craigslist, which then committed to donating the full amount to the Electronic Frontier Foundation\n        over ten years.<\/p>\n        <div class=\"note\"><b>Note:<\/b> This ruling pre-dates <em>hiQ<\/em> and <em>Van Buren<\/em>. Later decisions have\n        narrowed the CFAA's scope, but the principle that explicit revocation + technical barriers can\n        create liability remains relevant.<\/div>`,\n    takeaway:`<ul>\n        <li>An explicit cease-and-desist letter combined with technical barriers (IP blocks) can\n            constitute access revocation under the CFAA — even for previously public data.<\/li>\n        <li>Using proxies or other methods to bypass IP blocks <em>after<\/em> receiving a C&amp;D letter\n            is legally dangerous.<\/li>\n        <li>Contrast with <em>hiQ<\/em>: 3Taps received an explicit revocation notice; hiQ had not (initially).<\/li>\n    <\/ul>`\n},\n{\n    key:\"nytimes\",\n    chain:\"copy\",\n    icon:\"📰\",\n    name:\"NYT v. OpenAI\",\n    year:\"2023 · Ongoing\",\n    badge:\"Copyright / AI Training\",\n    badgeClass:\"status-copyright\",\n    meta:\"S.D.N.Y. · Filed December 27, 2023 · Ongoing — no final ruling\",\n    background:`<p>The New York Times filed suit in federal court against OpenAI and Microsoft, alleging\n        that millions of NYT articles were used — without permission or payment — to train large language\n        models including GPT-4, which underpins ChatGPT and Microsoft Copilot.<\/p>`,\n    dispute:`<ul>\n        <li><b>NYT<\/b> argues the use does not qualify as \"fair use\" because it is not transformative:\n            ChatGPT can reproduce NYT articles almost verbatim, substituting for the original and\n            diverting readers and revenue.<\/li>\n        <li><b>OpenAI<\/b> argues that training on publicly accessible text is protected under the fair-use\n            doctrine, which permits use of copyrighted material for research, analysis, and transformative\n            purposes.<\/li>\n        <li>NYT also alleged that ChatGPT's outputs can harm the newspaper's market by acting as a\n            substitute for visiting the NYT website.<\/li>\n    <\/ul>`,\n    ruling:`<p><strong>Still pending — no ruling on the merits as of August 2026.<\/strong> The case is\n        consolidated with other publishers' suits before Judge Stein in the S.D.N.Y.; an amended complaint\n        was filed in June 2026, with summary-judgment briefing expected during 2026 and trial possibly\n        2027.<\/p>\n        <p>What it would settle: whether factor 4 — market substitution, evidenced by near-verbatim\n        regurgitation — beats \"transformative\" for <em>news<\/em>, where the underlying facts are free but\n        the expression is the product. Note that the <em>Ziff Davis<\/em> ruling on robots.txt came out of\n        this same consolidated proceeding.<\/p>\n        <blockquote>\"There is nothing 'transformative' about using The Times's content without payment\n        to create products that substitute for The Times and steal audiences away from it.\"\n        — NYT Legal Team<\/blockquote>`,\n\n    takeaway:`<ul>\n        <li>Copyright law is a <em>separate<\/em> constraint from the CFAA: even if scraping public pages\n            is lawful under CFAA/contract law, the <em>use<\/em> of copyrighted content may still infringe.<\/li>\n        <li>The \"fair use\" question for AI training is unsettled — scrapers building training corpora\n            face genuine legal uncertainty.<\/li>\n        <li>Verbatim reproduction of scraped content in AI outputs heightens infringement risk.<\/li>\n    <\/ul>`\n},\n{\n    key:\"reddit\",\n    chain:\"copy\",\n    icon:\"💬\",\n    name:\"Reddit v. Anthropic\",\n    year:\"2025 · Ongoing\",\n    badge:\"ToS / Unfair Competition\",\n    badgeClass:\"status-ongoing\",\n    meta:\"California Superior Court, San Francisco · Filed June 4, 2025 · Ongoing — no final ruling\",\n    background:`<p>Reddit filed suit against Anthropic (creator of the Claude AI) alleging that Anthropic\n        scraped millions of Reddit user comments without permission to train its AI chatbot. Reddit\n        argued this violated its Terms of Service and constituted unfair competition.<\/p>`,\n    dispute:`<ul>\n        <li><b>Reddit<\/b> alleged breach of Terms of Service and unfair competition. Notably, the\n            lawsuit does <em>not<\/em> allege copyright infringement — a significant legal distinction.\n            Reddit also pointed out it has licensing agreements with Google, OpenAI, and others who\n            pay for data access and include user-protection and privacy safeguards.<\/li>\n        <li><b>Anthropic<\/b> denied the claims, stating it \"disagrees with Reddit's claims and will\n            defend itself vigorously.\"<\/li>\n    <\/ul>`,\n    ruling:`<p><strong>Still pending — in state court.<\/strong> Reddit pleads breach of its User\n        Agreement, trespass to chattels, unfair competition and interference with the privacy promises it\n        made to its users — and <strong>no copyright claim at all<\/strong>. Anthropic removed the case to\n        federal court arguing it was really a copyright case in disguise; in <strong>March 2026 the federal\n        judge disagreed and remanded it<\/strong> to the San Francisco Superior Court, where it is\n        proceeding.<\/p>\n        <p>What it would settle: whether a platform's terms can be enforced against a large-scale scraper\n        on <em>contract and state-law theories alone<\/em> — the route <em>Meta v. Bright Data<\/em> closed\n        for logged-off strangers, now tested against a defendant who (Reddit says) was told to stop.\n        Reddit's own framing is that it licenses the same data to Google and OpenAI, so the complaint is\n        about taking without the deal.<\/p>`,\n    takeaway:`<ul>\n        <li>User-generated content platforms are increasingly monetising their data through licensing\n            agreements — scraping that bypasses these deals faces legal and reputational risk.<\/li>\n        <li>Even without a copyright claim, ToS-violation and unfair-competition theories may create\n            liability for large-scale AI training scrapes.<\/li>\n        <li>The case illustrates the emerging tension between open-web scraping norms and the\n            commercial value of community-generated data.<\/li>\n    <\/ul>`\n},\n{\n    key:\"feist\",\n    chain:\"protect\",\n    icon:\"📖\",\n    name:\"Feist v. Rural Telephone\",\n    year:\"1991 · US Supreme Court\",\n    badge:\"Facts / Originality\",\n    badgeClass:\"status-decided\",\n    meta:\"499 U.S. 340 · Decided 27 March 1991 · Unanimous (O'Connor J.)\",\n    background:`<p>Rural Telephone Service published a white-pages directory it was required by state\n        regulation to compile. Feist, a competing publisher of wider area-wide directories, asked to\n        licence the listings, was refused, and copied <strong>1,309 of them anyway<\/strong> — names,\n        towns and telephone numbers. Rural sued for copyright infringement, and won in both courts\n        below on the then-standard \"sweat of the brow\" theory.<\/p>`,\n    dispute:`<ul>\n        <li><b>Rural argued<\/b> that the labour and expense of assembling the directory earned it\n            copyright in the compilation — the \"sweat of the brow\" doctrine that lower US courts had\n            applied for decades.<\/li>\n        <li><b>Feist argued<\/b> that names, addresses and telephone numbers are <em>facts<\/em>, that\n            facts are discovered rather than authored, and that no amount of effort can make a fact\n            someone's property.<\/li>\n    <\/ul>`,\n    ruling:`<p><strong>Feist won, unanimously.<\/strong> Justice O'Connor held that\n        <strong>facts are never copyrightable<\/strong>, because copyright protects authorship and nobody\n        authors a fact. A compilation of facts <em>can<\/em> be protected, but only in its\n        <strong>selection, coordination or arrangement<\/strong>, and only where those show a\n        \"<strong>modicum of creativity<\/strong>\".<\/p>\n        <p>Rural's directory failed that test: listing every subscriber alphabetically is\n        \"an age-old practice, firmly rooted in tradition and so commonplace that it has come to be\n        expected as a matter of course\". <strong>Sweat of the brow was rejected outright<\/strong> —\n        effort is not authorship.<\/p>`,\n    takeaway:`<ul>\n        <li>A CSV of prices, dates, names or ratings is a collection of facts. Copying it is not\n            copyright infringement, however expensive it was to assemble.<\/li>\n        <li>Alphabetical and chronological orderings add <em>nothing<\/em> — they are the arrangements the\n            data forces on you, so no creativity is available to protect.<\/li>\n        <li>This is why data sites rely on Terms of Use rather than copyright: it is usually the only\n            lever they have. See <em>Ryanair<\/em>.<\/li>\n    <\/ul>`\n},\n{\n    key:\"modak\",\n    chain:\"protect\",\n    icon:\"⚖️\",\n    name:\"Eastern Book Co. v. D.B. Modak\",\n    year:\"2008 · Supreme Court of India\",\n    badge:\"Facts / Originality · India\",\n    badgeClass:\"status-decided\",\n    meta:\"(2008) 1 SCC 1 · Supreme Court of India · The controlling Indian authority on data compilations\",\n    background:`<p>Eastern Book Company publishes <em>Supreme Court Cases<\/em>, reproducing raw judgments\n        with editorial work on top: paragraph numbering, cross-references, formatting, headnotes, and\n        marks showing which judge said what (\"concurring\", \"partly dissenting\"). Modak and others\n        released CD-ROMs reproducing EBC's versions of the judgments. EBC sued.<\/p>`,\n    dispute:`<ul>\n        <li><b>EBC argued<\/b> copyright in its edited versions, relying on the labour and skill its\n            editors had put into them.<\/li>\n        <li><b>The defendants argued<\/b> that judgments are public documents, expressly outside copyright\n            under §52(1)(q) of the Copyright Act 1957, and that reproducing them cannot infringe.<\/li>\n    <\/ul>`,\n    ruling:`<p>The Supreme Court <strong>rejected \"sweat of the brow\"<\/strong> for India, and declined to\n        let effort alone create copyright. Following <em>Feist<\/em> (US) and\n        <em>CCH Canadian v. Law Society of Upper Canada<\/em>, it adopted a\n        <strong>skill-and-judgment / modicum-of-creativity<\/strong> standard.<\/p>\n        <p>Applied: the judgments themselves attract <strong>no copyright<\/strong>. Routine copy-editing —\n        correcting errors, applying a house format — is not original either. Only a narrow set of\n        genuinely judgment-laden additions, such as the paragraph numbering scheme and the\n        judge-attribution marks, were protected. EBC won a fraction of what it claimed.<\/p>`,\n    takeaway:`<ul>\n        <li><strong>This is the Indian authority<\/strong> for the proposition that a table of facts is\n            not someone's copyright, whatever it cost to build.<\/li>\n        <li>India also has <strong>no <em>sui generis<\/em> database right<\/strong> — the EU's separate\n            15-year protection for substantial investment has no Indian counterpart, and none in the US\n            either.<\/li>\n        <li>So for an Indian scrape of a factual series, copyright is simply not the risk. The access\n            statute and the terms of use are.<\/li>\n    <\/ul>`\n},\n{\n    key:\"ryanair\",\n    chain:\"protect\",\n    icon:\"✈️\",\n    name:\"Ryanair v. PR Aviation\",\n    year:\"2015 · CJEU\",\n    badge:\"Contract / Database Right\",\n    badgeClass:\"status-decided\",\n    meta:\"Case C-30/14 · Court of Justice of the European Union · 15 January 2015\",\n    background:`<p>PR Aviation ran a fare-comparison website that scraped Ryanair's flight and price data.\n        Ryanair's terms of use forbade screen-scraping. The Dutch courts referred a question to\n        Luxembourg: does the Database Directive, which grants <em>lawful users<\/em> certain rights that\n        cannot be contracted away, stop Ryanair from enforcing those terms?<\/p>`,\n    dispute:`<ul>\n        <li><b>PR Aviation argued<\/b> it was a lawful user of a database and that the Directive's\n            protections overrode Ryanair's contractual prohibition.<\/li>\n        <li><b>Ryanair argued<\/b> its terms were an ordinary contract and bound anyone who used the\n            site on them.<\/li>\n    <\/ul>`,\n    ruling:`<p>The Court held that the Directive's user protections apply <strong>only to databases that\n        qualify<\/strong> for copyright or for the <em>sui generis<\/em> right. Ryanair's flight data\n        qualified for <strong>neither<\/strong> — the facts were unprotectable and the arrangement\n        uncreative.<\/p>\n        <p>A database outside the Directive is outside its user protections too. So nothing in EU database\n        law stopped Ryanair's <strong>contract<\/strong> from binding a user who had accepted it.<\/p>`,\n    takeaway:`<ul>\n        <li>The counter-intuitive rule: <strong>the weaker the intellectual property in the data, the\n            freer the owner is to rely on terms.<\/strong><\/li>\n        <li>Which is exactly why sites that publish facts — prices, fares, index levels, listings —\n            write the harshest terms of use. It is the only lever they have.<\/li>\n        <li>The defence against it is the one <em>Meta v. Bright Data<\/em> supplies: a contract still\n            needs your assent. Do not create an account.<\/li>\n    <\/ul>`\n},\n{\n    key:\"ross\",\n    chain:\"copy\",\n    icon:\"🔍\",\n    name:\"Thomson Reuters v. Ross\",\n    year:\"2025 · D. Delaware\",\n    badge:\"AI Training · Not fair use\",\n    badgeClass:\"status-copyright\",\n    meta:\"D. Del. · Judge Bibas · February 2025 · On interlocutory appeal to the Third Circuit\",\n    background:`<p>Ross Intelligence built a legal-research AI and trained it on <strong>Westlaw\n        headnotes<\/strong> — the editorial summaries Thomson Reuters writes for each judicial opinion.\n        Ross had been refused a licence, and obtained the material through an intermediary. Thomson\n        Reuters sued for copyright infringement.<\/p>`,\n    dispute:`<ul>\n        <li><b>Ross argued<\/b> fair use: the headnotes were only intermediate inputs, the output was a\n            search tool rather than a reproduction, and the underlying judicial opinions are public.<\/li>\n        <li><b>Thomson Reuters argued<\/b> the headnotes are original editorial work, and that Ross used\n            them for exactly the purpose they serve — to build a competing legal-research product.<\/li>\n    <\/ul>`,\n    ruling:`<p><strong>Not fair use.<\/strong> Judge Bibas, on reconsideration of his own earlier order,\n        granted Thomson Reuters partial summary judgment. The headnotes were original enough to protect,\n        and Ross used them \"to make it easier to develop a competing legal research tool\" — the same\n        purpose, aimed at the same customers.<\/p>\n        <p><strong>Factor 4 decided it:<\/strong> effect on the market for the original. Note that this is\n        <em>non-generative<\/em> AI — the tool returned existing opinions rather than writing new text,\n        which is part of why the transformative argument failed. Certified for interlocutory appeal;\n        pending before the Third Circuit.<\/p>`,\n    takeaway:`<ul>\n        <li>\"It was only training data\" is not a defence by itself. The question is whether your output\n            competes with the input.<\/li>\n        <li>A tool that answers the same queries for the same users as the source is the\n            <strong>easiest<\/strong> fair-use case to lose.<\/li>\n        <li>Read alongside <em>Bartz<\/em>: same four factors, opposite result, and the difference is\n            factor 4.<\/li>\n    <\/ul>`\n},\n{\n    key:\"bartz\",\n    chain:\"copy\",\n    icon:\"📚\",\n    name:\"Bartz v. Anthropic\",\n    year:\"2025 · N.D. California\",\n    badge:\"AI Training · Fair use, but\",\n    badgeClass:\"status-copyright\",\n    meta:\"N.D. Cal. · Judge Alsup · 23 June 2025 · Settled: final approval July 2026\",\n    background:`<p>Authors sued Anthropic over books used to train Claude. Two distinct things had\n        happened: Anthropic had <strong>bought and scanned<\/strong> print books, and it had also\n        <strong>downloaded roughly seven million pirated copies<\/strong> from shadow libraries and kept\n        them in a permanent internal library.<\/p>`,\n    dispute:`<ul>\n        <li><b>The authors argued<\/b> that both the copying for training and the retention of pirated\n            copies infringed.<\/li>\n        <li><b>Anthropic argued<\/b> fair use for the whole of it: training a model on text is\n            transformative, and the model does not reproduce the books.<\/li>\n    <\/ul>`,\n    ruling:`<p><strong>Split, and the split is the lesson.<\/strong> Judge Alsup held that\n        <strong>training is fair use<\/strong> — \"exceedingly transformative\"; the model does not\n        reproduce or substitute for the books.<\/p>\n        <p>But building a permanent library from pirated copies was <strong>not excused<\/strong> by the\n        later fair use. That piece headed for trial on statutory damages, and the parties settled:\n        <strong>$1.5 billion<\/strong>, about $3,000 per work — the largest copyright settlement in US\n        history. Preliminarily approved September 2025; final approval July 2026.<\/p>`,\n    takeaway:`<ul>\n        <li><strong>The transformative use did not launder the acquisition.<\/strong> How you obtained the\n            copy is judged on its own.<\/li>\n        <li>Translated for a scraper: a legitimate analysis does not retroactively make an unauthorised\n            scrape authorised. Access and copying are separate questions, and the court treated them\n            separately.<\/li>\n        <li>Compare <em>Kadrey v. Meta<\/em> (N.D. Cal., June 2025): fair use on that record, with the\n            torrenting claim left open. Same pattern.<\/li>\n    <\/ul>`\n}\n];\n\n/* ================================================================\n   RENDER CASE CARDS\n   ================================================================ */\nconst CHAINS = [\n  {q:\"Q1\", ttl:\"May I access it?\",\n   cl:\"A gate that is down, or words on a page? Read these four in order.\",\n   keys:[\"vanburen\",\"hiq\",\"3taps\",\"brightdata\"]},\n  {q:\"Q2\", ttl:\"What is even protectable?\",\n   cl:\"Facts are free — which is why the terms of use get harsh.\",\n   keys:[\"feist\",\"modak\",\"ryanair\"]},\n  {q:\"Q2\", ttl:\"Copying at scale\",\n   cl:\"Two decided, two pending. Factor 4 separates them.\",\n   keys:[\"ross\",\"bartz\",\"nytimes\",\"reddit\"]}\n];\n\nconst chainsDiv = document.getElementById(\"chains\");\nCHAINS.forEach(ch => {\n    const wrap = document.createElement(\"div\");\n    wrap.className = \"chain\";\n    wrap.innerHTML = `<div class=\"chain-hd\">\n            <span class=\"q\">${ch.q}<\/span>\n            <span class=\"ttl\">${ch.ttl}<\/span>\n            <span class=\"cl\">${ch.cl}<\/span>\n        <\/div><div class=\"cards\"><\/div>`;\n    const grid = wrap.querySelector(\".cards\");\n    ch.keys.forEach(k => {\n        const i = CASES.findIndex(x => x.key === k);\n        const c = CASES[i];\n        const div = document.createElement(\"div\");\n        div.className = \"card\";\n        div.id = \"card-\" + c.key;\n        div.innerHTML = `<span class=\"icon\">${c.icon}<\/span>\n        <span class=\"case-name\">${c.name}<\/span>\n        <span class=\"case-year\">${c.year}<\/span>`;\n        div.addEventListener(\"click\", () => selectCase(i));\n        grid.appendChild(div);\n    });\n    chainsDiv.appendChild(wrap);\n});\n\nfunction selectCase(i) {\n    const c = CASES[i];\n    document.querySelectorAll(\".card\").forEach(el => el.classList.remove(\"active\"));\n    document.getElementById(\"card-\" + c.key).classList.add(\"active\");\n\n    document.getElementById(\"detail\").innerHTML = `\n        <h2>${c.icon} ${c.name} <span class=\"status-pill ${c.badgeClass}\">${c.badge}<\/span><\/h2>\n        <p class=\"case-meta\">${c.meta}<\/p>\n        <div class=\"detail-cols three\">\n            <div class=\"dcol\">\n                <h3>Background &amp; Facts<\/h3>\n                ${c.background}\n            <\/div>\n            <div class=\"dcol\">\n                <h3 class=\"amber\">The Dispute<\/h3>\n                ${c.dispute}\n            <\/div>\n            <div class=\"dcol\">\n                <h3 class=\"green\">Ruling / Status<\/h3>\n                ${c.ruling}\n            <\/div>\n        <\/div>\n        <div class=\"dcol\" style=\"margin-top:16px;\">\n            <h3 class=\"red\">Takeaway for Scrapers<\/h3>\n            ${c.takeaway}\n        <\/div>`;\n}\n\n/* Default: the first card of the first argument, not CASES[0] */\nselectCase(CASES.findIndex(c => c.key === CHAINS[0].keys[0]));\n\n\n/* ================================================================\n   DPDP ACT 2023 — DECISION PANEL\n   Based on the Digital Personal Data Protection Act, 2023 (India).\n   Key provisions used:\n     - §2(t): \"personal data\" = data about an identifiable living individual\n     - §3 read with §4: applies to processing of digital personal data\n     - §4 proviso: does NOT apply to data \"made available by the Data\n       Principal\" themselves or under a legal obligation (publicly\n       volunteered data exemption — often called the \"public availability\"\n       carve-out in DPDP policy discussions).\n     - §6: Consent as a lawful basis\n     - §7: \"Legitimate uses\" as an alternative to consent\n   NOTE: The DPDP Rules were notified on 13 Nov 2025 and switch on in phases (Board Nov 2025; consent-manager and penalty provisions Nov 2026; full compliance May 2027).\n   This panel reflects the statutory text; implementation guidance may\n   evolve. Do NOT treat this as legal advice.\n   ================================================================ */\n\nconst DPDP_STEPS = [\n    {\n        id: \"q1\",\n        label: \"Q1 — Is the data you are collecting personal data?\",\n        hint: \"Personal data = any data about an identifiable living individual (name, contact details, IP address, browsing profile, profile photo, etc.).\",\n        options: [\"Yes — it identifies or can identify a living person\", \"No — purely aggregated / anonymised / non-personal data\"],\n        keys: [\"yes\",\"no\"]\n    },\n    {\n        id: \"q2\",\n        label: \"Q2 — Was this data made publicly available by the Data Principal themselves (or under a legal obligation)?\",\n        hint: \"Data Principal = the individual the data is about. 'Publicly available' here means the person themselves chose to publish it (e.g., a public LinkedIn profile, a public tweet) OR it was disclosed under a statutory requirement. Data posted by a third party about someone does NOT qualify.\",\n        options: [\"Yes — the individual themselves published it publicly\", \"No — posted by others, or behind a login, or unclear\"],\n        keys: [\"yes\",\"no\"]\n    },\n    {\n        id: \"q3\",\n        label: \"Q3 — Do you have a lawful basis for processing this personal data?\",\n        hint: \"Under the DPDP Act, processing requires either (a) Consent: free, specific, informed, unconditional and unambiguous consent from the Data Principal; OR (b) a 'Legitimate Use' listed in §7 (e.g., a State function, compliance with a legal obligation, employment-related processing, or an emergency involving threat to life).\",\n        options: [\"Yes — I have consent OR a §7 legitimate use\", \"No — I have neither consent nor a clear §7 ground\", \"Unsure / need to check\"],\n        keys: [\"yes\",\"no\",\"unsure\"]\n    }\n];\n\nlet dpdpAnswers = {}; // key: step id, value: answer key\nlet dpdpCurrentStep = 0;\n\nfunction renderDPDP() {\n    const container = document.getElementById(\"dpdpSteps\");\n    container.innerHTML = \"\";\n    DPDP_STEPS.forEach((step, i) => {\n        const div = document.createElement(\"div\");\n        div.className = \"dpdp-step\" + (i > dpdpCurrentStep ? \" locked\" : \"\") + (i === dpdpCurrentStep ? \" active-step\" : \"\");\n        div.id = \"dpdp-\" + step.id;\n\n        const answered = dpdpAnswers[step.id];\n        const optionsHtml = step.options.map((opt, oi) => {\n            const key = step.keys[oi];\n            let btnClass = \"dpdp-btn\";\n            if (answered === key) {\n                if (key === \"yes\") btnClass += \" selected-yes\";\n                else if (key === \"no\") btnClass += \" selected-no\";\n                else btnClass += \" selected-unsure\";\n            }\n            return `<button class=\"${btnClass}\" onclick=\"answerDPDP('${step.id}', '${key}', ${i})\">${opt}<\/button>`;\n        }).join(\"\");\n\n        div.innerHTML = `\n            <span class=\"q-label\">${step.label}<\/span>\n            <div class=\"explain\" style=\"margin:0 0 10px;font-size:.88em;\">${step.hint}<\/div>\n            <div class=\"dpdp-options\">${optionsHtml}<\/div>`;\n        container.appendChild(div);\n    });\n}\n\nfunction answerDPDP(stepId, answerKey, stepIndex) {\n    dpdpAnswers[stepId] = answerKey;\n\n    // Determine if we should short-circuit or advance\n    const verdictBox = document.getElementById(\"verdictBox\");\n    verdictBox.className = \"verdict-box\";\n    verdictBox.style.display = \"none\";\n\n    if (stepId === \"q1\" && answerKey === \"no\") {\n        // DPDP not engaged\n        dpdpCurrentStep = stepIndex; // stay here but show verdict\n        renderDPDP();\n        showVerdict(\"clear\",\n            \"DPDP Act not engaged — processing proceeds without DPDP obligations.\",\n            \"Because the data is not personal data (it does not relate to an identifiable living individual), the Digital Personal Data Protection Act 2023 does not apply to this collection. You are still subject to other applicable laws (copyright, CFAA equivalents, ToS, IT Act, etc.).\",\n            \"This assumes your anonymisation/aggregation is robust. Re-identify risk should be evaluated separately.\"\n        );\n        return;\n    }\n\n    if (stepId === \"q2\" && answerKey === \"yes\") {\n        // Public availability exemption may apply\n        dpdpCurrentStep = stepIndex;\n        renderDPDP();\n        showVerdict(\"caution\",\n            \"Likely permissible under the DPDP Act's public-availability carve-out — but verify the scope.\",\n            \"Where a Data Principal has themselves made personal data publicly available (e.g., posting a public profile), the DPDP Act's obligations are reduced for that data. Processing such data for a purpose consistent with the context in which it was shared is generally permissible without separate consent.\",\n            \"Caveat: (1) The DPDP Rules (notified Nov 2025) phase in through May 2027 — obligations tighten over that window. (2) The exemption covers data the individual published; data about them published by others may not qualify. (3) Even exempted data must be used proportionately and not in a manner that violates other rights. Not legal advice.\"\n        );\n        return;\n    }\n\n    if (stepId === \"q2\" && answerKey === \"no\") {\n        // Advance to Q3\n        dpdpCurrentStep = stepIndex + 1;\n        renderDPDP();\n        return;\n    }\n\n    if (stepId === \"q3\") {\n        dpdpCurrentStep = stepIndex;\n        renderDPDP();\n        if (answerKey === \"yes\") {\n            showVerdict(\"caution\",\n                \"Potentially lawful — provided your consent/legitimate use is valid and documented.\",\n                \"Processing personal data with a valid DPDP lawful basis (consent meeting the Act's requirements, or a §7 legitimate use) is permissible. You must also comply with the Data Principal's rights (access, correction, erasure, grievance redressal) and security obligations.\",\n                \"Caveat: Consent for scraping-derived data is difficult in practice — you usually cannot obtain prior consent from data subjects whose data is being scraped. Ensure your claimed basis is genuine and defensible. The Rules phase in through May 2027; obligations tighten over that window. Not legal advice.\"\n            );\n        } else if (answerKey === \"no\") {\n            showVerdict(\"risk\",\n                \"High risk of DPDP non-compliance — do not proceed without a lawful basis.\",\n                \"Processing personal data of Indian residents without consent or a recognised legitimate use is a violation of the Digital Personal Data Protection Act 2023. Penalties under the Act can reach ₹250 crore for certain breaches.\",\n                \"You should either: (a) obtain valid consent before collecting; (b) establish a §7 legitimate-use ground; or (c) restructure the collection so personal data is not retained. Not legal advice — seek qualified legal counsel.\"\n            );\n        } else {\n            showVerdict(\"caution\",\n                \"Uncertain — conduct a lawful-basis review before proceeding.\",\n                \"You need to identify a valid lawful basis under the DPDP Act before collecting or processing this personal data. Proceeding without one is non-compliant. Review §6 (consent) and §7 (legitimate uses) carefully against your specific use case.\",\n                \"The Rules were notified in Nov 2025 and phase in through May 2027. Not legal advice — seek qualified legal counsel.\"\n            );\n        }\n    }\n}\n\nfunction showVerdict(type, title, text, caveat) {\n    const box = document.getElementById(\"verdictBox\");\n    box.className = \"verdict-box show \" + type;\n    document.getElementById(\"verdictTitle\").textContent = title;\n    document.getElementById(\"verdictText\").textContent = text;\n    document.getElementById(\"verdictCaveat\").textContent = \"Note: \" + caveat;\n    box.scrollIntoView({behavior:\"smooth\", block:\"nearest\"});\n}\n\nfunction resetDPDP() {\n    dpdpAnswers = {};\n    dpdpCurrentStep = 0;\n    document.getElementById(\"verdictBox\").className = \"verdict-box\";\n    renderDPDP();\n}\n\n/* init */\nrenderDPDP();\n<\/script>\n\n<style>\n/* ===== DA2402 theme overrides (applied after the demo's own stylesheet) ===== */\nhtml{background:var(--surround)}\nbody{background:var(--surround);color:var(--ink);font-family:var(--body);padding:22px 20px 26px;\n  -webkit-font-smoothing:antialiased}\n.container{background:var(--paper);border-radius:0;border-top:3px solid var(--ink);\n  box-shadow:0 20px 70px rgba(0,0,0,.5);padding:26px 34px 0}\n.da-eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;\n  text-transform:uppercase;color:var(--soft);margin:0 0 10px;display:flex;gap:10px;align-items:center}\n.da-eyebrow::after{content:\"\";flex:1;height:1px;background:var(--line)}\n.da-eyebrow .jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;\n  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}\nh1{font-family:var(--disp);font-weight:700;letter-spacing:-.018em;line-height:1.1;font-size:30px;\n  text-align:left;color:var(--ink);background:none;-webkit-text-fill-color:currentColor;margin:0 0 4px}\n.subtitle{text-align:left;font-family:var(--body);color:var(--soft);font-size:14.5px;line-height:1.42;\n  margin:0 0 18px;max-width:900px}\nh2,h3,h4{font-family:var(--disp);letter-spacing:-.005em}\nbutton,.ex-btn,.step,.mode-tab,.chip,.tab,.tab-btn,.case-card,.run-btn,.q-option{border-radius:3px!important;\n  transform:none!important;box-shadow:none!important}\nbutton:hover:not(:disabled),.ex-btn:hover,.step:hover,.mode-tab:hover,.chip:hover{transform:none!important;box-shadow:none!important}\npre,code,kbd,.code-panel,.code-row code,.result-item,.selector-input,.entropy-banner,.results-panel,\n.panel,.card,.stagebar,.note,.explain,.good,.tip,.warn,.xpath-hint,.match-badge,.tag,#sample-frame,\ntable,td,th{border-radius:0!important}\n.note,.explain,.good,.tip,.warn,.xpath-hint,.stagebar{border-radius:0!important}\n.container>*:last-child{margin-bottom:0}\n/* byline rail, same text as the decks */\n.da-rail{margin:26px -34px 0;height:30px;background:var(--card);border-top:1.5px solid var(--ink);\n  display:flex;align-items:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;\n  text-transform:uppercase;color:var(--soft)}\n.da-rail .a{padding:0 16px;flex:1}\n.da-rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}\n.da-rail .c{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;white-space:nowrap}\n<\/style>\n<style>\n/* embedded inside a lecture deck slide: drop chrome the slide already provides */\nbody.embed{padding:0;zoom:.86}\nbody.embed .container{box-shadow:none;border-top:0;padding:18px 26px 0}\nbody.embed .da-eyebrow,body.embed .da-rail{display:none}\nbody.embed h1{font-size:24px}\nbody.embed h1,body.embed .subtitle{margin-bottom:4px}\nbody.embed .explain{display:none}\nbody.embed .chain{margin-bottom:14px}\n<\/style>\n<script>if(window.self!==window.top||/[?&]embed/.test(location.search))document.body.classList.add('embed');<\/script>\n<\/body>\n<\/html>\n"</script>
 <script>
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
