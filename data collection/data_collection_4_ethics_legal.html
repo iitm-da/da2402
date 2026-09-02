@@ -445,7 +445,7 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
   </div>
 </section>
 
-<!-- ============ 3 · THREE QUESTIONS ============ -->
+<!-- ============ 3 · THE MAP ============ -->
 <section class="slide roomy" data-sec="Orientation">
   <div class="eyebrow">Orientation · 2 of 2 · the map</div>
   <h1 class="t">Three questions people blur into one
@@ -479,11 +479,15 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
     </div>
     <div class="callout"><b>Keep the order.</b> Q1 is about the request, Q2 about the response, Q3 about the
       rows in your DataFrame. A project can pass Q1 cleanly (public page, no login, no block) and still fail
-      Q3 on the first column. We will come back to these three boxes on nearly every slide.</div>
+      Q3 on the first column. <b>The lecture runs by instrument, not by question:</b> what the site
+      <i>asks</i> (<code class="k">robots.txt</code>, <code class="k">llms.txt</code>) &#8594; what it
+      <i>claims</i> (Terms of Use) &#8594; what courts have <i>decided</i> (the US and EU cases) &#8594;
+      what <b>Indian law</b> says &#8594; <b>one question worked end to end</b> &#8594; GDPR and HIPAA.
+      Every one of those lands back in one of these three boxes.</div>
   </div>
 </section>
 
-<!-- ============ 4 · ROBOTS.TXT 1 ============ -->
+<!-- ============ 4 · ROBOTS.TXT 1/3 ============ -->
 <section class="slide" data-sec="robots.txt">
   <div class="eyebrow">robots.txt · 1 of 3</div>
   <h1 class="t">robots.txt: a 1994 request that became a 2022 standard
@@ -541,7 +545,7 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
   </div>
 </section>
 
-<!-- ============ 5 · ROBOTS.TXT 2 · PYTHON ============ -->
+<!-- ============ 5 · ROBOTS.TXT 2/3 ============ -->
 <section class="slide" data-sec="robots.txt">
   <div class="eyebrow">robots.txt · 2 of 3 · real output</div>
   <h1 class="t sm">Reading it from Python, and the line the standard library gets wrong
@@ -598,7 +602,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 6 · ROBOTS.TXT 3 · WHAT IT IS NOT ============ -->
+<!-- ============ 6 · ROBOTS.TXT 3/3 ============ -->
 <section class="slide roomy" data-sec="robots.txt">
   <div class="eyebrow">robots.txt · 3 of 3</div>
   <h1 class="t">What robots.txt is not: a lock, a law, or a contract
@@ -693,7 +697,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 8 · TOS 1 ============ -->
+<!-- ============ 8 · TERMS OF USE 1/2 ============ -->
 <section class="slide roomy" data-sec="Terms of Service">
   <div class="eyebrow">Terms of Service · 1 of 2</div>
   <h1 class="t">Terms of Service: the difference between a sign and a signature
@@ -716,12 +720,12 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
       <div class="colstack">
         <div class="card b"><h3>What a ToS breach actually is</h3>
           <p>A <b>contract</b> claim — damages, injunction, account termination. Not a crime. After
-          <i>Van Buren</i> (slide 10), breaking a purpose rule you agreed to is not, by itself, "unauthorised
+          <i>Van Buren</i> (slide 11), breaking a purpose rule you agreed to is not, by itself, "unauthorised
           access" under the CFAA. That is the single most important thing the last decade of cases
           settled.</p></div>
         <div class="callout warn"><b>But do not read that as "ToS is toothless".</b> It is the claim that
           <i>survived</i> in <i>hiQ</i> — a $500,000 judgment and a permanent injunction — and in the EU,
-          <i>Ryanair v. PR Aviation</i> (slide 13) made a website's terms the winning theory. A contract you
+          <i>Ryanair v. PR Aviation</i> (slide 14) made a website's terms the winning theory. A contract you
           actually agreed to is the most ordinary law there is.</div>
         <div class="callout"><b>Practical test, in order.</b> (1) Did I log in or create an account? If
           yes, the ToS binds me; read its scraping clause. (2) If no, am I being shown the terms in a way a
@@ -732,7 +736,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 9 · TOS 2 · AFTER HIQ ============ -->
+<!-- ============ 9 · TERMS OF USE 2/2 ============ -->
 <section class="slide roomy" data-sec="Terms of Service">
   <div class="eyebrow">Terms of Service · 2 of 2</div>
   <h1 class="t">What a ToS can still do after hiQ — and whom it cannot reach
@@ -770,9 +774,55 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 10 · CFAA · VAN BUREN ============ -->
-<section class="slide roomy" data-sec="Access">
-  <div class="eyebrow">Q1 · Access · 1 of 4</div>
+<!-- ============ 10 · CASES 1/8 · THE DOCTRINE ============ -->
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 1 of 8 · the doctrine</div>
+  <h1 class="t">Copying: facts are free, expression is not, and a database is a thin thing
+    <small>Q1 was about the request. Q2 is about the response — the bytes you saved to
+    <code class="k">property_listings.html</code> and the rows you wrote to CSV. Copyright attaches to some of that
+    and not to the rest, and the line is older than the web.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th style="width:150px">What you copied</th><th>Protected?</th><th style="width:150px">Why</th></tr>
+          <tr class="ok"><td>A price, a date, a rating, a phone number</td><td><b>No.</b> Facts are not
+            copyrightable anywhere.</td><td>US <i>Feist</i> (1991); India <i>EBC v. Modak</i> (2008)</td></tr>
+          <tr class="wr"><td>A table of such facts, selected and arranged</td><td><b>Thinly.</b> The
+            selection/arrangement can be, if it shows a "modicum of creativity"; the facts inside still are
+            not.</td><td>same cases; EU adds a separate <i>sui generis</i> database right for
+            substantial investment</td></tr>
+          <tr class="hl"><td>An article, a review, a description, a photo</td><td><b>Yes.</b> Original
+            expression. The description text on each listing card is someone's copyright.</td>
+            <td>Copyright Act 1957 (India); Title 17 (US)</td></tr>
+          <tr class="wr"><td>The HTML page itself</td><td>Yes, as a literary work — but a transient or
+            research copy is usually excused.</td><td>fair dealing §52 (India); fair use §107 (US)</td></tr>
+        </table>
+        <div class="callout good"><b>Good news for most data scraping.</b> A CSV of prices, names and
+          ratings is a collection of facts. What you must be careful with is <i>text</i> — descriptions,
+          reviews, articles — and <i>republishing</i> the whole thing as a dataset.</div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>The excuse: fair use (US) · fair dealing (India)</h3>
+          <p><b>US §107, four factors:</b> (1) purpose and character — is the use <i>transformative</i>, is
+          it commercial; (2) nature of the work — factual or creative; (3) amount taken; (4) <b>effect on
+          the market</b> for the original. Factor 4 and the "transformative" half of factor 1 decide most
+          cases.</p>
+          <p style="margin-top:6px"><b>India §52:</b> a closed list, not a balancing test — private or
+          personal use <i>including research</i>, criticism, reporting, education in the course of
+          instruction. Narrower than US fair use; a course project sits inside it, a commercial dataset
+          usually does not.</p></div>
+        <div class="callout"><b>Where the AI cases fit.</b> Every "AI training" lawsuit on the next
+          slides is a Q2 fight about factors 1 and 4 — is turning text into weights transformative, and does
+          the model substitute for the source? The scraping that gathered the text is rarely the claim.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 · CASES 2/8 · VAN BUREN ============ -->
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 2 of 8</div>
   <h1 class="t">"Without authorization": the gate is up or the gate is down
     <small>The US Computer Fraud and Abuse Act (1986) makes it an offence to access a computer "without
     authorization" or to "exceed authorized access". For thirty years nobody agreed what that meant for
@@ -812,9 +862,10 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
     </div>
   </div>
 </section>
-<!-- ============ 11 · HIQ ============ -->
-<section class="slide roomy" data-sec="Access">
-  <div class="eyebrow">Q1 · Access · 2 of 4</div>
+
+<!-- ============ 12 · CASES 3/8 · HIQ ============ -->
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 3 of 8</div>
   <h1 class="t">hiQ won the CFAA point and lost the case
     <small>The most-cited scraping case is usually told as a victory for scrapers. Read to the end: it is
     a victory for the <i>public-data</i> principle and a defeat for the company that relied on it.</small></h1>
@@ -856,9 +907,9 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 12 · 3TAPS ============ -->
-<section class="slide" data-sec="Access">
-  <div class="eyebrow">Q1 · Access · 3 of 4 · the ruling on Lectures 1 and 3</div>
+<!-- ============ 13 · CASES 4/8 · 3TAPS ============ -->
+<section class="slide" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 4 of 8 · the ruling on Lectures 1 and 3</div>
   <h1 class="t">The IP block is the revocation. Routing around it is the offence.
     <small>Lecture 1 read a <code class="k">get_proxy()</code> function whose only job was to present a
     different source address. Lecture 3 showed how to make headless Chrome look like a person. Here is
@@ -874,7 +925,7 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
           access "without authorization". The case settled in June 2015: 3Taps paid <b>$1,000,000</b>,
           which Craigslist pledged to the EFF over ten years, and agreed never to take Craigslist content
           again.</p></div>
-        <div class="callout bad"><b>Apply it to our scripts.</b> The parallel NSE scraper's
+        <div class="callout bad"><b>Apply it to our scripts.</b> The parallel session-walled scraper's
           <code class="k">get_proxy()</code> (Lecture 1, slide 23) — written, tested, and <i>disabled by its
           own author</i>. The stealth flags and UA string in Lecture 3. None of these is illegal to know or
           to type. Each becomes the fact pattern of <i>3Taps</i> the moment it is used <b>to get past a
@@ -903,98 +954,56 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 13 · INDIA & EU ============ -->
-<section class="slide roomy" data-sec="Access">
-  <div class="eyebrow">Q1 · Access · 4 of 4</div>
-  <h1 class="t">India and the EU: §43, §66, and the airline that won on contract
-    <small>Everything so far is US law, because that is where the scraping cases have been fought. You
-    will work under Indian law, and possibly European. Here is what each actually says.</small></h1>
-  <div class="wrap">
-    <div class="cols">
-      <div class="colstack">
-        <div class="card b"><h3>India · IT Act 2000</h3>
-          <p><b>§43</b> — civil. Whoever "without permission of the owner or any other person who is in
-          charge of a computer… downloads, copies or extracts any data, computer data base or information"
-          is liable to pay <b>compensation</b> to the person affected. Note the verbs: copy and extract,
-          not just break in.</p>
-          <p style="margin-top:6px"><b>§66</b> — criminal. Doing a §43 act "dishonestly or fraudulently":
-          up to <b>three years</b>, or a fine up to ₹5 lakh, or both.</p>
-          <p style="margin-top:6px"><b>What we do not have:</b> a reported Indian judgment applying §43 to
-          scraping a public website. "Without permission" has not been given a <i>Van Buren</i>-style
-          reading. Until it is, treat a block or a C&amp;D as withdrawing permission, and treat
-          <code class="k">robots.txt</code> as the nearest thing to a written grant.</p></div>
-        <div class="callout warn"><b>India's privacy law is the live one.</b> For a student project the
-          realistic exposure is not §43 — it is the DPDP Act, slides 19–22, whose penalties switch on in
-          November 2026.</div>
-      </div>
-      <div class="colstack">
-        <div class="card o"><h3>EU · <i>Ryanair v. PR Aviation</i> · CJEU C-30/14 · 15 Jan 2015</h3>
-          <p>PR Aviation ran a fare-comparison site that scraped Ryanair's flight data. Ryanair's terms
-          forbade screen-scraping. The Dutch courts asked Luxembourg whether the Database Directive's
-          protections for <i>lawful users</i> stopped Ryanair enforcing those terms. The answer: the
-          Directive only protects databases that qualify for copyright or the <i>sui generis</i> right —
-          and Ryanair's flight data did not. So nothing in EU database law stopped Ryanair's
-          <b>contract</b> from binding a user who had accepted it.</p>
-          <p style="margin-top:7px"><span class="tag o">box</span>Q1-contract, with a Q2 twist: the
-          <i>weaker</i> the IP protection in the data, the <i>freer</i> the owner is to rely on terms.</p></div>
-        <div class="callout"><b>The pattern across all three jurisdictions.</b> US: public page, no
-          gate → no crime, contract only if you agreed. EU: contract is taken seriously, and the ToS is a
-          real constraint on a comparison-site business model. India: the statute is broad, the case law is
-          empty, the privacy regime is strict. Design for the strictest one your data touches.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 14 · COPY 1 ============ -->
-<section class="slide roomy" data-sec="Copying">
-  <div class="eyebrow">Q2 · Copying · 1 of 4</div>
-  <h1 class="t">Copying: facts are free, expression is not, and a database is a thin thing
-    <small>Q1 was about the request. Q2 is about the response — the bytes you saved to
-    <code class="k">sulekha.html</code> and the rows you wrote to CSV. Copyright attaches to some of that
-    and not to the rest, and the line is older than the web.</small></h1>
+<!-- ============ 14 · CASES 5/8 · RYANAIR (EU) ============ -->
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 5 of 8 · the EU counterpoint</div>
+  <h1 class="t">Ryanair: when the data is not protected, the contract does the work
+    <small>Every case so far has been American. One European ruling matters more than the rest, because
+    it decides what happens when the copyright claim fails — which, for a table of numbers, it usually
+    does.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
       <div class="colstack">
-        <table class="d sm free">
-          <tr><th style="width:150px">What you copied</th><th>Protected?</th><th style="width:150px">Why</th></tr>
-          <tr class="ok"><td>A price, a date, a rating, a phone number</td><td><b>No.</b> Facts are not
-            copyrightable anywhere.</td><td>US <i>Feist</i> (1991); India <i>EBC v. Modak</i> (2008)</td></tr>
-          <tr class="wr"><td>A table of such facts, selected and arranged</td><td><b>Thinly.</b> The
-            selection/arrangement can be, if it shows a "modicum of creativity"; the facts inside still are
-            not.</td><td>same cases; EU adds a separate <i>sui generis</i> database right for
-            substantial investment</td></tr>
-          <tr class="hl"><td>An article, a review, a description, a photo</td><td><b>Yes.</b> Original
-            expression. The 500-word business description on each Sulekha card is someone's copyright.</td>
-            <td>Copyright Act 1957 (India); Title 17 (US)</td></tr>
-          <tr class="wr"><td>The HTML page itself</td><td>Yes, as a literary work — but a transient or
-            research copy is usually excused.</td><td>fair dealing §52 (India); fair use §107 (US)</td></tr>
-        </table>
-        <div class="callout good"><b>Good news for most data scraping.</b> A CSV of prices, names and
-          ratings is a collection of facts. What you must be careful with is <i>text</i> — descriptions,
-          reviews, articles — and <i>republishing</i> the whole thing as a dataset.</div>
+        <div class="card o"><h3><i>Ryanair v. PR Aviation</i> · CJEU C-30/14 · 15 January 2015</h3>
+          <p>PR Aviation ran a fare-comparison site that scraped Ryanair's flight data. Ryanair's terms
+          forbade screen-scraping. The Dutch courts asked Luxembourg whether the Database Directive's
+          protections for <i>lawful users</i> stopped Ryanair enforcing those terms.</p>
+          <p style="margin-top:6px">The answer: the Directive only shields databases that qualify for
+          copyright or the <i>sui generis</i> right — and Ryanair's flight data qualified for neither.
+          A database outside the Directive is outside its user protections too. So nothing in EU database
+          law stopped Ryanair's <b>contract</b> from binding a user who had accepted it.</p></div>
+        <div class="callout warn"><b>The counter-intuitive rule.</b> The <i>weaker</i> the intellectual
+          property in the data, the <i>freer</i> the owner is to rely on terms. Facts are unprotectable —
+          which is exactly why sites that publish facts write the harshest terms of use.</div>
+        <div class="callout good"><b>Hold on to this for slide 25.</b> An exchange publishes index
+          levels — facts, uncopyrightable, and in India not even covered by a database right. Its Terms
+          of Use are therefore not one weapon among several. They are the <b>only</b> one it has.</div>
       </div>
       <div class="colstack">
-        <div class="card o"><h3>The excuse: fair use (US) · fair dealing (India)</h3>
-          <p><b>US §107, four factors:</b> (1) purpose and character — is the use <i>transformative</i>, is
-          it commercial; (2) nature of the work — factual or creative; (3) amount taken; (4) <b>effect on
-          the market</b> for the original. Factor 4 and the "transformative" half of factor 1 decide most
-          cases.</p>
-          <p style="margin-top:6px"><b>India §52:</b> a closed list, not a balancing test — private or
-          personal use <i>including research</i>, criticism, reporting, education in the course of
-          instruction. Narrower than US fair use; a course project sits inside it, a commercial dataset
-          usually does not.</p></div>
-        <div class="callout"><b>Where the AI cases fit.</b> Every "AI training" lawsuit on the next
-          slides is a Q2 fight about factors 1 and 4 — is turning text into weights transformative, and does
-          the model substitute for the source? The scraping that gathered the text is rarely the claim.</div>
+        <div class="card b"><h3>Where that leaves the three jurisdictions</h3>
+          <p><b>US.</b> No gate → no crime; contract only if you agreed. <b>EU.</b> Contract is taken
+          seriously and a database right sits on top of copyright — the harshest of the three.
+          <b>India.</b> Broad statute, empty case law, strict privacy regime. The next five slides are
+          what it actually says.</p></div>
+        <table class="d sm free">
+          <tr><th style="width:74px"></th><th>Copyright in the facts</th><th>Database right</th><th>Contract lever</th></tr>
+          <tr class="ok"><td><b>US</b></td><td>No — <i>Feist</i></td><td>None</td>
+            <td>Weak against a logged-off stranger</td></tr>
+          <tr class="wr"><td><b>EU</b></td><td>No</td><td><b>Yes</b> — 15 years, for substantial
+            investment</td><td><b>Strong</b> — <i>Ryanair</i></td></tr>
+          <tr class="hl"><td><b>India</b></td><td>No — <i>EBC v. Modak</i></td><td>None</td>
+            <td><b>Untested</b></td></tr>
+        </table>
+        <div class="callout"><b>Design for the strictest regime your data touches</b> — the site's, your
+          own, and that of any person in the rows.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 15 · AI TRAINING · TWO RULINGS ============ -->
-<section class="slide roomy" data-sec="Copying">
-  <div class="eyebrow">Q2 · Copying · 2 of 4</div>
+<!-- ============ 15 · CASES 6/8 · AI TRAINING ============ -->
+<section class="slide roomy" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 6 of 8</div>
   <h1 class="t">Training on scraped text: two courts, two answers, one factor
     <small>Within four months of each other, two US federal judges reached opposite conclusions on whether
     training a model on copyrighted text is fair use. Read them together and the difference is not
@@ -1037,63 +1046,9 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 16 · OPEN CASES ============ -->
-<section class="slide roomy" data-sec="Copying">
-  <div class="eyebrow">Q2 · Copying · 3 of 4 · status as of Aug 2026</div>
-  <h1 class="t">Two cases still open, and what each would settle
-    <small>Both were filed over scraped text used to train models. They are routed through different boxes
-    on our map — and that routing is the interesting part.</small></h1>
-  <div class="wrap">
-    <div class="cols">
-      <div class="colstack">
-        <div class="card o"><h3><i>New York Times v. Microsoft &amp; OpenAI</i> · S.D.N.Y. · filed 27 Dec 2023</h3>
-          <p><b>Box: Q2, copyright.</b> The Times says millions of its articles were copied to train GPT
-          models, that the use is not transformative because ChatGPT can reproduce articles near-verbatim,
-          and that the product substitutes for the paper. OpenAI pleads fair use. <b>Status:</b> in
-          discovery; consolidated with other publishers' suits before Judge Stein; an amended complaint was
-          filed June 2026; summary-judgment briefing expected 2026, trial possibly 2027. No ruling on the
-          merits yet. (The Ziff Davis robots.txt ruling on slide 6 came out of this same consolidated
-          case.)</p></div>
-        <div class="callout"><b>What it would settle:</b> whether factor 4 — market substitution, shown by
-          regurgitation — beats "transformative" for <i>news</i>, where the facts are free but the expression
-          is the product.</div>
-      </div>
-      <div class="colstack">
-        <div class="card p"><h3><i>Reddit v. Anthropic</i> · filed 4 June 2025 · San Francisco Superior Court</h3>
-          <p><b>Box: Q1-contract, deliberately.</b> Reddit pleads breach of its User Agreement, trespass to
-          chattels, unfair competition and interference with the privacy promises it made to its users — and
-          <b>no copyright claim at all</b>. Anthropic removed it to federal court arguing it was really a
-          copyright case in disguise; in <b>March 2026</b> the federal judge disagreed and sent it back to
-          state court, where it is proceeding. Reddit's own framing: it licenses the same data to Google
-          and OpenAI, so the complaint is about taking without the deal.</p></div>
-        <div class="callout"><b>What it would settle:</b> whether a platform's terms can be enforced
-          against a large-scale scraper on contract and state-law theories alone — the route
-          <i>Meta v. Bright Data</i> closed for logged-off strangers, tested against a defendant who (Reddit
-          says) was told to stop.</div>
-        <div class="callout warn"><b>Both are pending.</b> Anything you read that says either has been
-          "decided" is wrong as of this deck's date. Check before you quote them.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 17 · DEMO · CASE GALLERY ============ -->
-<section class="slide" data-sec="Case law · Demo">
-  <div class="eyebrow">Case law · interactive</div>
-  <h1 class="t sm">The cases, one at a time — and a DPDP decision panel
-    <small class="tight">Click a case for its facts, the dispute, the ruling and the takeaway for a scraper.
-    Below the gallery is a guided walk through India's DPDP Act for a scraping scenario — we do it properly
-    on slides 19–22. <span class="jsbadge">Reference</span> The gallery's status notes predate this deck:
-    hiQ's 2022 ending and the Reddit remand are on slides 11 and 16.
-    <a class="demo-link" href="#" data-demo="demo-11">open full page &#8599;</a></small></h1>
-  <div class="wrap" style="margin-top:10px">
-    <iframe class="demo-frame" data-demo="demo-11" title="Scraping case-law gallery"></iframe>
-  </div>
-</section>
-
-<!-- ============ 18 · WHAT IT MEANS FOR YOU ============ -->
-<section class="slide" data-sec="Copying">
-  <div class="eyebrow">Q2 · Copying · 4 of 4</div>
+<!-- ============ 16 · CASES 7/8 · STILL COPYING ============ -->
+<section class="slide" data-sec="Cases">
+  <div class="eyebrow">The decided cases · 7 of 8</div>
   <h1 class="t">You are not training a model. You are still copying.
     <small>It is tempting to file the AI cases under "not my problem". Map your own actions onto the same
     four factors and the same three questions, and most of a student project is fine — for reasons you
@@ -1129,9 +1084,155 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 19 · DPDP 1 ============ -->
-<section class="slide roomy" data-sec="Privacy">
-  <div class="eyebrow">Q3 · Keep and use · 1 of 4 · India</div>
+<!-- ============ 17 · CASES 8/8 · DEMO GALLERY ============ -->
+<section class="slide" data-sec="Cases · Demo">
+  <div class="eyebrow">The decided cases · 8 of 8 · interactive</div>
+  <h1 class="t sm">The cases, one at a time — and a DPDP decision panel
+    <small class="tight">Click a case for its facts, the dispute, the ruling and the takeaway for a scraper.
+    Below the gallery is a guided walk through India's DPDP Act for a scraping scenario — we do it properly
+    on slides 21–22. <span class="jsbadge">Reference</span> The gallery's status notes predate this deck:
+    hiQ's 2022 ending is on slide 12; the open cases sit in the recap table on slide 29.
+    <a class="demo-link" href="#" data-demo="demo-11">open full page &#8599;</a></small></h1>
+  <div class="wrap" style="margin-top:10px">
+    <iframe class="demo-frame" data-demo="demo-11" title="Scraping case-law gallery"></iframe>
+  </div>
+</section>
+
+<!-- ============ 18 · INDIA 1/5 · IT ACT ============ -->
+<section class="slide roomy" data-sec="India">
+  <div class="eyebrow">India · 1 of 5 · the access statute</div>
+  <h1 class="t">IT Act 2000: §43 is civil and broad, §66 is criminal and narrow
+    <small>Everything before this slide is American or European law, because that is where the scraping
+    cases have been fought. You will work under Indian law. Here is what it actually says — and, more
+    importantly, what it has never been asked.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card b"><h3>§43 — civil liability, no intent required</h3>
+          <p>"If any person, <b>without permission of the owner or any other person who is in charge of a
+          computer</b>, computer system or computer network — (a) accesses or secures access to it …
+          (b) <b>downloads, copies or extracts any data</b>, computer data base or information …
+          he shall be liable to pay <b>compensation</b> to the person so affected."</p>
+          <p style="margin-top:6px">Read the verbs. Not <i>hacks</i>, not <i>breaks into</i>:
+          <b>accesses</b>, <b>downloads</b>, <b>copies</b>, <b>extracts</b>. Every one of those describes
+          a scraper doing its ordinary job. The whole section turns on four words —
+          <b><i>without permission of the owner</i></b> — and nothing in the Act defines them.
+          The ₹1 crore ceiling was removed by the 2008 amendment; compensation is now uncapped.</p></div>
+        <div class="card r"><h3>§66 — the criminal version</h3>
+          <p>Doing any §43 act "<b>dishonestly or fraudulently</b>": up to <b>three years</b>, or a fine
+          up to <b>₹5 lakh</b>, or both. Those two words are not decoration — they carry their
+          Penal Code meanings, now <i>Bharatiya Nyaya Sanhita</i> 2023 §2(7) and §2(9):
+          <b>dishonestly</b> = intending wrongful gain to one person or wrongful loss to another;
+          <b>fraudulently</b> = intending to defraud. Absent that intent, §66 does not arise at all,
+          however much data you copied.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>The gap that matters</h3>
+          <p>There is <b>no reported Indian judgment applying §43 to scraping a public website</b>.
+          "Without permission" has never been given a <i>Van Buren</i>-style reading here — nobody has
+          told us whether permission means the <i>access controls</i> the owner configured or the
+          <i>words</i> the owner published.</p>
+          <p style="margin-top:6px">The Indian prosecutions that do exist — ticketing bots, account
+          takeovers — all involve real circumvention: stolen credentials, defeated CAPTCHAs, forged
+          sessions. They answer an easier question than ours.</p></div>
+        <div class="callout warn"><b>What "untested" costs you.</b> It cuts both ways. There is no
+          Indian authority holding that public scraping violates §43 — and none holding that it does not.
+          A project cannot budget on either reading. Build so that you win under the stricter one.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19 · INDIA 2/5 · CONTRACT ACT ============ -->
+<section class="slide roomy" data-sec="India">
+  <div class="eyebrow">India · 2 of 5 · the contract question</div>
+  <h1 class="t">"I never clicked I agree" — does an Indian court care?
+    <small>Slide 8 gave you the American answer: browsewrap is a sign, clickwrap is a signature. India
+    has no scraping case on the point, but it has 150 years of contract law, and that law is not
+    ambiguous about what makes an agreement.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card b"><h3>Indian Contract Act 1872 — what a contract needs</h3>
+          <p><b>§2(a)–(e):</b> a proposal, <b>accepted</b>, becomes a promise; promises supported by
+          consideration are an agreement. <b>§13:</b> parties must agree "upon the same thing in the same
+          sense" — <i>consensus ad idem</i>. <b>§10:</b> agreements are contracts only if made by free
+          consent.</p>
+          <p style="margin-top:6px">A terms page you never opened, linked from a footer your scraper
+          never rendered, fails at the first step. There is <b>no acceptance</b>, so there is no promise,
+          so there is nothing to breach. This is not a technicality; it is the definition.</p>
+          <p style="margin-top:6px"><b>IT Act §10A</b> is sometimes quoted against this. It says a
+          contract is not unenforceable <i>merely because</i> it was formed electronically. It validates
+          the <b>form</b>. It does not manufacture the <b>assent</b>.</p></div>
+        <div class="callout good"><b>Where Indian law is settled.</b> Clickwrap works. <i>Trimex
+          International v. Vedanta</i> (2010, SC) confirms that no signature or paper is needed —
+          an exchange showing agreement is enough. The corollary is the useful half: <b>something must
+          show agreement.</b> A GET request shows nothing.</div>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3>The three arguments on the other side</h3>
+          <p><b>1 · Constructive notice.</b> If you knew the terms existed — and a professional does —
+          continued deliberate use can be pleaded as acceptance by conduct. US courts have bought this
+          for a repeat commercial scraper (<i>Register.com v. Verio</i>, 2d Cir. 2004). Persuasive only
+          in India, but it is the shape of the argument you will meet.</p>
+          <p style="margin-top:6px"><b>2 · You logged in once.</b> Any account, ever, for any reason.
+          Then you clicked, and the clause is yours.</p>
+          <p style="margin-top:6px"><b>3 · Contract is not the only theory.</b> A site that loses on
+          contract can still plead unjust enrichment or unfair competition — no agreement needed.</p></div>
+        <div class="callout"><b>The practical test.</b> Did I authenticate? If yes, the terms bind me and
+          I read the scraping clause before I write the scraper. If no, the terms are the owner's
+          <i>stated wish</i> — evidence of what they want, not a promise I made.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20 · INDIA 3/5 · COPYRIGHT ACT ============ -->
+<section class="slide roomy" data-sec="India">
+  <div class="eyebrow">India · 3 of 5 · what you may keep</div>
+  <h1 class="t">Copyright Act 1957: a database is protected, a price series is not
+    <small>India protects databases — as literary works, under the ordinary copyright section. What it
+    refuses to protect is the effort of assembling facts. One Supreme Court judgment settles the whole
+    question, and it is not a copyright case about the web at all.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card b"><h3>The provisions</h3>
+          <p><b>§2(o)</b> defines "literary work" to <i>include</i> computer databases. <b>§13</b>
+          gives copyright to <b>original</b> literary works. So a database is copyrightable in principle —
+          the entire fight is over the word <i>original</i>.</p>
+          <p style="margin-top:6px"><b>§52</b> is the exception list: fair dealing for private or personal
+          use <b>including research</b>, criticism, review, reporting, and use in the course of
+          instruction. Unlike US fair use it is a <b>closed list</b>, not a balancing test. A course
+          project sits inside it comfortably; a commercial dataset does not.</p></div>
+        <div class="card g"><h3><i>Eastern Book Company v. D.B. Modak</i> · (2008) 1 SCC 1</h3>
+          <p>EBC published law reports and claimed copyright in judgments it had copy-edited. The
+          Supreme Court <b>rejected the "sweat of the brow" doctrine</b> — labour and expense alone earn
+          nothing — and adopted a <b>modicum of creativity / skill and judgment</b> standard, following
+          <i>Feist</i> (US) and <i>CCH Canadian</i>. Raw judgments: no copyright. Only the genuinely
+          creative editorial inputs were protected.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3>India has no <i>sui generis</i> database right</h3>
+          <p>The EU's Database Directive gives a separate 15-year right to whoever made a
+          <b>substantial investment</b> in obtaining or verifying the contents, whether or not anything
+          creative happened. <b>India never enacted an equivalent, and neither did the US.</b></p>
+          <p style="margin-top:6px">So the European claim — <i>you took a substantial part of the
+          database I paid to build</i> — has <b>no Indian counterpart</b>. Here the owner must show
+          creativity, and a table sorted by date has none available to it.</p></div>
+        <div class="callout good"><b>Apply it to a price series.</b> Dates, opens, closes, highs, lows:
+          facts. Their arrangement is chronological, which is the only arrangement the data permits —
+          no selection, no judgment, no creativity. Under <i>EBC v. Modak</i> there is <b>nothing to
+          infringe</b>. Copy the text of a research note off the same site and the answer reverses
+          completely.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 21 · INDIA 4/5 · DPDP ============ -->
+<section class="slide roomy" data-sec="India">
+  <div class="eyebrow">India · 4 of 5 · the privacy statute</div>
   <h1 class="t">DPDP: "publicly available" is narrower than "on the internet"
     <small>The Digital Personal Data Protection Act, 2023 is India's first general data-protection statute.
     It has one exemption students reach for and misread. Start with the vocabulary, then read the
@@ -1175,9 +1276,9 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
   </div>
 </section>
 
-<!-- ============ 20 · DPDP 2 · RULES & PENALTIES ============ -->
-<section class="slide" data-sec="Privacy">
-  <div class="eyebrow">Q3 · Keep and use · 2 of 4 · India</div>
+<!-- ============ 22 · INDIA 5/5 · DPDP RULES ============ -->
+<section class="slide" data-sec="India">
+  <div class="eyebrow">India · 5 of 5 · the Rules</div>
   <h1 class="t">The Rules are live, the penalties arrive in November
     <small>For two years the Act was a statute without machinery. The DPDP Rules were notified on
     <b>13 November 2025</b>, with a phased switch-on. Where you are in that timeline changes what a
@@ -1222,53 +1323,259 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
     </div>
   </div>
 </section>
-<!-- ============ 21 · GDPR & HIPAA ============ -->
-<section class="slide" data-sec="Privacy">
-  <div class="eyebrow">Q3 · Keep and use · 3 of 4 · elsewhere</div>
-  <h1 class="t">GDPR and HIPAA in one slide: public is not free, and health is different
-    <small>If any row is about a person in the EU, or your client is, the GDPR applies to you in Chennai.
-    If the data is health data in the US, a sectoral law applies on top of everything.</small></h1>
+
+<!-- ============ 23 · THE QUESTION 1/3 · THE FACTS ============ -->
+<section class="slide roomy" data-sec="The question">
+  <div class="eyebrow">The question · 1 of 3 · the facts</div>
+  <h1 class="t">NSE, NIFTY history, and a terms page you never read
+    <small>Everything in this lecture, applied to a single scenario. Read the facts slowly — each one is
+    load-bearing, and changing any of them changes the answer.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <div class="card b sm"><h3>The scenario</h3>
+          <p><b>1</b> &nbsp;You run Python and BeautifulSoup against <b>publicly accessible NSE pages</b>,
+          or against the <b>internal API those pages call</b>.</p>
+          <p style="margin-top:5px"><b>2</b> &nbsp;<b>No login.</b> No account, ever.</p>
+          <p style="margin-top:5px"><b>3</b> &nbsp;<b>No CAPTCHA bypass, no circumvention</b> of any
+          kind. Nothing was defeated; the server simply answered.</p>
+          <p style="margin-top:5px"><b>4</b> &nbsp;You collect <b>only NIFTY price and history data</b> —
+          dates and numbers.</p>
+          <p style="margin-top:5px"><b>5</b> &nbsp;NSE's <b>Terms of Use explicitly prohibit</b>
+          scraping.</p>
+          <p style="margin-top:5px"><b>6</b> &nbsp;You <b>never clicked "I agree."</b></p></div>
+        <div class="callout"><b>Why this one.</b> It is the most common shape of an Indian
+          data-science scrape: a public market page, a factual series, and a hostile terms page nobody
+          signed.</div>
+        <div class="callout warn"><b>Three facts are doing almost all the work.</b> Fact 2 (no login)
+          decides the contract question on its own. Fact 3 (no circumvention) is what separates this from
+          every Indian prosecution that exists. Fact 4 (numbers only) removes copyright and privacy from
+          the case entirely. Change any one of them and you are answering a different question — which is
+          why the answer on slide 25 comes with a list of what would flip it.</div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>It is not one question. It is four.</h3>
+          <p>"Is this legal?" cannot be answered because four separate bodies of law are being asked at
+          once, and they do not agree with each other. Separate them and each has a clean answer — three
+          of them confidently, one of them not.</p></div>
+        <table class="d sm free">
+          <tr><th style="width:112px">Head of claim</th><th style="width:186px">Law</th><th>The question it actually asks</th></tr>
+          <tr><td><b>Access</b></td><td>IT Act 2000 §43 (civil), §66 (criminal)</td>
+            <td>Was the fetch "without permission of the owner"? <i>Facts 1, 2, 3, 5</i></td></tr>
+          <tr><td><b>Contract</b></td><td>Indian Contract Act 1872 §2, §10, §13</td>
+            <td>Did the Terms of Use ever become a promise you made? <i>Facts 5, 6</i></td></tr>
+          <tr><td><b>Copying</b></td><td>Copyright Act 1957 §2(o), §13, §52</td>
+            <td>Is a NIFTY price series someone's original work? <i>Fact 4</i></td></tr>
+          <tr class="ok"><td><b>Keep &amp; use</b></td><td>DPDP Act 2023</td>
+            <td>Is any of it about a living person? <b>No.</b> Prices are not personal data — this head
+            drops out entirely. <i>Fact 4</i></td></tr>
+        </table>
+        <div class="callout warn"><b>Note what fact 1 hides.</b> "Public page" and "internal API" are
+          technically identical — both unauthenticated HTTP — but they are <b>not the same fact</b> in a
+          courtroom. We come back to this on slide 25.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24 · THE QUESTION 2/3 · ARGUED ============ -->
+<section class="slide roomy" data-sec="The question">
+  <div class="eyebrow">The question · 2 of 3 · argued both ways</div>
+  <h1 class="t">The case for lawful, and the case against — argued properly
+    <small>Both columns are real arguments a competent lawyer would run. If you can only make one of
+    them, you do not yet understand the question.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card g"><h3>It is lawful</h3>
+          <p><b>1 · The server granted permission.</b> §43 asks whether access was "without permission of
+          the owner". The owner's computer answered an unauthenticated request with <b>200 OK</b>. In a
+          statute about computer access, permission is most naturally read off the <b>access controls the
+          owner configured</b>, not off prose published elsewhere on the site. This is <i>hiQ</i>'s
+          reasoning, and it is the only reading that makes the rest of §43 coherent.</p>
+          <p style="margin-top:6px"><b>2 · Nothing was circumvented.</b> No credential, no CAPTCHA, no
+          token, no block routed around. §43's neighbouring limbs describe breaking in. Reading a page the
+          server hands to anyone is the opposite of that.</p>
+          <p style="margin-top:6px"><b>3 · There is no contract.</b> Acceptance is an element, not a
+          formality (Contract Act §2, §13). No click, no assent, no <i>consensus ad idem</i>, no promise
+          to breach. No Indian court has enforced pure browsewrap against a non-user.</p>
+          <p style="margin-top:6px"><b>4 · There is no copyright.</b> Dates and closing levels are facts;
+          their order is chronological and therefore uncreative. <i>EBC v. Modak</i> killed sweat-of-the-brow,
+          and India has <b>no database right</b> to fall back on.</p>
+          <p style="margin-top:6px"><b>5 · §66 cannot arise.</b> No wrongful gain, no wrongful loss,
+          no intent to defraud. The criminal door is shut on the facts.</p></div>
+        <div class="callout good"><b>Notice what this column never claims.</b> Not that the terms are
+          unfair, not that scraping is useful, not that NSE was unharmed. Only three factual assertions —
+          no gate, no click, no creativity — each provable from your own logs.</div>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3>It is not</h3>
+          <p><b>1 · "Permission" may mean what the owner said.</b> The section reads <i>without permission
+          of the owner</i> — not <i>without circumventing an access control</i>. If a court takes
+          permission to be the owner's stated position, the Terms of Use <b>are</b> that statement, and
+          §43(b) — <i>downloads, copies or extracts</i> — is made out without any break-in at all. §43 is
+          <b>civil and needs no dishonesty</b>. This is the strongest argument against, and nothing in
+          Indian law currently defeats it.</p>
+          <p style="margin-top:6px"><b>2 · The internal API is a worse fact than the page.</b> A linked
+          page is held out to the public. An undocumented endpoint is not held out to anyone. Technically
+          identical; rhetorically not. With no <i>Van Buren</i> to constrain it, a court may find "you used
+          an interface never offered to you" persuasive.</p>
+          <p style="margin-top:6px"><b>3 · Notice can stand in for a click.</b> A professional who knows
+          the terms exist and scrapes anyway can be met with acceptance by conduct
+          (<i>Register.com v. Verio</i>). Persuasive authority only — but it is the argument.</p>
+          <p style="margin-top:6px"><b>4 · Contract is not the only theory.</b> Losing on contract still
+          leaves unjust enrichment and unfair competition, neither of which needs your agreement — and
+          NSE licenses market data commercially, so there is a priced product to point at.</p></div>
+        <div class="callout bad"><b>Notice what this column never alleges either.</b> Not hacking. Every
+          argument here is built from facts you have already admitted — which is why "I didn't circumvent
+          anything" is a weaker defence than it feels. Nobody said you did.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25 · THE QUESTION 3/3 · CONCLUSION ============ -->
+<section class="slide roomy" data-sec="The question">
+  <div class="eyebrow">The question · 3 of 3 · the conclusion</div>
+  <h1 class="t">Lawful — but on an argument, not on a rule
+    <small>Head by head, with the confidence attached to each. Notice that the one unsettled answer is
+    also the only one that could cost you money.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
       <div class="colstack">
-        <div class="card b"><h3>EU · GDPR (2018) — the four things a scraper runs into</h3>
-          <p><b>Art. 3 reach:</b> applies to processing about people in the EU by anyone, anywhere, if
-          you offer them services or monitor their behaviour.</p>
-          <p style="margin-top:5px"><b>Art. 6 lawful basis:</b> you need one <i>before</i> you collect —
-          consent, contract, legal obligation, vital interests, public task, or <i>legitimate interests</i>
-          balanced against the person's rights. "It was on a public page" is <b>not</b> a lawful basis; the
-          GDPR has no public-data exemption at all.</p>
-          <p style="margin-top:5px"><b>Art. 14 notice:</b> when you obtain personal data <i>from somewhere
-          other than the person</i> — which is every scrape — you must tell them who you are, why, and
-          their rights, within a month, unless doing so is impossible or disproportionate. Regulators have
-          fined scrapers on exactly this (the Clearview AI decisions across several member states).</p>
-          <p style="margin-top:5px"><b>Art. 5 principles:</b> minimisation, purpose limitation, storage
-          limitation — the same four habits as the previous slide, written into law.</p></div>
+        <table class="d sm free">
+          <tr><th style="width:104px">Head</th><th style="width:96px">Verdict</th><th>Reasoning</th></tr>
+          <tr class="ok"><td><b>§66 criminal</b></td><td><b>No liability.</b> Confident.</td>
+            <td>Requires dishonest or fraudulent intent — wrongful gain or wrongful loss. Collecting
+              published index levels for analysis is neither.</td></tr>
+          <tr class="wr"><td><b>§43 civil</b></td><td><b>Probably none. Untested.</b></td>
+            <td>The better reading of "without permission" is the technical one, and <i>hiQ</i> supports
+              it. But no Indian court has said so, and the rival reading is available on the words.
+              <b>This is where the whole risk sits.</b></td></tr>
+          <tr class="ok"><td><b>Contract</b></td><td><b>Not bound.</b> Confident — conditionally.</td>
+            <td>No acceptance, so no contract. Conditional because it reverses completely the moment an
+              account exists.</td></tr>
+          <tr class="ok"><td><b>Copyright</b></td><td><b>No infringement.</b> Confident.</td>
+            <td>Facts, chronologically arranged. <i>EBC v. Modak</i>; no <i>sui generis</i> database right
+              in India.</td></tr>
+          <tr class="ok"><td><b>DPDP</b></td><td><b>Not engaged.</b></td>
+            <td>No personal data in a price series.</td></tr>
+        </table>
+        <div class="callout"><b>Say it in one sentence.</b> <i>Logged out, nothing circumvented, facts
+          only, no personal data, not redistributed</i> — that sits inside every settled rule in Indian
+          law, and outside only a reading of §43 that no court has yet adopted.</div>
       </div>
       <div class="colstack">
-        <div class="card o"><h3>US · HIPAA (1996)</h3>
-          <p>Not a general privacy law. It governs <i>protected health information</i> held by covered
-          entities (providers, insurers, clearinghouses) and their business associates. A scraper usually
-          is neither — but if a project touches patient data, reviews of clinics that name conditions, or
-          anything that could be re-identified to a patient, <b>health data has its own regime</b>, and
-          consent and de-identification standards are specific and strict. India's DPDP has no separate
-          health category yet; the Rules treat all personal data alike, with children's data as the
-          special case.</p></div>
-        <div class="callout"><b>Why this matters for a BTech project.</b> Not because you will be fined
-          in Brussels, but because the GDPR is the template most companies' data-governance policies copy.
-          Learn its vocabulary — lawful basis, minimisation, purpose limitation, data subject rights — and
-          you can read any of them.</div>
-        <div class="callout warn"><b>One line to remember across all three regimes.</b> Privacy law does
-          not ask how you <i>got</i> the data. It asks what you are <i>doing</i> with it, and why you are
+        <div class="card r"><h3>Three things that flip the answer</h3>
+          <p><b>1 · You log in.</b> Any account, any reason, once. Now you clicked, the Terms bind you,
+          and the anti-scraping clause is a promise you made. This is how <i>hiQ</i> ended — $500,000 and
+          a permanent injunction.</p>
+          <p style="margin-top:6px"><b>2 · They block you, or write to you, and you continue.</b> The
+          <i>3Taps</i> pattern. "Without permission" stops being an argument and becomes trivially
+          provable, and your proxy rotation is the evidence.</p>
+          <p style="margin-top:6px"><b>3 · You redistribute or sell it.</b> Market data is a licensed
+          product. Unjust enrichment and unfair competition do not need copyright, and do not need your
+          agreement either.</p></div>
+        <div class="callout warn"><b>The honest split in the answer.</b> The public page is the strong
+          case. The undocumented endpoint is the same technical position with worse optics and no Indian
+          authority to lean on. If you only need one of the two, take the page.</div>
+        <div class="callout bad"><b>Not legal advice.</b> Every case here turns on its facts, and yours
+          will differ. Where a project touches money, personal data, or a site that has told you to stop,
+          the correct next step is a person whose job this is.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26 · GDPR ============ -->
+<section class="slide roomy" data-sec="GDPR">
+  <div class="eyebrow">GDPR · the EU regime</div>
+  <h1 class="t">GDPR: "it was on a public page" is not a lawful basis
+    <small>If any row is about a person in the EU — or your client is European — the GDPR applies to you
+    in Chennai. It is also the template most companies' internal data policies copy, so its vocabulary is
+    worth owning whether or not it binds you.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card b"><h3>The four articles a scraper actually runs into</h3>
+          <p><b>Art. 3 · reach.</b> Applies to processing about people in the EU by anyone, anywhere, if
+          you offer them goods or services or monitor their behaviour. Your location is irrelevant; the
+          data subject's is decisive.</p>
+          <p style="margin-top:6px"><b>Art. 6 · lawful basis.</b> You need one <i>before</i> you collect:
+          consent, contract, legal obligation, vital interests, public task, or <b>legitimate interests</b>
+          balanced against the person's rights. There is <b>no public-data exemption in the GDPR at
+          all</b> — unlike DPDP §3(c)(ii), which at least has a narrow one.</p>
+          <p style="margin-top:6px"><b>Art. 14 · notice for data not obtained from the person.</b> Which
+          is <i>every scrape</i>. You must tell each person who you are, why you have their data, and what
+          rights they have, within a month — unless that is impossible or disproportionate. Regulators
+          have fined scrapers on exactly this article; the Clearview AI decisions across several member
+          states are the reference set.</p>
+          <p style="margin-top:6px"><b>Art. 5 · principles.</b> Minimisation, purpose limitation, storage
+          limitation, accuracy. The habits from the checklist, written into statute.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>Special categories · Art. 9</h3>
+          <p>Health, biometrics, sexual orientation, religion, politics, trade union membership, race.
+          Processing is <b>prohibited by default</b> and needs one of ten narrow gateways — not merely a
+          lawful basis. A scrape that incidentally captures any of these has a much harder problem than
+          one that captures names.</p>
+          <p style="margin-top:6px"><b>Art. 9(2)(e)</b> lifts the ban where the person has
+          <i>manifestly made the data public themselves</i>. That is the closest thing to a public-data
+          exemption in the whole Regulation, and it is far narrower than it sounds: it needs a deliberate
+          act of publication by the person, not by a site about them.</p></div>
+        <div class="callout"><b>Why a BTech project should care.</b> Not because Brussels will fine you.
+          Because "lawful basis", "minimisation", "purpose limitation" and "data subject rights" are the
+          four phrases every data-governance policy you will ever be handed is written in. Learn them once
+          and you can read all of them.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 27 · HIPAA ============ -->
+<section class="slide roomy" data-sec="HIPAA">
+  <div class="eyebrow">HIPAA · health data is its own regime</div>
+  <h1 class="t">HIPAA: not a privacy law, a sectoral one — and that is the trap
+    <small>Students reach for HIPAA whenever health appears. It is much narrower than that, and much
+    stricter inside its boundary. Knowing which side of the boundary you are on is the whole skill.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card b"><h3>What it actually governs</h3>
+          <p><b>Not</b> health data in general. It governs <b>protected health information</b> held by
+          <b>covered entities</b> — providers, health plans, clearinghouses — and by their
+          <b>business associates</b> under contract.</p>
+          <p style="margin-top:6px">A student scraping a public site is normally <b>neither</b>. Scrape
+          clinic listings and HIPAA does not reach you. Get hired to process a hospital's records and it
+          reaches you as a business associate, immediately and fully.</p>
+          <p style="margin-top:6px"><b>De-identification · §164.514.</b> Two routes only:
+          <b>Safe Harbor</b>, which requires stripping <b>18 enumerated identifiers</b> — names, all
+          geography below state, all dates finer than a year, phone, email, IP, device and record numbers,
+          faces, ages over 89 — or <b>Expert Determination</b>, a qualified statistician certifying the
+          re-identification risk is very small. "I dropped the name column" is neither route.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card r"><h3>Where a scraper meets it anyway</h3>
+          <p>Reviews of clinics that name a condition. Patient forums. Fundraising pages for treatment.
+          Doctor-rating sites where the reviewer is the patient. None of it is HIPAA-regulated at source —
+          and all of it is health data about identifiable people, which means <b>DPDP and the GDPR are
+          engaged even where HIPAA is not</b>.</p></div>
+        <div class="card o sm"><h3>How India compares</h3>
+          <p>The DPDP Act has <b>no separate health category</b> — all personal data is treated alike,
+          with children's data as the one special case. The EU is the opposite: health is an Art. 9
+          special category with a default prohibition. So for the same hospital dataset, the strictest
+          regime is European, not American.</p></div>
+        <div class="callout warn"><b>One line across all three regimes.</b> Privacy law does not ask how
+          politely you <i>got</i> the data. It asks what you are <i>doing</i> with it, and why you are
           allowed to.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 22 · WORKED SCENARIO ============ -->
+<!-- ============ 28 · PRIVACY · WORKED EXAMPLE ============ -->
 <section class="slide" data-sec="Privacy">
-  <div class="eyebrow">Q3 · Keep and use · 4 of 4 · worked example</div>
+  <div class="eyebrow">Privacy · worked example</div>
   <h1 class="t sm">Forty business cards with phone numbers: which regime, what must you do
     <small>This is the Lecture 2 scraper — a listings page, ten to forty cards, each with a name, a locality,
     a phone number, a rating, a score. Run it through the three questions as a supervisor would.</small></h1>
@@ -1316,7 +1623,258 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
   </div>
 </section>
 
-<!-- ============ 23 · DISCIPLINE 1 ============ -->
+<!-- ============ 29 · RECAP TABLE ============ -->
+<section class="slide roomy" data-sec="Recap">
+  <div class="eyebrow">Recap · 1 of 3</div>
+  <h1 class="t">Three questions, and the cases that answer each
+    <small>If you remember one table from this lecture, make it this one.</small></h1>
+  <div class="wrap">
+    <table class="d free big">
+      <tr><th style="width:90px">Question</th><th style="width:190px">Law</th><th>Settled</th><th>Open</th></tr>
+      <tr><td><b>Q1 access</b></td><td>CFAA (US) · IT Act §43/§66 (India) · contract (ToS)</td>
+        <td><i>Van Buren</i> 2021: gates, not purposes. <i>hiQ</i> 2019/2022: public page ≠ unauthorised.
+          <i>hiQ</i> Nov 2022: the ToS you agreed to is enforceable. <i>Meta v. Bright Data</i> 2024: it does
+          not reach the logged-off stranger. <i>Ziff Davis</i> 2025: robots.txt is not a lock.</td>
+        <td><i>3Taps</i> 2013 (C&amp;D + IP block = revocation) vs <i>hiQ</i>; India's §43 unconstrued.</td></tr>
+      <tr><td><b>Q2 copy</b></td><td>Copyright · fair use §107 / fair dealing §52 · EU database right</td>
+        <td>Facts are free (<i>Feist</i>, <i>EBC v. Modak</i>). <i>Ryanair</i> 2015: unprotected database
+          → terms bind. <i>Ross</i> 2025: same-market training ≠ fair use. <i>Bartz</i> 2025: training =
+          fair use, piracy ≠ excused ($1.5bn).</td>
+        <td><i>NYT v. OpenAI</i> (news, regurgitation); <i>Reddit v. Anthropic</i> (contract route, state
+          court); <i>Ross</i> on appeal.</td></tr>
+      <tr><td><b>Q3 keep</b></td><td>DPDP Act 2023 + Rules 2025 (India) · GDPR (EU) · HIPAA (US health)</td>
+        <td>Personal data needs a lawful basis; "public" is a narrow DPDP exemption (§3(c)(ii)) and no
+          GDPR exemption; Art. 14 notice for scraped data; penalties to ₹250 cr, live from Nov 2026.</td>
+        <td>How the Board reads §3(c)(ii); research standards under the Rules.</td></tr>
+    </table>
+    <div class="callout"><b>Read down the "Settled" column</b> and notice that every settled rule rewards the
+      same behaviour: public pages, logged out, no evasion, facts not text, personal fields dropped. Read
+      down "Open" and notice that none of it matters to a project that behaves that way.</div>
+  </div>
+</section>
+
+<!-- ============ 30 · CHECKLIST ============ -->
+<section class="slide roomy" data-sec="Discipline">
+  <div class="eyebrow">Discipline · 2 of 3 · one page to lift</div>
+  <h1 class="t">A checklist you can paste into the project README
+    <small>Before, during, after. If a box cannot be ticked, the project has a design problem, not a
+    paperwork problem.</small></h1>
+  <div class="wrap">
+    <div class="cols3" style="flex:1">
+      <div class="card b"><h3>Before the first request</h3>
+        <p>&#9744; Is there an API, feed, bulk download or <code class="k">llms.txt</code>? Use it.<br/>
+        &#9744; Read <code class="k">robots.txt</code>; record the date and the lines that apply to me.<br/>
+        &#9744; Read the ToS scraping clause. Do I need an account? If yes, does the clause permit this?<br/>
+        &#9744; List the fields I need. Mark which are personal data. Decide now what I will drop or hash.<br/>
+        &#9744; Write the purpose in one sentence, and a deletion date.<br/>
+        &#9744; UA string with project name and contact.</p></div>
+      <div class="card o"><h3>While it runs</h3>
+        <p>&#9744; One request per page, timeout on every request, backoff on 429/5xx, never on 4xx.<br/>
+        &#9744; Logged out. No proxies. No stealth flags beyond what rendering needs.<br/>
+        &#9744; Dated snapshot to disk; parse from disk.<br/>
+        &#9744; On 403 / captcha / ban: <b>stop</b>. Do not retry from elsewhere.<br/>
+        &#9744; Provenance row per fetch.<br/>
+        &#9744; Minimise at parse time — the raw personal field never reaches the DataFrame.</p></div>
+      <div class="card g"><h3>Before anyone else sees it</h3>
+        <p>&#9744; Lecture 1's six assertions pass.<br/>
+        &#9744; No column holds text copied whole from the source unless I can say why.<br/>
+        &#9744; No column holds a living person's name, phone, email or address in the clear.<br/>
+        &#9744; README: source, date, robots.txt status, fields kept/removed, purpose, deletion date,
+        the licence I am claiming for the CSV.<br/>
+        &#9744; Raw snapshot stays private.<br/>
+        &#9744; I can say the defensible sentence from slide 16 out loud.</p></div>
+    </div>
+    <div class="callout warn"><b>For the course project</b> this checklist, filled in, is submitted with the
+      data. A dataset without it is an unverified scrape, the same way a DataFrame without the six assertions
+      is an unvalidated one.</div>
+  </div>
+</section>
+
+<!-- ============ 31 · PRACTICE ============ -->
+<section class="slide roomy" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Five exercises
+    <small>Numbers 2 and 5 are the ones that will change how you scrape. Do them before the project proposal.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card b"><h3><span class="num">01</span>Read three real robots.txt files</h3>
+          <p>In your own browser, outside class, open <code class="k">/robots.txt</code> on a news site, an
+          e-commerce site and a government portal. For each: which paths are disallowed for
+          <code class="k">*</code>; is there a <code class="k">Crawl-delay</code>; are
+          <code class="k">GPTBot</code>/<code class="k">ClaudeBot</code>/<code class="k">CCBot</code> named;
+          is there a <code class="k">Sitemap</code>. One table, nine rows.</p></div>
+        <div class="card r"><h3><span class="num">02</span>Break the standard library, then fix it</h3>
+          <p>Reproduce slide 5: a robots.txt with one <code class="k">Allow</code> inside one
+          <code class="k">Disallow</code>, both orders, through <code class="k">urllib.robotparser</code>.
+          Then install <code class="k">protego</code> and run the same four checks. <b>Write the unit test
+          that would have caught the difference</b>, and say in a sentence which direction the stdlib
+          errs in and why that is tolerable.</p></div>
+        <div class="card o"><h3><span class="num">03</span>Classify five scenarios</h3>
+          <p>For each, say which box (Q1/Q2/Q3), which case or statute governs, and whether it is
+          settled: (a) a logged-out scrape of public product prices; (b) the same after a 403; (c) copying
+          full reviews into a Kaggle dataset; (d) a scraper that logs in with a shared class account;
+          (e) a CSV of sole-trader names and phones from a directory. One paragraph each.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card p"><h3><span class="num">04</span>Map a real ToS</h3>
+          <p>Pick one site you intend to use for the project. Find its terms. Quote the clause on automated
+          access. Decide: browsewrap or clickwrap for a logged-out visitor? Does the clause bind you, and
+          under which case? Would it change if you created an account? <b>Cite the slide.</b></p></div>
+        <div class="card g"><h3><span class="num">05</span>The ethics paragraph, and the ten lines</h3>
+          <p>For your project dataset, fill in the slide-24 checklist, then write the README paragraph:
+          source, date, robots.txt status, fields kept and removed and why, purpose, deletion date,
+          licence. Then add the minimise/pseudonymise/feature-extract lines from slide 28 <i>inside the
+          scraper</i>, and submit the before/after column list. <b>The paragraph and the diff are the
+          deliverable</b>, not the CSV.</p></div>
+        <div class="callout warn"><b>Ground rules, for the last time.</b> No live scraping during these
+          exercises except the three robots.txt files in (1), read in a browser. Everything else runs on
+          inline strings and the saved snapshots you already have. And if a site has said no — in a file, a
+          header, a letter or a 403 — that is the end of the exercise, not the start of a workaround.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================
+     DISABLED 2026-09-02 — L4 reordered to run robots.txt -> llms.txt -> Terms of
+     Use -> decided cases -> Indian law -> the worked NSE question -> GDPR -> HIPAA,
+     and the four overlapping closing slides collapsed into one recap + one checklist.
+     Each slide below is wrapped in its own marker pair:
+     "DISABLED SLIDE n ..." and "END DISABLED SLIDE".
+     Restore a slide by deleting its two marker lines (and re-check its slide refs).
+     ====================================================================== -->
+<!-- DISABLED SLIDE (was 13) — India & EU — superseded by the India section (slides 18-22) and the Ryanair slide (14); delete this line and the closing marker to restore
+<section class="slide roomy" data-sec="Access">
+  <div class="eyebrow">Q1 · Access · 4 of 4</div>
+  <h1 class="t">India and the EU: §43, §66, and the airline that won on contract
+    <small>Everything so far is US law, because that is where the scraping cases have been fought. You
+    will work under Indian law, and possibly European. Here is what each actually says.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card b"><h3>India · IT Act 2000</h3>
+          <p><b>§43</b> — civil. Whoever "without permission of the owner or any other person who is in
+          charge of a computer… downloads, copies or extracts any data, computer data base or information"
+          is liable to pay <b>compensation</b> to the person affected. Note the verbs: copy and extract,
+          not just break in.</p>
+          <p style="margin-top:6px"><b>§66</b> — criminal. Doing a §43 act "dishonestly or fraudulently":
+          up to <b>three years</b>, or a fine up to ₹5 lakh, or both.</p>
+          <p style="margin-top:6px"><b>What we do not have:</b> a reported Indian judgment applying §43 to
+          scraping a public website. "Without permission" has not been given a <i>Van Buren</i>-style
+          reading. Until it is, treat a block or a C&amp;D as withdrawing permission, and treat
+          <code class="k">robots.txt</code> as the nearest thing to a written grant.</p></div>
+        <div class="callout warn"><b>India's privacy law is the live one.</b> For a student project the
+          realistic exposure is not §43 — it is the DPDP Act, slides 19–22, whose penalties switch on in
+          November 2026.</div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>EU · <i>Ryanair v. PR Aviation</i> · CJEU C-30/14 · 15 Jan 2015</h3>
+          <p>PR Aviation ran a fare-comparison site that scraped Ryanair's flight data. Ryanair's terms
+          forbade screen-scraping. The Dutch courts asked Luxembourg whether the Database Directive's
+          protections for <i>lawful users</i> stopped Ryanair enforcing those terms. The answer: the
+          Directive only protects databases that qualify for copyright or the <i>sui generis</i> right —
+          and Ryanair's flight data did not. So nothing in EU database law stopped Ryanair's
+          <b>contract</b> from binding a user who had accepted it.</p>
+          <p style="margin-top:7px"><span class="tag o">box</span>Q1-contract, with a Q2 twist: the
+          <i>weaker</i> the IP protection in the data, the <i>freer</i> the owner is to rely on terms.</p></div>
+        <div class="callout"><b>The pattern across all three jurisdictions.</b> US: public page, no
+          gate → no crime, contract only if you agreed. EU: contract is taken seriously, and the ToS is a
+          real constraint on a comparison-site business model. India: the statute is broad, the case law is
+          empty, the privacy regime is strict. Design for the strictest one your data touches.</div>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 16) — Two cases still open — its content is in the recap table and the case-law demo; delete this line and the closing marker to restore
+<section class="slide roomy" data-sec="Copying">
+  <div class="eyebrow">Q2 · Copying · 3 of 4 · status as of Aug 2026</div>
+  <h1 class="t">Two cases still open, and what each would settle
+    <small>Both were filed over scraped text used to train models. They are routed through different boxes
+    on our map — and that routing is the interesting part.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="card o"><h3><i>New York Times v. Microsoft &amp; OpenAI</i> · S.D.N.Y. · filed 27 Dec 2023</h3>
+          <p><b>Box: Q2, copyright.</b> The Times says millions of its articles were copied to train GPT
+          models, that the use is not transformative because ChatGPT can reproduce articles near-verbatim,
+          and that the product substitutes for the paper. OpenAI pleads fair use. <b>Status:</b> in
+          discovery; consolidated with other publishers' suits before Judge Stein; an amended complaint was
+          filed June 2026; summary-judgment briefing expected 2026, trial possibly 2027. No ruling on the
+          merits yet. (The Ziff Davis robots.txt ruling on slide 6 came out of this same consolidated
+          case.)</p></div>
+        <div class="callout"><b>What it would settle:</b> whether factor 4 — market substitution, shown by
+          regurgitation — beats "transformative" for <i>news</i>, where the facts are free but the expression
+          is the product.</div>
+      </div>
+      <div class="colstack">
+        <div class="card p"><h3><i>Reddit v. Anthropic</i> · filed 4 June 2025 · San Francisco Superior Court</h3>
+          <p><b>Box: Q1-contract, deliberately.</b> Reddit pleads breach of its User Agreement, trespass to
+          chattels, unfair competition and interference with the privacy promises it made to its users — and
+          <b>no copyright claim at all</b>. Anthropic removed it to federal court arguing it was really a
+          copyright case in disguise; in <b>March 2026</b> the federal judge disagreed and sent it back to
+          state court, where it is proceeding. Reddit's own framing: it licenses the same data to Google
+          and OpenAI, so the complaint is about taking without the deal.</p></div>
+        <div class="callout"><b>What it would settle:</b> whether a platform's terms can be enforced
+          against a large-scale scraper on contract and state-law theories alone — the route
+          <i>Meta v. Bright Data</i> closed for logged-off strangers, tested against a defendant who (Reddit
+          says) was told to stop.</div>
+        <div class="callout warn"><b>Both are pending.</b> Anything you read that says either has been
+          "decided" is wrong as of this deck's date. Check before you quote them.</div>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 21) — GDPR + HIPAA in one slide — split into two slides (26, 27); delete this line and the closing marker to restore
+<section class="slide" data-sec="Privacy">
+  <div class="eyebrow">Q3 · Keep and use · 3 of 4 · elsewhere</div>
+  <h1 class="t">GDPR and HIPAA in one slide: public is not free, and health is different
+    <small>If any row is about a person in the EU, or your client is, the GDPR applies to you in Chennai.
+    If the data is health data in the US, a sectoral law applies on top of everything.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="card b"><h3>EU · GDPR (2018) — the four things a scraper runs into</h3>
+          <p><b>Art. 3 reach:</b> applies to processing about people in the EU by anyone, anywhere, if
+          you offer them services or monitor their behaviour.</p>
+          <p style="margin-top:5px"><b>Art. 6 lawful basis:</b> you need one <i>before</i> you collect —
+          consent, contract, legal obligation, vital interests, public task, or <i>legitimate interests</i>
+          balanced against the person's rights. "It was on a public page" is <b>not</b> a lawful basis; the
+          GDPR has no public-data exemption at all.</p>
+          <p style="margin-top:5px"><b>Art. 14 notice:</b> when you obtain personal data <i>from somewhere
+          other than the person</i> — which is every scrape — you must tell them who you are, why, and
+          their rights, within a month, unless doing so is impossible or disproportionate. Regulators have
+          fined scrapers on exactly this (the Clearview AI decisions across several member states).</p>
+          <p style="margin-top:5px"><b>Art. 5 principles:</b> minimisation, purpose limitation, storage
+          limitation — the same four habits as the previous slide, written into law.</p></div>
+      </div>
+      <div class="colstack">
+        <div class="card o"><h3>US · HIPAA (1996)</h3>
+          <p>Not a general privacy law. It governs <i>protected health information</i> held by covered
+          entities (providers, insurers, clearinghouses) and their business associates. A scraper usually
+          is neither — but if a project touches patient data, reviews of clinics that name conditions, or
+          anything that could be re-identified to a patient, <b>health data has its own regime</b>, and
+          consent and de-identification standards are specific and strict. India's DPDP has no separate
+          health category yet; the Rules treat all personal data alike, with children's data as the
+          special case.</p></div>
+        <div class="callout"><b>Why this matters for a BTech project.</b> Not because you will be fined
+          in Brussels, but because the GDPR is the template most companies' data-governance policies copy.
+          Learn its vocabulary — lawful basis, minimisation, purpose limitation, data subject rights — and
+          you can read any of them.</div>
+        <div class="callout warn"><b>One line to remember across all three regimes.</b> Privacy law does
+          not ask how you <i>got</i> the data. It asks what you are <i>doing</i> with it, and why you are
+          allowed to.</div>
+      </div>
+    </div>
+  </div>
+</section>
+END DISABLED SLIDE -->
+
+<!-- DISABLED SLIDE (was 23) — Eight habits — subsumed by the checklist slide; delete this line and the closing marker to restore
 <section class="slide roomy" data-sec="Discipline">
   <div class="eyebrow">Discipline · 1 of 3</div>
   <h1 class="t">The discipline that follows: eight habits
@@ -1356,45 +1914,9 @@ df = df.drop(columns=[<span class="py-str">'description'</span>])      <span cla
       a column in a log. The expensive version of this lecture is the one you read after the letter arrives.</div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
-<!-- ============ 24 · CHECKLIST ============ -->
-<section class="slide roomy" data-sec="Discipline">
-  <div class="eyebrow">Discipline · 2 of 3 · one page to lift</div>
-  <h1 class="t">A checklist you can paste into the project README
-    <small>Before, during, after. If a box cannot be ticked, the project has a design problem, not a
-    paperwork problem.</small></h1>
-  <div class="wrap">
-    <div class="cols3" style="flex:1">
-      <div class="card b"><h3>Before the first request</h3>
-        <p>&#9744; Is there an API, feed, bulk download or <code class="k">llms.txt</code>? Use it.<br/>
-        &#9744; Read <code class="k">robots.txt</code>; record the date and the lines that apply to me.<br/>
-        &#9744; Read the ToS scraping clause. Do I need an account? If yes, does the clause permit this?<br/>
-        &#9744; List the fields I need. Mark which are personal data. Decide now what I will drop or hash.<br/>
-        &#9744; Write the purpose in one sentence, and a deletion date.<br/>
-        &#9744; UA string with project name and contact.</p></div>
-      <div class="card o"><h3>While it runs</h3>
-        <p>&#9744; One request per page, timeout on every request, backoff on 429/5xx, never on 4xx.<br/>
-        &#9744; Logged out. No proxies. No stealth flags beyond what rendering needs.<br/>
-        &#9744; Dated snapshot to disk; parse from disk.<br/>
-        &#9744; On 403 / captcha / ban: <b>stop</b>. Do not retry from elsewhere.<br/>
-        &#9744; Provenance row per fetch.<br/>
-        &#9744; Minimise at parse time — the raw personal field never reaches the DataFrame.</p></div>
-      <div class="card g"><h3>Before anyone else sees it</h3>
-        <p>&#9744; Lecture 1's six assertions pass.<br/>
-        &#9744; No column holds text copied whole from the source unless I can say why.<br/>
-        &#9744; No column holds a living person's name, phone, email or address in the clear.<br/>
-        &#9744; README: source, date, robots.txt status, fields kept/removed, purpose, deletion date,
-        the licence I am claiming for the CSV.<br/>
-        &#9744; Raw snapshot stays private.<br/>
-        &#9744; I can say the defensible sentence from slide 18 out loud.</p></div>
-    </div>
-    <div class="callout warn"><b>For the course project</b> this checklist, filled in, is submitted with the
-      data. A dataset without it is an unverified scrape, the same way a DataFrame without the six assertions
-      is an unvalidated one.</div>
-  </div>
-</section>
-
-<!-- ============ 25 · DECISION TREE ============ -->
+<!-- DISABLED SLIDE (was 25) — Decision tree — third restatement of the three questions; delete this line and the closing marker to restore
 <section class="slide roomy" data-sec="Discipline">
   <div class="eyebrow">Discipline · 3 of 3 · the questions in order</div>
   <h1 class="t">"May I scrape this?" — asked as three questions, in order
@@ -1439,38 +1961,9 @@ Is there a login, a block, a C&amp;D, or a robots.txt Disallow on the path?
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
-<!-- ============ 26 · RECAP TABLE ============ -->
-<section class="slide roomy" data-sec="Recap">
-  <div class="eyebrow">Recap · 1 of 3</div>
-  <h1 class="t">Three questions, and the cases that answer each
-    <small>If you remember one table from this lecture, make it this one.</small></h1>
-  <div class="wrap">
-    <table class="d free big">
-      <tr><th style="width:90px">Question</th><th style="width:190px">Law</th><th>Settled</th><th>Open</th></tr>
-      <tr><td><b>Q1 access</b></td><td>CFAA (US) · IT Act §43/§66 (India) · contract (ToS)</td>
-        <td><i>Van Buren</i> 2021: gates, not purposes. <i>hiQ</i> 2019/2022: public page ≠ unauthorised.
-          <i>hiQ</i> Nov 2022: the ToS you agreed to is enforceable. <i>Meta v. Bright Data</i> 2024: it does
-          not reach the logged-off stranger. <i>Ziff Davis</i> 2025: robots.txt is not a lock.</td>
-        <td><i>3Taps</i> 2013 (C&amp;D + IP block = revocation) vs <i>hiQ</i>; India's §43 unconstrued.</td></tr>
-      <tr><td><b>Q2 copy</b></td><td>Copyright · fair use §107 / fair dealing §52 · EU database right</td>
-        <td>Facts are free (<i>Feist</i>, <i>EBC v. Modak</i>). <i>Ryanair</i> 2015: unprotected database
-          → terms bind. <i>Ross</i> 2025: same-market training ≠ fair use. <i>Bartz</i> 2025: training =
-          fair use, piracy ≠ excused ($1.5bn).</td>
-        <td><i>NYT v. OpenAI</i> (news, regurgitation); <i>Reddit v. Anthropic</i> (contract route, state
-          court); <i>Ross</i> on appeal.</td></tr>
-      <tr><td><b>Q3 keep</b></td><td>DPDP Act 2023 + Rules 2025 (India) · GDPR (EU) · HIPAA (US health)</td>
-        <td>Personal data needs a lawful basis; "public" is a narrow DPDP exemption (§3(c)(ii)) and no
-          GDPR exemption; Art. 14 notice for scraped data; penalties to ₹250 cr, live from Nov 2026.</td>
-        <td>How the Board reads §3(c)(ii); research standards under the Rules.</td></tr>
-    </table>
-    <div class="callout"><b>Read down the "Settled" column</b> and notice that every settled rule rewards the
-      same behaviour: public pages, logged out, no evasion, facts not text, personal fields dropped. Read
-      down "Open" and notice that none of it matters to a project that behaves that way.</div>
-  </div>
-</section>
-
-<!-- ============ 27 · LADDER ============ -->
+<!-- DISABLED SLIDE (was 27) — Ladder recap — the ladder is already on slide 2; delete this line and the closing marker to restore
 <section class="slide roomy" data-sec="Recap">
   <div class="eyebrow">Recap · 2 of 3</div>
   <h1 class="t">The ladder, with the rule on every rung
@@ -1512,8 +2005,9 @@ Is there a login, a block, a C&amp;D, or a robots.txt Disallow on the path?
     </div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
-<!-- ============ 28 · SIX THINGS ============ -->
+<!-- DISABLED SLIDE (was 28) — Six takeaways — fourth restatement of the three questions; delete this line and the closing marker to restore
 <section class="slide" data-sec="Recap">
   <div class="eyebrow">Recap · 3 of 3 · key takeaways</div>
   <h1 class="t">Six things worth keeping</h1>
@@ -1545,52 +2039,8 @@ Is there a login, a block, a C&amp;D, or a robots.txt Disallow on the path?
       question in this lecture into a courtesy.</div>
   </div>
 </section>
+END DISABLED SLIDE -->
 
-<!-- ============ 29 · EXERCISES ============ -->
-<section class="slide roomy" data-sec="Practice">
-  <div class="eyebrow">Practice</div>
-  <h1 class="t">Five exercises
-    <small>Numbers 2 and 5 are the ones that will change how you scrape. Do them before the project proposal.</small></h1>
-  <div class="wrap">
-    <div class="cols">
-      <div class="colstack">
-        <div class="card b"><h3><span class="num">01</span>Read three real robots.txt files</h3>
-          <p>In your own browser, outside class, open <code class="k">/robots.txt</code> on a news site, an
-          e-commerce site and a government portal. For each: which paths are disallowed for
-          <code class="k">*</code>; is there a <code class="k">Crawl-delay</code>; are
-          <code class="k">GPTBot</code>/<code class="k">ClaudeBot</code>/<code class="k">CCBot</code> named;
-          is there a <code class="k">Sitemap</code>. One table, nine rows.</p></div>
-        <div class="card r"><h3><span class="num">02</span>Break the standard library, then fix it</h3>
-          <p>Reproduce slide 5: a robots.txt with one <code class="k">Allow</code> inside one
-          <code class="k">Disallow</code>, both orders, through <code class="k">urllib.robotparser</code>.
-          Then install <code class="k">protego</code> and run the same four checks. <b>Write the unit test
-          that would have caught the difference</b>, and say in a sentence which direction the stdlib
-          errs in and why that is tolerable.</p></div>
-        <div class="card o"><h3><span class="num">03</span>Classify five scenarios</h3>
-          <p>For each, say which box (Q1/Q2/Q3), which case or statute governs, and whether it is
-          settled: (a) a logged-out scrape of public product prices; (b) the same after a 403; (c) copying
-          full reviews into a Kaggle dataset; (d) a scraper that logs in with a shared class account;
-          (e) a CSV of sole-trader names and phones from a directory. One paragraph each.</p></div>
-      </div>
-      <div class="colstack">
-        <div class="card p"><h3><span class="num">04</span>Map a real ToS</h3>
-          <p>Pick one site you intend to use for the project. Find its terms. Quote the clause on automated
-          access. Decide: browsewrap or clickwrap for a logged-out visitor? Does the clause bind you, and
-          under which case? Would it change if you created an account? <b>Cite the slide.</b></p></div>
-        <div class="card g"><h3><span class="num">05</span>The ethics paragraph, and the ten lines</h3>
-          <p>For your project dataset, fill in the slide-24 checklist, then write the README paragraph:
-          source, date, robots.txt status, fields kept and removed and why, purpose, deletion date,
-          licence. Then add the minimise/pseudonymise/feature-extract lines from slide 22 <i>inside the
-          scraper</i>, and submit the before/after column list. <b>The paragraph and the diff are the
-          deliverable</b>, not the CSV.</p></div>
-        <div class="callout warn"><b>Ground rules, for the last time.</b> No live scraping during these
-          exercises except the three robots.txt files in (1), read in a browser. Everything else runs on
-          inline strings and the saved snapshots you already have. And if a site has said no — in a file, a
-          header, a letter or a 403 — that is the end of the exercise, not the start of a workaround.</div>
-      </div>
-    </div>
-  </div>
-</section>
 
 </div></div>
 <div id="hint">← → navigate · F fullscreen · P print</div>
