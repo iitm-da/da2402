@@ -542,9 +542,9 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
 <!-- ============ 4 · THE FILE ARRIVES ============ -->
 <section class="slide" data-sec="The file · 1 of 4">
   <div class="eyebrow">The file · 1 of 4</div>
-  <h1 class="t">The file you scraped last month
-    <small><code class="k">BLUE METAL.csv</code>, output of the IndexBoard scraper from Data
-    Collection L1. The run succeeded.</small></h1>
+  <h1 class="t">BLUE METAL.csv, as the scraper left it
+    <small>Output of the IndexBoard scraper from Data Collection L1. The run succeeded: no errors,
+    no retries outstanding, 5,463 rows on disk.</small></h1>
   <div class="wrap">
     <div class="cols w4060">
       <div class="colstack fill">
@@ -552,8 +552,8 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
 
 df = pd.read_csv(<span class="py-str">"BLUE METAL.csv"</span>)
 df.info()</pre>
-        <div class="callout sm"><b>Read the dtypes, not the row count.</b> The count says the
-        scraper finished. The dtypes say what it wrote.</div>
+        <div class="callout sm">The row count only tells you the scraper finished. The dtypes tell
+        you what it actually wrote.</div>
         <div class="card sm o">
           <h3>Two things already wrong</h3>
           <p><code class="k">Index Name</code> is empty in every row, beside a populated
@@ -592,8 +592,8 @@ memory usage: 341.6+ KB</div>
 <!-- ============ 5 · THE FIRST LIE ============ -->
 <section class="slide" data-sec="The file · 2 of 4">
   <div class="eyebrow">The file · 2 of 4</div>
-  <h1 class="t">Your missing-value count is wrong before you start
-    <small>The first thing everyone runs. On this file it is precisely correct and useless.</small></h1>
+  <h1 class="t">isna() reports 5,463 missing cells and misses 5,796
+    <small>The first check most people run. Here it misses more cells than it finds.</small></h1>
   <div class="wrap">
     <div class="cols">
       <div class="colstack">
@@ -606,8 +606,10 @@ OPEN                <span class="h-ok">0</span>
 HIGH                <span class="h-ok">0</span>
 LOW                 <span class="h-ok">0</span>
 CLOSE               0</div>
-        <div class="callout bad sm">Every missing cell it found is in a column nobody asked for.
-        The three broken columns report <b>zero</b>.</div>
+        <div class="callout bad sm">All 5,463 sit in <code class="k">Index Name</code>, an all-null
+        column beside the populated <code class="k">INDEX_NAME</code>.
+        <code class="k">OPEN</code>, <code class="k">HIGH</code> and <code class="k">LOW</code>
+        report <b>zero</b>.</div>
         <pre class="code xs">(df[[<span class="py-str">"OPEN"</span>,<span class="py-str">"HIGH"</span>,<span class="py-str">"LOW"</span>]] == <span class="py-str">"-"</span>).sum()</pre>
         <div class="out xs">OPEN    <span class="h-bad">1932</span>
 HIGH    <span class="h-bad">1932</span>
@@ -685,9 +687,9 @@ CLOSE    <span class="h-ok">float64</span></div>
 <!-- ============ 7 · MISSING ROWS ============ -->
 <section class="slide" data-sec="The file · 4 of 4">
   <div class="eyebrow">The file · 4 of 4</div>
-  <h1 class="t">The gaps with no row to be missing from
-    <small>Every check so far asked: given a row, is this cell blank? None can find a row that was
-    never written.</small></h1>
+  <h1 class="t">Four years are absent, and no column shows it
+    <small>Every check so far asked: given a row, is this cell blank? That question cannot reach a
+    row that was never written.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
       <div class="colstack">
@@ -751,7 +753,7 @@ df.RequestNumber.nunique()</pre>
         </div>
         <div class="callout sm"><b>Two checks that would have caught it.</b> Rows per requested
         period against what you asked for; trading days per year against a calendar. Three lines
-        each, in nobody's default workflow.</div>
+        each, and rarely written.</div>
       </div>
     </div>
   </div>
@@ -1086,7 +1088,7 @@ below median      <span class="h-bad">42.9   60.4   55.2   79.2</span>
 <!-- ============ 15 · WHICH MECHANISM ============ -->
 <section class="slide" data-sec="Mechanisms · 5 of 5">
   <div class="eyebrow">Mechanisms · 5 of 5 · applying it</div>
-  <h1 class="t">So which mechanism made the 1,932 gaps?
+  <h1 class="t">Which mechanism made the 1,932 gaps?
     <small>Back to <code class="k">BLUE METAL.csv</code>, read correctly. Two lines settle a question
     no imputation library will ask you.</small></h1>
   <div class="wrap">
@@ -1571,8 +1573,8 @@ miss  miss  miss    -    <span class="h-bad">1932</span>
             <td>Drop the variable. Honest for <code class="k">Index Name</code> at 100% missing and
             <code class="k">INDEX_NAME</code> at one distinct value.</td><td class="c">Any</td></tr>
           <tr class="wr"><td><b>Restrict the window</b></td>
-            <td>Drop a defined region for a stated reason, not scattered rows. The answer for the
-            pre-2011 block.</td><td class="c">Structural</td></tr>
+            <td>Drop a whole defined region, with a stated reason. The answer for the pre-2011
+            block.</td><td class="c">Structural</td></tr>
           <tr class="ok"><td><b>Delete nothing</b><br/><code class="k">df.OPEN.isna()</code></td>
             <td>Keep every row, add the missingness indicator as a column. Under MNAR the absence itself
             carries information.</td><td class="c">Any</td></tr>
@@ -1621,29 +1623,29 @@ miss  miss  miss    -    <span class="h-bad">1932</span>
         <td>The whole file is one index</td>
         <td>One distinct value in 5,463 rows. Record it as a dataset attribute.</td></tr>
       <tr><td>RequestNumber</td><td>Keep, exclude from analysis</td><td class="n">&#8212;</td>
-        <td>It describes the scrape, not the index</td>
+        <td>A pagination handle from the server</td>
         <td>Useful for auditing collection, a leak if a model sees the raw frame.</td></tr>
       <tr class="hl"><td>&#8212; rows &#8212;</td><td>Flag 2000&#8211;2003 as never delivered</td><td class="n">~1,000</td>
         <td>The gap is in the request, not the response</td>
         <td>Four requested years returned empty. Invisible to any column-wise check. Re-run before
         treating the history as complete.</td></tr>
     </table>
-    <div class="callout"><b>The fourth column is the one that matters.</b> Anyone can diff two files
-    to see what changed. Only the log says what you were assuming.</div>
+    <div class="callout"><b>The fourth column is the one that matters.</b> A diff of the two files
+    shows what changed. The log is the only place the reasoning lives.</div>
   </div>
 </section>
 
 <!-- ============ 21 · RECAP ============ -->
 <section class="slide" data-sec="Recap">
   <div class="eyebrow">Recap</div>
-  <h1 class="t">Six things to carry out
-    <small>In the order they will save you time.</small></h1>
+  <h1 class="t">What to take from this lecture
+    <small>Six things, in the order they will save you time.</small></h1>
   <div class="wrap">
     <div class="cols">
       <div class="colstack fill">
         <div class="card b">
-          <h3><span class="num">01</span>Count what is missing, not what pandas says is</h3>
-          <p>The two differed by 2.1&#215; here. Check dtypes, hunt sentinels, re-read with
+          <h3><span class="num">01</span>The reported missing count can be wrong</h3>
+          <p>On this file it was off by 2.1&#215;. Check dtypes, hunt sentinels, and re-read with
           <code class="k">na_values</code> before reporting a number.</p>
         </div>
         <div class="card b">
