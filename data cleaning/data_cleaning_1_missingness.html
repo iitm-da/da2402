@@ -345,6 +345,26 @@ table.log td:nth-child(1){font-family:var(--mono);font-size:10.6px;white-space:n
 table.log td:nth-child(4){font-style:italic;color:var(--soft)}
 table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 
+/* ---------- the missingness lab (slide 10) ---------- */
+.lab{display:grid;grid-template-columns:1.62fr 1fr;gap:15px;flex:1;min-height:0}
+.lab .plot{background:var(--card);border:1px solid var(--hair);padding:9px 11px 7px;
+  display:flex;flex-direction:column;min-height:0}
+.lab .plot svg{flex:1;min-height:0;display:block}
+.plotnote{font-size:10.6px;color:var(--soft);line-height:1.35;margin-top:5px;
+  border-top:1px solid var(--hair);padding-top:5px}
+.plotnote b{color:var(--ink)}
+.seg{display:flex;gap:6px;flex:none;margin-bottom:7px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.09em;padding:5px 13px;
+  border:1px solid var(--line);background:var(--paper);color:var(--soft);cursor:pointer;
+  border-radius:2px;transition:background .15s,color .15s,border-color .15s}
+.seg button:hover{background:#E2EBF0;color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.seg button.alt{margin-left:auto;font-size:10.4px;letter-spacing:.12em}
+.seg button:focus-visible{outline:2px solid var(--t-cls);outline-offset:1px}
+.meanbox{background:var(--card);border:1px solid var(--hair);padding:8px 10px;flex:none}
+.meanbox svg{display:block;width:100%}
+.pt{transition:fill .28s ease,stroke .28s ease,opacity .28s ease}
+
 /* ---------- fill: let a short column spread over the stage instead of
    piling its cards at the top. Cards grow and centre their own text; callouts,
    tables and code keep their natural height.                                 */
@@ -354,9 +374,10 @@ table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 .colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
 
 /* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
-table.d.roomy td,table.d.roomy th{padding:11px 10px}
-table.log.roomy td,table.log.roomy th{padding:10px 10px}
-.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:13px 12px;margin-bottom:8px}
+table.d.roomy td,table.d.roomy th{padding:15px 10px}
+table.d.roomy.tall td,table.d.roomy.tall th{padding:27px 10px}
+table.log.roomy td,table.log.roomy th{padding:13px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:17px 12px;margin-bottom:9px}
 
 /* ---------- cover ornament: a wall of raw cells ---------- */
 .coverpat .c-miss{color:var(--t-asr);font-weight:700}
@@ -376,10 +397,8 @@ table.log.roomy td,table.log.roomy th{padding:10px 10px}
   <h1>Data<br/>Cleaning</h1>
   <div class="pt">Part 1 — What "dirty" means, and how it got that way</div>
   <div class="rule"></div>
-  <p class="sub">Every fix you make to a dataset is a bet on <i>why</i> the data looks wrong.
-  This lecture opens a real scraped file, shows that its missing-value count is wrong before
-  you start, and then asks the question the rest of the module is built on: what made this
-  gap, and what does that permit you to do about it?</p>
+  <p class="sub">Every fix to a dataset is a bet on why the data looks wrong. We open a real scraped
+  file, find its missing-value count is off by a factor of two, and work out what made the gaps.</p>
   <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
   <table class="meta">
     <tr><td>Course</td><td>DA2402 · BTech DSAI</td></tr>
@@ -393,12 +412,9 @@ table.log.roomy td,table.log.roomy th{padding:10px 10px}
 <section class="slide" data-sec="Orientation · 1 of 2">
   <div class="eyebrow">Orientation · 1 of 2</div>
   <h1 class="t">Cleaning is not tidying
-    <small>The number everyone quotes is the least interesting thing about this topic. The
-    interesting thing is what you are actually doing when you "clean" — which is not
-    housekeeping, and is not reversible.</small></h1>
+    <small>Where the week goes, and what you are doing when you spend it.</small></h1>
   <div class="wrap">
-    <div class="cols w4060">
-
+    <div class="cols w6040">
       <div class="colstack">
         <div class="fig">
           <div class="cap">Where a data scientist's time goes</div>
@@ -428,37 +444,25 @@ table.log.roomy td,table.log.roomy th{padding:10px 10px}
 <text x="432.0" y="78.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F">usable at all</text>
 <text x="0" y="236" font-family="JetBrains Mono,monospace" font-size="9" fill="#8FA0A9">CrowdFlower 2016 Data Science Report &#183; self-reported, n &#8776; 80</text>
 </svg>
-          <div class="rd"><b>Two of the six bars are not analysis.</b> Cleaning and collecting
-          together take <b>79%</b> of the working week &#8212; the whole job of getting data into a
-          state where the other four bars are even possible.</div>
+          <div class="rd">Cleaning and collecting take <b>79%</b> of the week. The other four bars
+          need that work done first.</div>
         </div>
-        <div class="callout warn sm"><b>Read it honestly.</b> This is a self-report survey of around
-        eighty people, repeated in every slide deck since &#8212; a mood, not a measurement. The same
-        report has <b>57%</b> naming cleaning the least enjoyable part of the job. The claim these
-        numbers support is not "cleaning takes 60% of your time"; it is <b>"nobody plans for this,
-        and everybody spends real time on it."</b></div>
+        <div class="callout warn sm">Self-reported, n &#8776; 80, quoted everywhere since. Treat it
+        as a mood. The same survey has <b>57%</b> calling cleaning the worst part of the job.</div>
       </div>
 
       <div class="colstack">
-        <div class="callout"><b>What cleaning actually is.</b> A dataset is a set of claims about
-        the world. Cleaning changes those claims. When you fill a blank, you are asserting a value
-        that was never measured. When you delete a row, you are asserting it should not count.
-        Both are <b>inferences</b>, and both can be wrong in ways the file will never tell you.</div>
-        <h2 class="s" style="margin-top:4px">Three things that follow</h2>
-        <ul class="b sm">
-          <li><b>A cleaned file is not more true than the raw one.</b> It is the raw file plus
-          your assumptions. Keep the raw one.</li>
-          <li><b>Every fix needs a reason you could defend.</b> "It looked wrong" is not a reason.
-          "Values before Oct 2011 were never published" is.</li>
-          <li><b>The same defect can need opposite treatments.</b> A gap caused by a broken sensor
-          and a gap caused by a refusal to answer are the same blank on screen and different
-          problems entirely.</li>
+        <div class="callout"><b>A dataset is a set of claims.</b> Fill a blank and you assert a
+        value nobody measured. Delete a row and you assert it should not count. Both are inferences.
+        Neither raises an error.</div>
+        <ul class="b">
+          <li>A cleaned file is the raw file plus your assumptions. Keep the raw one.</li>
+          <li>"It looked wrong" is not a reason. "Never published before Oct 2011" is.</li>
+          <li>A broken sensor and a refused answer leave the same blank. They need opposite
+          treatments.</li>
         </ul>
-        <div class="callout good sm"><b>So the module is organised around causes, not tools.</b>
-        Not "here is imputation, here is outlier detection" — but "here is a symptom; what could
-        have produced it; what does each cause let you do".</div>
+        <div class="callout good sm">So this module is organised by cause, not by tool.</div>
       </div>
-
     </div>
   </div>
 </section>
@@ -467,53 +471,45 @@ table.log.roomy td,table.log.roomy th{padding:10px 10px}
 <section class="slide" data-sec="Orientation · 2 of 2">
   <div class="eyebrow">Orientation · 2 of 2 · the spine of the module</div>
   <h1 class="t">Symptom, mechanism, permission
-    <small>This table recurs on every deck in the module. The left column is what you can see.
-    The middle column is what you cannot. The right column is the only one that changes what
-    you are allowed to do — and you reach it by argument, never by looking harder at the file.</small></h1>
+    <small>This table returns on every deck. Only the right column changes what you may do.</small></h1>
   <div class="wrap">
     <div class="spine roomy">
       <div class="hd">Symptom</div>
       <div class="hd">Mechanisms that could produce it</div>
-      <div class="hd">What settling the mechanism buys you</div>
+      <div class="hd">What settling it buys you</div>
 
       <div class="rung now" style="display:contents">
         <div class="sym"><b>A gap</b><i>Lectures 1 &#183; 2 &#183; 3</i></div>
-        <div class="mid">The value exists and was lost &#183; the value exists and was withheld &#183;
-          the value never existed &#183; <b class="q">or the gap is not a gap and you misread a sentinel</b></div>
-        <div class="rgt">Which fills are honest, which estimates stay unbiased, and when the
-          right answer is to fill nothing at all</div>
+        <div class="mid">Lost &#183; withheld &#183; never existed &#183;
+          <b class="q">or never a gap, and you misread a sentinel</b></div>
+        <div class="rgt">Which fills are honest, which estimates survive, when to fill nothing</div>
       </div>
 
       <div class="rung" style="display:contents">
         <div class="sym"><b>An extreme value</b><i>Lecture 4</i></div>
-        <div class="mid">Entry or unit error &#183; measurement fault &#183; a genuinely heavy tail &#183;
-          a structural break in the series &#183; <b class="q">a real event</b></div>
-        <div class="rgt">Whether to delete, cap, transform, model around it — or leave it alone
-          because it is the finding</div>
+        <div class="mid">Entry error &#183; measurement fault &#183; heavy tail &#183; structural
+          break &#183; <b class="q">a real event</b></div>
+        <div class="rgt">Delete, cap, transform, model around it, or leave it because it is the
+          finding</div>
       </div>
 
       <div class="rung" style="display:contents">
         <div class="sym"><b>A repeated row</b><i>Lecture 5</i></div>
-        <div class="mid">One entity recorded twice &#183; two entities that merely look alike &#183;
-          <b class="q">an artefact your own pipeline created</b></div>
-        <div class="rgt">Which key defines identity, what threshold to match at, and which value
-          survives the merge</div>
+        <div class="mid">One entity twice &#183; two lookalikes &#183;
+          <b class="q">an artefact your pipeline made</b></div>
+        <div class="rgt">Which key is identity, what threshold to match at, which value survives</div>
       </div>
 
       <div class="rung" style="display:contents">
         <div class="sym" style="background:var(--soft)"><b>Everything else</b><i>Fixed on sight</i></div>
         <div class="mid" style="border-left-color:var(--line)">Prices stored as text &#183; a stray
-          pagination column &#183; a name arriving twice &#183; a mangled encoding &#8212;
-          <b class="q">somebody's bug, yours included</b></div>
-        <div class="rgt" style="border-left-color:var(--line)">Nothing. There is no mechanism to
-          settle, so repair it, write down what you repaired, and move on</div>
+          column &#183; a mangled encoding. <b class="q">Somebody's bug.</b></div>
+        <div class="rgt" style="border-left-color:var(--line)">Nothing to settle. Repair it, log it,
+          move on</div>
       </div>
     </div>
-    <div class="callout"><b>The uncomfortable part.</b> Nothing in the middle column is visible in
-    the data. You settle it with domain knowledge, with documentation, with how the file was
-    produced — and sometimes you cannot settle it at all, in which case the honest move is to say
-    so and carry the ambiguity forward. Lecture 2 is entirely about how far the data alone can
-    take you, and where it stops.</div>
+    <div class="callout"><b>None of the middle column is in the data.</b> You settle it from
+    documentation and from how the file was made. Lecture 2 is about how far the data alone gets you.</div>
   </div>
 </section>
 
@@ -521,27 +517,22 @@ table.log.roomy td,table.log.roomy th{padding:10px 10px}
 <section class="slide" data-sec="The file · 1 of 4">
   <div class="eyebrow">The file · 1 of 4</div>
   <h1 class="t">The file you scraped last month
-    <small><code class="k">BLUE METAL.csv</code> is the output of the IndexBoard scraper from
-    Data Collection, Lecture 1 — a run that <i>succeeded</i>. No errors, no retries left
-    outstanding, 5,463 rows of daily index history written to disk. Start where you always
-    start: ask pandas what it thinks it has.</small></h1>
+    <small><code class="k">BLUE METAL.csv</code>, output of the IndexBoard scraper from Data
+    Collection L1. The run succeeded.</small></h1>
   <div class="wrap">
     <div class="cols w4060">
-      <div class="colstack">
+      <div class="colstack fill">
         <pre class="code sm">import pandas as pd
 
 df = pd.read_csv(<span class="py-str">"BLUE METAL.csv"</span>)
 df.info()</pre>
-        <div class="callout sm"><b>Read the dtype column, not the row count.</b> The row count
-        tells you the scraper finished. The dtypes tell you what the scraper actually wrote —
-        and here four of them are wrong in a way that is about to matter.</div>
+        <div class="callout sm"><b>Read the dtypes, not the row count.</b> The count says the
+        scraper finished. The dtypes say what it wrote.</div>
         <div class="card sm o">
-          <h3>Two things already visible</h3>
-          <p><code class="k">Index Name</code> is <b>0 non-null</b> — an entirely empty column
-          sitting next to a populated <code class="k">INDEX_NAME</code>. And
-          <code class="k">OPEN</code>, <code class="k">HIGH</code>, <code class="k">LOW</code> are
-          <code class="k">object</code>, while <code class="k">CLOSE</code> is
-          <code class="k">float64</code>. Four price columns; one of them is a number.</p>
+          <h3>Two things already wrong</h3>
+          <p><code class="k">Index Name</code> is empty in every row, beside a populated
+          <code class="k">INDEX_NAME</code>. Three of the four price columns arrived as
+          <code class="k">object</code>.</p>
         </div>
       </div>
       <div class="colstack">
@@ -576,11 +567,9 @@ memory usage: 341.6+ KB</div>
 <section class="slide" data-sec="The file · 2 of 4">
   <div class="eyebrow">The file · 2 of 4</div>
   <h1 class="t">Your missing-value count is wrong before you start
-    <small>The first thing everyone runs is <code class="k">df.isna().sum()</code>. On this file it
-    returns a number that is both precisely correct and completely useless.</small></h1>
+    <small>The first thing everyone runs. On this file it is precisely correct and useless.</small></h1>
   <div class="wrap">
     <div class="cols">
-
       <div class="colstack">
         <div class="outlbl">df.isna().sum()</div>
         <div class="out xs">RequestNumber       0
@@ -591,9 +580,8 @@ OPEN                <span class="h-ok">0</span>
 HIGH                <span class="h-ok">0</span>
 LOW                 <span class="h-ok">0</span>
 CLOSE               0</div>
-        <div class="callout bad sm"><b>Read what it just said.</b> Every missing cell in this file
-        is in <code class="k">Index Name</code> — a column nobody asked for, which is empty in
-        every row. The three columns that are actually broken report <b>zero</b> missing values.</div>
+        <div class="callout bad sm">Every missing cell it found is in a column nobody asked for.
+        The three broken columns report <b>zero</b>.</div>
         <pre class="code xs">(df[[<span class="py-str">"OPEN"</span>,<span class="py-str">"HIGH"</span>,<span class="py-str">"LOW"</span>]] == <span class="py-str">"-"</span>).sum()</pre>
         <div class="out xs">OPEN    <span class="h-bad">1932</span>
 HIGH    <span class="h-bad">1932</span>
@@ -601,28 +589,22 @@ LOW     <span class="h-bad">1932</span></div>
       </div>
 
       <div class="colstack">
-        <table class="d sm free">
+        <table class="d sm free roomy">
           <tr><th>Count</th><th>Cells</th><th>What it is</th></tr>
           <tr><td class="c">5,463</td><td>what <code class="k">isna()</code> reports</td>
-            <td>one dead column, no information lost</td></tr>
-          <tr class="hl"><td class="c">5,796</td><td>hiding as the string <code class="k">"-"</code></td>
+            <td>one dead column, nothing lost</td></tr>
+          <tr class="hl"><td class="c">5,796</td><td>hiding as <code class="k">"-"</code></td>
             <td>three price columns, 35% of the history</td></tr>
           <tr class="wr"><td class="c">11,259</td><td>actually missing</td>
-            <td><b>2.1&#215;</b> what the standard check reported</td></tr>
+            <td><b>2.1&#215;</b> the reported figure</td></tr>
         </table>
-        <div class="callout"><b>Why this happens.</b> <code class="k">read_csv</code> only converts a
-        cell to <code class="k">NaN</code> if it matches its list of null tokens — the empty string,
-        <code class="k">NA</code>, <code class="k">N/A</code>, <code class="k">null</code>,
-        <code class="k">NaN</code> and a few more. A lone hyphen is not on that list, so it stays a
-        one-character string. One string in a column is enough to make the whole column
-        <code class="k">object</code>, which is why <code class="k">OPEN</code> is not a number
-        and <code class="k">CLOSE</code> is.</div>
-        <div class="callout warn sm"><b>The dtype was the tell.</b> You did not need to know about
-        the hyphen. A price column that arrives as <code class="k">object</code> is a column with
-        something non-numeric in it, and finding out what is a one-line question:
+        <div class="callout"><b>Why.</b> <code class="k">read_csv</code> converts a cell to
+        <code class="k">NaN</code> only if it matches its null-token list. A lone hyphen is not on
+        it, so the column stays <code class="k">object</code>.</div>
+        <div class="callout warn sm"><b>The dtype was the tell.</b> A price column arriving as
+        <code class="k">object</code> has something non-numeric in it:
         <code class="k">df.OPEN[~df.OPEN.str.match(r"^[\d.]+$")].unique()</code>.</div>
       </div>
-
     </div>
   </div>
 </section>
@@ -631,31 +613,27 @@ LOW     <span class="h-bad">1932</span></div>
 <section class="slide" data-sec="The file · 3 of 4">
   <div class="eyebrow">The file · 3 of 4</div>
   <h1 class="t">Missing has a vocabulary, and it is not standardised
-    <small>Somewhere upstream a human or a system decided how to write down "we do not have this".
-    Almost none of those decisions produce a <code class="k">NaN</code>. Learn the dialect before
-    you count anything.</small></h1>
+    <small>Someone upstream chose how to write "we do not have this". Almost none of those choices
+    produce a <code class="k">NaN</code>.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
-
       <div class="colstack">
-        <table class="d xs">
+        <table class="d xs roomy">
           <tr><th>Written as</th><th>Comes from</th><th>How it hurts</th></tr>
-          <tr><td>-</td><td>report exports, exchange feeds</td><td>column becomes <code class="k">object</code>; silently excluded from arithmetic</td></tr>
-          <tr><td>"", " "</td><td>hand-edited spreadsheets</td><td>whitespace-only strings are not <code class="k">NaN</code>; they compare unequal to each other</td></tr>
-          <tr><td>NA, N/A, na, #N/A</td><td>Excel, R exports</td><td>most are caught by default; <code class="k">na</code> lower-case often is not</td></tr>
-          <tr class="hl"><td>-999, -1, 9999</td><td>survey codebooks, sensors</td><td><b>the dangerous one</b> — numeric, so it is silently averaged in</td></tr>
-          <tr class="hl"><td>0</td><td>defaulted database columns</td><td>indistinguishable from a real zero without domain knowledge</td></tr>
-          <tr><td>1900-01-01, 1970-01-01</td><td>date defaults, epoch zero</td><td>parses as a valid date; wrecks any time filter</td></tr>
-          <tr><td>"Unknown", "None", "NULL"</td><td>form dropdowns, JSON dumps</td><td>a legitimate category in one file and a gap in the next</td></tr>
+          <tr><td>-</td><td>report exports, exchange feeds</td><td>column turns <code class="k">object</code></td></tr>
+          <tr><td>"", " "</td><td>hand-edited spreadsheets</td><td>whitespace is not <code class="k">NaN</code></td></tr>
+          <tr><td>NA, N/A, #N/A</td><td>Excel, R exports</td><td>mostly caught; lower-case <code class="k">na</code> often not</td></tr>
+          <tr class="hl"><td>-999, -1, 9999</td><td>survey codebooks, sensors</td><td><b>numeric, so it is averaged in</b></td></tr>
+          <tr class="hl"><td>0</td><td>defaulted DB columns</td><td>indistinguishable from a real zero</td></tr>
+          <tr><td>1900-01-01</td><td>date defaults, epoch zero</td><td>parses fine, wrecks time filters</td></tr>
+          <tr><td>"Unknown", "NULL"</td><td>dropdowns, JSON dumps</td><td>a category in one file, a gap in the next</td></tr>
         </table>
-        <div class="callout bad sm"><b>The numeric sentinels are the ones that ruin results
-        quietly.</b> A gap that reads as <code class="k">-999</code> does not raise an error, does not
-        show up in <code class="k">isna()</code>, and drags the mean of a column of ages down to
-        something no one notices until a reviewer asks.</div>
+        <div class="callout bad sm">The numeric sentinels are the dangerous ones. No error, no
+        <code class="k">isna()</code> hit, and your mean age quietly drops.</div>
       </div>
 
-      <div class="colstack">
-        <h2 class="s">The fix, and what it repairs</h2>
+      <div class="colstack fill">
+        <h2 class="s">The fix</h2>
         <pre class="code sm">df = pd.read_csv(
     <span class="py-str">"BLUE METAL.csv"</span>,
     na_values=[<span class="py-str">"-"</span>],
@@ -666,16 +644,14 @@ OPEN           <span class="h-bad">1932</span>
 HIGH           <span class="h-bad">1932</span>
 LOW            <span class="h-bad">1932</span>
 CLOSE             0</div>
-        <div class="outlbl">df[["OPEN","HIGH","LOW","CLOSE"]].dtypes</div>
+        <div class="outlbl">dtypes</div>
         <div class="out xs">OPEN     <span class="h-ok">float64</span>
 HIGH     <span class="h-ok">float64</span>
 LOW      <span class="h-ok">float64</span>
 CLOSE    <span class="h-ok">float64</span></div>
-        <div class="callout good sm"><b>The dtypes repaired themselves.</b> Nothing was imputed and
-        nothing was dropped — the file was simply read correctly. That is the cheapest fix in this
-        entire module, and it has to happen before any count you report is worth anything.</div>
+        <div class="callout good sm"><b>The dtypes repaired themselves.</b> The file was just read
+        correctly. Cheapest fix in the module, and it comes before any count you report.</div>
       </div>
-
     </div>
   </div>
 </section>
@@ -684,51 +660,73 @@ CLOSE    <span class="h-ok">float64</span></div>
 <section class="slide" data-sec="The file · 4 of 4">
   <div class="eyebrow">The file · 4 of 4</div>
   <h1 class="t">The gaps with no row to be missing from
-    <small>Every check so far has been column-wise: given a row, is this cell blank? No column-wise
-    check can find a row that was never written. On this file, four whole years are gone and
-    nothing in the data says so.</small></h1>
+    <small>Every check so far asked: given a row, is this cell blank? None can find a row that was
+    never written.</small></h1>
   <div class="wrap">
-    <div class="cols w4060">
-
+    <div class="cols w6040">
       <div class="colstack">
-        <pre class="code xs">df[<span class="py-str">"year"</span>] = pd.to_datetime(
-    df.HistoryDate, format=<span class="py-str">"%d %b %Y"</span>).dt.year
+        <div class="fig">
+          <div class="cap">Years requested vs years returned</div>
+          <svg viewBox="0 0 520 96" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Year coverage: 2000 to 2003 requested but absent; 2004 to 2025 present.">
+<rect x="0.0" y="26" width="17.9" height="34" fill="none" stroke="#B02F3B" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="9.0" y="48" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="#B02F3B">?</text>
+<text x="9.0" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">2000</text>
+<rect x="19.9" y="26" width="17.9" height="34" fill="none" stroke="#B02F3B" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="28.9" y="48" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="#B02F3B">?</text>
+<rect x="39.8" y="26" width="17.9" height="34" fill="none" stroke="#B02F3B" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="48.8" y="48" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="#B02F3B">?</text>
+<rect x="59.8" y="26" width="17.9" height="34" fill="none" stroke="#B02F3B" stroke-width="1.2" stroke-dasharray="3 2"/>
+<text x="68.7" y="48" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="#B02F3B">?</text>
+<rect x="79.7" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="99.6" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<text x="108.6" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">2005</text>
+<rect x="119.5" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="139.5" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="159.4" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="179.3" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="199.2" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<text x="208.2" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">2010</text>
+<rect x="219.2" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="239.1" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="259.0" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="278.9" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="298.8" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<text x="307.8" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">2015</text>
+<rect x="318.8" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="338.7" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="358.6" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="378.5" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="398.5" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<text x="407.4" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">2020</text>
+<rect x="418.4" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="438.3" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="458.2" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="478.2" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<rect x="498.1" y="26" width="17.9" height="34" fill="#26404E" stroke="none" stroke-width="1.2" stroke-dasharray=""/>
+<text x="507.0" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">2025</text>
+<text x="0" y="16" font-family="JetBrains Mono,monospace" font-size="9" fill="#8FA0A9">26 YEARS REQUESTED &#183; 22 RETURNED ROWS</text>
+<text x="0" y="90" font-family="JetBrains Mono,monospace" font-size="9.4" font-weight="700" fill="#B02F3B">2000&#8211;2003 came back empty and were written as nothing</text>
+</svg>
+        </div>
+        <div class="callout bad sm">The scraper asked for 2000&#8211;2025. Four years returned an
+        empty payload and it wrote nothing rather than raising. The file is not wrong. It is short,
+        and being short leaves no trace.</div>
+      </div>
 
-<span class="py-bi">sorted</span>(df.year.unique())
+      <div class="colstack fill">
+        <pre class="code xs"><span class="py-bi">sorted</span>(df.year.unique())
 df.RequestNumber.nunique()</pre>
         <div class="out xs">[2004, 2005, ..., 2024, 2025]   <span class="h-dim">22 years</span>
 22                              <span class="h-dim">request blocks</span></div>
-        <div class="callout bad sm"><b>The scraper asked for 2000&#8211;2025.</b> That is 26 years.
-        Twenty-two came back with rows; <code class="k">2000, 2001, 2002, 2003</code> returned an
-        empty payload, and the scraper wrote nothing rather than raising. The file is not wrong —
-        it is <i>short</i>, and being short leaves no trace.</div>
-        <div class="callout warn sm"><b>This is a Lecture 1 defect from the last module.</b> The
-        scraper looped a year at a time and appended whatever came back. An empty response and a
-        year with no trading are the same thing to code that only appends.</div>
-      </div>
-
-      <div class="colstack">
-        <div class="outlbl">df.groupby("RequestNumber").agg(rows, first, last)</div>
-        <div class="out xxs">RequestNumber            rows      first        last
-His63905478754468581100   254 2004-01-01  2004-12-31
-His63905478756840826700   251 2005-01-03  2005-12-30
-His63905478759668938300   250 2006-01-02  2006-12-29
-<span class="h-dim">                        ...                        </span>
-His63905478816923411900   249 2024-01-01  2024-12-31
-His63905478821267438500   249 2025-01-01  2025-12-31
-<span class="h-dim">[22 rows] — one block per year, ~248 rows each</span></div>
         <div class="card sm r">
-          <h3>And a column that is not data</h3>
+          <h3>A column that is not data</h3>
           <p><code class="k">RequestNumber</code> is the server's pagination handle. It describes
-          <i>your scrape</i>, not the index. It leaks the fact that the file was assembled from 22
-          separate requests — useful for auditing the collection, meaningless as a feature, and
-          a trap for any model that gets handed the raw frame.</p>
+          your scrape, not the index, and it leaks that the file came from 22 separate requests.</p>
         </div>
-        <div class="callout sm"><b>Two checks that would have caught it.</b> Count rows per
-        requested period and compare against what you asked for; and count trading days per year
-        against a calendar. Both are three lines. Neither is in anybody's default workflow.</div>
+        <div class="callout sm"><b>Two checks that would have caught it.</b> Rows per requested
+        period against what you asked for; trading days per year against a calendar. Three lines
+        each, in nobody's default workflow.</div>
       </div>
-
     </div>
   </div>
 </section>
@@ -737,340 +735,256 @@ His63905478821267438500   249 2025-01-01  2025-12-31
 <section class="slide" data-sec="Orientation · defects">
   <div class="eyebrow">Orientation · the five defects and where they are taught</div>
   <h1 class="t">One file, five kinds of wrong
-    <small>Everything found in the last four slides is on this list, and the list is the shape of
-    the module. The rest of this lecture takes the first row and does not leave it.</small></h1>
+    <small>Everything found in the last four slides, and the shape of the module.</small></h1>
   <div class="wrap">
     <table class="d sm free roomy">
-      <tr><th style="width:132px">Defect</th><th>What it looks like here</th><th style="width:120px">Where</th></tr>
+      <tr><th style="width:132px">Defect</th><th>In this file</th><th style="width:120px">Where</th></tr>
       <tr class="hl"><td><b>Missing values</b></td>
-        <td>1,932 rows with no <code class="k">OPEN/HIGH/LOW</code>; four absent years; one wholly
-        empty column. Three different problems that all get called "missing data".</td>
-        <td><b>This lecture</b>, then tests in L2, filling in L3</td></tr>
+        <td>1,932 rows with no OHLC, four absent years, one empty column. Three problems, all called
+        "missing data".</td>
+        <td><b>Here</b>, tests in L2, filling in L3</td></tr>
       <tr><td><b>Wrong types</b></td>
-        <td>Prices as strings because of one sentinel. Dates as strings, so <code class="k">&lt;</code>
-        compares alphabetically and <code class="k">"31 Dec 2004"</code> sorts <i>after</i> <code class="k">"30 Dec 2011"</code>.</td>
-        <td>Fixed on sight — a parsing bug, not a data question</td></tr>
+        <td>Prices as strings, from one sentinel. Dates as strings, so
+        <code class="k">"31 Dec 2004"</code> sorts after <code class="k">"30 Dec 2011"</code>.</td>
+        <td>Fixed on sight</td></tr>
       <tr><td><b>Structural noise</b></td>
-        <td><code class="k">RequestNumber</code>, the duplicate <code class="k">Index Name</code> /
-        <code class="k">INDEX_NAME</code> pair, a constant column with one value in 5,463 rows.</td>
-        <td>Dropped with a documented reason</td></tr>
+        <td><code class="k">RequestNumber</code>, the duplicate name columns, a constant column
+        across 5,463 rows.</td>
+        <td>Dropped with a reason</td></tr>
       <tr><td><b>Outliers</b></td>
-        <td>Days where the index moves &gt;10%. Some are errors, some are the market. The detector
-        cannot tell you which, and that is the whole lecture.</td>
+        <td>Days the index moves over 10%. Some are errors, some are the market, and the detector
+        cannot tell you which.</td>
         <td>Lecture 4</td></tr>
       <tr><td><b>Duplicates</b></td>
-        <td>None in this file — but the headline scrape from the same module has three, and
-        <code class="k">drop_duplicates()</code> finds zero of them.</td>
+        <td>None here. The headline scrape from the same module has three, and
+        <code class="k">drop_duplicates()</code> finds none of them.</td>
         <td>Lecture 5</td></tr>
     </table>
-    <div class="callout"><b>Notice who made the mess.</b> The sentinel came from the exchange's
-    report format. The absent years, the pagination column and the duplicated name column came
-    from <b>the scraper you wrote</b>. Most of what you will clean this term is not the world being
-    messy — it is the seam between one system and the next, and you built that seam.</div>
+    <div class="callout"><b>Notice who made the mess.</b> The sentinel came from the exchange. The
+    absent years, the pagination column and the duplicated name column came from your scraper. Most
+    of what you clean is the seam between two systems, and you built the seam.</div>
   </div>
 </section>
 
 <!-- ============ 9 · WHY MECHANISM MATTERS ============ -->
-<section class="slide" data-sec="Mechanisms · 1 of 6">
-  <div class="eyebrow">Mechanisms · 1 of 6</div>
+<section class="slide" data-sec="Mechanisms · 1 of 5">
+  <div class="eyebrow">Mechanisms · 1 of 5</div>
   <h1 class="t">The same gap, three defensible answers
-    <small>Here is the situation you are actually in. A column is 35% empty. What do you do? The
-    question has no answer until you say <i>why</i> it is empty — and then it has an obvious one.</small></h1>
+    <small>A column is 35% empty. What do you do? There is no answer until you say why.</small></h1>
   <div class="wrap">
     <div class="cols w3070">
       <div class="colstack fill">
         <div class="card">
           <h3>The observation</h3>
-          <p>A numeric column. 5,463 rows. 1,932 of them blank. Nothing else known.</p>
+          <p>A numeric column. 5,463 rows, 1,932 blank. Nothing else known.</p>
         </div>
-        <div class="callout bad sm">There is no method that is correct here, because "correct"
-        is not a property of the method. It is a property of the <b>match between the method and
-        the cause</b>.</div>
-        <div class="callout sm">This is why the next five slides are about causes and not about
-        code. Rubin's 1976 framework gives the three causes names, and the names are the whole
-        reason the framework is still in use fifty years later.</div>
+        <div class="callout bad sm">No method is correct here. Correct is not a property of the
+        method. It is a property of the match between method and cause.</div>
+        <div class="callout sm">Rubin's 1976 framework names the three causes.</div>
       </div>
-      <div class="colstack fill">
-        <table class="d sm free">
-          <tr><th style="width:180px">If the cause was</th><th>Then the honest response is</th></tr>
+      <div class="colstack">
+        <table class="d sm free roomy">
+          <tr><th style="width:180px">If the cause was</th><th>The honest response</th></tr>
           <tr class="ok"><td><b>The logger dropped packets at random</b></td>
-            <td>Drop those rows, or fill them from the rest of the column. Your estimates stay
-            unbiased either way; you have simply lost some precision. This is the easy case, and
-            it is rare.</td></tr>
+            <td>Drop the rows or fill from the column. Estimates stay unbiased. You lose precision, nothing
+            else.</td></tr>
           <tr class="wr"><td><b>The feed only carried this field after a certain date</b></td>
-            <td>Do not fill anything. Restrict the analysis to the period where the field exists,
-            or use a column that spans the whole history. Filling here would be inventing eight
-            years of prices.</td></tr>
+            <td>Fill nothing. Restrict the analysis, or use a column that spans the history. Filling here
+            invents eight years of prices.</td></tr>
           <tr class="hl"><td><b>Values were suppressed when they were extreme</b></td>
-            <td>Nothing you compute from the observed rows is safe, including the mean. You need
-            an explicit assumption about the suppressed values, and you must report how the answer
-            changes as that assumption changes.</td></tr>
+            <td>Nothing from the observed rows is safe, the mean included. You need an assumption from
+            outside the data, and must report how the answer moves with it.</td></tr>
         </table>
-        <div class="callout good sm"><b>Same blank cells. Same count. Three different obligations.</b>
-        A colleague who fills all three with the column mean has produced one clean-looking file and
-        two wrong answers, with no error message anywhere.</div>
+        <div class="callout good sm"><b>Same cells, same count, three obligations.</b> Fill all three
+        with the column mean and you get one clean-looking file and two wrong answers.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 10 · THE THREE MECHANISMS ============ -->
-<section class="slide" data-sec="Mechanisms · 2 of 6">
-  <div class="eyebrow">Mechanisms · 2 of 6 · Rubin (1976)</div>
-  <h1 class="t sm">MCAR, MAR, MNAR
-    <small>Write <b>R</b> for the missingness indicator — one per cell, 1 if present, 0 if missing.
-    <b>Y<sub>obs</sub></b> is what you can see, <b>Y<sub>mis</sub></b> is what you cannot. The three
-    mechanisms are three answers to one question: <i>what does R depend on?</i></small></h1>
+<!-- ============ 10 · THE MISSINGNESS LAB (interactive) ============ -->
+<section class="slide" data-sec="Mechanisms · 2 of 5 · lab">
+  <div class="eyebrow">Mechanisms &#183; 2 of 5 &#183; live</div>
+  <h1 class="t">MCAR, MAR, MNAR &#8212; the same 400 people
+    <small>One survey. One question they can refuse: income. Three reasons they refuse. Click each
+    and watch where the holes fall.</small></h1>
   <div class="wrap">
-    <div class="mech">
+    <div class="lab">
 
-      <div class="m a">
-        <h3><span>Missing completely at random</span>MCAR</h3>
-        <div class="out xxs">P(R | Y<sub>obs</sub>, Y<sub>mis</sub>) = P(R)</div>
-        <div class="def">Missingness depends on <b>nothing in the dataset</b> — not on what you can
-        see, not on what you cannot. The blanks are a random subset of the rows.</div>
-        <div class="def" style="color:var(--t-grp)"><b>Consequence:</b> your remaining data is a
-        smaller but still representative sample. Means, correlations and models stay unbiased.
-        You lose precision, not correctness.</div>
-        <div class="ex"><b>Looks like</b>A logger drops packets when a buffer overflows &#183;
-        a tray of samples is knocked over &#183; a page of paper forms is lost in transit</div>
+      <div class="plot">
+        <div class="seg" role="group" aria-label="missingness mechanism">
+          <button data-m="mcar" class="on">MCAR</button>
+          <button data-m="mar">MAR</button>
+          <button data-m="mnar">MNAR</button>
+          <button id="labplay" class="alt">Replay</button>
+        </div>
+        <svg id="labsvg" viewBox="0 0 560 300" preserveAspectRatio="xMidYMid meet" role="img"
+             aria-label="Scatter of age against income for 400 survey respondents. Points whose
+             income is missing are hollow. Under MCAR the holes are spread evenly; under MAR they
+             cluster at low age; under MNAR they cluster at low income."></svg>
+        <div class="plotnote">Each dot is one respondent. <b>Hollow = income missing.</b>
+          7 respondents above &#8377;4L are drawn at the top edge.</div>
       </div>
 
-      <div class="m b">
-        <h3><span>Missing at random</span>MAR</h3>
-        <div class="out xxs">P(R | Y<sub>obs</sub>, Y<sub>mis</sub>) = P(R | Y<sub>obs</sub>)</div>
-        <div class="def">Missingness depends on <b>things you observed</b>, but not on the missing
-        value itself. Once you condition on the observed variables, what is left is random.</div>
-        <div class="def" style="color:var(--t-anc)"><b>Consequence:</b> naive estimates are biased,
-        but the bias is <i>recoverable</i> — because everything driving it is in the file. This is
-        what regression imputation and MICE assume.</div>
-        <div class="ex"><b>Looks like</b>Younger respondents skip the income question &#183; a field
-        only exists after a format change &#183; one clinic records fewer follow-ups than another</div>
-      </div>
+      <div class="colstack" style="gap:9px">
+        <div class="card sm" id="labdef" style="border-top-color:var(--t-grp)">
+          <h3 id="labtitle">Missing completely at random</h3>
+          <p id="labbody"></p>
+        </div>
 
-      <div class="m c">
-        <h3><span>Missing not at random</span>MNAR</h3>
-        <div class="out xxs">P(R | Y<sub>obs</sub>, Y<sub>mis</sub>) depends on Y<sub>mis</sub></div>
-        <div class="def">Missingness depends on <b>the value that is missing</b>. The reason a cell
-        is blank is bound up with what would have been in it.</div>
-        <div class="def" style="color:var(--t-asr)"><b>Consequence:</b> no amount of conditioning on
-        observed data fixes it, because the driver was never recorded. You need an assumption from
-        outside the data, and you must report how the answer moves when it changes.</div>
-        <div class="ex"><b>Looks like</b>High earners decline to state salary &#183; the sickest
-        patients drop out of the trial &#183; a sensor saturates and records nothing above its range</div>
+        <div class="meanbox">
+          <div class="outlbl" style="margin-bottom:6px">Mean income of who answered</div>
+          <svg id="meansvg" viewBox="0 0 300 78" preserveAspectRatio="xMidYMid meet" role="img"></svg>
+        </div>
+
+        <table class="d xs" id="labtab">
+          <tr><th>Missingness correlates with</th><th style="width:62px">r</th></tr>
+          <tr><td>age &#8212; <i>observed</i></td><td class="c" id="labcage">+0.01</td></tr>
+          <tr><td>income &#8212; <i>the missing value</i>,<br/>after controlling for age</td>
+              <td class="c" id="labpinc">+0.07</td></tr>
+        </table>
+
+        <div class="callout sm" id="labread"></div>
       </div>
 
     </div>
-    <div class="callout sm"><b>The word "random" is doing damage in two of these names.</b> MAR is
-    not random — it is systematic, and systematically <i>explainable</i>. Read the names as:
-    <b>MCAR</b> = depends on nothing; <b>MAR</b> = depends on what you have; <b>MNAR</b> = depends
-    on what you do not have.</div>
   </div>
 </section>
 
-<!-- ============ 11 · EXIT POLLS: SETUP + MCAR ============ -->
-<section class="slide" data-sec="Exit polls · 1 of 3">
-  <div class="eyebrow">Exit polls · 1 of 3</div>
+<!-- ============ 11 · EXIT POLLS ============ -->
+<section class="slide" data-sec="Exit polls">
+  <div class="eyebrow">Exit polls · the same three mechanisms, in words</div>
   <h1 class="t">One survey, three ways to lose an answer
-    <small>You are outside a polling booth on counting day, asking every voter who they voted for,
-    plus age, gender and income. Some people do not answer. The blanks look identical on your
-    clipboard. Which mechanism produced them decides whether your poll is usable.</small></h1>
+    <small>Outside a polling booth on counting day. You ask who they voted for, plus age, gender,
+    income. Some refuse.</small></h1>
   <div class="wrap">
-    <div class="cols w3070">
-      <div class="colstack fill">
-        <div class="card">
-          <h3>The setup</h3>
-          <p>Booth exit. Voluntary. You record <code class="k">vote</code>,
-          <code class="k">age</code>, <code class="k">gender</code>, <code class="k">income</code>.
-          Refusals and walk-offs leave gaps.</p>
-        </div>
-        <div class="callout sm">The only question that matters: <b>is the reason someone did not
-        answer connected to the answer they would have given?</b></div>
-        <div class="card sm g">
-          <h3>Why exit polls</h3>
-          <p>Because the truth arrives a few hours later, when the votes are counted. Almost no
-          survey lets you check your own bias against reality. This one does — which is why its
-          failures are so well documented.</p>
-        </div>
-      </div>
-
-      <div class="colstack fill">
-        <div class="callout good"><span class="tag g">MCAR</span><b>Missing completely at random</b></div>
-        <table class="d sm free">
-          <tr><th style="width:150px">What happens</th><th>Why it is MCAR</th></tr>
-          <tr><td><b>Voters leave in a hurry</b><br/>late for work, bus arriving</td>
-            <td>Being in a rush has nothing to do with who they voted for, how old they are, or
-            what they earn. It is the clock, and the clock does not know their politics.</td></tr>
-          <tr><td><b>Forms blow away</b><br/>5% of the pile lost to wind</td>
-            <td>The wind does not select. A lost form is as likely to have said Party A as
-            Party B.</td></tr>
-        </table>
-        <div class="cols" style="flex:none;gap:13px">
-          <div class="card sm g">
-            <h3>What it costs you</h3>
-            <p>Sample size, and nothing else. With 5% lost at random you have 95% of a good survey.
-            Your vote-share estimate is still centred on the truth; the confidence interval is
-            slightly wider.</p>
-          </div>
-          <div class="card sm r">
-            <h3>Why you rarely get it</h3>
-            <p>Real non-response is almost never this clean. People who are in a hurry are not a
-            random slice of the electorate either — commuters skew younger and urban. Genuine
-            MCAR is a machine failing, not a person choosing.</p>
-          </div>
-        </div>
-      </div>
+    <table class="d sm free roomy tall">
+      <tr><th style="width:74px">Mechanism</th><th style="width:270px">Why they did not answer</th>
+        <th>What it does to your number</th></tr>
+      <tr class="ok"><td><b>MCAR</b></td>
+        <td>Late for work, bus arriving. 5% of forms blow away.</td>
+        <td>Costs sample size only. The wind does not know how they voted, so your vote share stays
+        centred on the truth.</td></tr>
+      <tr class="wr"><td><b>MAR</b></td>
+        <td>30% of under-25s skip the vote question, 5% of everyone else. Within one age group,
+        refusing has nothing to do with the vote.</td>
+        <td>Biased, and fixable. You know everyone's age, refusers included, so you know how much each
+        group is under-counted. Reweight, or model vote on age.</td></tr>
+      <tr class="hl"><td><b>MNAR</b></td>
+        <td>Party X voters are embarrassed and refuse at ten times the rate. Demographically they
+        are ordinary.</td>
+        <td>Biased, not fixable. Reweighting does nothing: the distributions already match. Imputing is
+        worse, since the model learns the pattern the refusers do not follow.</td></tr>
+    </table>
+    <div class="cols" style="flex:none;gap:14px">
+      <div class="callout warn sm"><b>For MNAR you bound it, you do not solve it.</b> Assume the
+      refusers voted X with probability <i>p</i>, redo the analysis across a plausible range, report
+      the range. That sensitivity analysis is usually the whole deliverable.</div>
+      <div class="callout sm"><b>Why exit polls.</b> The truth arrives hours later, when the votes are
+      counted. Almost no survey lets you check your bias against reality.</div>
     </div>
   </div>
 </section>
 
-<!-- ============ 12 · EXIT POLLS: MAR ============ -->
-<section class="slide" data-sec="Exit polls · 2 of 3">
-  <div class="eyebrow">Exit polls · 2 of 3</div>
-  <h1 class="t">MAR — the refusal is systematic, and you can see why
-    <small>Now suppose younger voters refuse the vote-choice question far more often than older
-    ones. That is not random. But every bit of it is explained by a column you already have.</small></h1>
-  <div class="wrap">
-    <div class="cols w6040">
-      <div class="colstack">
-        <div class="callout warn"><span class="tag o">MAR</span><b>30%</b> of voters under 25 skip
-        the vote question. <b>5%</b> of voters over 25 do. But <b>within any single age group</b>,
-        who refuses has nothing to do with how they voted.</div>
-        <table class="d sm free">
-          <tr><th style="width:120px">Age group</th><th style="width:90px">Refusal</th><th>What that does to a naive tally</th></tr>
-          <tr><td>Under 25</td><td class="c">30%</td>
-            <td>Young voters are now under-represented. If they lean differently from older voters —
-            and they usually do — your headline number shifts towards the older group.</td></tr>
-          <tr><td>25 and over</td><td class="c">5%</td>
-            <td>Barely touched.</td></tr>
-        </table>
-        <div class="callout good sm"><b>And it is fixable.</b> You know each respondent's age,
-        including the ones who refused the vote question — they answered that part. So you know
-        exactly how much each group is under-counted, and you can reweight, or model the vote as a
-        function of age and impute. The information needed to undo the damage is in the file.</div>
-      </div>
-
-      <div class="colstack">
-        <div class="card b">
-          <h3>Formally</h3>
-          <p>P(refuse | vote, age) = P(refuse | age). Once age is in the model, the missingness
-          carries no further information. That equality is the entire definition, and it is also
-          exactly what multiple imputation and maximum likelihood need in order to be valid.</p>
-        </div>
-        <div class="callout bad sm"><b>The catch that makes L2 necessary.</b> MAR is a statement
-        about a variable you did not observe — the vote you never got. You cannot verify the
-        equality above from your data. You can make it <i>more plausible</i> by measuring more
-        covariates, and that is the practical advice: <b>collect the things you suspect drive
-        non-response</b>, because they are what buy you MAR later.</div>
-        <div class="callout sm"><b>Which methods rely on this.</b> Regression imputation, kNN
-        imputation, MICE, and full-information maximum likelihood are all MAR methods. Lecture 3
-        works through what each of them assumes and what each of them breaks.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 13 · EXIT POLLS: MNAR ============ -->
-<section class="slide" data-sec="Exit polls · 3 of 3">
-  <div class="eyebrow">Exit polls · 3 of 3</div>
-  <h1 class="t">MNAR — the refusal is <i>about</i> the answer
-    <small>Last version. Voters for one particular party are embarrassed to say so, and refuse at
-    ten times the rate of everyone else. Nothing else about them is unusual.</small></h1>
-  <div class="wrap">
-    <div class="cols w6040">
-      <div class="colstack fill">
-        <div class="callout bad"><span class="tag r">MNAR</span><b>50%</b> of Party X voters refuse
-        the vote question. <b>5%</b> of everyone else does. Age, gender and income distributions are
-        identical across the two groups.</div>
-        <table class="d sm free">
-          <tr><th style="width:150px">You try</th><th>What happens</th></tr>
-          <tr class="hl"><td><b>Reweight by age, gender, income</b></td>
-            <td>Nothing. Those distributions already match — the refusers are demographically
-            ordinary. Your weights are all 1 and the bias survives untouched.</td></tr>
-          <tr class="hl"><td><b>Impute vote from covariates</b></td>
-            <td>Worse than nothing. The model learns the vote pattern of people who
-            <i>answered</i>, and confidently fills the refusers with it — which is precisely the
-            pattern they do not follow.</td></tr>
-          <tr class="hl"><td><b>Collect more covariates</b></td>
-            <td>Only helps if one of them correlates with the hidden vote. If the embarrassment is
-            about the vote itself, no demographic rescues you.</td></tr>
-        </table>
-      </div>
-
-      <div class="colstack fill">
-        <div class="card r">
-          <h3>Formally</h3>
-          <p>P(refuse | vote, age, ...) still depends on <b>vote</b> after conditioning on
-          everything you observed. The driver of missingness is the missing value. It is not in the
-          file, and it cannot be got out of the file.</p>
-        </div>
-        <div class="callout warn sm"><b>What you can actually do.</b> Not solve it — bound it.
-        Assume Party X refusers voted Party X with probability <i>p</i>, redo the analysis across a
-        plausible range of <i>p</i>, and report the range. That is a <b>sensitivity analysis</b>,
-        and for MNAR it is usually the whole deliverable. Or go and get external data: a re-contact
-        study, an official count, a validated sub-sample.</div>
-        <div class="callout sm"><b>The honest summary of the three.</b> MCAR costs you precision.
-        MAR costs you an assumption you can support. MNAR costs you the ability to give a single
-        number at all.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 14 · 2016 ============ -->
+<!-- ============ 12 · 2016 ============ -->
 <section class="slide" data-sec="Exit polls · when it went wrong">
   <div class="eyebrow">Exit polls · what the wrong assumption cost</div>
   <h1 class="t">2016: a MAR correction applied to MNAR missingness
-    <small>US presidential election polling and exit polling. The methods were standard, the
-    weighting was competent, and the result was wrong in a direction that was entirely
-    predictable from the mechanism.</small></h1>
+    <small>Standard methods, competent weighting, wrong in a direction the mechanism predicts.</small></h1>
   <div class="wrap">
     <div class="cols w4060">
-      <div class="colstack fill">
+      <div class="colstack">
         <ol class="n">
-          <li><b>Response rates were lower</b> among rural, non-college-educated white voters — a
-          group that broke heavily for Trump.</li>
-          <li><b>Pollsters reweighted</b> by age, gender, race and region. That is the correct
-          procedure — <i>if</i> the missingness is MAR given those variables.</li>
-          <li><b>Education was under-weighted</b> or omitted in many state-level polls, and it was
-          the variable most strongly tied to both response and vote.</li>
-          <li><b>The residual missingness was MNAR.</b> Willingness to answer was tied to the vote
-          itself, not only to demography.</li>
-          <li><b>The correction could not reach it.</b> Reweighting redistributes people you have.
-          It cannot conjure people whose absence is caused by the answer they would have given.</li>
+          <li>Response rates were lower among rural, non-college-educated white voters, who broke
+          heavily for Trump.</li>
+          <li>Pollsters reweighted by age, gender, race, region. Correct procedure, <i>if</i> the
+          missingness is MAR given those variables.</li>
+          <li>Education was under-weighted or omitted in many state polls, and it was the variable
+          most tied to both response and vote.</li>
+          <li>The residual missingness was MNAR. Willingness to answer tracked the vote itself.</li>
+          <li>Reweighting redistributes people you have. It cannot conjure people whose absence is
+          caused by the answer they would have given.</li>
         </ol>
       </div>
       <div class="colstack fill">
-        <div class="callout bad"><b>The result.</b> Samples over-represented college-educated
-        voters, who leaned Clinton, and under-represented non-college white voters, who leaned
-        Trump. Every published margin tilted the same way — not by accident, but because a single
-        shared assumption was wrong in a single shared direction.</div>
+        <div class="callout bad"><b>Every published margin tilted the same way.</b> Not by accident.
+        One shared assumption was wrong in one shared direction.</div>
         <div class="card o">
-          <h3>The lesson that generalises</h3>
-          <p>A missing-data assumption is not a technicality buried in a methods appendix. It is
-          a <b>load-bearing claim about the world</b>, and when it is wrong, every downstream
-          number is wrong <i>in the same direction at once</i>. Correlated error does not average
-          out across polls, models or teams — which is why the whole industry missed it together.</p>
+          <h3>The part that generalises</h3>
+          <p>A missing-data assumption is not a methods-appendix technicality. It is a claim about
+          the world, and when it is wrong every downstream number moves together. Correlated error
+          does not average out across polls, models or teams, which is why the industry missed it
+          together.</p>
         </div>
-        <div class="callout sm"><b>What changed afterwards.</b> Education entered the weighting
-        scheme as standard, and sensitivity analysis over non-response assumptions became a
-        normal part of reporting. Both are MNAR responses: not a fix, but an honest accounting
-        of how far the answer could move.</div>
+        <div class="callout sm"><b>What changed after.</b> Education entered the weighting scheme as
+        standard, and sensitivity analysis over non-response became normal reporting. Both are MNAR
+        responses: not a fix, an honest account of how far the answer could move.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 15 · SURVEY: MECHANISMS MADE VISIBLE ============ -->
-<section class="slide" data-sec="Mechanisms · 3 of 6">
-  <div class="eyebrow">Mechanisms · 3 of 6 · a survey where we know the answer</div>
-  <h1 class="t">What the three mechanisms look like in a table
+<!-- ============ 13 · SURVEY MADE CONCRETE ============ -->
+<section class="slide" data-sec="Mechanisms · 3 of 5">
+  <div class="eyebrow">Mechanisms · 3 of 5 · a survey where we know the answer</div>
+  <h1 class="t">What the mechanisms look like in a table
     <small>400 respondents. <code class="k">age</code> and <code class="k">education_years</code> are
-    complete. Three columns have gaps, and — because this dataset was <i>generated</i> — we know
-    exactly which mechanism made each one.</small></h1>
+    complete. Three columns have gaps, and we planted each one.</small></h1>
   <div class="wrap">
-    <div class="cols w4060">
-      <div class="colstack">
+    <div class="cols w6040">
+      <div class="fig">
+        <div class="cap">% missing by age quartile</div>
+        <svg viewBox="0 0 520 250" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Percent missing by age quartile for three columns: gender is flat, income falls with age, health rises with age.">
+<line x1="40" y1="196.0" x2="508" y2="196.0" stroke="#EDF1F3"/>
+<text x="34" y="199.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">0%</text>
+<line x1="40" y1="139.3" x2="508" y2="139.3" stroke="#EDF1F3"/>
+<text x="34" y="142.8" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">20%</text>
+<line x1="40" y1="82.7" x2="508" y2="82.7" stroke="#EDF1F3"/>
+<text x="34" y="86.2" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">40%</text>
+<line x1="40" y1="26.0" x2="508" y2="26.0" stroke="#EDF1F3"/>
+<text x="34" y="29.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">60%</text>
+<rect x="51.0" y="182.4" width="29.7" height="13.6" fill="#0E7A55" rx="2"/>
+<text x="65.8" y="178.4" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#0E7A55">4.8</text>
+<rect x="82.7" y="104.2" width="29.7" height="91.8" fill="#8F5D0A" rx="2"/>
+<text x="97.5" y="100.2" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#8F5D0A">32.4</text>
+<rect x="114.3" y="131.1" width="29.7" height="64.9" fill="#B02F3B" rx="2"/>
+<text x="129.2" y="127.1" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#B02F3B">22.9</text>
+<text x="98.5" y="210" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#53666F">18-29</text>
+<rect x="168.0" y="160.9" width="29.7" height="35.1" fill="#0E7A55" rx="2"/>
+<text x="182.8" y="156.9" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#0E7A55">12.4</text>
+<rect x="199.7" y="149.2" width="29.7" height="46.8" fill="#8F5D0A" rx="2"/>
+<text x="214.5" y="145.2" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#8F5D0A">16.5</text>
+<rect x="231.3" y="93.7" width="29.7" height="102.3" fill="#B02F3B" rx="2"/>
+<text x="246.2" y="89.7" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#B02F3B">36.1</text>
+<text x="215.5" y="210" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#53666F">30-41</text>
+<rect x="285.0" y="179.8" width="29.7" height="16.2" fill="#0E7A55" rx="2"/>
+<text x="299.8" y="175.8" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#0E7A55">5.7</text>
+<rect x="316.7" y="164.0" width="29.7" height="32.0" fill="#8F5D0A" rx="2"/>
+<text x="331.5" y="160.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#8F5D0A">11.3</text>
+<rect x="348.3" y="99.7" width="29.7" height="96.3" fill="#B02F3B" rx="2"/>
+<text x="363.2" y="95.7" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#B02F3B">34</text>
+<text x="332.5" y="210" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#53666F">42-53</text>
+<rect x="402.0" y="180.7" width="29.7" height="15.3" fill="#0E7A55" rx="2"/>
+<text x="416.8" y="176.7" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#0E7A55">5.4</text>
+<rect x="433.7" y="183.8" width="29.7" height="12.2" fill="#8F5D0A" rx="2"/>
+<text x="448.5" y="179.8" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#8F5D0A">4.3</text>
+<rect x="465.3" y="45.0" width="29.7" height="151.0" fill="#B02F3B" rx="2"/>
+<text x="480.2" y="41.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.8" fill="#B02F3B">53.3</text>
+<text x="449.5" y="210" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#53666F">54-65</text>
+<line x1="40" y1="196" x2="508" y2="196" stroke="#C3CFD5"/>
+<text x="274.0" y="226" text-anchor="middle" font-family="Public Sans,sans-serif" font-size="10.4" fill="#53666F">age quartile</text>
+<rect x="40" y="10" width="9" height="9" fill="#0E7A55" rx="1.5"/>
+<text x="54" y="18.5" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#53666F">gender  MCAR</text>
+<rect x="192" y="10" width="9" height="9" fill="#8F5D0A" rx="1.5"/>
+<text x="206" y="18.5" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#53666F">income  MAR</text>
+<rect x="344" y="10" width="9" height="9" fill="#B02F3B" rx="1.5"/>
+<text x="358" y="18.5" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#53666F">health  MNAR</text>
+</svg>
+        <div class="rd"><b>MCAR is flat</b> at the 6% we injected. <b>MAR slopes down</b>, 32.4 to
+        4.3, and that slope is what makes income recoverable. <b>MNAR slopes too</b>, which is the
+        trap.</div>
+      </div>
+      <div class="colstack fill">
         <div class="outlbl">survey.isna().sum()</div>
         <div class="out xs">age                 0
 education_years     0
@@ -1078,48 +992,27 @@ income             <span class="h-bad">66</span>   <span class="h-dim">16.5%</sp
 health_score      <span class="h-bad">144</span>   <span class="h-dim">36.0%</span>
 gender             <span class="h-bad">28</span>   <span class="h-dim"> 7.0%</span></div>
         <table class="d xs free">
-          <tr><th>Column</th><th>Mechanism built in</th></tr>
-          <tr class="ok"><td><b>gender</b></td><td>MCAR — a tablet glitch dropped the field at a
-            flat 6% rate, independent of everything</td></tr>
-          <tr class="wr"><td><b>income</b></td><td>MAR — refusal falls with age, from ~31% at 18 to
-            ~3% at 65; nothing to do with the amount</td></tr>
-          <tr class="hl"><td><b>health_score</b></td><td>MNAR — low scores are withheld; the
-            probability of refusing depends on the score itself</td></tr>
+          <tr><th>Column</th><th>Mechanism planted</th></tr>
+          <tr class="ok"><td><b>gender</b></td><td>MCAR &#183; a tablet glitch, flat 6%</td></tr>
+          <tr class="wr"><td><b>income</b></td><td>MAR &#183; refusal falls with age, 31% at 18 to
+            3% at 65</td></tr>
+          <tr class="hl"><td><b>health_score</b></td><td>MNAR &#183; low scores withheld, driven by
+            the score</td></tr>
         </table>
-        <div class="callout sm"><b>This is a rehearsal, not a real analysis.</b> In a real file the
-        right-hand column above is the thing you are trying to find out. Here we get to check our
-        working.</div>
-      </div>
-
-      <div class="colstack">
-        <div class="outlbl">% missing, by age quartile</div>
-        <div class="out xs">age quartile     gender    income    health
-                 (MCAR)    (MAR)     (MNAR)
-18 &#8211; 29             4.8      <span class="h-bad">32.4</span>      22.9
-30 &#8211; 41            12.4      <span class="h-bad">16.5</span>      36.1
-42 &#8211; 53             5.7      <span class="h-bad">11.3</span>      34.0
-54 &#8211; 65             5.4       <span class="h-bad">4.3</span>      53.3</div>
-        <div class="callout good sm"><b>MCAR shows no trend.</b> 4.8, 12.4, 5.7, 5.4 — noise around
-        6%, which is exactly the rate we injected. Nothing about age predicts whether gender is
-        recorded.</div>
-        <div class="callout warn sm"><b>MAR shows a clean monotone trend.</b> 32.4 down to 4.3.
-        That slope is the mechanism, visible in the data, and it is what makes income recoverable.</div>
-        <div class="callout bad sm"><b>And MNAR shows a trend too</b> — 22.9 up to 53.3. Which is the
-        problem. Older respondents have lower health scores, and low scores are what gets withheld,
-        so the MNAR column produces an age pattern it does not actually depend on.</div>
+        <div class="callout bad sm"><b>The trap.</b> Older respondents have lower health scores, and
+        low scores are what gets withheld. So the MNAR column produces an age pattern it does not
+        depend on.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 16 · THE TRAP ============ -->
-<section class="slide" data-sec="Mechanisms · 4 of 6">
-  <div class="eyebrow">Mechanisms · 4 of 6 · the central difficulty</div>
+<!-- ============ 14 · THE TRAP ============ -->
+<section class="slide" data-sec="Mechanisms · 4 of 5">
+  <div class="eyebrow">Mechanisms · 4 of 5 · the central difficulty</div>
   <h1 class="t">MAR and MNAR look the same until you condition
-    <small>Both columns showed a trend against age. Both also show a trend against their own hidden
-    values &#8212; MAR included. The definition is not "no relationship with the missing value"; it is
-    <b>no relationship left once you condition on what you observed</b>. Here is that difference,
-    measured.</small></h1>
+    <small>Both slope against age. Both slope against their own hidden values. The definition is not
+    "no relationship with the missing value". It is <b>none left after conditioning</b>.</small></h1>
   <div class="wrap">
     <div class="cols">
       <div class="colstack">
@@ -1133,186 +1026,149 @@ below median      35.8   12.2   11.3    4.3
 above median       0.0    6.8    8.3   25.0
 below median      <span class="h-bad">42.9   60.4   55.2   79.2</span>
                   <span class="h-bad">^^^ a gap in every band ^^^</span></div>
-        <div class="callout good sm"><b>Income is MAR.</b> Inside an age band, whether someone earns
-        above or below the median makes no difference to whether they answered &#8212; 28.8 against
-        35.8, then 11.3 against 11.3. Age explained all of it, and age is in the file.</div>
-        <div class="callout bad sm"><b>Health is MNAR.</b> Inside every age band the low scorers are
-        withheld five to ten times as often. Age explained none of it. Add every other observed
-        column and the gap stays, because the driver is the score itself.</div>
+        <div class="callout good sm"><b>Income is MAR.</b> Inside an age band, earning above or
+        below the median makes no difference to answering. Age explained all of it, and age is in
+        the file.</div>
+        <div class="callout bad sm"><b>Health is MNAR.</b> Inside every band the low scorers are
+        withheld five to ten times as often. Add every other observed column and the gap stays.</div>
       </div>
 
-      <div class="colstack">
-        <div class="callout bad"><b>Neither table on the left can be computed on real data.</b> Both split
-        rows by a value that is missing for exactly the rows being counted. They exist here only
-        because the data was simulated &#8212; which is the entire reason MNAR is untestable.</div>
-        <h2 class="s">What the assumption costs, in units of the answer</h2>
+      <div class="colstack fill">
+        <div class="callout bad"><b>Neither table can be computed on real data.</b> Both split rows
+        by a value that is missing for exactly the rows being counted. They exist here only because
+        the data was simulated.</div>
+        <h2 class="s">What the assumption costs</h2>
         <table class="d sm free">
           <tr><th>Estimate</th><th class="c">Naive</th><th class="c">Truth</th><th>Error</th></tr>
           <tr class="ok"><td><b>% female</b> (MCAR)</td><td class="c">46.2</td><td class="c">47.0</td>
-            <td>&#8722;0.8 pt &#183; sampling noise</td></tr>
+            <td>&#8722;0.8 pt &#183; noise</td></tr>
           <tr class="wr"><td><b>mean income</b> (MAR)</td><td class="c">137,617</td><td class="c">129,782</td>
-            <td><b>+6.0%</b> &#183; recoverable from age</td></tr>
+            <td><b>+6.0%</b> &#183; recoverable</td></tr>
           <tr class="hl"><td><b>mean health</b> (MNAR)</td><td class="c">87.0</td><td class="c">82.3</td>
             <td><b>+4.7 pts</b> &#183; not recoverable</td></tr>
         </table>
-        <div class="callout warn sm"><b>Both biases point the same way and neither announces itself.</b>
-        Drop the missing rows and your population is richer and healthier than the one you sampled.
-        No warning is printed, and the standard error gets <i>smaller</i> &#8212; you become more
-        confident about a worse number.</div>
-        <div class="callout good sm"><b>Where this leaves you.</b> You can test MCAR, you can argue
-        for MAR, and you can never confirm MNAR from the data alone. <b>Lecture 2 makes that
-        boundary precise</b> and shows which tests get you how far.</div>
+        <div class="callout warn sm"><b>Drop the missing rows and your population is richer and
+        healthier than the one you sampled.</b> No warning prints, and the standard error shrinks.
+        You get more confident about a worse number.</div>
+        <div class="callout good sm">You can test MCAR, argue for MAR, and never confirm MNAR from
+        the data. <b>Lecture 2 makes that boundary precise.</b></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 17 · BACK TO THE REAL FILE ============ -->
-<section class="slide" data-sec="Mechanisms · 5 of 6">
-  <div class="eyebrow">Mechanisms · 5 of 6 · applying it</div>
+<!-- ============ 15 · WHICH MECHANISM ============ -->
+<section class="slide" data-sec="Mechanisms · 5 of 5">
+  <div class="eyebrow">Mechanisms · 5 of 5 · applying it</div>
   <h1 class="t">So which mechanism made the 1,932 gaps?
-    <small>Back to <code class="k">BLUE METAL.csv</code>, read correctly this time. Two lines of
-    pandas settle a question that no imputation library will ask you.</small></h1>
+    <small>Back to <code class="k">BLUE METAL.csv</code>, read correctly. Two lines settle a question
+    no imputation library will ask you.</small></h1>
   <div class="wrap">
-    <div class="cols w4060">
-      <div class="colstack">
-        <pre class="code xs">miss = df.OPEN.isna()
+    <div class="cols w6040">
+      <div class="fig">
+        <div class="cap">Blue Metal closing level, 2004&#8211;2025</div>
+        <svg viewBox="0 0 520 232" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Blue Metal closing level 2004 to 2025. Open, high and low are absent for every row before 3 October 2011 and present for every row after.">
+<rect x="52" y="16" width="162.1" height="174" fill="#FDECEE"/>
+<line x1="52" y1="190.0" x2="512" y2="190.0" stroke="#EDF1F3"/>
+<text x="46" y="193.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">0k</text>
+<line x1="52" y1="146.5" x2="512" y2="146.5" stroke="#EDF1F3"/>
+<text x="46" y="150.0" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">3k</text>
+<line x1="52" y1="103.0" x2="512" y2="103.0" stroke="#EDF1F3"/>
+<text x="46" y="106.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">6k</text>
+<line x1="52" y1="59.5" x2="512" y2="59.5" stroke="#EDF1F3"/>
+<text x="46" y="63.0" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">9k</text>
+<line x1="52" y1="16.0" x2="512" y2="16.0" stroke="#EDF1F3"/>
+<text x="46" y="19.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">12k</text>
+<polyline points="52.0,175.5 52.5,175.8 53.0,176.2 53.5,177.2 54.1,177.5 54.6,176.7 55.1,177.2 55.6,177.7 56.1,177.7 56.6,179.2 57.1,178.9 57.6,178.4 58.1,178.3 58.7,178.4 59.2,179.1 59.6,179.9 60.1,180.5 60.6,181.1 61.1,181.0 61.6,181.6 62.0,181.9 62.5,180.9 63.0,180.6 63.5,180.0 64.0,179.1 64.4,178.4 64.9,178.9 65.5,179.1 65.9,178.7 66.4,178.4 66.8,178.1 67.3,177.4 67.9,176.6 68.3,176.2 68.8,176.9 69.3,176.9 69.9,176.5 70.4,176.3 70.8,175.9 71.5,175.1 71.9,175.1 72.4,175.0 72.8,173.4 73.3,174.3 73.9,175.2 74.4,174.4 74.9,173.1 75.5,172.8 75.9,172.9 76.4,172.4 76.8,172.2 77.3,171.8 77.9,173.3 78.4,173.1 78.9,174.3 79.5,174.7 79.9,175.7 80.4,175.3 80.9,175.5 81.3,175.3 81.8,175.7 82.3,175.9 82.7,175.4 83.2,176.1 83.7,175.8 84.1,175.5 84.7,174.6 85.2,174.7 85.7,173.1 86.3,173.2 86.8,173.3 87.3,173.0 87.7,172.0 88.3,172.3 88.8,171.7 89.3,173.7 89.7,174.6 90.3,175.4 90.9,174.5 91.5,174.4 91.9,174.5 92.4,174.4 92.8,173.1 93.3,172.8 93.7,172.9 94.3,172.2 94.8,173.1 95.3,171.4 95.9,170.8 96.4,171.1 96.9,170.1 97.3,169.2 97.9,169.1 98.4,168.9 98.9,165.9 99.5,163.3 100.1,162.0 100.5,162.0 101.1,160.4 101.6,162.9 102.0,167.4 102.5,167.3 103.0,169.5 103.5,168.8 103.9,168.1 104.4,166.6 104.8,166.9 105.3,168.7 105.8,168.7 106.3,168.9 106.8,167.0 107.3,167.3 107.8,167.6 108.3,167.6 108.8,167.8 109.2,167.0 109.8,165.8 110.3,165.6 110.7,164.9 111.3,164.8 111.8,164.1 112.3,165.5 112.8,156.9 113.3,156.0 113.7,158.5 114.2,157.9 114.9,156.7 115.3,157.7 115.8,156.8 116.5,156.1 116.9,156.1 117.6,156.4 118.0,156.9 118.5,161.2 118.9,159.7 119.4,158.5 120.0,159.1 120.5,155.6 121.0,153.6 121.6,153.5 122.1,152.1 122.6,151.8 123.2,151.1 123.6,150.7 124.1,152.5 124.5,149.6 125.0,150.5 125.6,149.5 126.0,145.6 126.5,145.0 126.9,148.1 127.4,148.5 128.0,151.5 128.5,146.8 128.9,144.9 129.4,144.1 130.0,139.0 130.5,134.4 130.9,130.6 131.4,130.9 132.0,121.2 132.4,122.1 132.9,119.2 133.4,126.5 133.8,119.4 134.4,116.0 134.8,118.5 135.4,111.2 136.0,110.7 136.4,117.2 136.9,129.8 137.4,129.7 137.8,131.5 138.4,127.4 138.8,123.6 139.3,127.9 139.8,132.7 140.5,136.0 141.0,138.2 141.4,137.7 142.1,132.2 142.6,131.0 143.2,132.0 143.7,125.1 144.2,129.1 144.6,133.1 145.2,133.5 145.7,141.0 146.1,142.2 146.6,142.4 147.0,146.5 147.6,143.5 148.1,140.4 148.5,142.9 149.0,143.1 149.6,143.3 150.1,147.2 150.6,151.1 151.0,152.1 151.7,159.7 152.2,164.4 152.6,172.0 153.3,166.3 153.7,169.5 154.2,172.0 154.9,172.2 155.4,168.6 155.9,168.1 156.5,169.1 156.9,167.0 157.5,169.6 158.1,170.4 158.5,169.6 159.0,168.7 159.5,170.2 160.1,171.2 160.7,169.0 161.2,165.8 161.7,165.2 162.4,160.3 162.9,161.9 163.6,158.6 164.1,156.9 164.6,148.7 165.0,147.6 165.5,143.2 166.0,144.1 166.5,148.6 167.0,147.2 167.4,149.4 167.9,146.4 168.4,141.8 168.9,140.3 169.4,143.0 169.8,142.7 170.3,140.2 170.9,138.7 171.3,136.1 171.8,135.1 172.5,135.7 173.0,129.9 173.5,130.6 174.1,138.6 174.6,130.5 175.0,129.4 175.5,129.1 176.1,126.4 176.5,126.3 177.0,122.9 177.7,117.5 178.2,119.4 178.6,122.1 179.3,127.1 179.7,130.2 180.2,126.8 180.6,128.0 181.3,121.6 181.7,121.2 182.2,120.3 182.9,117.5 183.3,119.3 183.8,121.1 184.3,121.2 184.9,124.4 185.3,129.1 185.8,133.0 186.3,131.6 186.7,132.5 187.3,128.7 187.7,132.1 188.2,133.0 188.7,130.7 189.1,128.7 189.7,128.5 190.1,128.4 190.6,129.2 191.1,130.4 191.5,129.1 192.1,125.8 192.6,124.9 193.1,124.4 193.5,121.6 194.1,121.5 194.6,122.2 195.0,123.2 195.5,121.5 196.1,125.4 196.6,129.4 197.0,126.4 197.5,125.1 198.1,123.7 198.6,120.5 199.0,124.4 199.5,124.8 200.1,127.9 200.6,129.1 201.0,128.4 201.5,130.9 202.1,129.8 202.6,130.7 203.0,130.2 203.5,127.7 203.9,126.9 204.6,126.9 205.1,127.7 205.7,130.6 206.2,131.9 206.6,134.2 207.1,131.7 207.5,132.9 208.1,135.6 208.6,133.5 209.0,131.9 209.5,133.9 210.0,134.0 210.5,136.6 211.0,142.7 211.5,144.3 212.0,146.9 212.6,140.4 213.1,143.1 213.6,145.7 214.1,149.3 214.6,146.0 215.1,146.9 215.7,144.2 216.2,145.6 216.8,149.9 217.3,150.2 217.9,148.3 218.3,151.5 218.8,153.3 219.3,153.8 219.7,152.2 220.2,146.7 220.7,145.9 221.2,143.9 221.7,141.5 222.3,142.9 222.7,143.5 223.2,145.2 223.7,145.3 224.2,146.6 224.7,145.6 225.4,147.2 225.8,147.0 226.3,147.1 226.7,150.4 227.2,151.0 227.8,150.6 228.2,151.9 228.7,149.8 229.1,149.4 229.6,148.4 230.2,148.2 230.6,149.9 231.1,151.0 231.5,150.0 232.0,149.4 232.7,150.0 233.1,152.4 233.6,152.7 234.0,150.3 234.6,149.6 235.1,149.5 235.6,149.6 236.2,150.5 236.7,151.3 237.1,151.0 237.8,152.8 238.2,151.8 238.7,149.7 239.2,150.0 239.8,148.2 240.3,146.9 240.8,147.8 241.2,149.0 241.8,149.8 242.2,150.7 242.7,152.1 243.2,153.4 243.6,155.5 244.2,154.7 244.6,157.1 245.2,157.6 245.8,158.5 246.2,158.7 246.8,157.9 247.4,157.0 247.9,158.3 248.3,158.0 248.8,158.0 249.2,159.0 249.8,160.7 250.3,162.3 250.7,162.0 251.2,161.8 251.6,162.6 252.2,164.8 252.7,166.4 253.2,164.7 253.8,161.6 254.3,161.9 254.8,159.7 255.2,158.9 255.8,160.0 256.3,158.3 256.8,157.6 257.4,158.2 257.9,156.3 258.3,157.3 258.8,157.0 259.4,155.6 259.9,154.3 260.3,154.9 260.8,154.1 261.4,154.8 261.9,155.9 262.3,154.5 262.8,157.3 263.3,156.4 263.8,157.5 264.3,158.4 264.8,156.7 265.3,157.7 265.8,156.3 266.3,153.3 266.8,152.3 267.5,152.1 268.1,154.3 268.6,152.0 269.1,146.2 269.5,144.9 270.0,139.5 270.5,142.2 271.0,142.0 271.5,141.0 272.0,143.1 272.4,141.2 272.9,141.6 273.5,141.7 274.0,144.1 274.5,143.0 275.1,144.4 275.6,143.8 276.0,145.3 276.5,147.6 277.2,148.4 277.8,150.1 278.4,148.0 279.1,148.8 279.5,148.3 280.0,149.0 280.4,149.2 280.9,151.9 281.5,151.4 282.0,151.4 282.4,152.2 282.9,153.8 283.5,152.5 284.0,152.7 284.4,153.3 285.1,152.3 285.5,152.3 286.0,155.4 286.4,155.4 286.9,156.8 287.6,154.7 288.1,153.9 288.7,154.4 289.2,154.8 289.6,154.5 290.1,155.1 290.7,155.4 291.1,156.7 291.6,157.3 292.0,156.7 292.5,157.1 293.1,158.3 293.5,158.5 294.0,159.6 294.5,158.8 294.9,162.2 295.5,165.4 295.9,164.3 296.4,163.8 296.9,164.1 297.5,166.7 298.1,163.9 298.5,162.7 299.1,163.4 299.6,164.4 300.1,165.3 300.7,165.4 301.2,163.8 301.7,165.5 302.1,164.3 302.8,163.7 303.2,163.5 303.7,165.6 304.1,166.5 304.8,167.0 305.2,167.0 305.7,166.1 306.1,166.4 306.8,162.9 307.2,163.4 307.9,163.1 308.4,163.0 308.8,161.5 309.6,159.8 310.0,161.5 310.5,161.5 310.9,162.3 311.5,160.9 312.0,159.9 312.4,159.3 312.9,158.6 313.3,158.1 314.0,155.9 314.4,155.1 314.9,154.6 315.3,153.5 316.0,153.0 316.4,152.4 316.9,152.7 317.5,154.0 318.0,153.6 318.5,153.9 319.0,151.3 319.6,151.3 320.1,152.0 320.6,151.2 321.2,151.3 321.6,151.2 322.1,150.1 322.6,148.5 323.1,150.6 323.6,152.2 324.0,150.7 324.5,147.1 325.0,147.5 325.6,145.5 326.1,145.0 326.5,145.4 327.1,144.9 327.6,144.6 328.1,144.5 328.6,144.7 329.1,145.0 329.7,145.5 330.2,147.9 330.8,147.1 331.3,148.0 331.7,147.3 332.2,146.5 332.8,147.9 333.2,147.0 333.7,147.2 334.2,146.6 334.8,144.6 335.2,144.1 335.7,142.4 336.1,143.3 336.6,143.4 337.2,141.6 337.7,139.6 338.2,137.0 338.8,136.5 339.2,138.8 339.7,137.8 340.2,135.1 340.8,134.1 341.3,132.8 341.7,134.2 342.2,135.4 342.8,135.8 343.2,137.8 343.7,138.3 344.1,134.3 344.8,133.2 345.2,129.6 345.7,130.3 346.1,130.0 346.8,133.1 347.3,131.6 347.8,133.4 348.4,134.5 348.8,135.1 349.3,138.7 350.0,138.7 350.4,136.6 350.9,135.6 351.4,135.8 352.0,136.4 352.4,136.2 352.9,139.9 353.4,137.9 353.8,137.0 354.4,139.5 354.9,140.9 355.3,141.1 355.8,142.1 356.2,145.2 356.8,141.9 357.3,140.0 357.8,141.6 358.4,138.8 358.9,138.0 359.3,137.3 360.0,137.3 360.5,137.9 361.0,142.1 361.6,141.6 362.1,141.7 362.5,139.8 363.0,141.4 363.7,144.3 364.1,144.8 364.6,144.8 365.0,144.1 365.7,144.5 366.1,146.9 366.6,147.0 367.0,148.6 367.6,149.5 368.1,149.9 368.5,149.9 369.0,148.4 369.6,146.1 370.1,146.1 370.6,146.9 371.1,144.6 371.6,144.5 372.2,146.6 372.9,146.8 373.3,149.7 373.8,149.1 374.3,147.9 374.9,147.2 375.3,148.1 375.8,146.3 376.3,148.7 376.8,149.1 377.3,149.7 377.7,152.5 378.2,154.9 378.9,155.9 379.4,157.7 379.9,155.8 380.5,155.6 381.0,154.9 381.5,156.7 382.1,155.2 382.6,154.9 383.1,152.9 383.6,152.2 384.2,153.4 384.6,151.5 385.1,153.2 385.7,152.4 386.1,150.5 386.6,148.4 387.1,148.8 387.7,148.9 388.1,151.7 388.5,152.4 389.0,151.3 389.4,152.1 390.1,158.1 390.6,161.2 391.0,167.2 391.5,167.5 392.2,166.4 392.9,164.5 393.3,165.9 393.8,165.4 394.3,164.7 394.9,164.5 395.4,161.7 395.8,161.7 396.3,161.0 396.9,161.2 397.3,160.7 397.8,160.2 398.2,159.1 398.7,158.9 399.3,156.2 399.7,153.6 400.2,153.3 400.6,153.4 401.1,155.4 401.7,157.5 402.1,156.9 402.7,157.1 403.1,156.2 403.7,155.8 404.1,155.3 404.6,151.6 405.1,150.1 405.5,147.6 406.1,144.7 406.6,142.6 407.1,144.4 407.7,140.3 408.1,139.1 408.6,140.2 409.1,145.4 409.7,138.5 410.2,138.2 410.6,135.2 411.1,132.3 411.7,133.7 412.2,134.3 412.7,129.3 413.3,129.2 413.9,125.3 414.3,119.7 414.9,110.2 415.4,113.9 415.9,116.9 416.3,112.6 416.9,112.1 417.4,115.8 417.8,114.4 418.3,115.0 418.7,111.8 419.4,110.7 419.8,106.5 420.3,106.3 420.9,113.3 421.4,107.1 421.8,107.0 422.3,107.6 422.9,110.2 423.4,105.9 423.8,104.2 424.4,107.5 424.9,106.9 425.4,107.9 425.9,111.4 426.5,113.1 427.0,110.3 427.4,108.7 427.9,110.0 428.4,109.9 428.9,107.1 429.4,106.6 429.9,111.0 430.4,105.5 430.9,107.1 431.4,108.9 431.9,100.0 432.4,100.2 433.0,98.3 433.5,96.8 433.9,94.0 434.6,94.6 435.1,98.3 435.6,102.0 436.1,112.3 436.6,114.9 437.1,112.6 437.5,113.5 438.0,121.5 438.5,122.3 439.0,122.4 439.5,119.3 439.9,116.2 440.4,110.5 441.0,107.8 441.5,103.3 442.0,104.4 442.6,102.1 443.1,99.3 443.5,101.5 444.0,106.4 444.6,106.1 445.1,106.8 445.6,104.7 446.2,96.9 446.7,96.3 447.1,96.6 447.6,92.9 448.2,92.7 448.6,92.1 449.1,94.1 449.5,92.0 450.0,90.4 450.6,91.7 451.1,100.4 451.5,104.7 452.0,105.8 452.6,113.0 453.1,107.7 453.5,110.7 454.0,112.1 454.7,110.3 455.4,106.8 455.8,106.8 456.4,104.5 456.8,107.5 457.4,105.9 457.8,103.9 458.3,102.2 458.8,100.1 459.2,102.5 459.8,99.0 460.3,97.7 460.8,96.0 461.2,93.7 461.8,94.0 462.3,96.0 462.8,94.3 463.2,90.7 463.8,87.0 464.3,90.8 464.8,92.7 465.4,93.6 465.9,89.9 466.4,97.2 466.8,96.1 467.3,93.0 467.9,90.6 468.4,88.2 468.8,83.2 469.4,77.4 469.9,76.2 470.4,75.7 470.8,75.5 471.3,77.6 471.9,74.4 472.4,70.8 472.8,74.3 473.4,74.4 473.8,69.4 474.3,79.1 474.8,73.2 475.5,64.0 475.9,59.5 476.6,60.5 477.1,57.0 477.6,61.8 478.1,51.4 478.6,46.9 479.1,59.8 479.5,47.3 480.1,45.1 480.6,46.7 481.1,46.7 481.6,50.3 482.1,53.4 482.6,61.5 483.1,60.1 483.6,54.8 484.1,53.6 484.6,58.1 485.1,53.9 485.6,48.2 486.1,43.4 486.6,46.4 487.1,54.9 487.6,54.5 488.0,53.8 488.6,59.5 489.2,59.7 489.6,55.4 490.1,53.1 490.6,61.1 491.2,64.7 491.6,68.2 492.1,66.4 492.6,71.2 493.1,71.8 493.5,70.9 494.0,68.8 494.5,70.8 495.1,61.7 495.6,57.3 496.0,57.2 496.7,76.2 497.2,67.1 497.9,64.0 498.4,65.2 498.8,56.5 499.3,55.9 499.9,57.6 500.3,52.1 500.8,57.2 501.2,51.6 501.7,51.1 502.3,53.6 502.7,51.8 503.2,53.7 503.6,55.0 504.3,53.9 504.7,55.4 505.2,50.6 505.7,46.7 506.3,44.6 506.7,44.4 507.2,39.8 507.7,42.1 508.3,36.4 508.9,40.9 509.3,37.8 509.9,44.7 510.3,40.4 510.8,42.7 511.3,37.5 511.9,33.6" fill="none" stroke="#26404E" stroke-width="1.1"/>
+<line x1="214.1" y1="16" x2="214.1" y2="190" stroke="#B02F3B" stroke-width="1.6" stroke-dasharray="4 3"/>
+<text x="208.1" y="29" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700" fill="#B02F3B">no OPEN / HIGH / LOW</text>
+<text x="208.1" y="41" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9" fill="#B02F3B">1,932 rows &#183; 35%</text>
+<text x="220.1" y="29" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700" fill="#0E7A55">all four prices</text>
+<text x="220.1" y="41" font-family="JetBrains Mono,monospace" font-size="9" fill="#0E7A55">3,531 rows</text>
+<text x="214.1" y="216" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" font-weight="700" fill="#B02F3B">3 Oct 2011</text>
+<line x1="52" y1="190" x2="512" y2="190" stroke="#C3CFD5"/>
+<text x="52.0" y="203" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">2004</text>
+<text x="177.5" y="203" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">2010</text>
+<text x="302.9" y="203" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">2016</text>
+<text x="428.4" y="203" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">2022</text>
+<text x="491.2" y="203" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">2025</text>
+<text x="0" y="228" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">CLOSE is complete across all 5,463 rows</text>
+</svg>
+        <div class="rd"><b>A clean break, to the day.</b> Not one exception in either direction
+        across 5,463 rows.</div>
+      </div>
 
-df.loc[ miss, <span class="py-str">"dt"</span>].max()   <span class="py-cm"># last gap</span>
-df.loc[~miss, <span class="py-str">"dt"</span>].min()   <span class="py-cm"># first value</span></pre>
-        <div class="out xs">Timestamp('<span class="h-bad">2011-09-30</span>')
-Timestamp('<span class="h-ok">2011-10-03</span>')</div>
-        <div class="callout good"><b>A clean break, to the day.</b> Every row before 3 October 2011
-        is missing <code class="k">OPEN</code>, <code class="k">HIGH</code> and
-        <code class="k">LOW</code>. Every row from that date on has all three. Not one exception in
-        either direction across 5,463 rows.</div>
+      <div class="colstack fill">
         <div class="outlbl">missingness patterns in the whole file</div>
         <div class="out xs">Index Name OPEN HIGH LOW CLOSE   rows
     miss     ok   ok   ok    ok   <span class="h-ok">3531</span>
     miss   <span class="h-bad">miss miss miss</span>    ok   <span class="h-bad">1932</span></div>
-        <div class="callout sm"><b>Two patterns, not eight.</b> The three price columns are never
-        missing separately — they go together, always. That is the signature of a <b>format
-        change</b>, not of dropped readings.</div>
-      </div>
-
-      <div class="colstack">
+        <div class="callout sm"><b>Two patterns, not eight.</b> The three price columns never go
+        missing separately. That is a format change, not dropped readings.</div>
         <div class="card b">
           <h3>The verdict</h3>
-          <p>Missingness is a deterministic function of an observed variable, the date. Fit a
-          logistic regression of <code class="k">OPEN.isna()</code> on the date and it separates the
-          classes perfectly — <b>training accuracy 1.0</b>. Missingness depends on observed data
-          only, so by definition this is <b>MAR</b>.</p>
+          <p>Missingness is a deterministic function of the date. A logistic regression of
+          <code class="k">OPEN.isna()</code> on date separates the classes perfectly, <b>training
+          accuracy 1.0</b>. Depends on observed data only, so this is <b>MAR</b>.</p>
         </div>
-        <div class="callout"><b>And the cause is knowable, which is better than a classification.</b>
-        The exchange only began publishing open, high and low for its indices in October 2011.
-        Before that it published the closing level alone. The gap is not a failure of the scrape or
-        of the exchange — those numbers were never released, so there is nothing that went missing.</div>
-        <div class="callout good sm"><b>Notice the order of work.</b> The statistics said MAR. The
-        documentation said <i>why</i>, and the why is what tells you what to do next. Reach for
-        domain knowledge first; it is faster than a test and it answers a better question.</div>
+        <div class="callout good sm"><b>The cause is knowable, which beats a classification.</b> The
+        exchange only began publishing open, high and low in October 2011. Nothing went missing.
+        Look the cause up first: it is faster than a test and answers a better question.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 18 · MAR IS NOT IMPUTABLE ============ -->
-<section class="slide" data-sec="Mechanisms · 6 of 6">
-  <div class="eyebrow">Mechanisms · 6 of 6 · the sting</div>
+<!-- ============ 16 · MAR IS NOT IMPUTABLE ============ -->
+<section class="slide" data-sec="Mechanisms · the sting">
+  <div class="eyebrow">Mechanisms · the sting</div>
   <h1 class="t">MAR does not mean fillable
-    <small>The file is MAR. Every textbook says MAR is the case where imputation works. Here it
-    does not work at all — and understanding why is worth more than any imputation method in
-    Lecture 3.</small></h1>
+    <small>The file is MAR. Every textbook says MAR is where imputation works. Here it does not work
+    at all.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
       <div class="colstack">
         <div class="callout bad"><b>There is no overlap.</b> To learn a rule for
-        <code class="k">OPEN</code> from <code class="k">date</code>, you need dates where
-        <code class="k">OPEN</code> is sometimes present and sometimes missing. Here, every date is
-        one or the other. The predictor that explains the missingness perfectly is the predictor
-        that leaves nothing to learn from.</div>
-        <table class="d sm free">
-          <tr><th style="width:200px">If you did it anyway</th><th>What you would get</th></tr>
+        <code class="k">OPEN</code> from <code class="k">date</code> you need dates where
+        <code class="k">OPEN</code> is sometimes present and sometimes missing. Every date is one or
+        the other. The predictor that explains the missingness perfectly leaves nothing to learn
+        from.</div>
+        <table class="d sm free roomy">
+          <tr><th style="width:196px">If you did it anyway</th><th>What you get</th></tr>
           <tr class="hl"><td><code class="k">df.OPEN.fillna(df.OPEN.mean())</code></td>
-            <td>Eight years of 2004&#8211;2011 opens set to a 2011&#8211;2025 average, on an index that
-            went from a base of 1,000 to 11,168 over the period. Every one of them wrong by a factor.</td></tr>
+            <td>Eight years of opens set to a later average, on an index that went from a base of 1,000 to
+            11,168. Every one wrong by a factor.</td></tr>
           <tr class="hl"><td>Regress <code class="k">OPEN</code> on <code class="k">CLOSE</code>,
             fit on 2011+</td>
-            <td>An <i>R</i>&#178; near 1 and a comfortable feeling. You have extrapolated a modern
-            intraday relationship eight years into a period with different circuit rules, different
-            constituents and a different tick size. The fit statistic cannot see any of that.</td></tr>
+            <td>An <i>R</i>&#178; of 0.999 and a comfortable feeling. You extrapolated a modern intraday
+            relationship into a period with different circuit rules and constituents. The fit
+            statistic sees none of that.</td></tr>
           <tr class="wr"><td>Forward-fill from the previous row</td>
             <td>There is no previous row. The gap runs to the start of the file.</td></tr>
         </table>
       </div>
-      <div class="colstack">
+      <div class="colstack fill">
         <div class="card g">
-          <h3>What to do instead</h3>
-          <p><b>Restrict the window.</b> If the analysis needs open/high/low, it starts on
-          2011-10-03 and you say so in the writeup. <b>Or change the measure.</b>
-          <code class="k">CLOSE</code> is complete across all 5,463 rows — if daily returns will do,
-          you keep the full 2004&#8211;2025 history and impute nothing.</p>
+          <h3>Do this instead</h3>
+          <p><b>Restrict the window.</b> If the analysis needs OHLC it starts 2011-10-03, and you
+          say so. <b>Or change the measure.</b> <code class="k">CLOSE</code> is complete across all
+          5,463 rows, so daily returns keep the full history and impute nothing.</p>
         </div>
-        <div class="callout"><b>The general rule.</b> The mechanism tells you whether filling is
-        <i>defensible</i>. Whether it is <i>possible</i> is a separate question about overlap —
-        do rows with the value and rows without it share a region of the predictor space? Structural
-        gaps, where a field simply did not exist yet, are MAR and un-imputable at the same time,
-        and they are extremely common in scraped and historical data.</div>
-        <div class="callout warn sm"><b>Carry this into Lecture 3.</b> Every method there will
-        happily return numbers for this column. None of them will warn you. The check has to be
-        yours.</div>
+        <div class="callout"><b>The rule.</b> The mechanism says whether filling is defensible. Overlap
+        says whether it is possible. Structural gaps are MAR and un-imputable at once, and they are
+        everywhere in scraped data.</div>
+        <div class="callout warn sm"><b>Carry this into Lecture 3.</b> Every method there returns
+        numbers for this column. None of them warns you. The check has to be yours.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 19 · WHY VISUALISE ============ -->
-<section class="slide" data-sec="Seeing it · 1 of 3">
-  <div class="eyebrow">Seeing it · 1 of 3</div>
-  <h1 class="t">Counts tell you how much. Pictures tell you what shape.
-    <small><code class="k">isna().sum()</code> gives one number per column and throws away the only
-    thing that identifies a mechanism: <b>which rows</b>, and <b>which columns together</b>. Three
-    views recover it, and each answers a different question.</small></h1>
-  <div class="wrap">
-    <div class="cols3" style="flex:1;min-height:0">
-      <div class="card b">
-        <h3><span class="num">01</span>Matrix</h3>
-        <p><b>Question:</b> where in the file are the gaps?</p>
-        <p style="margin-top:6px">One column per variable, rows top to bottom in their natural
-        order. A solid block means a period or a batch. Even speckle means something closer to
-        random. Stripes mean a repeating process &#8212; a source, a shift, a sensor.</p>
-        <pre class="code xs" style="margin-top:7px">msno.matrix(df)</pre>
-      </div>
-      <div class="card g">
-        <h3><span class="num">02</span>Correlation heatmap</h3>
-        <p><b>Question:</b> which columns go missing together?</p>
-        <p style="margin-top:6px">Build a 0/1 indicator per column, correlate the indicators. Near
-        1 means one defect wearing several column names. Near 0 means independent causes that need
-        separate treatment.</p>
-        <pre class="code xs" style="margin-top:7px">msno.heatmap(df)</pre>
-      </div>
-      <div class="card o">
-        <h3><span class="num">03</span>Dendrogram</h3>
-        <p><b>Question:</b> how many distinct causes are there?</p>
-        <p style="margin-top:6px">Hierarchical clustering on the same indicators. Columns joining
-        at height zero are one mechanism. Useful when there are forty columns and reading a
-        forty-by-forty heatmap is not.</p>
-        <pre class="code xs" style="margin-top:7px">msno.dendrogram(df)</pre>
-      </div>
-    </div>
-    <div class="callout warn"><b>Order matters, and it is your responsibility.</b> These plots draw
-    rows in the order they sit in the DataFrame. A time series sorted by date shows its structure
-    immediately; the same file shuffled shows none. Before plotting, sort by whatever you think the
-    mechanism might depend on &#8212; date, source, batch, respondent id &#8212; and plot it again
-    under a different sort if the first tells you nothing.</div>
-  </div>
-</section>
-
-<!-- ============ 20 · THE MATRIX ============ -->
-<section class="slide" data-sec="Seeing it · 2 of 3">
-  <div class="eyebrow">Seeing it · 2 of 3 · the matrix, on both files</div>
+<!-- ============ 17 · THE MATRIX ============ -->
+<section class="slide" data-sec="Seeing it · 1 of 2">
+  <div class="eyebrow">Seeing it · 1 of 2 · msno.matrix(df)</div>
   <h1 class="t">A block and a speckle
-    <small>Same plot, two datasets, and you can read the mechanism off the shape before running
-    a single test.</small></h1>
+    <small>Counts give one number per column and throw away which rows. The matrix keeps them.</small></h1>
   <div class="wrap">
     <div class="cols">
       <div class="fig">
@@ -1340,10 +1196,8 @@ Timestamp('<span class="h-ok">2011-10-03</span>')</div>
 <text x="485.4" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">CLOSE</text>
 <text x="0" y="277" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">row 1 (top) &#8594; row 5463 (bottom) &#183; ink = present &#183; white = missing</text>
 </svg>
-        <div class="rd"><b>A hard horizontal edge.</b> Three columns are blank for the top 35% of
-        the file and complete below it, and the edge is at the same row in all three. That is a
-        <b>format change on a known date</b> &#8212; a shape no random process produces. The two
-        solid columns beside them are the ones that were always published.</div>
+        <div class="rd"><b>A hard horizontal edge</b>, at the same row in all three columns. That is
+        a format change on a known date. No random process makes that shape.</div>
       </div>
       <div class="fig">
         <div class="cap">survey.csv &#183; 400 respondents, sorted by id</div>
@@ -1544,27 +1398,27 @@ Timestamp('<span class="h-ok">2011-10-03</span>')</div>
 <text x="470.4" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">gender</text>
 <text x="0" y="277" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">row 1 (top) &#8594; row 400 (bottom) &#183; ink = present &#183; white = missing</text>
 </svg>
-        <div class="rd"><b>Speckle, at three different densities.</b> No edges, no alignment between
-        columns &#8212; three separate processes, each acting on individual respondents. The
-        density differences are real (36%, 16.5%, 7%) but the picture cannot tell you
-        <i>why</i> any of them happen. For that you need the breakdowns from slide 15.</div>
+        <div class="rd"><b>Speckle at three densities</b>, no edges, no alignment. Three separate
+        processes acting on individual respondents.</div>
       </div>
     </div>
-    <div class="callout"><b>What the matrix is good at, and what it is not.</b> It finds structure:
-    blocks, edges, stripes, and rows that are blank across the board. It says nothing about
-    mechanism &#8212; MAR and MNAR both produce speckle. Use it to rule out MCAR quickly and to spot
-    the structural gaps that no imputation method should ever be pointed at.</div>
+    <div class="cols" style="flex:none;gap:14px">
+      <div class="callout warn sm"><b>Sort before you plot.</b> These draw rows in DataFrame order.
+      A time series sorted by date shows its structure at once; shuffled, it shows nothing. Sort by
+      whatever you think the mechanism depends on, then try a different sort.</div>
+      <div class="callout sm"><b>What it cannot do.</b> MAR and MNAR both produce speckle. Use the
+      matrix to rule out MCAR fast and to spot structural gaps no imputer should touch.</div>
+    </div>
   </div>
 </section>
 
-<!-- ============ 21 · HEATMAP + PATTERNS ============ -->
-<section class="slide" data-sec="Seeing it · 3 of 3">
-  <div class="eyebrow">Seeing it · 3 of 3 · co-missingness</div>
+<!-- ============ 18 · HEATMAP + PATTERNS ============ -->
+<section class="slide" data-sec="Seeing it · 2 of 2">
+  <div class="eyebrow">Seeing it · 2 of 2 · msno.heatmap(df)</div>
   <h1 class="t">Do these columns go missing together?
-    <small>Correlate the 0/1 missingness indicators. The two files give the two extreme answers,
-    and each extreme is a finding rather than a failure of the plot.</small></h1>
+    <small>Correlate the 0/1 missingness indicators. The two files give the two extreme answers.</small></h1>
   <div class="wrap">
-    <div class="cols3" style="flex:1;min-height:0">
+    <div class="cols3">
       <div class="fig">
         <div class="cap">BLUE METAL &#183; corr of isna()</div>
         <svg viewBox="0 0 282 242" width="100%" preserveAspectRatio="xMidYMin meet" role="img">
@@ -1609,9 +1463,9 @@ Timestamp('<span class="h-ok">2011-10-03</span>')</div>
 <text x="68" y="204.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">CLOSE</text>
 <text x="255.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">CLOSE</text>
 </svg>
-        <div class="rd"><b>Exactly 1.</b> One defect, three column names. <code class="k">CLOSE</code>
-        is <code class="k">n/a</code> because it is never missing &#8212; a constant has no variance
-        to correlate with. That is not a bug; it is the plot telling you the column is clean.</div>
+        <div class="rd"><b>Exactly 1.</b> One defect, three column names.
+        <code class="k">CLOSE</code> is <code class="k">n/a</code> because it is never missing, and a
+        constant has no variance to correlate with.</div>
       </div>
       <div class="fig">
         <div class="cap">survey &#183; corr of isna()</div>
@@ -1641,12 +1495,11 @@ Timestamp('<span class="h-ok">2011-10-03</span>')</div>
 <text x="68" y="152.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">gender</text>
 <text x="203.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">gender</text>
 </svg>
-        <div class="rd"><b>Essentially zero</b> &#8212; &#8722;.01, &#8722;.02, .04. Three independent
-        mechanisms. Knowing that income is missing tells you nothing about whether health is. They
-        must be diagnosed and treated one at a time.</div>
+        <div class="rd"><b>Essentially zero.</b> Three independent mechanisms. Knowing income is
+        missing tells you nothing about health. Diagnose and treat them separately.</div>
       </div>
       <div class="colstack">
-        <div class="outlbl">missingness patterns &#183; survey</div>
+        <div class="outlbl">patterns &#183; survey</div>
         <div class="out xxs">income health gender   rows
    -      -      -      <span class="h-ok">200</span>
    -    miss     -      110
@@ -1656,210 +1509,187 @@ Timestamp('<span class="h-ok">2011-10-03</span>')</div>
    -    miss   miss      11
  miss     -    miss       3
  miss   miss   miss       1
-<span class="h-dim">8 of the 8 possible patterns occur</span></div>
-        <div class="outlbl">missingness patterns &#183; BLUE METAL</div>
+<span class="h-dim">8 of 8 possible patterns</span></div>
+        <div class="outlbl">patterns &#183; BLUE METAL</div>
         <div class="out xxs">OPEN  HIGH   LOW  CLOSE   rows
   -     -     -     -    <span class="h-ok">3531</span>
 miss  miss  miss    -    <span class="h-bad">1932</span>
-<span class="h-dim">2 of the 16 possible patterns occur</span></div>
-        <div class="callout sm"><b>The pattern count is the fastest diagnostic on this slide.</b>
-        Near the maximum means independent per-cell processes. A handful of patterns out of many
-        possible means structure &#8212; and structure has a cause you can usually go and look up.</div>
+<span class="h-dim">2 of 16 possible patterns</span></div>
+        <div class="callout sm"><b>Pattern count is the fastest diagnostic here.</b> Near the
+        maximum means independent per-cell processes. A handful out of many means structure, and
+        structure has a cause you can look up.</div>
+        <div class="callout sm"><code class="k">msno.dendrogram(df)</code> answers the same question
+        when there are forty columns and a forty-by-forty heatmap is unreadable.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 22 · WHAT YOU MAY DO TODAY ============ -->
+<!-- ============ 19 · DELETION ============ -->
 <section class="slide" data-sec="Deletion">
   <div class="eyebrow">What you may do before Lecture 3</div>
   <h1 class="t">Deletion is a method, and it has assumptions too
-    <small>Imputation is next lecture. Deletion is available now, it is the default in almost every
-    modelling library, and most people use it without noticing they have chosen it.</small></h1>
+    <small>It is the default in most libraries, and most people never notice they chose it.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
-      <div class="colstack fill">
+      <div class="colstack">
         <table class="d sm free roomy">
-          <tr><th style="width:150px">Approach</th><th>What it does</th><th style="width:110px">Valid when</th></tr>
-          <tr><td><b>Listwise deletion</b><br/><code class="k">df.dropna()</code></td>
-            <td>Drop any row with a gap anywhere. Every analysis runs on the same rows, so results
-            are mutually consistent. On the survey: 400 rows becomes <b>200</b>. Half the sample,
-            for gaps in three columns.</td><td class="c">MCAR</td></tr>
-          <tr><td><b>Pairwise deletion</b><br/><code class="k">df.corr()</code></td>
-            <td>Use every row that has the columns each statistic needs. Keeps more data, but each
-            number rests on a different subsample &#8212; a correlation matrix built this way can
-            fail to be positive definite and break the model that consumes it.</td><td class="c">MCAR</td></tr>
+          <tr><th style="width:150px">Approach</th><th>What it does</th><th style="width:96px">Valid when</th></tr>
+          <tr><td><b>Listwise</b><br/><code class="k">df.dropna()</code></td>
+            <td>Drop any row with a gap anywhere. Every analysis runs on the same rows. On the
+            survey, 400 becomes <b>200</b>.</td><td class="c">MCAR</td></tr>
+          <tr><td><b>Pairwise</b><br/><code class="k">df.corr()</code></td>
+            <td>Use every row that has the columns each statistic needs. Keeps more data, but each number
+            rests on a different subsample.</td><td class="c">MCAR</td></tr>
           <tr class="ok"><td><b>Column deletion</b></td>
-            <td>Drop the variable. Honest when a column is nearly empty or carries nothing:
-            <code class="k">Index Name</code> at 100% missing, <code class="k">INDEX_NAME</code> at
-            one distinct value.</td><td class="c">Any</td></tr>
+            <td>Drop the variable. Honest for <code class="k">Index Name</code> at 100% missing and
+            <code class="k">INDEX_NAME</code> at one distinct value.</td><td class="c">Any</td></tr>
           <tr class="wr"><td><b>Restrict the window</b></td>
-            <td>Drop a defined <i>region</i> for a stated reason, not scattered rows. The right
-            answer for the pre-2011 block.</td><td class="c">Structural</td></tr>
+            <td>Drop a defined region for a stated reason, not scattered rows. The answer for the
+            pre-2011 block.</td><td class="c">Structural</td></tr>
           <tr class="ok"><td><b>Delete nothing</b><br/><code class="k">df.OPEN.isna()</code></td>
-            <td>Add the missingness indicator as its own column and keep every row. If the fact
-            that a value is missing carries information &#8212; and under MNAR it always does
-            &#8212; this hands that information to the model instead of throwing it away. Costs one
-            column; assumes nothing.</td><td class="c">Any</td></tr>
+            <td>Keep every row, add the missingness indicator as a column. Under MNAR the absence itself
+            carries information.</td><td class="c">Any</td></tr>
         </table>
       </div>
       <div class="colstack">
-        <div class="callout bad sm"><b>The default you did not choose.</b> Most scikit-learn
-        estimators raise on <code class="k">NaN</code>. A <code class="k">groupby</code>, a
-        <code class="k">mean()</code> or a plotting call instead drops rows quietly and returns a
-        number &#8212; <b>pairwise deletion is pandas' default</b>, and it carries an MCAR assumption.</div>
+        <div class="callout bad sm"><b>The default you did not choose.</b> scikit-learn raises on
+        <code class="k">NaN</code>. A <code class="k">groupby</code> or <code class="k">mean()</code>
+        drops rows quietly. Pairwise deletion is pandas' default, carrying an MCAR assumption.</div>
         <pre class="code xxs">df = pd.read_csv(<span class="py-str">"BLUE METAL.csv"</span>, na_values=[<span class="py-str">"-"</span>])
 <span class="py-bi">len</span>(df), <span class="py-bi">len</span>(df.dropna()), <span class="py-bi">len</span>(df.dropna(subset=[<span class="py-str">"OPEN"</span>]))</pre>
         <div class="out xs">(5463, <span class="h-bad">0</span>, 3531)</div>
-        <div class="callout bad sm"><b>An empty DataFrame, with no error.</b> One column is 100%
-        null, so every row has a gap somewhere and every row goes. Drop <code class="k">Index
-        Name</code> first and the same call keeps 3,531. <b>Listwise deletion is only as good as
-        your column list</b>, and it fails silently when that list is wrong.</div>
-        <div class="callout warn sm"><b>Report two numbers whenever you delete:</b> how many rows
-        went, and whether the survivors resemble the departed. On <code class="k">survey.csv</code>,
-        <code class="k">dropna()</code> takes 400 rows to <b>200</b> and moves mean age 40.9 &#8594;
-        40.0. That comparison is the germ of the formal tests in Lecture 2.</div>
-        <div class="callout good sm"><b>Deletion is sometimes right.</b> Two per cent missing, no
-        structure in the matrix, no difference between kept and dropped &#8212; delete, note it,
-        move on.</div>
+        <div class="callout bad sm"><b>An empty DataFrame, no error.</b> One column is 100% null, so every
+        row goes. Drop it first and the same call keeps 3,531. Listwise deletion is only as good as
+        your column list.</div>
+        <div class="callout warn sm"><b>Report two numbers when you delete:</b> how many rows went, and
+        whether the survivors resemble the departed. On the survey, mean age moves 40.9 to 40.0.</div>
+        <div class="callout good sm">Two per cent missing, no structure, no difference between kept
+        and dropped? Delete, note it, move on.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 23 · THE CLEANING LOG ============ -->
+<!-- ============ 20 · THE CLEANING LOG ============ -->
 <section class="slide" data-sec="The log">
-  <div class="eyebrow">The log &#183; the deliverable this module builds</div>
+  <div class="eyebrow">The log · the deliverable this module builds</div>
   <h1 class="t">Everything decided today, written down
-    <small>A cleaned file on its own is unreviewable &#8212; nobody can tell what you did or why.
-    The log is the artefact that makes it defensible, and every lecture in this module adds rows
-    to it.</small></h1>
+    <small>A cleaned file alone is unreviewable. Every lecture in this module adds rows here.</small></h1>
   <div class="wrap">
     <table class="log roomy">
-      <tr><th style="width:118px">Column</th><th style="width:200px">Decision</th><th style="width:56px">Rows</th>
-        <th style="width:230px">Assumption it rests on</th><th>Why</th></tr>
+      <tr><th style="width:118px">Column</th><th style="width:196px">Decision</th><th style="width:56px">Rows</th>
+        <th style="width:226px">Assumption</th><th>Why</th></tr>
       <tr><td>OPEN, HIGH, LOW</td><td>Read <code class="k">"-"</code> as missing</td><td class="n">5,796</td>
-        <td>none &#8212; a parsing correction</td>
-        <td>The exchange writes a hyphen for "not published". Nothing is inferred; the file is
-        simply read as intended.</td></tr>
+        <td>none, a parsing correction</td>
+        <td>The exchange writes a hyphen for "not published".</td></tr>
       <tr><td>OPEN, HIGH, LOW</td><td>Do <b>not</b> impute pre-2011-10-03</td><td class="n">1,932</td>
-        <td>These values were never published, so there is nothing to recover</td>
-        <td>MAR on date, but with no overlap: no date has both observed and missing values, so no
-        model can be fitted. Analyses needing OHLC start 2011-10-03.</td></tr>
+        <td>These values were never published</td>
+        <td>MAR on date, but no overlap, so no model can be fitted. Analyses needing OHLC start
+        2011-10-03.</td></tr>
       <tr><td>Index Name</td><td>Drop the column</td><td class="n">5,463</td>
-        <td>An empty column carries no information</td>
-        <td>100% null, and a populated <code class="k">INDEX_NAME</code> exists beside it. Almost
-        certainly one field arriving under two names upstream.</td></tr>
+        <td>An empty column carries nothing</td>
+        <td>100% null, with a populated <code class="k">INDEX_NAME</code> beside it. One field
+        arriving under two names.</td></tr>
       <tr><td>INDEX_NAME</td><td>Drop the column</td><td class="n">&#8212;</td>
         <td>The whole file is one index</td>
-        <td>One distinct value in 5,463 rows. Record it as a dataset attribute, not a column.</td></tr>
-      <tr><td>RequestNumber</td><td>Keep, but exclude from analysis</td><td class="n">&#8212;</td>
+        <td>One distinct value in 5,463 rows. Record it as a dataset attribute.</td></tr>
+      <tr><td>RequestNumber</td><td>Keep, exclude from analysis</td><td class="n">&#8212;</td>
         <td>It describes the scrape, not the index</td>
-        <td>Server pagination handle. Useful for auditing collection, and a leak if any model is
-        handed the raw frame.</td></tr>
+        <td>Useful for auditing collection, a leak if a model sees the raw frame.</td></tr>
       <tr class="hl"><td>&#8212; rows &#8212;</td><td>Flag 2000&#8211;2003 as never delivered</td><td class="n">~1,000</td>
         <td>The gap is in the request, not the response</td>
-        <td>Four requested years returned empty and were written as nothing. Not visible to any
-        column-wise check. Re-run those years before treating the history as complete.</td></tr>
+        <td>Four requested years returned empty. Invisible to any column-wise check. Re-run before
+        treating the history as complete.</td></tr>
     </table>
-    <div class="callout"><b>The fourth column is the one that matters.</b> Anyone can see what you
-    changed by diffing two files. Only the log says what you were <i>assuming</i> when you changed
-    it &#8212; and that is the part a reviewer, a regulator, or you in six months actually needs.</div>
+    <div class="callout"><b>The fourth column is the one that matters.</b> Anyone can diff two files
+    to see what changed. Only the log says what you were assuming.</div>
   </div>
 </section>
 
-<!-- ============ 24 · RECAP ============ -->
+<!-- ============ 21 · RECAP ============ -->
 <section class="slide" data-sec="Recap">
   <div class="eyebrow">Recap</div>
-  <h1 class="t">What to carry out of this lecture
-    <small>Six things, in the order they will save you time.</small></h1>
+  <h1 class="t">Six things to carry out
+    <small>In the order they will save you time.</small></h1>
   <div class="wrap">
     <div class="cols">
       <div class="colstack fill">
         <div class="card b">
-          <h3><span class="num">01</span>Count what is missing, not what pandas says is missing</h3>
-          <p>On a real file the two differed by 2.1&#215;. Check the dtypes, look for sentinels, and
-          re-read with <code class="k">na_values</code> before reporting any number.</p>
+          <h3><span class="num">01</span>Count what is missing, not what pandas says is</h3>
+          <p>The two differed by 2.1&#215; here. Check dtypes, hunt sentinels, re-read with
+          <code class="k">na_values</code> before reporting a number.</p>
         </div>
         <div class="card b">
           <h3><span class="num">02</span>Look for rows that were never written</h3>
           <p>Four missing years left no trace in any column. Compare what came back against what you
-          asked for &#8212; nothing else will.</p>
+          asked for.</p>
         </div>
         <div class="card b">
           <h3><span class="num">03</span>The mechanism decides the method</h3>
-          <p>MCAR depends on nothing, MAR on what you observed, MNAR on what you did not. The three
-          get three different treatments, and choosing wrongly biases every downstream number in the
-          same direction at once.</p>
+          <p>MCAR depends on nothing, MAR on what you observed, MNAR on what you did not. Choose
+          wrongly and every downstream number moves the same way at once.</p>
         </div>
       </div>
       <div class="colstack fill">
         <div class="card o">
           <h3><span class="num">04</span>MAR and MNAR look alike in your data</h3>
-          <p>Both show trends against observed variables. The difference only shows up against the
-          hidden values &#8212; the one comparison you can never run. That is why MNAR is argued for,
-          never demonstrated.</p>
+          <p>Both slope against observed variables. The difference shows only against the hidden
+          values, the one comparison you can never run.</p>
         </div>
         <div class="card o">
           <h3><span class="num">05</span>MAR does not mean fillable</h3>
-          <p>Perfectly explained missingness with no overlap is un-imputable. Ask whether the model
-          has anything to learn from before you reach for a method that will answer regardless.</p>
+          <p>Perfectly explained missingness with no overlap is un-imputable. Ask what the model has
+          to learn from before reaching for a method that answers regardless.</p>
         </div>
         <div class="card g">
           <h3><span class="num">06</span>Documentation beats inference</h3>
           <p>A logistic regression classified this file as MAR. One line in the exchange's release
-          notes explained it. Look the cause up first &#8212; it is faster, and it answers the
-          question the test cannot.</p>
+          notes explained it.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 25 · PRACTICE ============ -->
+<!-- ============ 22 · PRACTICE ============ -->
 <section class="slide" data-sec="Practice">
-  <div class="eyebrow">Practice &#183; and what comes next</div>
+  <div class="eyebrow">Practice · and what comes next</div>
   <h1 class="t">Before Lecture 2
-    <small>Four exercises on the two files used today, then where the module goes.</small></h1>
+    <small>Four exercises on today's two files.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
       <div class="colstack">
         <ol class="n">
-          <li><b>Profile a file you scraped yourself.</b> Take any CSV from the Data Collection
-          module. Report: the dtype of every column, the set of non-numeric values in each numeric
-          column, the number of distinct missingness patterns, and how many rows you expected
-          against how many you got. One paragraph per finding.</li>
-          <li><b>Find the sentinel.</b> Write a function that takes a DataFrame and returns, for each
-          <code class="k">object</code> column, the values that are not parseable as numbers, sorted
-          by frequency. Run it on <code class="k">BLUE METAL.csv</code> and on a second file. Sentinels
-          almost always show up as a small number of very frequent values.</li>
-          <li><b>Break the diagnosis.</b> Take <code class="k">survey.csv</code>, shuffle the rows,
-          and re-draw the matrix plot. Explain what was lost and what it implies about sorting before
-          plotting.</li>
-          <li><b>Argue a mechanism.</b> Pick one column with gaps in your own data. Write four
-          sentences: what you think caused them, which mechanism that implies, what evidence in the
-          file supports it, and what evidence would change your mind. The fourth sentence is the
-          hard one and the one that matters.</li>
+          <li><b>Profile a file you scraped yourself.</b> Report every column's dtype, the non-numeric
+          values in each numeric column, the number of distinct missingness patterns, and rows
+          expected against rows received.</li>
+          <li><b>Find the sentinel.</b> Write a function returning, per <code class="k">object</code>
+          column, the values that will not parse as numbers, by frequency. Sentinels are the few
+          very frequent ones.</li>
+          <li><b>Break the diagnosis.</b> Shuffle the rows of <code class="k">survey.csv</code> and
+          redraw the matrix plot. Explain what was lost.</li>
+          <li><b>Argue a mechanism.</b> Pick one column with gaps in your own data. Four sentences:
+          what caused them, which mechanism that implies, what evidence supports it, and what
+          evidence would change your mind. The fourth is the one that matters.</li>
         </ol>
       </div>
-      <div class="colstack">
+      <div class="colstack fill">
         <div class="card b">
           <h3>Lecture 2 &#183; Can you tell which mechanism it is?</h3>
           <p>Little's MCAR test, the permutation test, and logistic regression on the missingness
-          indicator &#8212; run on <code class="k">survey.csv</code>, where we know the answers, so you
-          can see which tests find the mechanisms we planted and which miss them. Ends at the
-          boundary: what none of them can do.</p>
+          indicator, run on <code class="k">survey.csv</code> where we know the answers. You see
+          which tests find what we planted, and which miss.</p>
         </div>
         <div class="card g">
           <h3>Lecture 3 &#183; Filling gaps</h3>
-          <p>Mean and median, random draw, hot deck, regression, kNN, MICE, pattern mixture &#8212;
-          each as an explicit assumption plus something it silently breaks.</p>
+          <p>Mean and median, random draw, hot deck, regression, kNN, MICE, pattern mixture. Each as
+          an assumption plus something it silently breaks.</p>
         </div>
-        <div class="callout warn sm"><b>Keep your raw files.</b> Every exercise above needs the
-        original, and every one of them is easier if you never overwrote it.</div>
-        <div class="callout sm"><b>Files for this lecture.</b> <code class="k">BLUE METAL.csv</code>
-        from the Data Collection module, and <code class="k">survey.csv</code>, generated with a
-        fixed seed so every number on these slides reproduces exactly.</div>
+        <div class="callout warn sm"><b>Keep your raw files.</b> Every exercise needs the original.</div>
+        <div class="callout sm"><code class="k">BLUE METAL.csv</code> and
+        <code class="k">survey.csv</code> are in <code class="k">data cleaning/data/</code>.
+        <code class="k">make_survey.py</code> has a fixed seed, so every number here reproduces.</div>
       </div>
     </div>
   </div>
@@ -1870,6 +1700,7 @@ miss  miss  miss    -    <span class="h-bad">1932</span>
 <div id="nav"><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></div>
 <div id="hint">&#8592; &#8594; navigate &#183; F fullscreen &#183; P print</div>
 
+<script type="application/json" id="lab-data">{"age": [52, 43, 39, 42, 39, 22, 57, 61, 36, 32, 56, 51, 38, 54, 34, 47, 65, 28, 63, 62, 47, 41, 47, 23, 42, 33, 22, 21, 24, 63, 61, 20, 27, 31, 48, 47, 32, 57, 60, 28, 20, 31, 28, 31, 23, 36, 38, 58, 33, 38, 33, 52, 63, 47, 46, 22, 52, 25, 51, 47, 53, 32, 31, 27, 52, 49, 42, 29, 45, 63, 61, 23, 46, 27, 34, 27, 22, 49, 21, 52, 55, 45, 30, 60, 45, 35, 65, 36, 52, 50, 56, 63, 54, 34, 31, 33, 18, 19, 31, 63, 46, 19, 19, 34, 28, 36, 25, 30, 60, 63, 37, 24, 64, 38, 52, 58, 61, 19, 18, 48, 39, 21, 44, 50, 64, 46, 54, 33, 47, 62, 62, 55, 37, 41, 48, 39, 21, 26, 33, 20, 28, 32, 61, 25, 23, 60, 32, 24, 46, 45, 27, 37, 64, 28, 35, 42, 58, 35, 45, 29, 54, 41, 63, 49, 47, 21, 53, 42, 26, 62, 54, 63, 55, 50, 38, 23, 48, 56, 31, 39, 26, 38, 41, 53, 20, 25, 47, 42, 31, 54, 38, 28, 53, 22, 62, 42, 21, 32, 24, 23, 34, 45, 35, 59, 43, 31, 44, 62, 33, 29, 27, 46, 64, 60, 27, 47, 36, 31, 51, 23, 38, 55, 55, 23, 36, 44, 43, 28, 60, 19, 63, 61, 20, 43, 22, 26, 37, 42, 32, 64, 21, 62, 21, 48, 19, 41, 26, 26, 46, 33, 60, 36, 34, 22, 35, 19, 20, 50, 28, 54, 28, 36, 43, 22, 51, 53, 53, 45, 32, 21, 23, 62, 48, 43, 46, 41, 54, 45, 60, 60, 56, 27, 35, 18, 36, 64, 42, 59, 64, 31, 18, 65, 56, 35, 42, 18, 18, 31, 38, 53, 32, 18, 52, 30, 64, 34, 29, 32, 43, 18, 40, 22, 33, 57, 22, 32, 34, 54, 23, 64, 50, 56, 38, 42, 18, 54, 46, 32, 29, 53, 50, 31, 52, 26, 46, 47, 58, 54, 49, 31, 42, 58, 46, 50, 26, 61, 53, 57, 41, 61, 61, 51, 41, 52, 22, 39, 20, 52, 52, 28, 54, 43, 49, 38, 36, 28, 39, 19, 58, 43, 57, 49, 56, 28, 25, 43, 43, 62, 35, 60, 23, 43, 25, 22, 24, 56, 26, 21, 39, 48, 29, 44, 59, 29, 62, 44, 64, 33, 42, 64], "income": [110700, 99900, 72700, 164400, 94100, 42700, 211400, 379500, 126700, 87000, 129100, 78100, 72900, 119900, 106400, 106700, 347800, 78300, 178800, 296500, 98400, 131500, 86200, 57300, 144000, 56000, 31600, 38600, 150400, 285300, 157700, 24100, 42300, 81000, 127300, 88600, 55500, 312100, 211500, 90400, 25700, 82800, 61000, 55900, 55200, 34400, 87700, 210100, 81400, 75000, 54400, 151500, 290500, 284700, 241900, 64400, 127100, 90200, 143500, 155900, 191600, 79900, 29400, 49100, 50700, 271900, 104700, 74900, 114900, 428700, 132900, 37000, 100500, 92000, 50700, 117700, 29100, 168700, 22600, 129700, 82100, 107300, 69100, 167800, 114100, 56400, 221900, 85000, 171400, 164000, 119600, 237000, 134100, 73900, 59900, 71400, 27700, 22600, 57300, 275400, 81700, 60600, 40300, 32900, 53300, 103800, 67100, 152800, 224800, 228000, 88900, 71800, 239200, 109900, 144700, 166700, 367700, 39700, 42500, 82300, 80000, 44600, 118600, 139400, 383300, 94200, 122500, 61000, 146400, 339000, 258400, 241600, 187000, 158300, 110500, 150000, 37300, 39300, 74100, 64800, 52500, 52400, 265200, 118100, 48400, 264900, 52600, 38800, 116200, 121500, 36500, 86500, 364800, 32200, 84500, 165600, 175400, 91000, 106400, 37200, 219200, 57000, 402900, 146200, 106300, 31500, 142400, 278700, 69800, 214100, 134100, 190200, 153400, 185700, 93700, 97300, 70800, 269300, 41700, 59300, 79800, 70300, 105500, 256900, 34400, 49200, 312600, 206800, 60700, 253200, 70400, 87600, 52700, 39300, 373200, 114300, 37800, 109700, 35800, 64800, 117200, 129000, 64300, 217000, 119800, 91700, 79900, 129900, 59100, 112300, 45800, 102300, 313000, 349900, 101300, 139800, 48000, 69100, 220000, 25000, 85100, 291600, 140100, 39700, 121400, 72900, 106600, 82400, 219000, 32700, 287400, 219200, 66600, 164900, 15900, 39600, 39500, 132500, 128000, 363200, 92800, 277300, 61500, 153900, 37600, 156100, 54600, 107200, 108600, 81800, 126400, 105800, 83800, 37100, 97600, 41500, 38200, 270700, 50600, 182600, 65200, 74100, 104900, 49600, 190800, 271900, 177800, 47200, 98900, 49400, 50200, 316600, 157800, 336200, 388200, 156700, 82300, 136500, 331200, 202000, 198400, 53200, 61400, 63300, 93900, 259500, 140100, 178600, 302800, 86000, 54400, 803800, 241500, 49600, 252200, 25000, 25400, 25900, 62400, 139700, 55000, 48300, 69700, 104600, 278400, 67100, 119500, 106600, 131100, 64800, 58300, 59400, 158500, 200500, 36400, 64800, 122100, 96500, 55300, 283600, 68200, 415100, 66100, 101100, 68800, 558600, 91100, 62200, 69600, 396100, 109400, 43800, 191800, 83700, 90200, 93600, 204100, 225100, 142100, 44800, 162300, 86400, 115900, 57400, 34900, 155100, 224200, 428600, 144800, 113600, 263700, 104800, 117300, 134900, 33300, 70500, 100200, 204700, 110600, 99600, 114500, 397700, 159800, 61500, 36300, 34500, 46600, 47300, 397400, 96400, 96900, 58500, 134500, 66300, 77800, 170400, 108500, 180100, 41700, 230000, 34200, 130100, 50000, 73100, 43100, 140400, 39700, 42000, 130300, 108600, 34600, 145600, 316400, 84000, 412500, 113700, 136000, 75100, 148700, 196600], "mcar": [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0], "mar": [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "mnar": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "stats": {"mcar": {"n": 107, "pct": 26.8, "true": 129782, "obs": 126673, "bias": -2.4, "cage": 0.01, "cinc": 0.05, "pinc": 0.07}, "mar": {"n": 66, "pct": 16.5, "true": 129782, "obs": 139238, "bias": 7.3, "cage": -0.33, "cinc": -0.22, "pinc": 0.03}, "mnar": {"n": 137, "pct": 34.2, "true": 129782, "obs": 164022, "bias": 26.4, "cage": -0.47, "cinc": -0.48, "pinc": -0.23}}}</script>
 <script>
 /* ============================================================
    cover ornament — a wall of raw cells, dirt highlighted
@@ -1906,6 +1737,144 @@ miss  miss  miss    -    <span class="h-bad">1932</span>
   ];
   const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   box.innerHTML=rows.map(r=>'<div>'+r.map(([c,t])=>'<span class="'+c+'">'+esc(t)+'</span>').join('')+'</div>').join('');
+})();
+
+/* ============================================================
+   the missingness lab (slide 10)
+   400 real rows from survey.csv; the three masks were computed in
+   Python and are embedded, so the figures here match the slides.
+   ============================================================ */
+(function(){
+  const host=document.getElementById('labsvg'); if(!host) return;
+  const D=JSON.parse(document.getElementById('lab-data').textContent);
+
+  const COPY={
+    mcar:{t:'Missing completely at random',c:'var(--t-grp)',
+      b:'A tablet bug drops the income field at a flat rate. Nothing about the person changes the odds.',
+      r:'<b>Holes everywhere.</b> The survivors are a smaller version of the same sample, so the mean barely moves. This is the easy case, and the rare one.'},
+    mar:{t:'Missing at random',c:'var(--t-anc)',
+      b:'Younger people skip the income question. Within one age, the amount does not change the odds.',
+      r:'<b>Holes on the left.</b> The mean is now wrong, but age says by how much, and age is in the file. Recoverable.'},
+    mnar:{t:'Missing not at random',c:'var(--t-asr)',
+      b:'Low earners skip the question because the amount is low. The value drives its own absence.',
+      r:'<b>Holes along the bottom.</b> The partial correlation survives conditioning on age, so no observed column can undo this. Not recoverable.'}
+  };
+
+  /* ---- geometry ---- */
+  const W=560,H=300, L=52,R=548,T=14,B=254;
+  const YMAX=400000, AX=[18,66];
+  const px=a=>L+(a-AX[0])/(AX[1]-AX[0])*(R-L);
+  const py=v=>B-Math.min(v,YMAX)/YMAX*(B-T);
+  const fmt=n=>'₹'+(n/1000).toFixed(0)+'k';
+
+  /* ---- static chrome, drawn once ---- */
+  const g=[];
+  for(let v=0;v<=YMAX;v+=100000){
+    g.push(`<line x1="${L}" y1="${py(v)}" x2="${R}" y2="${py(v)}" stroke="#EDF1F3" stroke-width="1"/>`);
+    g.push(`<text x="${L-7}" y="${py(v)+3.5}" text-anchor="end" font-family="JetBrains Mono,monospace"
+             font-size="9" fill="#8FA0A9">${v?fmt(v):'0'}</text>`);
+  }
+  for(let a=20;a<=65;a+=15)
+    g.push(`<text x="${px(a)}" y="${B+16}" text-anchor="middle" font-family="JetBrains Mono,monospace"
+             font-size="9" fill="#8FA0A9">${a}</text>`);
+  g.push(`<line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="#C3CFD5" stroke-width="1"/>`);
+  g.push(`<text x="${(L+R)/2}" y="${B+30}" text-anchor="middle" font-family="Public Sans,sans-serif"
+           font-size="10.5" fill="#53666F">age</text>`);
+  g.push(`<text x="14" y="${(T+B)/2}" text-anchor="middle" font-family="Public Sans,sans-serif"
+           font-size="10.5" fill="#53666F" transform="rotate(-90 14 ${(T+B)/2})">income</text>`);
+  // mean lines, moved on update
+  g.push(`<line id="mTrue" x1="${L}" x2="${R}" stroke="#53666F" stroke-width="1.4" stroke-dasharray="5 4"/>`);
+  // the observed-mean line rides in a <g> so it can be moved with a CSS transform;
+  // x1/y1/x2/y2 on <line> are not CSS-animatable in Chrome.
+  g.push(`<g id="mObsG"><line id="mObs" x1="${L}" x2="${R}" stroke-width="2"/>
+           <text id="mObsL" x="${R-96}" font-family="JetBrains Mono,monospace" font-size="9.5"
+                 font-weight="700"/></g>`);
+  // points last so they sit above the grid
+  for(let i=0;i<D.age.length;i++)
+    g.push(`<circle class="pt" data-i="${i}" cx="${px(D.age[i]).toFixed(1)}"
+             cy="${py(D.income[i]).toFixed(1)}" r="3.1"/>`);
+  host.innerHTML=g.join('');
+
+  const pts=[...host.querySelectorAll('.pt')];
+  const mTrue=host.querySelector('#mTrue'), mObs=host.querySelector('#mObs'),
+        mObsL=host.querySelector('#mObsL'), mObsG=host.querySelector('#mObsG');
+  mTrue.setAttribute('y1',py(D.stats.mcar.true)); mTrue.setAttribute('y2',py(D.stats.mcar.true));
+
+  /* ---- the mean comparison bar ---- */
+  const msvg=document.getElementById('meansvg');
+  function drawMean(s,col){
+    const x0=8,x1=252, sc=v=>x0+v/200000*(x1-x0);
+    msvg.innerHTML=`
+      <rect x="${x0}" y="12" width="${sc(s.true)-x0}" height="17" fill="#53666F"/>
+      <text x="${sc(s.true)+6}" y="25" font-family="JetBrains Mono,monospace" font-size="10.5"
+            fill="#53666F">${s.true.toLocaleString('en-IN')}</text>
+      <text x="${x0}" y="9" font-family="JetBrains Mono,monospace" font-size="8.4"
+            fill="#8FA0A9">EVERYONE</text>
+      <rect x="${x0}" y="46" width="${sc(s.obs)-x0}" height="17" fill="${col}"/>
+      <text x="${sc(s.obs)+6}" y="59" font-family="JetBrains Mono,monospace" font-size="10.5"
+            font-weight="700" fill="${col}">${s.obs.toLocaleString('en-IN')}</text>
+      <text x="${x0}" y="43" font-family="JetBrains Mono,monospace" font-size="8.4"
+            fill="#8FA0A9">WHO ANSWERED</text>
+      <text x="${x0}" y="76" font-family="JetBrains Mono,monospace" font-size="10"
+            font-weight="700" fill="${col}">${s.bias>0?'+':''}${s.bias}%</text>
+      <text x="${x0+38}" y="76" font-family="Public Sans,sans-serif" font-size="10"
+            fill="#53666F">off, and nothing warns you</text>`;
+  }
+
+  /* ---- update, with the dropout animated ---- */
+  let mode='mcar', token=0;
+  function show(m){
+    mode=m; const my=++token;
+    const mask=D[m], s=D.stats[m], c=COPY[m];
+    const col=getComputedStyle(document.documentElement)
+      .getPropertyValue(c.c.slice(4,-1)).trim() || '#125F9E';
+
+    document.querySelectorAll('.seg button[data-m]')
+      .forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+    document.getElementById('labdef').style.borderTopColor=col;
+    document.getElementById('labtitle').textContent=c.t;
+    document.getElementById('labbody').textContent=c.b;
+    document.getElementById('labread').innerHTML=c.r;
+    document.getElementById('labcage').textContent=(s.cage>0?'+':'')+s.cage.toFixed(2);
+    const pi=document.getElementById('labpinc');
+    pi.textContent=(s.pinc>0?'+':'')+s.pinc.toFixed(2);
+    pi.style.color = Math.abs(s.pinc)>=0.15 ? col : '';
+    pi.style.fontWeight = Math.abs(s.pinc)>=0.15 ? '700' : '';
+
+    // every point back to "answered", then hollow the missing ones out in waves
+    pts.forEach(p=>{ p.style.transition='none'; p.setAttribute('fill','#26404E');
+                     p.setAttribute('stroke','none'); p.setAttribute('opacity','.72'); });
+    void host.offsetWidth;
+    pts.forEach((p,i)=>{
+      p.style.transition='fill .28s ease, stroke .28s ease, opacity .28s ease';
+      if(mask[i]){
+        setTimeout(()=>{ if(my!==token) return;
+          p.setAttribute('fill','none'); p.setAttribute('stroke',col);
+          p.setAttribute('stroke-width','1.3'); p.setAttribute('opacity','.9');
+        }, 90+Math.random()*520);
+      }
+    });
+
+    // park the line on the true mean, then slide it to the observed one
+    mObs.setAttribute('stroke',col);
+    mObs.setAttribute('y1',py(s.true)); mObs.setAttribute('y2',py(s.true));
+    mObsL.setAttribute('y',py(s.true)-6); mObsL.setAttribute('fill',col);
+    mObsL.textContent='answered '+fmt(s.obs);
+    mObsG.style.transition='none'; mObsG.style.transform='translateY(0px)';
+    void host.offsetWidth;
+    setTimeout(()=>{ if(my!==token) return;
+      mObsG.style.transition='transform .7s ease';
+      mObsG.style.transform=`translateY(${(py(s.obs)-py(s.true)).toFixed(1)}px)`;
+    },640);
+    drawMean(s,col);
+  }
+
+  document.querySelectorAll('.seg button[data-m]')
+    .forEach(b=>b.addEventListener('click',()=>show(b.dataset.m)));
+  document.getElementById('labplay').addEventListener('click',()=>show(mode));
+  // redraw when the slide is reached, so the animation is seen
+  host.closest('.slide').addEventListener('shown',()=>show(mode));
+  show('mcar');
 })();
 
 /* ============================================================
