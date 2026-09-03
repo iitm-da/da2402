@@ -411,8 +411,8 @@ table.log.roomy td,table.log.roomy th{padding:13px 10px}
 <!-- ============ 2 · WHERE THE TIME GOES ============ -->
 <section class="slide" data-sec="Orientation · 1 of 2">
   <div class="eyebrow">Orientation · 1 of 2</div>
-  <h1 class="t">Cleaning is not tidying
-    <small>Where the week goes, and what you are doing when you spend it.</small></h1>
+  <h1 class="t">Most of the week goes before the analysis starts
+    <small>And what you are actually doing while you spend it.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
       <div class="colstack">
@@ -452,16 +452,42 @@ table.log.roomy td,table.log.roomy th{padding:13px 10px}
       </div>
 
       <div class="colstack">
-        <div class="callout"><b>A dataset is a set of claims.</b> Fill a blank and you assert a
-        value nobody measured. Delete a row and you assert it should not count. Both are inferences.
-        Neither raises an error.</div>
-        <ul class="b">
-          <li>A cleaned file is the raw file plus your assumptions. Keep the raw one.</li>
-          <li>"It looked wrong" is not a reason. "Never published before Oct 2011" is.</li>
-          <li>A broken sensor and a refused answer leave the same blank. They need opposite
-          treatments.</li>
+        <div class="fig">
+          <div class="cap">What you are actually doing when you clean</div>
+          <svg viewBox="0 0 470 300" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="A cell is empty. Fill it and you invent a value nobody measured. Delete the row and you assume the row does not matter. Which is right depends on why the cell was empty.">
+<rect x="150" y="6" width="170" height="32" fill="#14222B" stroke="#14222B" stroke-width="1"/>
+<text x="235" y="26" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#FFFFFF" font-weight="700">a cell is empty</text>
+<path d="M235 38 V56 M72 56 H398 M72 56 V74 M398 56 V74" fill="none" stroke="#C3CFD5" stroke-width="1.4"/>
+<rect x="6" y="74" width="200" height="30" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1"/><rect x="6" y="74" width="200" height="3" fill="#125F9E"/>
+<text x="106" y="95" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#125F9E" font-weight="700">you fill it</text>
+<path d="M106 104 V124" stroke="#125F9E" stroke-width="1.4"/>
+<path d="M102 118 L106 126 L110 118 Z" fill="#125F9E"/>
+<rect x="6" y="128" width="200" height="54" fill="#F4F8FC" stroke="#CBDCEC" stroke-width="1"/>
+<text x="106" y="150" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" font-weight="400">you invent a value</text>
+<text x="106" y="168" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" font-weight="400">nobody measured</text>
+<rect x="264" y="74" width="200" height="30" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1"/><rect x="264" y="74" width="200" height="3" fill="#8F5D0A"/>
+<text x="364" y="95" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#8F5D0A" font-weight="700">you delete the row</text>
+<path d="M364 104 V124" stroke="#8F5D0A" stroke-width="1.4"/>
+<path d="M360 118 L364 126 L368 118 Z" fill="#8F5D0A"/>
+<rect x="264" y="128" width="200" height="54" fill="#FDF8EF" stroke="#E6D6B8" stroke-width="1"/>
+<text x="364" y="150" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" font-weight="400">you assume the row</text>
+<text x="364" y="168" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" font-weight="400">does not matter</text>
+<path d="M106 182 V204 M364 182 V204 M106 204 H364 M235 204 V222" fill="none" stroke="#C3CFD5" stroke-width="1.4"/>
+<path d="M231 216 L235 224 L239 216 Z" fill="#53666F"/>
+<rect x="30" y="226" width="410" height="58" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1"/><rect x="30" y="226" width="410" height="3" fill="#B02F3B"/>
+<text x="235" y="251" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" font-weight="700">Which one is right depends on</text>
+<text x="235" y="270" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" font-weight="700">why the cell was empty.</text>
+</svg>
+        </div>
+        <ul class="b sm">
+          <li>Keep the raw file. Every fix here is reversible only if you do.</li>
+          <li>Record the reason for each change. Six months later, "it looked wrong" tells you
+          nothing.</li>
+          <li>The same blank can come from a broken sensor or from someone refusing to answer.
+          You cannot tell which from the file.</li>
         </ul>
-        <div class="callout good sm">So this module is organised by cause, not by tool.</div>
+        <div class="callout good sm">That is why the rest of this module works backwards from causes
+        instead of forwards from tools.</div>
       </div>
     </div>
   </div>
@@ -778,8 +804,8 @@ df.RequestNumber.nunique()</pre>
           <h3>The observation</h3>
           <p>A numeric column. 5,463 rows, 1,932 blank. Nothing else known.</p>
         </div>
-        <div class="callout bad sm">No method is correct here. Correct is not a property of the
-        method. It is a property of the match between method and cause.</div>
+        <div class="callout bad sm">No method is correct here. Whether a method works depends on what
+        caused the gap, and you have not been told.</div>
         <div class="callout sm">Rubin's 1976 framework names the three causes.</div>
       </div>
       <div class="colstack">
@@ -917,8 +943,8 @@ df.RequestNumber.nunique()</pre>
           together.</p>
         </div>
         <div class="callout sm"><b>What changed after.</b> Education entered the weighting scheme as
-        standard, and sensitivity analysis over non-response became normal reporting. Both are MNAR
-        responses: not a fix, an honest account of how far the answer could move.</div>
+        standard, and sensitivity analysis over non-response became normal reporting. Neither fixes the
+        problem. Both show how far the answer could move.</div>
       </div>
     </div>
   </div>
@@ -1011,8 +1037,8 @@ gender             <span class="h-bad">28</span>   <span class="h-dim"> 7.0%</sp
 <section class="slide" data-sec="Mechanisms · 4 of 5">
   <div class="eyebrow">Mechanisms · 4 of 5 · the central difficulty</div>
   <h1 class="t">MAR and MNAR look the same until you condition
-    <small>Both slope against age. Both slope against their own hidden values. The definition is not
-    "no relationship with the missing value". It is <b>none left after conditioning</b>.</small></h1>
+    <small>Both slope against age, and both slope against their own hidden values. What separates
+    them is whether the relationship <b>survives conditioning on the observed columns</b>.</small></h1>
   <div class="wrap">
     <div class="cols">
       <div class="colstack">
