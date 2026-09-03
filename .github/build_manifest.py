@@ -21,8 +21,8 @@ DEMO_RE = re.compile(r"^\d\d ")
 SECTION_TITLES = {
     ".": "Introduction",
     "intro": "Introduction · pandas",
-    "data cleaning": "Data cleaning · regular expressions",
-    "data-cleaning": "Data cleaning · regular expressions",
+    "data cleaning": "Data cleaning",
+    "data-cleaning": "Data cleaning",
     "data collection": "Data collection · web scraping",
     "data-collection": "Data collection · web scraping",
 }

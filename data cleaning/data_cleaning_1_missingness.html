@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Cleaning · Part 1: What "Dirty" Means, and How It Got That Way</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- embedded demo ---------- */
+.demo-frame{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--line);
+  background:var(--paper)}
+.demo-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--t-cls);
+  text-decoration:none;border-bottom:1px solid currentColor;margin-left:8px;white-space:nowrap}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+<style>
+/* ================= additions for the Data Cleaning series =================
+   Vocabulary specific to this module. Everything above is the shared theme,
+   copied verbatim from the Data Collection decks.                          */
+
+/* ---------- the spine: symptom -> mechanisms -> what it permits ---------- */
+.spine{display:grid;grid-template-columns:150px 1fr 1fr;gap:0 12px;align-items:stretch}
+.spine .hd{font-family:var(--mono);font-size:9.3px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft);padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.spine .sym{background:var(--ink);color:#fff;padding:8px 11px;margin-bottom:7px;
+  display:flex;flex-direction:column;justify-content:center}
+.spine .sym b{font-family:var(--disp);font-size:13.5px;font-weight:700;display:block;line-height:1.15}
+.spine .sym i{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:#9BB4C0;margin-top:3px}
+.spine .mid,.spine .rgt{background:var(--card);border:1px solid var(--hair);padding:8px 11px;
+  margin-bottom:7px;font-size:11.7px;line-height:1.4;color:#31444F;display:flex;align-items:center}
+.spine .rgt{border-left:3px solid var(--t-grp)}
+.spine .mid{border-left:3px solid var(--t-anc)}
+.spine .now .sym{background:var(--t-asr)}
+.spine .now .mid,.spine .now .rgt{background:#FFF9F9}
+.spine b.q{font-weight:700;color:var(--ink)}
+
+/* ---------- three-mechanism cards ---------- */
+.mech{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;flex:1;min-height:0}
+.mech .m{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.mech .m.a{border-top-color:var(--t-grp)}
+.mech .m.b{border-top-color:var(--t-anc)}
+.mech .m.c{border-top-color:var(--t-asr)}
+.mech .m h3{font-family:var(--disp);font-size:15px;font-weight:700;line-height:1.1}
+.mech .m h3 span{display:block;font-family:var(--mono);font-size:9.2px;font-weight:400;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+.mech .m .def{font-size:12.2px;line-height:1.42;color:#31444F}
+.mech .m .def b{font-weight:700;color:var(--ink)}
+.mech .m .ex{font-size:11.4px;line-height:1.4;color:var(--soft);border-top:1px solid var(--hair);
+  padding-top:6px;margin-top:auto}
+.mech .m .ex b{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);display:block;margin-bottom:3px}
+
+/* ---------- figures (inline SVG, no image files) ---------- */
+.fig{background:var(--card);border:1px solid var(--hair);padding:10px 12px 8px;
+  display:flex;flex-direction:column;min-height:0}
+.fig .cap{font-family:var(--mono);font-size:9.3px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:7px}
+.fig .rd{font-size:11.6px;line-height:1.4;color:#31444F;margin-top:7px;
+  border-top:1px solid var(--hair);padding-top:6px}
+.fig .rd b{font-weight:700;color:var(--ink)}
+.fig svg{display:block;max-height:100%}
+.fig .rd{margin-top:auto}
+
+/* ---------- the cleaning log ---------- */
+table.log{width:100%;border-collapse:collapse;font-size:11.6px;background:var(--card)}
+table.log th,table.log td{border:1px solid var(--hair);padding:5px 9px;text-align:left;
+  vertical-align:top;line-height:1.38}
+table.log th{background:var(--ink);color:#fff;font-weight:600;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.log td:nth-child(1){font-family:var(--mono);font-size:10.6px;white-space:nowrap;color:#26404E}
+table.log td:nth-child(4){font-style:italic;color:var(--soft)}
+table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+/* ---------- fill: let a short column spread over the stage instead of
+   piling its cards at the top. Cards grow and centre their own text; callouts,
+   tables and code keep their natural height.                                 */
+.colstack.fill{gap:12px}
+.colstack.fill > .card{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
+.colstack.fill.cal > .callout{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
+.colstack.fill > .callout,.colstack.fill > table,.colstack.fill > pre,
+.colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
+
+/* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
+table.d.roomy td,table.d.roomy th{padding:11px 10px}
+table.log.roomy td,table.log.roomy th{padding:10px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:13px 12px;margin-bottom:8px}
+
+/* ---------- cover ornament: a wall of raw cells ---------- */
+.coverpat .c-miss{color:var(--t-asr);font-weight:700}
+.coverpat .c-val{color:var(--t-grp)}
+.coverpat .c-dim{color:#9BAAB3}
+.coverpat .c-hdr{color:var(--t-cls);font-weight:700}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<!-- ============ 1 · COVER ============ -->
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat" id="cvp"></div>
+  <div class="kicker">DA2402 · Data Curation and Visualization</div>
+  <h1>Data<br/>Cleaning</h1>
+  <div class="pt">Part 1 — What "dirty" means, and how it got that way</div>
+  <div class="rule"></div>
+  <p class="sub">Every fix you make to a dataset is a bet on <i>why</i> the data looks wrong.
+  This lecture opens a real scraped file, shows that its missing-value count is wrong before
+  you start, and then asks the question the rest of the module is built on: what made this
+  gap, and what does that permit you to do about it?</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 · BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data cleaning</td></tr>
+    <tr><td>Part</td><td>1 of 5 · Missingness and its mechanisms</td></tr>
+    <tr><td>Toolkit</td><td>pandas · numpy · missingno</td></tr>
+  </table>
+</section>
+
+<!-- ============ 2 · WHERE THE TIME GOES ============ -->
+<section class="slide" data-sec="Orientation · 1 of 2">
+  <div class="eyebrow">Orientation · 1 of 2</div>
+  <h1 class="t">Cleaning is not tidying
+    <small>The number everyone quotes is the least interesting thing about this topic. The
+    interesting thing is what you are actually doing when you "clean" — which is not
+    housekeeping, and is not reversible.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+
+      <div class="colstack">
+        <div class="card b">
+          <h3>The quoted number</h3>
+          <p>The CrowdFlower <i>Data Science Report</i> (2016) put it at <b>60%</b> of a data
+          scientist's time on cleaning and organising data, another <b>19%</b> on collecting it —
+          and <b>57%</b> naming cleaning the least enjoyable part of the job.</p>
+        </div>
+        <div class="callout warn sm"><b>Read it honestly.</b> That is a self-report survey of
+        around eighty people, repeated in every slide deck since. Treat it as a mood, not a
+        measurement. The claim it supports is not "cleaning takes 60% of your time" — it is
+        "nobody plans for this, and everybody spends real time on it."</div>
+        <div class="out xs">Cleaning and organising data      60%
+Collecting data sets              19%
+Mining data for patterns           9%
+Refining algorithms                4%
+Building training sets             3%
+Other                              5%
+<span class="h-dim">CrowdFlower 2016 Data Science Report</span></div>
+      </div>
+
+      <div class="colstack">
+        <div class="callout"><b>What cleaning actually is.</b> A dataset is a set of claims about
+        the world. Cleaning changes those claims. When you fill a blank, you are asserting a value
+        that was never measured. When you delete a row, you are asserting it should not count.
+        Both are <b>inferences</b>, and both can be wrong in ways the file will never tell you.</div>
+        <h2 class="s" style="margin-top:4px">Three things that follow</h2>
+        <ul class="b sm">
+          <li><b>A cleaned file is not more true than the raw one.</b> It is the raw file plus
+          your assumptions. Keep the raw one.</li>
+          <li><b>Every fix needs a reason you could defend.</b> "It looked wrong" is not a reason.
+          "Values before Oct 2011 were never published" is.</li>
+          <li><b>The same defect can need opposite treatments.</b> A gap caused by a broken sensor
+          and a gap caused by a refusal to answer are the same blank on screen and different
+          problems entirely.</li>
+        </ul>
+        <div class="callout good sm"><b>So the module is organised around causes, not tools.</b>
+        Not "here is imputation, here is outlier detection" — but "here is a symptom; what could
+        have produced it; what does each cause let you do".</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · THE SPINE ============ -->
+<section class="slide" data-sec="Orientation · 2 of 2">
+  <div class="eyebrow">Orientation · 2 of 2 · the spine of the module</div>
+  <h1 class="t">Symptom, mechanism, permission
+    <small>This table recurs on every deck in the module. The left column is what you can see.
+    The middle column is what you cannot. The right column is the only one that changes what
+    you are allowed to do — and you reach it by argument, never by looking harder at the file.</small></h1>
+  <div class="wrap">
+    <div class="spine roomy">
+      <div class="hd">Symptom</div>
+      <div class="hd">Mechanisms that could produce it</div>
+      <div class="hd">What settling the mechanism buys you</div>
+
+      <div class="rung now" style="display:contents">
+        <div class="sym"><b>A gap</b><i>Lectures 1 &#183; 2 &#183; 3</i></div>
+        <div class="mid">The value exists and was lost &#183; the value exists and was withheld &#183;
+          the value never existed &#183; <b class="q">or the gap is not a gap and you misread a sentinel</b></div>
+        <div class="rgt">Which fills are honest, which estimates stay unbiased, and when the
+          right answer is to fill nothing at all</div>
+      </div>
+
+      <div class="rung" style="display:contents">
+        <div class="sym"><b>An extreme value</b><i>Lecture 4</i></div>
+        <div class="mid">Entry or unit error &#183; measurement fault &#183; a genuinely heavy tail &#183;
+          a structural break in the series &#183; <b class="q">a real event</b></div>
+        <div class="rgt">Whether to delete, cap, transform, model around it — or leave it alone
+          because it is the finding</div>
+      </div>
+
+      <div class="rung" style="display:contents">
+        <div class="sym"><b>A repeated row</b><i>Lecture 5</i></div>
+        <div class="mid">One entity recorded twice &#183; two entities that merely look alike &#183;
+          <b class="q">an artefact your own pipeline created</b></div>
+        <div class="rgt">Which key defines identity, what threshold to match at, and which value
+          survives the merge</div>
+      </div>
+
+      <div class="rung" style="display:contents">
+        <div class="sym" style="background:var(--soft)"><b>Everything else</b><i>Fixed on sight</i></div>
+        <div class="mid" style="border-left-color:var(--line)">Prices stored as text &#183; a stray
+          pagination column &#183; a name arriving twice &#183; a mangled encoding &#8212;
+          <b class="q">somebody's bug, yours included</b></div>
+        <div class="rgt" style="border-left-color:var(--line)">Nothing. There is no mechanism to
+          settle, so repair it, write down what you repaired, and move on</div>
+      </div>
+    </div>
+    <div class="callout"><b>The uncomfortable part.</b> Nothing in the middle column is visible in
+    the data. You settle it with domain knowledge, with documentation, with how the file was
+    produced — and sometimes you cannot settle it at all, in which case the honest move is to say
+    so and carry the ambiguity forward. Lecture 2 is entirely about how far the data alone can
+    take you, and where it stops.</div>
+  </div>
+</section>
+
+<!-- ============ 4 · THE FILE ARRIVES ============ -->
+<section class="slide" data-sec="The file · 1 of 4">
+  <div class="eyebrow">The file · 1 of 4</div>
+  <h1 class="t">The file you scraped last month
+    <small><code class="k">BLUE METAL.csv</code> is the output of the IndexBoard scraper from
+    Data Collection, Lecture 1 — a run that <i>succeeded</i>. No errors, no retries left
+    outstanding, 5,463 rows of daily index history written to disk. Start where you always
+    start: ask pandas what it thinks it has.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <pre class="code sm">import pandas as pd
+
+df = pd.read_csv(<span class="py-str">"BLUE METAL.csv"</span>)
+df.info()</pre>
+        <div class="callout sm"><b>Read the dtype column, not the row count.</b> The row count
+        tells you the scraper finished. The dtypes tell you what the scraper actually wrote —
+        and here four of them are wrong in a way that is about to matter.</div>
+        <div class="card sm o">
+          <h3>Two things already visible</h3>
+          <p><code class="k">Index Name</code> is <b>0 non-null</b> — an entirely empty column
+          sitting next to a populated <code class="k">INDEX_NAME</code>. And
+          <code class="k">OPEN</code>, <code class="k">HIGH</code>, <code class="k">LOW</code> are
+          <code class="k">object</code>, while <code class="k">CLOSE</code> is
+          <code class="k">float64</code>. Four price columns; one of them is a number.</p>
+        </div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">Output</div>
+        <div class="out xs">&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 5463 entries, 0 to 5462
+Data columns (total 8 columns):
+ #   Column         Non-Null Count  Dtype
+---  ------         --------------  -----
+ 0   RequestNumber  5463 non-null   object
+ 1   Index Name     <span class="h-bad">0 non-null</span>      float64
+ 2   INDEX_NAME     5463 non-null   object
+ 3   HistoryDate    5463 non-null   object
+ 4   OPEN           <span class="h-bad">5463 non-null   object</span>
+ 5   HIGH           <span class="h-bad">5463 non-null   object</span>
+ 6   LOW            <span class="h-bad">5463 non-null   object</span>
+ 7   CLOSE          5463 non-null   float64
+dtypes: float64(2), object(6)
+memory usage: 341.6+ KB</div>
+        <div class="outlbl" style="margin-top:2px">df.head(4)</div>
+        <div class="out xxs">            RequestNumber  Index Name  INDEX_NAME  HistoryDate OPEN HIGH LOW    CLOSE
+0  His63905478754468581100         NaN  Blue Metal  31 Dec 2004    <span class="h-bad">-</span>    <span class="h-bad">-</span>   <span class="h-bad">-</span>  1146.53
+1  His63905478754468581100         NaN  Blue Metal  30 Dec 2004    <span class="h-bad">-</span>    <span class="h-bad">-</span>   <span class="h-bad">-</span>  1144.56
+2  His63905478754468581100         NaN  Blue Metal  29 Dec 2004    <span class="h-bad">-</span>    <span class="h-bad">-</span>   <span class="h-bad">-</span>  1151.71
+3  His63905478754468581100         NaN  Blue Metal  28 Dec 2004    <span class="h-bad">-</span>    <span class="h-bad">-</span>   <span class="h-bad">-</span>  1160.64</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · THE FIRST LIE ============ -->
+<section class="slide" data-sec="The file · 2 of 4">
+  <div class="eyebrow">The file · 2 of 4</div>
+  <h1 class="t">Your missing-value count is wrong before you start
+    <small>The first thing everyone runs is <code class="k">df.isna().sum()</code>. On this file it
+    returns a number that is both precisely correct and completely useless.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+
+      <div class="colstack">
+        <div class="outlbl">df.isna().sum()</div>
+        <div class="out xs">RequestNumber       0
+Index Name       <span class="h-bad">5463</span>
+INDEX_NAME          0
+HistoryDate         0
+OPEN                <span class="h-ok">0</span>
+HIGH                <span class="h-ok">0</span>
+LOW                 <span class="h-ok">0</span>
+CLOSE               0</div>
+        <div class="callout bad sm"><b>Read what it just said.</b> Every missing cell in this file
+        is in <code class="k">Index Name</code> — a column nobody asked for, which is empty in
+        every row. The three columns that are actually broken report <b>zero</b> missing values.</div>
+        <pre class="code xs">(df[[<span class="py-str">"OPEN"</span>,<span class="py-str">"HIGH"</span>,<span class="py-str">"LOW"</span>]] == <span class="py-str">"-"</span>).sum()</pre>
+        <div class="out xs">OPEN    <span class="h-bad">1932</span>
+HIGH    <span class="h-bad">1932</span>
+LOW     <span class="h-bad">1932</span></div>
+      </div>
+
+      <div class="colstack">
+        <table class="d sm free">
+          <tr><th>Count</th><th>Cells</th><th>What it is</th></tr>
+          <tr><td class="c">5,463</td><td>what <code class="k">isna()</code> reports</td>
+            <td>one dead column, no information lost</td></tr>
+          <tr class="hl"><td class="c">5,796</td><td>hiding as the string <code class="k">"-"</code></td>
+            <td>three price columns, 35% of the history</td></tr>
+          <tr class="wr"><td class="c">11,259</td><td>actually missing</td>
+            <td><b>2.1&#215;</b> what the standard check reported</td></tr>
+        </table>
+        <div class="callout"><b>Why this happens.</b> <code class="k">read_csv</code> only converts a
+        cell to <code class="k">NaN</code> if it matches its list of null tokens — the empty string,
+        <code class="k">NA</code>, <code class="k">N/A</code>, <code class="k">null</code>,
+        <code class="k">NaN</code> and a few more. A lone hyphen is not on that list, so it stays a
+        one-character string. One string in a column is enough to make the whole column
+        <code class="k">object</code>, which is why <code class="k">OPEN</code> is not a number
+        and <code class="k">CLOSE</code> is.</div>
+        <div class="callout warn sm"><b>The dtype was the tell.</b> You did not need to know about
+        the hyphen. A price column that arrives as <code class="k">object</code> is a column with
+        something non-numeric in it, and finding out what is a one-line question:
+        <code class="k">df.OPEN[~df.OPEN.str.match(r"^[\d.]+$")].unique()</code>.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · SENTINELS ============ -->
+<section class="slide" data-sec="The file · 3 of 4">
+  <div class="eyebrow">The file · 3 of 4</div>
+  <h1 class="t">Missing has a vocabulary, and it is not standardised
+    <small>Somewhere upstream a human or a system decided how to write down "we do not have this".
+    Almost none of those decisions produce a <code class="k">NaN</code>. Learn the dialect before
+    you count anything.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+
+      <div class="colstack">
+        <table class="d xs">
+          <tr><th>Written as</th><th>Comes from</th><th>How it hurts</th></tr>
+          <tr><td>-</td><td>report exports, exchange feeds</td><td>column becomes <code class="k">object</code>; silently excluded from arithmetic</td></tr>
+          <tr><td>"", " "</td><td>hand-edited spreadsheets</td><td>whitespace-only strings are not <code class="k">NaN</code>; they compare unequal to each other</td></tr>
+          <tr><td>NA, N/A, na, #N/A</td><td>Excel, R exports</td><td>most are caught by default; <code class="k">na</code> lower-case often is not</td></tr>
+          <tr class="hl"><td>-999, -1, 9999</td><td>survey codebooks, sensors</td><td><b>the dangerous one</b> — numeric, so it is silently averaged in</td></tr>
+          <tr class="hl"><td>0</td><td>defaulted database columns</td><td>indistinguishable from a real zero without domain knowledge</td></tr>
+          <tr><td>1900-01-01, 1970-01-01</td><td>date defaults, epoch zero</td><td>parses as a valid date; wrecks any time filter</td></tr>
+          <tr><td>"Unknown", "None", "NULL"</td><td>form dropdowns, JSON dumps</td><td>a legitimate category in one file and a gap in the next</td></tr>
+        </table>
+        <div class="callout bad sm"><b>The numeric sentinels are the ones that ruin results
+        quietly.</b> A gap that reads as <code class="k">-999</code> does not raise an error, does not
+        show up in <code class="k">isna()</code>, and drags the mean of a column of ages down to
+        something no one notices until a reviewer asks.</div>
+      </div>
+
+      <div class="colstack">
+        <h2 class="s">The fix, and what it repairs</h2>
+        <pre class="code sm">df = pd.read_csv(
+    <span class="py-str">"BLUE METAL.csv"</span>,
+    na_values=[<span class="py-str">"-"</span>],
+)</pre>
+        <div class="outlbl">df.isna().sum()</div>
+        <div class="out xs">Index Name     5463
+OPEN           <span class="h-bad">1932</span>
+HIGH           <span class="h-bad">1932</span>
+LOW            <span class="h-bad">1932</span>
+CLOSE             0</div>
+        <div class="outlbl">df[["OPEN","HIGH","LOW","CLOSE"]].dtypes</div>
+        <div class="out xs">OPEN     <span class="h-ok">float64</span>
+HIGH     <span class="h-ok">float64</span>
+LOW      <span class="h-ok">float64</span>
+CLOSE    <span class="h-ok">float64</span></div>
+        <div class="callout good sm"><b>The dtypes repaired themselves.</b> Nothing was imputed and
+        nothing was dropped — the file was simply read correctly. That is the cheapest fix in this
+        entire module, and it has to happen before any count you report is worth anything.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 · MISSING ROWS ============ -->
+<section class="slide" data-sec="The file · 4 of 4">
+  <div class="eyebrow">The file · 4 of 4</div>
+  <h1 class="t">The gaps with no row to be missing from
+    <small>Every check so far has been column-wise: given a row, is this cell blank? No column-wise
+    check can find a row that was never written. On this file, four whole years are gone and
+    nothing in the data says so.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+
+      <div class="colstack">
+        <pre class="code xs">df[<span class="py-str">"year"</span>] = pd.to_datetime(
+    df.HistoryDate, format=<span class="py-str">"%d %b %Y"</span>).dt.year
+
+<span class="py-bi">sorted</span>(df.year.unique())
+df.RequestNumber.nunique()</pre>
+        <div class="out xs">[2004, 2005, ..., 2024, 2025]   <span class="h-dim">22 years</span>
+22                              <span class="h-dim">request blocks</span></div>
+        <div class="callout bad sm"><b>The scraper asked for 2000&#8211;2025.</b> That is 26 years.
+        Twenty-two came back with rows; <code class="k">2000, 2001, 2002, 2003</code> returned an
+        empty payload, and the scraper wrote nothing rather than raising. The file is not wrong —
+        it is <i>short</i>, and being short leaves no trace.</div>
+        <div class="callout warn sm"><b>This is a Lecture 1 defect from the last module.</b> The
+        scraper looped a year at a time and appended whatever came back. An empty response and a
+        year with no trading are the same thing to code that only appends.</div>
+      </div>
+
+      <div class="colstack">
+        <div class="outlbl">df.groupby("RequestNumber").agg(rows, first, last)</div>
+        <div class="out xxs">RequestNumber            rows      first        last
+His63905478754468581100   254 2004-01-01  2004-12-31
+His63905478756840826700   251 2005-01-03  2005-12-30
+His63905478759668938300   250 2006-01-02  2006-12-29
+<span class="h-dim">                        ...                        </span>
+His63905478816923411900   249 2024-01-01  2024-12-31
+His63905478821267438500   249 2025-01-01  2025-12-31
+<span class="h-dim">[22 rows] — one block per year, ~248 rows each</span></div>
+        <div class="card sm r">
+          <h3>And a column that is not data</h3>
+          <p><code class="k">RequestNumber</code> is the server's pagination handle. It describes
+          <i>your scrape</i>, not the index. It leaks the fact that the file was assembled from 22
+          separate requests — useful for auditing the collection, meaningless as a feature, and
+          a trap for any model that gets handed the raw frame.</p>
+        </div>
+        <div class="callout sm"><b>Two checks that would have caught it.</b> Count rows per
+        requested period and compare against what you asked for; and count trading days per year
+        against a calendar. Both are three lines. Neither is in anybody's default workflow.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 · TAXONOMY ============ -->
+<section class="slide" data-sec="Orientation · defects">
+  <div class="eyebrow">Orientation · the five defects and where they are taught</div>
+  <h1 class="t">One file, five kinds of wrong
+    <small>Everything found in the last four slides is on this list, and the list is the shape of
+    the module. The rest of this lecture takes the first row and does not leave it.</small></h1>
+  <div class="wrap">
+    <table class="d sm free roomy">
+      <tr><th style="width:132px">Defect</th><th>What it looks like here</th><th style="width:120px">Where</th></tr>
+      <tr class="hl"><td><b>Missing values</b></td>
+        <td>1,932 rows with no <code class="k">OPEN/HIGH/LOW</code>; four absent years; one wholly
+        empty column. Three different problems that all get called "missing data".</td>
+        <td><b>This lecture</b>, then tests in L2, filling in L3</td></tr>
+      <tr><td><b>Wrong types</b></td>
+        <td>Prices as strings because of one sentinel. Dates as strings, so <code class="k">&lt;</code>
+        compares alphabetically and <code class="k">"31 Dec 2004"</code> sorts <i>after</i> <code class="k">"30 Dec 2011"</code>.</td>
+        <td>Fixed on sight — a parsing bug, not a data question</td></tr>
+      <tr><td><b>Structural noise</b></td>
+        <td><code class="k">RequestNumber</code>, the duplicate <code class="k">Index Name</code> /
+        <code class="k">INDEX_NAME</code> pair, a constant column with one value in 5,463 rows.</td>
+        <td>Dropped with a documented reason</td></tr>
+      <tr><td><b>Outliers</b></td>
+        <td>Days where the index moves &gt;10%. Some are errors, some are the market. The detector
+        cannot tell you which, and that is the whole lecture.</td>
+        <td>Lecture 4</td></tr>
+      <tr><td><b>Duplicates</b></td>
+        <td>None in this file — but the headline scrape from the same module has three, and
+        <code class="k">drop_duplicates()</code> finds zero of them.</td>
+        <td>Lecture 5</td></tr>
+    </table>
+    <div class="callout"><b>Notice who made the mess.</b> The sentinel came from the exchange's
+    report format. The absent years, the pagination column and the duplicated name column came
+    from <b>the scraper you wrote</b>. Most of what you will clean this term is not the world being
+    messy — it is the seam between one system and the next, and you built that seam.</div>
+  </div>
+</section>
+
+<!-- ============ 9 · WHY MECHANISM MATTERS ============ -->
+<section class="slide" data-sec="Mechanisms · 1 of 6">
+  <div class="eyebrow">Mechanisms · 1 of 6</div>
+  <h1 class="t">The same gap, three defensible answers
+    <small>Here is the situation you are actually in. A column is 35% empty. What do you do? The
+    question has no answer until you say <i>why</i> it is empty — and then it has an obvious one.</small></h1>
+  <div class="wrap">
+    <div class="cols w3070">
+      <div class="colstack fill">
+        <div class="card">
+          <h3>The observation</h3>
+          <p>A numeric column. 5,463 rows. 1,932 of them blank. Nothing else known.</p>
+        </div>
+        <div class="callout bad sm">There is no method that is correct here, because "correct"
+        is not a property of the method. It is a property of the <b>match between the method and
+        the cause</b>.</div>
+        <div class="callout sm">This is why the next five slides are about causes and not about
+        code. Rubin's 1976 framework gives the three causes names, and the names are the whole
+        reason the framework is still in use fifty years later.</div>
+      </div>
+      <div class="colstack fill">
+        <table class="d sm free">
+          <tr><th style="width:180px">If the cause was</th><th>Then the honest response is</th></tr>
+          <tr class="ok"><td><b>The logger dropped packets at random</b></td>
+            <td>Drop those rows, or fill them from the rest of the column. Your estimates stay
+            unbiased either way; you have simply lost some precision. This is the easy case, and
+            it is rare.</td></tr>
+          <tr class="wr"><td><b>The feed only carried this field after a certain date</b></td>
+            <td>Do not fill anything. Restrict the analysis to the period where the field exists,
+            or use a column that spans the whole history. Filling here would be inventing eight
+            years of prices.</td></tr>
+          <tr class="hl"><td><b>Values were suppressed when they were extreme</b></td>
+            <td>Nothing you compute from the observed rows is safe, including the mean. You need
+            an explicit assumption about the suppressed values, and you must report how the answer
+            changes as that assumption changes.</td></tr>
+        </table>
+        <div class="callout good sm"><b>Same blank cells. Same count. Three different obligations.</b>
+        A colleague who fills all three with the column mean has produced one clean-looking file and
+        two wrong answers, with no error message anywhere.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 · THE THREE MECHANISMS ============ -->
+<section class="slide" data-sec="Mechanisms · 2 of 6">
+  <div class="eyebrow">Mechanisms · 2 of 6 · Rubin (1976)</div>
+  <h1 class="t sm">MCAR, MAR, MNAR
+    <small>Write <b>R</b> for the missingness indicator — one per cell, 1 if present, 0 if missing.
+    <b>Y<sub>obs</sub></b> is what you can see, <b>Y<sub>mis</sub></b> is what you cannot. The three
+    mechanisms are three answers to one question: <i>what does R depend on?</i></small></h1>
+  <div class="wrap">
+    <div class="mech">
+
+      <div class="m a">
+        <h3><span>Missing completely at random</span>MCAR</h3>
+        <div class="out xxs">P(R | Y<sub>obs</sub>, Y<sub>mis</sub>) = P(R)</div>
+        <div class="def">Missingness depends on <b>nothing in the dataset</b> — not on what you can
+        see, not on what you cannot. The blanks are a random subset of the rows.</div>
+        <div class="def" style="color:var(--t-grp)"><b>Consequence:</b> your remaining data is a
+        smaller but still representative sample. Means, correlations and models stay unbiased.
+        You lose precision, not correctness.</div>
+        <div class="ex"><b>Looks like</b>A logger drops packets when a buffer overflows &#183;
+        a tray of samples is knocked over &#183; a page of paper forms is lost in transit</div>
+      </div>
+
+      <div class="m b">
+        <h3><span>Missing at random</span>MAR</h3>
+        <div class="out xxs">P(R | Y<sub>obs</sub>, Y<sub>mis</sub>) = P(R | Y<sub>obs</sub>)</div>
+        <div class="def">Missingness depends on <b>things you observed</b>, but not on the missing
+        value itself. Once you condition on the observed variables, what is left is random.</div>
+        <div class="def" style="color:var(--t-anc)"><b>Consequence:</b> naive estimates are biased,
+        but the bias is <i>recoverable</i> — because everything driving it is in the file. This is
+        what regression imputation and MICE assume.</div>
+        <div class="ex"><b>Looks like</b>Younger respondents skip the income question &#183; a field
+        only exists after a format change &#183; one clinic records fewer follow-ups than another</div>
+      </div>
+
+      <div class="m c">
+        <h3><span>Missing not at random</span>MNAR</h3>
+        <div class="out xxs">P(R | Y<sub>obs</sub>, Y<sub>mis</sub>) depends on Y<sub>mis</sub></div>
+        <div class="def">Missingness depends on <b>the value that is missing</b>. The reason a cell
+        is blank is bound up with what would have been in it.</div>
+        <div class="def" style="color:var(--t-asr)"><b>Consequence:</b> no amount of conditioning on
+        observed data fixes it, because the driver was never recorded. You need an assumption from
+        outside the data, and you must report how the answer moves when it changes.</div>
+        <div class="ex"><b>Looks like</b>High earners decline to state salary &#183; the sickest
+        patients drop out of the trial &#183; a sensor saturates and records nothing above its range</div>
+      </div>
+
+    </div>
+    <div class="callout sm"><b>The word "random" is doing damage in two of these names.</b> MAR is
+    not random — it is systematic, and systematically <i>explainable</i>. Read the names as:
+    <b>MCAR</b> = depends on nothing; <b>MAR</b> = depends on what you have; <b>MNAR</b> = depends
+    on what you do not have.</div>
+  </div>
+</section>
+
+<!-- ============ 11 · EXIT POLLS: SETUP + MCAR ============ -->
+<section class="slide" data-sec="Exit polls · 1 of 3">
+  <div class="eyebrow">Exit polls · 1 of 3</div>
+  <h1 class="t">One survey, three ways to lose an answer
+    <small>You are outside a polling booth on counting day, asking every voter who they voted for,
+    plus age, gender and income. Some people do not answer. The blanks look identical on your
+    clipboard. Which mechanism produced them decides whether your poll is usable.</small></h1>
+  <div class="wrap">
+    <div class="cols w3070">
+      <div class="colstack fill">
+        <div class="card">
+          <h3>The setup</h3>
+          <p>Booth exit. Voluntary. You record <code class="k">vote</code>,
+          <code class="k">age</code>, <code class="k">gender</code>, <code class="k">income</code>.
+          Refusals and walk-offs leave gaps.</p>
+        </div>
+        <div class="callout sm">The only question that matters: <b>is the reason someone did not
+        answer connected to the answer they would have given?</b></div>
+        <div class="card sm g">
+          <h3>Why exit polls</h3>
+          <p>Because the truth arrives a few hours later, when the votes are counted. Almost no
+          survey lets you check your own bias against reality. This one does — which is why its
+          failures are so well documented.</p>
+        </div>
+      </div>
+
+      <div class="colstack fill">
+        <div class="callout good"><span class="tag g">MCAR</span><b>Missing completely at random</b></div>
+        <table class="d sm free">
+          <tr><th style="width:150px">What happens</th><th>Why it is MCAR</th></tr>
+          <tr><td><b>Voters leave in a hurry</b><br/>late for work, bus arriving</td>
+            <td>Being in a rush has nothing to do with who they voted for, how old they are, or
+            what they earn. It is the clock, and the clock does not know their politics.</td></tr>
+          <tr><td><b>Forms blow away</b><br/>5% of the pile lost to wind</td>
+            <td>The wind does not select. A lost form is as likely to have said Party A as
+            Party B.</td></tr>
+        </table>
+        <div class="cols" style="flex:none;gap:13px">
+          <div class="card sm g">
+            <h3>What it costs you</h3>
+            <p>Sample size, and nothing else. With 5% lost at random you have 95% of a good survey.
+            Your vote-share estimate is still centred on the truth; the confidence interval is
+            slightly wider.</p>
+          </div>
+          <div class="card sm r">
+            <h3>Why you rarely get it</h3>
+            <p>Real non-response is almost never this clean. People who are in a hurry are not a
+            random slice of the electorate either — commuters skew younger and urban. Genuine
+            MCAR is a machine failing, not a person choosing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · EXIT POLLS: MAR ============ -->
+<section class="slide" data-sec="Exit polls · 2 of 3">
+  <div class="eyebrow">Exit polls · 2 of 3</div>
+  <h1 class="t">MAR — the refusal is systematic, and you can see why
+    <small>Now suppose younger voters refuse the vote-choice question far more often than older
+    ones. That is not random. But every bit of it is explained by a column you already have.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="callout warn"><span class="tag o">MAR</span><b>30%</b> of voters under 25 skip
+        the vote question. <b>5%</b> of voters over 25 do. But <b>within any single age group</b>,
+        who refuses has nothing to do with how they voted.</div>
+        <table class="d sm free">
+          <tr><th style="width:120px">Age group</th><th style="width:90px">Refusal</th><th>What that does to a naive tally</th></tr>
+          <tr><td>Under 25</td><td class="c">30%</td>
+            <td>Young voters are now under-represented. If they lean differently from older voters —
+            and they usually do — your headline number shifts towards the older group.</td></tr>
+          <tr><td>25 and over</td><td class="c">5%</td>
+            <td>Barely touched.</td></tr>
+        </table>
+        <div class="callout good sm"><b>And it is fixable.</b> You know each respondent's age,
+        including the ones who refused the vote question — they answered that part. So you know
+        exactly how much each group is under-counted, and you can reweight, or model the vote as a
+        function of age and impute. The information needed to undo the damage is in the file.</div>
+      </div>
+
+      <div class="colstack">
+        <div class="card b">
+          <h3>Formally</h3>
+          <p>P(refuse | vote, age) = P(refuse | age). Once age is in the model, the missingness
+          carries no further information. That equality is the entire definition, and it is also
+          exactly what multiple imputation and maximum likelihood need in order to be valid.</p>
+        </div>
+        <div class="callout bad sm"><b>The catch that makes L2 necessary.</b> MAR is a statement
+        about a variable you did not observe — the vote you never got. You cannot verify the
+        equality above from your data. You can make it <i>more plausible</i> by measuring more
+        covariates, and that is the practical advice: <b>collect the things you suspect drive
+        non-response</b>, because they are what buy you MAR later.</div>
+        <div class="callout sm"><b>Which methods rely on this.</b> Regression imputation, kNN
+        imputation, MICE, and full-information maximum likelihood are all MAR methods. Lecture 3
+        works through what each of them assumes and what each of them breaks.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 · EXIT POLLS: MNAR ============ -->
+<section class="slide" data-sec="Exit polls · 3 of 3">
+  <div class="eyebrow">Exit polls · 3 of 3</div>
+  <h1 class="t">MNAR — the refusal is <i>about</i> the answer
+    <small>Last version. Voters for one particular party are embarrassed to say so, and refuse at
+    ten times the rate of everyone else. Nothing else about them is unusual.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack fill">
+        <div class="callout bad"><span class="tag r">MNAR</span><b>50%</b> of Party X voters refuse
+        the vote question. <b>5%</b> of everyone else does. Age, gender and income distributions are
+        identical across the two groups.</div>
+        <table class="d sm free">
+          <tr><th style="width:150px">You try</th><th>What happens</th></tr>
+          <tr class="hl"><td><b>Reweight by age, gender, income</b></td>
+            <td>Nothing. Those distributions already match — the refusers are demographically
+            ordinary. Your weights are all 1 and the bias survives untouched.</td></tr>
+          <tr class="hl"><td><b>Impute vote from covariates</b></td>
+            <td>Worse than nothing. The model learns the vote pattern of people who
+            <i>answered</i>, and confidently fills the refusers with it — which is precisely the
+            pattern they do not follow.</td></tr>
+          <tr class="hl"><td><b>Collect more covariates</b></td>
+            <td>Only helps if one of them correlates with the hidden vote. If the embarrassment is
+            about the vote itself, no demographic rescues you.</td></tr>
+        </table>
+      </div>
+
+      <div class="colstack fill">
+        <div class="card r">
+          <h3>Formally</h3>
+          <p>P(refuse | vote, age, ...) still depends on <b>vote</b> after conditioning on
+          everything you observed. The driver of missingness is the missing value. It is not in the
+          file, and it cannot be got out of the file.</p>
+        </div>
+        <div class="callout warn sm"><b>What you can actually do.</b> Not solve it — bound it.
+        Assume Party X refusers voted Party X with probability <i>p</i>, redo the analysis across a
+        plausible range of <i>p</i>, and report the range. That is a <b>sensitivity analysis</b>,
+        and for MNAR it is usually the whole deliverable. Or go and get external data: a re-contact
+        study, an official count, a validated sub-sample.</div>
+        <div class="callout sm"><b>The honest summary of the three.</b> MCAR costs you precision.
+        MAR costs you an assumption you can support. MNAR costs you the ability to give a single
+        number at all.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 · 2016 ============ -->
+<section class="slide" data-sec="Exit polls · when it went wrong">
+  <div class="eyebrow">Exit polls · what the wrong assumption cost</div>
+  <h1 class="t">2016: a MAR correction applied to MNAR missingness
+    <small>US presidential election polling and exit polling. The methods were standard, the
+    weighting was competent, and the result was wrong in a direction that was entirely
+    predictable from the mechanism.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack fill">
+        <ol class="n">
+          <li><b>Response rates were lower</b> among rural, non-college-educated white voters — a
+          group that broke heavily for Trump.</li>
+          <li><b>Pollsters reweighted</b> by age, gender, race and region. That is the correct
+          procedure — <i>if</i> the missingness is MAR given those variables.</li>
+          <li><b>Education was under-weighted</b> or omitted in many state-level polls, and it was
+          the variable most strongly tied to both response and vote.</li>
+          <li><b>The residual missingness was MNAR.</b> Willingness to answer was tied to the vote
+          itself, not only to demography.</li>
+          <li><b>The correction could not reach it.</b> Reweighting redistributes people you have.
+          It cannot conjure people whose absence is caused by the answer they would have given.</li>
+        </ol>
+      </div>
+      <div class="colstack fill">
+        <div class="callout bad"><b>The result.</b> Samples over-represented college-educated
+        voters, who leaned Clinton, and under-represented non-college white voters, who leaned
+        Trump. Every published margin tilted the same way — not by accident, but because a single
+        shared assumption was wrong in a single shared direction.</div>
+        <div class="card o">
+          <h3>The lesson that generalises</h3>
+          <p>A missing-data assumption is not a technicality buried in a methods appendix. It is
+          a <b>load-bearing claim about the world</b>, and when it is wrong, every downstream
+          number is wrong <i>in the same direction at once</i>. Correlated error does not average
+          out across polls, models or teams — which is why the whole industry missed it together.</p>
+        </div>
+        <div class="callout sm"><b>What changed afterwards.</b> Education entered the weighting
+        scheme as standard, and sensitivity analysis over non-response assumptions became a
+        normal part of reporting. Both are MNAR responses: not a fix, but an honest accounting
+        of how far the answer could move.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15 · SURVEY: MECHANISMS MADE VISIBLE ============ -->
+<section class="slide" data-sec="Mechanisms · 3 of 6">
+  <div class="eyebrow">Mechanisms · 3 of 6 · a survey where we know the answer</div>
+  <h1 class="t">What the three mechanisms look like in a table
+    <small>400 respondents. <code class="k">age</code> and <code class="k">education_years</code> are
+    complete. Three columns have gaps, and — because this dataset was <i>generated</i> — we know
+    exactly which mechanism made each one.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <div class="outlbl">survey.isna().sum()</div>
+        <div class="out xs">age                 0
+education_years     0
+income             <span class="h-bad">66</span>   <span class="h-dim">16.5%</span>
+health_score      <span class="h-bad">144</span>   <span class="h-dim">36.0%</span>
+gender             <span class="h-bad">28</span>   <span class="h-dim"> 7.0%</span></div>
+        <table class="d xs free">
+          <tr><th>Column</th><th>Mechanism built in</th></tr>
+          <tr class="ok"><td><b>gender</b></td><td>MCAR — a tablet glitch dropped the field at a
+            flat 6% rate, independent of everything</td></tr>
+          <tr class="wr"><td><b>income</b></td><td>MAR — refusal falls with age, from ~31% at 18 to
+            ~3% at 65; nothing to do with the amount</td></tr>
+          <tr class="hl"><td><b>health_score</b></td><td>MNAR — low scores are withheld; the
+            probability of refusing depends on the score itself</td></tr>
+        </table>
+        <div class="callout sm"><b>This is a rehearsal, not a real analysis.</b> In a real file the
+        right-hand column above is the thing you are trying to find out. Here we get to check our
+        working.</div>
+      </div>
+
+      <div class="colstack">
+        <div class="outlbl">% missing, by age quartile</div>
+        <div class="out xs">age quartile     gender    income    health
+                 (MCAR)    (MAR)     (MNAR)
+18 &#8211; 29             4.8      <span class="h-bad">32.4</span>      22.9
+30 &#8211; 41            12.4      <span class="h-bad">16.5</span>      36.1
+42 &#8211; 53             5.7      <span class="h-bad">11.3</span>      34.0
+54 &#8211; 65             5.4       <span class="h-bad">4.3</span>      53.3</div>
+        <div class="callout good sm"><b>MCAR shows no trend.</b> 4.8, 12.4, 5.7, 5.4 — noise around
+        6%, which is exactly the rate we injected. Nothing about age predicts whether gender is
+        recorded.</div>
+        <div class="callout warn sm"><b>MAR shows a clean monotone trend.</b> 32.4 down to 4.3.
+        That slope is the mechanism, visible in the data, and it is what makes income recoverable.</div>
+        <div class="callout bad sm"><b>And MNAR shows a trend too</b> — 22.9 up to 53.3. Which is the
+        problem. Older respondents have lower health scores, and low scores are what gets withheld,
+        so the MNAR column produces an age pattern it does not actually depend on.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16 · THE TRAP ============ -->
+<section class="slide" data-sec="Mechanisms · 4 of 6">
+  <div class="eyebrow">Mechanisms · 4 of 6 · the central difficulty</div>
+  <h1 class="t">MAR and MNAR look the same until you condition
+    <small>Both columns showed a trend against age. Both also show a trend against their own hidden
+    values &#8212; MAR included. The definition is not "no relationship with the missing value"; it is
+    <b>no relationship left once you condition on what you observed</b>. Here is that difference,
+    measured.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack">
+        <div class="outlbl">% missing, split by the row's <b>true</b> value, within each age band</div>
+        <div class="out xs"><span class="h-dim">income &#183; MAR</span>      18-29  30-41  42-53  54-65
+above median      28.8   20.8   11.3    4.3
+below median      35.8   12.2   11.3    4.3
+                  <span class="h-ok">~~~~ no consistent gap ~~~~</span>
+
+<span class="h-dim">health &#183; MNAR</span>      18-29  30-41  42-53  54-65
+above median       0.0    6.8    8.3   25.0
+below median      <span class="h-bad">42.9   60.4   55.2   79.2</span>
+                  <span class="h-bad">^^^ a gap in every band ^^^</span></div>
+        <div class="callout good sm"><b>Income is MAR.</b> Inside an age band, whether someone earns
+        above or below the median makes no difference to whether they answered &#8212; 28.8 against
+        35.8, then 11.3 against 11.3. Age explained all of it, and age is in the file.</div>
+        <div class="callout bad sm"><b>Health is MNAR.</b> Inside every age band the low scorers are
+        withheld five to ten times as often. Age explained none of it. Add every other observed
+        column and the gap stays, because the driver is the score itself.</div>
+      </div>
+
+      <div class="colstack">
+        <div class="callout bad"><b>Neither table on the left can be computed on real data.</b> Both split
+        rows by a value that is missing for exactly the rows being counted. They exist here only
+        because the data was simulated &#8212; which is the entire reason MNAR is untestable.</div>
+        <h2 class="s">What the assumption costs, in units of the answer</h2>
+        <table class="d sm free">
+          <tr><th>Estimate</th><th class="c">Naive</th><th class="c">Truth</th><th>Error</th></tr>
+          <tr class="ok"><td><b>% female</b> (MCAR)</td><td class="c">46.2</td><td class="c">47.0</td>
+            <td>&#8722;0.8 pt &#183; sampling noise</td></tr>
+          <tr class="wr"><td><b>mean income</b> (MAR)</td><td class="c">137,617</td><td class="c">129,782</td>
+            <td><b>+6.0%</b> &#183; recoverable from age</td></tr>
+          <tr class="hl"><td><b>mean health</b> (MNAR)</td><td class="c">87.0</td><td class="c">82.3</td>
+            <td><b>+4.7 pts</b> &#183; not recoverable</td></tr>
+        </table>
+        <div class="callout warn sm"><b>Both biases point the same way and neither announces itself.</b>
+        Drop the missing rows and your population is richer and healthier than the one you sampled.
+        No warning is printed, and the standard error gets <i>smaller</i> &#8212; you become more
+        confident about a worse number.</div>
+        <div class="callout good sm"><b>Where this leaves you.</b> You can test MCAR, you can argue
+        for MAR, and you can never confirm MNAR from the data alone. <b>Lecture 2 makes that
+        boundary precise</b> and shows which tests get you how far.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17 · BACK TO THE REAL FILE ============ -->
+<section class="slide" data-sec="Mechanisms · 5 of 6">
+  <div class="eyebrow">Mechanisms · 5 of 6 · applying it</div>
+  <h1 class="t">So which mechanism made the 1,932 gaps?
+    <small>Back to <code class="k">BLUE METAL.csv</code>, read correctly this time. Two lines of
+    pandas settle a question that no imputation library will ask you.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack">
+        <pre class="code xs">miss = df.OPEN.isna()
+
+df.loc[ miss, <span class="py-str">"dt"</span>].max()   <span class="py-cm"># last gap</span>
+df.loc[~miss, <span class="py-str">"dt"</span>].min()   <span class="py-cm"># first value</span></pre>
+        <div class="out xs">Timestamp('<span class="h-bad">2011-09-30</span>')
+Timestamp('<span class="h-ok">2011-10-03</span>')</div>
+        <div class="callout good"><b>A clean break, to the day.</b> Every row before 3 October 2011
+        is missing <code class="k">OPEN</code>, <code class="k">HIGH</code> and
+        <code class="k">LOW</code>. Every row from that date on has all three. Not one exception in
+        either direction across 5,463 rows.</div>
+        <div class="outlbl">missingness patterns in the whole file</div>
+        <div class="out xs">Index Name OPEN HIGH LOW CLOSE   rows
+    miss     ok   ok   ok    ok   <span class="h-ok">3531</span>
+    miss   <span class="h-bad">miss miss miss</span>    ok   <span class="h-bad">1932</span></div>
+        <div class="callout sm"><b>Two patterns, not eight.</b> The three price columns are never
+        missing separately — they go together, always. That is the signature of a <b>format
+        change</b>, not of dropped readings.</div>
+      </div>
+
+      <div class="colstack">
+        <div class="card b">
+          <h3>The verdict</h3>
+          <p>Missingness is a deterministic function of an observed variable, the date. Fit a
+          logistic regression of <code class="k">OPEN.isna()</code> on the date and it separates the
+          classes perfectly — <b>training accuracy 1.0</b>. Missingness depends on observed data
+          only, so by definition this is <b>MAR</b>.</p>
+        </div>
+        <div class="callout"><b>And the cause is knowable, which is better than a classification.</b>
+        The exchange only began publishing open, high and low for its indices in October 2011.
+        Before that it published the closing level alone. The gap is not a failure of the scrape or
+        of the exchange — those numbers were never released, so there is nothing that went missing.</div>
+        <div class="callout good sm"><b>Notice the order of work.</b> The statistics said MAR. The
+        documentation said <i>why</i>, and the why is what tells you what to do next. Reach for
+        domain knowledge first; it is faster than a test and it answers a better question.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18 · MAR IS NOT IMPUTABLE ============ -->
+<section class="slide" data-sec="Mechanisms · 6 of 6">
+  <div class="eyebrow">Mechanisms · 6 of 6 · the sting</div>
+  <h1 class="t">MAR does not mean fillable
+    <small>The file is MAR. Every textbook says MAR is the case where imputation works. Here it
+    does not work at all — and understanding why is worth more than any imputation method in
+    Lecture 3.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <div class="callout bad"><b>There is no overlap.</b> To learn a rule for
+        <code class="k">OPEN</code> from <code class="k">date</code>, you need dates where
+        <code class="k">OPEN</code> is sometimes present and sometimes missing. Here, every date is
+        one or the other. The predictor that explains the missingness perfectly is the predictor
+        that leaves nothing to learn from.</div>
+        <table class="d sm free">
+          <tr><th style="width:200px">If you did it anyway</th><th>What you would get</th></tr>
+          <tr class="hl"><td><code class="k">df.OPEN.fillna(df.OPEN.mean())</code></td>
+            <td>Eight years of 2004&#8211;2011 opens set to a 2011&#8211;2025 average, on an index that
+            went from a base of 1,000 to 11,168 over the period. Every one of them wrong by a factor.</td></tr>
+          <tr class="hl"><td>Regress <code class="k">OPEN</code> on <code class="k">CLOSE</code>,
+            fit on 2011+</td>
+            <td>An <i>R</i>&#178; near 1 and a comfortable feeling. You have extrapolated a modern
+            intraday relationship eight years into a period with different circuit rules, different
+            constituents and a different tick size. The fit statistic cannot see any of that.</td></tr>
+          <tr class="wr"><td>Forward-fill from the previous row</td>
+            <td>There is no previous row. The gap runs to the start of the file.</td></tr>
+        </table>
+      </div>
+      <div class="colstack">
+        <div class="card g">
+          <h3>What to do instead</h3>
+          <p><b>Restrict the window.</b> If the analysis needs open/high/low, it starts on
+          2011-10-03 and you say so in the writeup. <b>Or change the measure.</b>
+          <code class="k">CLOSE</code> is complete across all 5,463 rows — if daily returns will do,
+          you keep the full 2004&#8211;2025 history and impute nothing.</p>
+        </div>
+        <div class="callout"><b>The general rule.</b> The mechanism tells you whether filling is
+        <i>defensible</i>. Whether it is <i>possible</i> is a separate question about overlap —
+        do rows with the value and rows without it share a region of the predictor space? Structural
+        gaps, where a field simply did not exist yet, are MAR and un-imputable at the same time,
+        and they are extremely common in scraped and historical data.</div>
+        <div class="callout warn sm"><b>Carry this into Lecture 3.</b> Every method there will
+        happily return numbers for this column. None of them will warn you. The check has to be
+        yours.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19 · WHY VISUALISE ============ -->
+<section class="slide" data-sec="Seeing it · 1 of 3">
+  <div class="eyebrow">Seeing it · 1 of 3</div>
+  <h1 class="t">Counts tell you how much. Pictures tell you what shape.
+    <small><code class="k">isna().sum()</code> gives one number per column and throws away the only
+    thing that identifies a mechanism: <b>which rows</b>, and <b>which columns together</b>. Three
+    views recover it, and each answers a different question.</small></h1>
+  <div class="wrap">
+    <div class="cols3" style="flex:1;min-height:0">
+      <div class="card b">
+        <h3><span class="num">01</span>Matrix</h3>
+        <p><b>Question:</b> where in the file are the gaps?</p>
+        <p style="margin-top:6px">One column per variable, rows top to bottom in their natural
+        order. A solid block means a period or a batch. Even speckle means something closer to
+        random. Stripes mean a repeating process &#8212; a source, a shift, a sensor.</p>
+        <pre class="code xs" style="margin-top:7px">msno.matrix(df)</pre>
+      </div>
+      <div class="card g">
+        <h3><span class="num">02</span>Correlation heatmap</h3>
+        <p><b>Question:</b> which columns go missing together?</p>
+        <p style="margin-top:6px">Build a 0/1 indicator per column, correlate the indicators. Near
+        1 means one defect wearing several column names. Near 0 means independent causes that need
+        separate treatment.</p>
+        <pre class="code xs" style="margin-top:7px">msno.heatmap(df)</pre>
+      </div>
+      <div class="card o">
+        <h3><span class="num">03</span>Dendrogram</h3>
+        <p><b>Question:</b> how many distinct causes are there?</p>
+        <p style="margin-top:6px">Hierarchical clustering on the same indicators. Columns joining
+        at height zero are one mechanism. Useful when there are forty columns and reading a
+        forty-by-forty heatmap is not.</p>
+        <pre class="code xs" style="margin-top:7px">msno.dendrogram(df)</pre>
+      </div>
+    </div>
+    <div class="callout warn"><b>Order matters, and it is your responsibility.</b> These plots draw
+    rows in the order they sit in the DataFrame. A time series sorted by date shows its structure
+    immediately; the same file shuffled shows none. Before plotting, sort by whatever you think the
+    mechanism might depend on &#8212; date, source, batch, respondent id &#8212; and plot it again
+    under a different sort if the first tells you nothing.</div>
+  </div>
+</section>
+
+<!-- ============ 20 · THE MATRIX ============ -->
+<section class="slide" data-sec="Seeing it · 2 of 3">
+  <div class="eyebrow">Seeing it · 2 of 3 · the matrix, on both files</div>
+  <h1 class="t">A block and a speckle
+    <small>Same plot, two datasets, and you can read the mechanism off the shape before running
+    a single test.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="fig">
+        <div class="cap">BLUE METAL.csv &#183; 5,463 rows, sorted by date</div>
+        <svg viewBox="0 0 520 280" width="100%" preserveAspectRatio="xMidYMin meet" role="img">
+<rect x="0.0" y="16" width="69.1" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<text x="34.6" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">Index Name</text>
+<rect x="75.1" y="16" width="69.1" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="75.1" y="16.00" width="69.1" height="250.00" fill="#26404E"/>
+<text x="109.7" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">INDEX_NAME</text>
+<rect x="150.3" y="16" width="69.1" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="150.3" y="16.00" width="69.1" height="250.00" fill="#26404E"/>
+<text x="184.9" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">HistoryDate</text>
+<rect x="225.4" y="16" width="69.1" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="225.4" y="104.24" width="69.1" height="161.76" fill="#26404E"/>
+<text x="260.0" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">OPEN</text>
+<rect x="300.6" y="16" width="69.1" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="300.6" y="104.24" width="69.1" height="161.76" fill="#26404E"/>
+<text x="335.1" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">HIGH</text>
+<rect x="375.7" y="16" width="69.1" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="375.7" y="104.24" width="69.1" height="161.76" fill="#26404E"/>
+<text x="410.3" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">LOW</text>
+<rect x="450.9" y="16" width="69.1" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="450.9" y="16.00" width="69.1" height="250.00" fill="#26404E"/>
+<text x="485.4" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">CLOSE</text>
+<text x="0" y="277" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">row 1 (top) &#8594; row 5463 (bottom) &#183; ink = present &#183; white = missing</text>
+</svg>
+        <div class="rd"><b>A hard horizontal edge.</b> Three columns are blank for the top 35% of
+        the file and complete below it, and the edge is at the same row in all three. That is a
+        <b>format change on a known date</b> &#8212; a shape no random process produces. The two
+        solid columns beside them are the ones that were always published.</div>
+      </div>
+      <div class="fig">
+        <div class="cap">survey.csv &#183; 400 respondents, sorted by id</div>
+        <svg viewBox="0 0 520 280" width="100%" preserveAspectRatio="xMidYMin meet" role="img">
+<rect x="0.0" y="16" width="99.2" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="0.0" y="16.00" width="99.2" height="250.00" fill="#26404E"/>
+<text x="49.6" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">age</text>
+<rect x="105.2" y="16" width="99.2" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="105.2" y="16.00" width="99.2" height="250.00" fill="#26404E"/>
+<text x="154.8" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">education_years</text>
+<rect x="210.4" y="16" width="99.2" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="210.4" y="16.00" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="210.4" y="19.75" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="22.25" width="99.2" height="6.88" fill="#26404E"/>
+<rect x="210.4" y="29.75" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="210.4" y="31.62" width="99.2" height="9.38" fill="#26404E"/>
+<rect x="210.4" y="42.88" width="99.2" height="4.38" fill="#26404E"/>
+<rect x="210.4" y="47.88" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="210.4" y="51.00" width="99.2" height="4.38" fill="#26404E"/>
+<rect x="210.4" y="56.00" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="59.75" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="61.00" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="62.25" width="99.2" height="11.88" fill="#26404E"/>
+<rect x="210.4" y="74.75" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="77.25" width="99.2" height="5.62" fill="#26404E"/>
+<rect x="210.4" y="83.50" width="99.2" height="5.00" fill="#26404E"/>
+<rect x="210.4" y="89.12" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="91.62" width="99.2" height="9.38" fill="#26404E"/>
+<rect x="210.4" y="101.62" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="104.12" width="99.2" height="7.50" fill="#26404E"/>
+<rect x="210.4" y="112.25" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="113.50" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="114.75" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="116.00" width="99.2" height="7.50" fill="#26404E"/>
+<rect x="210.4" y="124.12" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="210.4" y="127.88" width="99.2" height="5.62" fill="#26404E"/>
+<rect x="210.4" y="134.12" width="99.2" height="4.38" fill="#26404E"/>
+<rect x="210.4" y="139.12" width="99.2" height="10.62" fill="#26404E"/>
+<rect x="210.4" y="150.38" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="210.4" y="153.50" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="156.00" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="157.25" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="159.75" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="210.4" y="163.50" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="210.4" y="169.12" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="170.38" width="99.2" height="4.38" fill="#26404E"/>
+<rect x="210.4" y="175.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="176.62" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="179.12" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="180.38" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="210.4" y="184.12" width="99.2" height="5.00" fill="#26404E"/>
+<rect x="210.4" y="189.75" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="192.25" width="99.2" height="5.00" fill="#26404E"/>
+<rect x="210.4" y="197.88" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="200.38" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="210.4" y="204.12" width="99.2" height="5.00" fill="#26404E"/>
+<rect x="210.4" y="209.75" width="99.2" height="26.25" fill="#26404E"/>
+<rect x="210.4" y="236.62" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="210.4" y="240.38" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="210.4" y="242.25" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="210.4" y="246.00" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="210.4" y="249.75" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="210.4" y="252.88" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="210.4" y="255.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="210.4" y="256.62" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="210.4" y="260.38" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="210.4" y="263.50" width="99.2" height="2.50" fill="#26404E"/>
+<text x="260.0" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">income</text>
+<rect x="315.6" y="16" width="99.2" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="315.6" y="16.00" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="315.6" y="21.00" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="22.88" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="315.6" y="26.62" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="27.88" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="29.12" width="99.2" height="5.00" fill="#26404E"/>
+<rect x="315.6" y="34.75" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="315.6" y="38.50" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="39.75" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="42.25" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="43.50" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="315.6" y="46.62" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="47.88" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="49.75" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="51.00" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="52.88" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="54.12" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="55.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="56.62" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="58.50" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="60.38" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="62.25" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="315.6" y="65.38" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="67.88" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="71.00" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="73.50" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="74.75" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="77.25" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="78.50" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="315.6" y="81.62" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="84.75" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="86.62" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="89.12" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="91.62" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="315.6" y="97.88" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="315.6" y="102.88" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="106.00" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="315.6" y="110.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="112.88" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="114.12" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="116.00" width="99.2" height="8.12" fill="#26404E"/>
+<rect x="315.6" y="125.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="127.25" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="129.75" width="99.2" height="5.62" fill="#26404E"/>
+<rect x="315.6" y="136.00" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="315.6" y="140.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="141.62" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="143.50" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="146.00" width="99.2" height="5.00" fill="#26404E"/>
+<rect x="315.6" y="152.25" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="315.6" y="155.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="156.62" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="159.12" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="161.00" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="162.88" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="164.12" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="166.00" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="167.25" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="169.75" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="315.6" y="172.88" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="176.00" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="178.50" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="315.6" y="183.50" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="185.38" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="190.38" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="315.6" y="193.50" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="194.75" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="196.62" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="198.50" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="199.75" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="201.00" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="203.50" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="205.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="206.62" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="208.50" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="210.38" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="315.6" y="214.75" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="216.62" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="218.50" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="220.38" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="223.50" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="227.25" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="228.50" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="229.75" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="231.00" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="233.50" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="237.25" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="238.50" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="240.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="241.62" width="99.2" height="3.12" fill="#26404E"/>
+<rect x="315.6" y="245.38" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="246.62" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="315.6" y="251.00" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="252.25" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="315.6" y="255.38" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="315.6" y="257.25" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="315.6" y="259.75" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="315.6" y="264.12" width="99.2" height="0.62" fill="#26404E"/>
+<rect x="315.6" y="265.38" width="99.2" height="0.62" fill="#26404E"/>
+<text x="365.2" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">health_score</text>
+<rect x="420.8" y="16" width="99.2" height="250" fill="#FFFFFF" stroke="#C3CFD5" stroke-width=".7"/>
+<rect x="420.8" y="16.62" width="99.2" height="13.12" fill="#26404E"/>
+<rect x="420.8" y="30.38" width="99.2" height="24.38" fill="#26404E"/>
+<rect x="420.8" y="55.38" width="99.2" height="11.25" fill="#26404E"/>
+<rect x="420.8" y="67.88" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="420.8" y="71.00" width="99.2" height="7.50" fill="#26404E"/>
+<rect x="420.8" y="79.12" width="99.2" height="28.75" fill="#26404E"/>
+<rect x="420.8" y="108.50" width="99.2" height="16.25" fill="#26404E"/>
+<rect x="420.8" y="125.38" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="420.8" y="127.88" width="99.2" height="1.25" fill="#26404E"/>
+<rect x="420.8" y="129.75" width="99.2" height="10.62" fill="#26404E"/>
+<rect x="420.8" y="141.00" width="99.2" height="13.75" fill="#26404E"/>
+<rect x="420.8" y="155.38" width="99.2" height="9.38" fill="#26404E"/>
+<rect x="420.8" y="165.38" width="99.2" height="14.38" fill="#26404E"/>
+<rect x="420.8" y="180.38" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="420.8" y="182.88" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="420.8" y="185.38" width="99.2" height="8.12" fill="#26404E"/>
+<rect x="420.8" y="194.12" width="99.2" height="2.50" fill="#26404E"/>
+<rect x="420.8" y="197.25" width="99.2" height="13.75" fill="#26404E"/>
+<rect x="420.8" y="211.62" width="99.2" height="3.75" fill="#26404E"/>
+<rect x="420.8" y="216.00" width="99.2" height="4.38" fill="#26404E"/>
+<rect x="420.8" y="221.00" width="99.2" height="8.12" fill="#26404E"/>
+<rect x="420.8" y="229.75" width="99.2" height="6.25" fill="#26404E"/>
+<rect x="420.8" y="236.62" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="420.8" y="239.12" width="99.2" height="1.88" fill="#26404E"/>
+<rect x="420.8" y="241.62" width="99.2" height="7.50" fill="#26404E"/>
+<rect x="420.8" y="249.75" width="99.2" height="11.25" fill="#26404E"/>
+<rect x="420.8" y="261.62" width="99.2" height="4.38" fill="#26404E"/>
+<text x="470.4" y="11" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">gender</text>
+<text x="0" y="277" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">row 1 (top) &#8594; row 400 (bottom) &#183; ink = present &#183; white = missing</text>
+</svg>
+        <div class="rd"><b>Speckle, at three different densities.</b> No edges, no alignment between
+        columns &#8212; three separate processes, each acting on individual respondents. The
+        density differences are real (36%, 16.5%, 7%) but the picture cannot tell you
+        <i>why</i> any of them happen. For that you need the breakdowns from slide 15.</div>
+      </div>
+    </div>
+    <div class="callout"><b>What the matrix is good at, and what it is not.</b> It finds structure:
+    blocks, edges, stripes, and rows that are blank across the board. It says nothing about
+    mechanism &#8212; MAR and MNAR both produce speckle. Use it to rule out MCAR quickly and to spot
+    the structural gaps that no imputation method should ever be pointed at.</div>
+  </div>
+</section>
+
+<!-- ============ 21 · HEATMAP + PATTERNS ============ -->
+<section class="slide" data-sec="Seeing it · 3 of 3">
+  <div class="eyebrow">Seeing it · 3 of 3 · co-missingness</div>
+  <h1 class="t">Do these columns go missing together?
+    <small>Correlate the 0/1 missingness indicators. The two files give the two extreme answers,
+    and each extreme is a finding rather than a failure of the plot.</small></h1>
+  <div class="wrap">
+    <div class="cols3" style="flex:1;min-height:0">
+      <div class="fig">
+        <div class="cap">BLUE METAL &#183; corr of isna()</div>
+        <svg viewBox="0 0 282 242" width="100%" preserveAspectRatio="xMidYMin meet" role="img">
+<rect x="74" y="20" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="99.0" y="48.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="126" y="20" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="151.0" y="48.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="178" y="20" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="203.0" y="48.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="230" y="20" width="50" height="50" fill="#EEF2F4" stroke="#DCE4E8"/>
+<text x="255.0" y="48.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#8FA0A9">n/a</text>
+<text x="68" y="48.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">OPEN</text>
+<text x="99.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">OPEN</text>
+<rect x="74" y="72" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="99.0" y="100.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="126" y="72" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="151.0" y="100.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="178" y="72" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="203.0" y="100.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="230" y="72" width="50" height="50" fill="#EEF2F4" stroke="#DCE4E8"/>
+<text x="255.0" y="100.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#8FA0A9">n/a</text>
+<text x="68" y="100.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">HIGH</text>
+<text x="151.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">HIGH</text>
+<rect x="74" y="124" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="99.0" y="152.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="126" y="124" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="151.0" y="152.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="178" y="124" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="203.0" y="152.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="230" y="124" width="50" height="50" fill="#EEF2F4" stroke="#DCE4E8"/>
+<text x="255.0" y="152.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#8FA0A9">n/a</text>
+<text x="68" y="152.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">LOW</text>
+<text x="203.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">LOW</text>
+<rect x="74" y="176" width="50" height="50" fill="#EEF2F4" stroke="#DCE4E8"/>
+<text x="99.0" y="204.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#8FA0A9">n/a</text>
+<rect x="126" y="176" width="50" height="50" fill="#EEF2F4" stroke="#DCE4E8"/>
+<text x="151.0" y="204.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#8FA0A9">n/a</text>
+<rect x="178" y="176" width="50" height="50" fill="#EEF2F4" stroke="#DCE4E8"/>
+<text x="203.0" y="204.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#8FA0A9">n/a</text>
+<rect x="230" y="176" width="50" height="50" fill="#EEF2F4" stroke="#DCE4E8"/>
+<text x="255.0" y="204.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#8FA0A9">n/a</text>
+<text x="68" y="204.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">CLOSE</text>
+<text x="255.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">CLOSE</text>
+</svg>
+        <div class="rd"><b>Exactly 1.</b> One defect, three column names. <code class="k">CLOSE</code>
+        is <code class="k">n/a</code> because it is never missing &#8212; a constant has no variance
+        to correlate with. That is not a bug; it is the plot telling you the column is clean.</div>
+      </div>
+      <div class="fig">
+        <div class="cap">survey &#183; corr of isna()</div>
+        <svg viewBox="0 0 230 190" width="100%" preserveAspectRatio="xMidYMin meet" role="img">
+<rect x="74" y="20" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="99.0" y="48.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="126" y="20" width="50" height="50" fill="#fefdfd" stroke="#DCE4E8"/>
+<text x="151.0" y="48.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#26404E">-.01</text>
+<rect x="178" y="20" width="50" height="50" fill="#fefcfd" stroke="#DCE4E8"/>
+<text x="203.0" y="48.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#26404E">-.02</text>
+<text x="68" y="48.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">income</text>
+<text x="99.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">income</text>
+<rect x="74" y="72" width="50" height="50" fill="#fefdfd" stroke="#DCE4E8"/>
+<text x="99.0" y="100.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#26404E">-.01</text>
+<rect x="126" y="72" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="151.0" y="100.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<rect x="178" y="72" width="50" height="50" fill="#f9fbfd" stroke="#DCE4E8"/>
+<text x="203.0" y="100.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#26404E">.04</text>
+<text x="68" y="100.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">health</text>
+<text x="151.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">health</text>
+<rect x="74" y="124" width="50" height="50" fill="#fefcfd" stroke="#DCE4E8"/>
+<text x="99.0" y="152.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#26404E">-.02</text>
+<rect x="126" y="124" width="50" height="50" fill="#f9fbfd" stroke="#DCE4E8"/>
+<text x="151.0" y="152.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#26404E">.04</text>
+<rect x="178" y="124" width="50" height="50" fill="#7c9bd6" stroke="#DCE4E8"/>
+<text x="203.0" y="152.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#FFFFFF">1</text>
+<text x="68" y="152.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">gender</text>
+<text x="203.0" y="14" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F">gender</text>
+</svg>
+        <div class="rd"><b>Essentially zero</b> &#8212; &#8722;.01, &#8722;.02, .04. Three independent
+        mechanisms. Knowing that income is missing tells you nothing about whether health is. They
+        must be diagnosed and treated one at a time.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">missingness patterns &#183; survey</div>
+        <div class="out xxs">income health gender   rows
+   -      -      -      <span class="h-ok">200</span>
+   -    miss     -      110
+ miss     -      -       40
+ miss   miss     -       22
+   -      -    miss      13
+   -    miss   miss      11
+ miss     -    miss       3
+ miss   miss   miss       1
+<span class="h-dim">8 of the 8 possible patterns occur</span></div>
+        <div class="outlbl">missingness patterns &#183; BLUE METAL</div>
+        <div class="out xxs">OPEN  HIGH   LOW  CLOSE   rows
+  -     -     -     -    <span class="h-ok">3531</span>
+miss  miss  miss    -    <span class="h-bad">1932</span>
+<span class="h-dim">2 of the 16 possible patterns occur</span></div>
+        <div class="callout sm"><b>The pattern count is the fastest diagnostic on this slide.</b>
+        Near the maximum means independent per-cell processes. A handful of patterns out of many
+        possible means structure &#8212; and structure has a cause you can usually go and look up.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 22 · WHAT YOU MAY DO TODAY ============ -->
+<section class="slide" data-sec="Deletion">
+  <div class="eyebrow">What you may do before Lecture 3</div>
+  <h1 class="t">Deletion is a method, and it has assumptions too
+    <small>Imputation is next lecture. Deletion is available now, it is the default in almost every
+    modelling library, and most people use it without noticing they have chosen it.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack fill">
+        <table class="d sm free roomy">
+          <tr><th style="width:150px">Approach</th><th>What it does</th><th style="width:110px">Valid when</th></tr>
+          <tr><td><b>Listwise deletion</b><br/><code class="k">df.dropna()</code></td>
+            <td>Drop any row with a gap anywhere. Every analysis runs on the same rows, so results
+            are mutually consistent. On the survey: 400 rows becomes <b>200</b>. Half the sample,
+            for gaps in three columns.</td><td class="c">MCAR</td></tr>
+          <tr><td><b>Pairwise deletion</b><br/><code class="k">df.corr()</code></td>
+            <td>Use every row that has the columns each statistic needs. Keeps more data, but each
+            number rests on a different subsample &#8212; a correlation matrix built this way can
+            fail to be positive definite and break the model that consumes it.</td><td class="c">MCAR</td></tr>
+          <tr class="ok"><td><b>Column deletion</b></td>
+            <td>Drop the variable. Honest when a column is nearly empty or carries nothing:
+            <code class="k">Index Name</code> at 100% missing, <code class="k">INDEX_NAME</code> at
+            one distinct value.</td><td class="c">Any</td></tr>
+          <tr class="wr"><td><b>Restrict the window</b></td>
+            <td>Drop a defined <i>region</i> for a stated reason, not scattered rows. The right
+            answer for the pre-2011 block.</td><td class="c">Structural</td></tr>
+          <tr class="ok"><td><b>Delete nothing</b><br/><code class="k">df.OPEN.isna()</code></td>
+            <td>Add the missingness indicator as its own column and keep every row. If the fact
+            that a value is missing carries information &#8212; and under MNAR it always does
+            &#8212; this hands that information to the model instead of throwing it away. Costs one
+            column; assumes nothing.</td><td class="c">Any</td></tr>
+        </table>
+      </div>
+      <div class="colstack">
+        <div class="callout bad sm"><b>The default you did not choose.</b> Most scikit-learn
+        estimators raise on <code class="k">NaN</code>. A <code class="k">groupby</code>, a
+        <code class="k">mean()</code> or a plotting call instead drops rows quietly and returns a
+        number &#8212; <b>pairwise deletion is pandas' default</b>, and it carries an MCAR assumption.</div>
+        <pre class="code xxs">df = pd.read_csv(<span class="py-str">"BLUE METAL.csv"</span>, na_values=[<span class="py-str">"-"</span>])
+<span class="py-bi">len</span>(df), <span class="py-bi">len</span>(df.dropna()), <span class="py-bi">len</span>(df.dropna(subset=[<span class="py-str">"OPEN"</span>]))</pre>
+        <div class="out xs">(5463, <span class="h-bad">0</span>, 3531)</div>
+        <div class="callout bad sm"><b>An empty DataFrame, with no error.</b> One column is 100%
+        null, so every row has a gap somewhere and every row goes. Drop <code class="k">Index
+        Name</code> first and the same call keeps 3,531. <b>Listwise deletion is only as good as
+        your column list</b>, and it fails silently when that list is wrong.</div>
+        <div class="callout warn sm"><b>Report two numbers whenever you delete:</b> how many rows
+        went, and whether the survivors resemble the departed. On <code class="k">survey.csv</code>,
+        <code class="k">dropna()</code> takes 400 rows to <b>200</b> and moves mean age 40.9 &#8594;
+        40.0. That comparison is the germ of the formal tests in Lecture 2.</div>
+        <div class="callout good sm"><b>Deletion is sometimes right.</b> Two per cent missing, no
+        structure in the matrix, no difference between kept and dropped &#8212; delete, note it,
+        move on.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 23 · THE CLEANING LOG ============ -->
+<section class="slide" data-sec="The log">
+  <div class="eyebrow">The log &#183; the deliverable this module builds</div>
+  <h1 class="t">Everything decided today, written down
+    <small>A cleaned file on its own is unreviewable &#8212; nobody can tell what you did or why.
+    The log is the artefact that makes it defensible, and every lecture in this module adds rows
+    to it.</small></h1>
+  <div class="wrap">
+    <table class="log roomy">
+      <tr><th style="width:118px">Column</th><th style="width:200px">Decision</th><th style="width:56px">Rows</th>
+        <th style="width:230px">Assumption it rests on</th><th>Why</th></tr>
+      <tr><td>OPEN, HIGH, LOW</td><td>Read <code class="k">"-"</code> as missing</td><td class="n">5,796</td>
+        <td>none &#8212; a parsing correction</td>
+        <td>The exchange writes a hyphen for "not published". Nothing is inferred; the file is
+        simply read as intended.</td></tr>
+      <tr><td>OPEN, HIGH, LOW</td><td>Do <b>not</b> impute pre-2011-10-03</td><td class="n">1,932</td>
+        <td>These values were never published, so there is nothing to recover</td>
+        <td>MAR on date, but with no overlap: no date has both observed and missing values, so no
+        model can be fitted. Analyses needing OHLC start 2011-10-03.</td></tr>
+      <tr><td>Index Name</td><td>Drop the column</td><td class="n">5,463</td>
+        <td>An empty column carries no information</td>
+        <td>100% null, and a populated <code class="k">INDEX_NAME</code> exists beside it. Almost
+        certainly one field arriving under two names upstream.</td></tr>
+      <tr><td>INDEX_NAME</td><td>Drop the column</td><td class="n">&#8212;</td>
+        <td>The whole file is one index</td>
+        <td>One distinct value in 5,463 rows. Record it as a dataset attribute, not a column.</td></tr>
+      <tr><td>RequestNumber</td><td>Keep, but exclude from analysis</td><td class="n">&#8212;</td>
+        <td>It describes the scrape, not the index</td>
+        <td>Server pagination handle. Useful for auditing collection, and a leak if any model is
+        handed the raw frame.</td></tr>
+      <tr class="hl"><td>&#8212; rows &#8212;</td><td>Flag 2000&#8211;2003 as never delivered</td><td class="n">~1,000</td>
+        <td>The gap is in the request, not the response</td>
+        <td>Four requested years returned empty and were written as nothing. Not visible to any
+        column-wise check. Re-run those years before treating the history as complete.</td></tr>
+    </table>
+    <div class="callout"><b>The fourth column is the one that matters.</b> Anyone can see what you
+    changed by diffing two files. Only the log says what you were <i>assuming</i> when you changed
+    it &#8212; and that is the part a reviewer, a regulator, or you in six months actually needs.</div>
+  </div>
+</section>
+
+<!-- ============ 24 · RECAP ============ -->
+<section class="slide" data-sec="Recap">
+  <div class="eyebrow">Recap</div>
+  <h1 class="t">What to carry out of this lecture
+    <small>Six things, in the order they will save you time.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack fill">
+        <div class="card b">
+          <h3><span class="num">01</span>Count what is missing, not what pandas says is missing</h3>
+          <p>On a real file the two differed by 2.1&#215;. Check the dtypes, look for sentinels, and
+          re-read with <code class="k">na_values</code> before reporting any number.</p>
+        </div>
+        <div class="card b">
+          <h3><span class="num">02</span>Look for rows that were never written</h3>
+          <p>Four missing years left no trace in any column. Compare what came back against what you
+          asked for &#8212; nothing else will.</p>
+        </div>
+        <div class="card b">
+          <h3><span class="num">03</span>The mechanism decides the method</h3>
+          <p>MCAR depends on nothing, MAR on what you observed, MNAR on what you did not. The three
+          get three different treatments, and choosing wrongly biases every downstream number in the
+          same direction at once.</p>
+        </div>
+      </div>
+      <div class="colstack fill">
+        <div class="card o">
+          <h3><span class="num">04</span>MAR and MNAR look alike in your data</h3>
+          <p>Both show trends against observed variables. The difference only shows up against the
+          hidden values &#8212; the one comparison you can never run. That is why MNAR is argued for,
+          never demonstrated.</p>
+        </div>
+        <div class="card o">
+          <h3><span class="num">05</span>MAR does not mean fillable</h3>
+          <p>Perfectly explained missingness with no overlap is un-imputable. Ask whether the model
+          has anything to learn from before you reach for a method that will answer regardless.</p>
+        </div>
+        <div class="card g">
+          <h3><span class="num">06</span>Documentation beats inference</h3>
+          <p>A logistic regression classified this file as MAR. One line in the exchange's release
+          notes explained it. Look the cause up first &#8212; it is faster, and it answers the
+          question the test cannot.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25 · PRACTICE ============ -->
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice &#183; and what comes next</div>
+  <h1 class="t">Before Lecture 2
+    <small>Four exercises on the two files used today, then where the module goes.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <ol class="n">
+          <li><b>Profile a file you scraped yourself.</b> Take any CSV from the Data Collection
+          module. Report: the dtype of every column, the set of non-numeric values in each numeric
+          column, the number of distinct missingness patterns, and how many rows you expected
+          against how many you got. One paragraph per finding.</li>
+          <li><b>Find the sentinel.</b> Write a function that takes a DataFrame and returns, for each
+          <code class="k">object</code> column, the values that are not parseable as numbers, sorted
+          by frequency. Run it on <code class="k">BLUE METAL.csv</code> and on a second file. Sentinels
+          almost always show up as a small number of very frequent values.</li>
+          <li><b>Break the diagnosis.</b> Take <code class="k">survey.csv</code>, shuffle the rows,
+          and re-draw the matrix plot. Explain what was lost and what it implies about sorting before
+          plotting.</li>
+          <li><b>Argue a mechanism.</b> Pick one column with gaps in your own data. Write four
+          sentences: what you think caused them, which mechanism that implies, what evidence in the
+          file supports it, and what evidence would change your mind. The fourth sentence is the
+          hard one and the one that matters.</li>
+        </ol>
+      </div>
+      <div class="colstack">
+        <div class="card b">
+          <h3>Lecture 2 &#183; Can you tell which mechanism it is?</h3>
+          <p>Little's MCAR test, the permutation test, and logistic regression on the missingness
+          indicator &#8212; run on <code class="k">survey.csv</code>, where we know the answers, so you
+          can see which tests find the mechanisms we planted and which miss them. Ends at the
+          boundary: what none of them can do.</p>
+        </div>
+        <div class="card g">
+          <h3>Lecture 3 &#183; Filling gaps</h3>
+          <p>Mean and median, random draw, hot deck, regression, kNN, MICE, pattern mixture &#8212;
+          each as an explicit assumption plus something it silently breaks.</p>
+        </div>
+        <div class="callout warn sm"><b>Keep your raw files.</b> Every exercise above needs the
+        original, and every one of them is easier if you never overwrote it.</div>
+        <div class="callout sm"><b>Files for this lecture.</b> <code class="k">BLUE METAL.csv</code>
+        from the Data Collection module, and <code class="k">survey.csv</code>, generated with a
+        fixed seed so every number on these slides reproduces exactly.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div>
+
+<div id="nav"><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></div>
+<div id="hint">&#8592; &#8594; navigate &#183; F fullscreen &#183; P print</div>
+
+<script>
+/* ============================================================
+   cover ornament — a wall of raw cells, dirt highlighted
+   Every line is a real row shape from one of the two files
+   used in this lecture. Nothing here is fetched or parsed;
+   it is a static ornament.
+   ============================================================ */
+(function(){
+  const box=document.getElementById('cvp'); if(!box) return;
+  const M='c-miss', V='c-val', D='c-dim', H='c-hdr';
+  const rows=[
+    [[H,'RequestNumber,Index Name,INDEX_NAME,HistoryDate,OPEN,HIGH,LOW,CLOSE']],
+    [[D,'His63905478754468581100,'],[M,''],[D,',Blue Metal,31 Dec 2004,'],[M,'-,-,-'],[D,','],[V,'1146.53']],
+    [[D,'His63905478754468581100,'],[M,''],[D,',Blue Metal,30 Dec 2004,'],[M,'-,-,-'],[D,','],[V,'1144.56']],
+    [[D,'His63905478779435448700,'],[M,''],[D,',Blue Metal,30 Sep 2011,'],[M,'-,-,-'],[D,','],[V,'2492.00']],
+    [[D,'His63905478779435448700,'],[M,''],[D,',Blue Metal,03 Oct 2011,'],[V,'2463.95,2507.85,2452.65'],[D,','],[V,'2498.85']],
+    [[D,'  ... 22 request blocks, '],[M,'2000-2003 never delivered'],[D,' ...']],
+    [[D,'']],
+    [[H,'id,age,education_years,income,health_score,gender']],
+    [[D,'1,24,13,'],[M,'NaN'],[D,','],[V,'91'],[D,','],[V,'Female']],
+    [[D,'2,58,11,'],[V,'184300'],[D,','],[M,'NaN'],[D,','],[V,'Male']],
+    [[D,'3,31,16,'],[V,'142700'],[D,','],[V,'88'],[D,','],[M,'NaN']],
+    [[D,'4,19,12,'],[M,'NaN'],[D,','],[M,'NaN'],[D,','],[V,'Male']],
+    [[D,'']],
+    [[H,'the dialect of missing']],
+    [[M,'-'],[D,'   '],[M,'""'],[D,'   '],[M,'NA'],[D,'   '],[M,'N/A'],[D,'   '],[M,'null'],[D,'   '],[M,'NaN']],
+    [[M,'-999'],[D,'   '],[M,'-1'],[D,'   '],[M,'9999'],[D,'   '],[M,'0'],[D,'   '],[M,'1900-01-01']],
+    [[M,'"Unknown"'],[D,'   '],[M,'"None"'],[D,'   '],[M,'"NULL"'],[D,'   '],[M,'"  "']],
+    [[D,'']],
+    [[H,'P(R | Yobs, Ymis)']],
+    [[D,'= P(R)          '],[V,'MCAR']],
+    [[D,'= P(R | Yobs)   '],[V,'MAR']],
+    [[D,'depends on Ymis '],[M,'MNAR']]
+  ];
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  box.innerHTML=rows.map(r=>'<div>'+r.map(([c,t])=>'<span class="'+c+'">'+esc(t)+'</span>').join('')+'</div>').join('');
+})();
+
+/* ============================================================
+   deck mechanics — identical to the Data Collection decks
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 &#183; Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 1 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  function show(n){
+    const prev=i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(slides[i]) slides[i].dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+</script>
+</body>
+</html>
