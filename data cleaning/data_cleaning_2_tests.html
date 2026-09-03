@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Cleaning · Part 2: Testing the Mechanism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- embedded demo ---------- */
+.demo-frame{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--line);
+  background:var(--paper)}
+.demo-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--t-cls);
+  text-decoration:none;border-bottom:1px solid currentColor;margin-left:8px;white-space:nowrap}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+<style>
+/* ================= additions for the Data Cleaning series =================
+   Vocabulary specific to this module. Everything above is the shared theme,
+   copied verbatim from the Data Collection decks.                          */
+
+/* ---------- the spine: symptom -> mechanisms -> what it permits ---------- */
+.spine{display:grid;grid-template-columns:150px 1fr 1fr;gap:0 12px;align-items:stretch}
+.spine .hd{font-family:var(--mono);font-size:9.3px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft);padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.spine .sym{background:var(--ink);color:#fff;padding:8px 11px;margin-bottom:7px;
+  display:flex;flex-direction:column;justify-content:center}
+.spine .sym b{font-family:var(--disp);font-size:13.5px;font-weight:700;display:block;line-height:1.15}
+.spine .sym i{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:#9BB4C0;margin-top:3px}
+.spine .mid,.spine .rgt{background:var(--card);border:1px solid var(--hair);padding:8px 11px;
+  margin-bottom:7px;font-size:11.7px;line-height:1.4;color:#31444F;display:flex;align-items:center}
+.spine .rgt{border-left:3px solid var(--t-grp)}
+.spine .mid{border-left:3px solid var(--t-anc)}
+.spine .now .sym{background:var(--t-asr)}
+.spine .now .mid,.spine .now .rgt{background:#FFF9F9}
+.spine b.q{font-weight:700;color:var(--ink)}
+
+/* ---------- three-mechanism cards ---------- */
+.mech{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;flex:1;min-height:0}
+.mech .m{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.mech .m.a{border-top-color:var(--t-grp)}
+.mech .m.b{border-top-color:var(--t-anc)}
+.mech .m.c{border-top-color:var(--t-asr)}
+.mech .m h3{font-family:var(--disp);font-size:15px;font-weight:700;line-height:1.1}
+.mech .m h3 span{display:block;font-family:var(--mono);font-size:9.2px;font-weight:400;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+.mech .m .def{font-size:12.2px;line-height:1.42;color:#31444F}
+.mech .m .def b{font-weight:700;color:var(--ink)}
+.mech .m .ex{font-size:11.4px;line-height:1.4;color:var(--soft);border-top:1px solid var(--hair);
+  padding-top:6px;margin-top:auto}
+.mech .m .ex b{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);display:block;margin-bottom:3px}
+
+/* ---------- figures (inline SVG, no image files) ---------- */
+.fig{background:var(--card);border:1px solid var(--hair);padding:10px 12px 8px;
+  display:flex;flex-direction:column;min-height:0}
+.fig .cap{font-family:var(--mono);font-size:9.3px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:7px}
+.fig .rd{font-size:11.6px;line-height:1.4;color:#31444F;margin-top:7px;
+  border-top:1px solid var(--hair);padding-top:6px}
+.fig .rd b{font-weight:700;color:var(--ink)}
+.fig svg{display:block;max-height:100%}
+.fig .rd{margin-top:auto}
+
+/* ---------- the cleaning log ---------- */
+table.log{width:100%;border-collapse:collapse;font-size:11.6px;background:var(--card)}
+table.log th,table.log td{border:1px solid var(--hair);padding:5px 9px;text-align:left;
+  vertical-align:top;line-height:1.38}
+table.log th{background:var(--ink);color:#fff;font-weight:600;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.log td:nth-child(1){font-family:var(--mono);font-size:10.6px;white-space:nowrap;color:#26404E}
+table.log td:nth-child(4){font-style:italic;color:var(--soft)}
+table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+/* ---------- the missingness lab (slide 10) ---------- */
+.lab{display:grid;grid-template-columns:1.62fr 1fr;gap:15px;flex:1;min-height:0}
+.lab .plot{background:var(--card);border:1px solid var(--hair);padding:9px 11px 7px;
+  display:flex;flex-direction:column;min-height:0}
+.lab .plot svg{flex:1;min-height:0;display:block}
+.plotnote{font-size:10.6px;color:var(--soft);line-height:1.35;margin-top:5px;
+  border-top:1px solid var(--hair);padding-top:5px}
+.plotnote b{color:var(--ink)}
+.seg{display:flex;gap:6px;flex:none;margin-bottom:7px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.09em;padding:5px 13px;
+  border:1px solid var(--line);background:var(--paper);color:var(--soft);cursor:pointer;
+  border-radius:2px;transition:background .15s,color .15s,border-color .15s}
+.seg button:hover{background:#E2EBF0;color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.seg button.alt{margin-left:auto;font-size:10.4px;letter-spacing:.12em}
+.seg button:focus-visible{outline:2px solid var(--t-cls);outline-offset:1px}
+.meanbox{background:var(--card);border:1px solid var(--hair);padding:8px 10px;flex:none}
+.meanbox svg{display:block;width:100%}
+.pt{transition:fill .28s ease,stroke .28s ease,opacity .28s ease}
+
+/* ---------- fill: let a short column spread over the stage instead of
+   piling its cards at the top. Cards grow and centre their own text; callouts,
+   tables and code keep their natural height.                                 */
+.colstack.fill{gap:12px}
+.colstack.fill > .card{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
+.colstack.fill > .callout,.colstack.fill > table,.colstack.fill > pre,
+.colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
+
+/* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
+table.d.roomy td,table.d.roomy th{padding:19px 10px}
+table.d.roomy.tall td,table.d.roomy.tall th{padding:27px 10px}
+table.log.roomy td,table.log.roomy th{padding:17px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:24px 12px;margin-bottom:10px}
+
+/* ---------- cover ornament: a wall of raw cells ---------- */
+.coverpat .c-miss{color:var(--t-asr);font-weight:700}
+.coverpat .c-val{color:var(--t-grp)}
+.coverpat .c-dim{color:#9BAAB3}
+.coverpat .c-hdr{color:var(--t-cls);font-weight:700}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<!-- ============ 1 · COVER ============ -->
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat" id="cvp"></div>
+  <div class="kicker">DA2402 · Data Curation and Visualization</div>
+  <h1>Data<br/>Cleaning</h1>
+  <div class="pt">Part 2 — Testing the mechanism</div>
+  <div class="rule"></div>
+  <p class="sub">Lecture 1 said the mechanism decides the method. This one asks whether the data can
+  tell you the mechanism. Four tests, run on a survey where we planted the answers, so you can see
+  which ones find what we hid.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 · BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data cleaning</td></tr>
+    <tr><td>Part</td><td>2 of 5 · Statistical tests for missing data</td></tr>
+    <tr><td>Toolkit</td><td>scipy · numpy · pandas</td></tr>
+  </table>
+</section>
+
+<!-- ============ 2 · THE LIMIT, FIRST ============ -->
+<section class="slide" data-sec="The limit">
+  <div class="eyebrow">The limit, stated first</div>
+  <h1 class="t">Tests can rule out MCAR. Nothing can confirm MNAR.
+    <small>Worth knowing before you spend an hour on the arithmetic.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="fig">
+        <div class="cap">What the tests reach</div>
+        <svg viewBox="0 0 520 244" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="The tests separate MCAR from everything else. No test separates MAR from MNAR.">
+<rect x="10" y="40" width="160" height="42" fill="#FFFFFF" stroke="#DCE4E8"/>
+<rect x="10" y="40" width="160" height="3" fill="#0E7A55"/>
+<text x="90.0" y="67.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="15" fill="#0E7A55" font-weight="700">MCAR</text>
+<rect x="180" y="40" width="160" height="42" fill="#FFFFFF" stroke="#DCE4E8"/>
+<rect x="180" y="40" width="160" height="3" fill="#8F5D0A"/>
+<text x="260.0" y="67.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="15" fill="#8F5D0A" font-weight="700">MAR</text>
+<rect x="350" y="40" width="160" height="42" fill="#FFFFFF" stroke="#DCE4E8"/>
+<rect x="350" y="40" width="160" height="3" fill="#B02F3B"/>
+<text x="430.0" y="67.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="15" fill="#B02F3B" font-weight="700">MNAR</text>
+<path d="M10 94 V106 H170 V94" fill="none" stroke="#0E7A55" stroke-width="1.5"/>
+<text x="90.0" y="122.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#0E7A55" font-weight="700">the tests reach this</text>
+<text x="90.0" y="137.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.8" fill="#53666F" font-weight="400">Little  ·  permutation</text>
+<text x="90.0" y="150.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.8" fill="#53666F" font-weight="400">t-test  ·  logistic</text>
+<path d="M180 94 V106 H510 V94" fill="none" stroke="#B02F3B" stroke-width="1.5"/>
+<text x="345.0" y="122.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#B02F3B" font-weight="700">no test separates these two</text>
+<text x="345.0" y="137.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.8" fill="#53666F" font-weight="400">both reject MCAR, and both show the same</text>
+<text x="345.0" y="150.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.8" fill="#53666F" font-weight="400">observed columns predicting missingness</text>
+<rect x="10" y="176" width="500" height="54" fill="#FDECEE" stroke="#E6C3C8"/>
+<text x="260.0" y="199.0" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" font-weight="700">The evidence that would split MAR from MNAR</text>
+<text x="260.0" y="218.0" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" font-weight="700">is the data you are missing.</text>
+</svg>
+      </div>
+      <div class="colstack fill">
+        <div class="card g">
+          <h3>What you can do</h3>
+          <p>Test whether missingness is related to the columns you observed. If it is, MCAR is
+          out. That test is real, standard, and worth running.</p>
+        </div>
+        <div class="card r">
+          <h3>What you cannot do</h3>
+          <p>Test whether missingness is related to the values you did not observe. The comparison
+          needs those values. MNAR is argued for from how the data was collected.</p>
+        </div>
+        <div class="callout sm">Rubin's framework is a set of assumptions, and only one of the
+        three leaves a signature the data can carry.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 · THE TEST BENCH ============ -->
+<section class="slide" data-sec="The test bench">
+  <div class="eyebrow">The test bench</div>
+  <h1 class="t">A survey with the answers planted
+    <small>Same 400 respondents as Lecture 1. We know each column's mechanism, so every test below
+    can be marked right or wrong.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="fig">
+        <div class="cap">The test bench</div>
+        <svg viewBox="0 0 520 272" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Percent missing per column: gender 7 percent planted MCAR, income 16.5 percent planted MAR, health score 36 percent planted MNAR.">
+<text x="132" y="18" font-family="JetBrains Mono,monospace" font-size="9.2" fill="#8FA0A9">% OF ROWS MISSING &#183; AND THE MECHANISM WE PLANTED</text>
+<text x="122" y="62" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" font-weight="700">gender</text>
+<rect x="132" y="44" width="52.2" height="26" fill="#0E7A55" rx="3"/>
+<text x="192.2" y="62" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" font-weight="700">7.0%</text>
+<rect x="132" y="77" width="60" height="17" fill="#0E7A55" rx="2"/>
+<text x="162" y="89.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#fff" font-weight="700">MCAR</text>
+<text x="202" y="89.5" font-family="Public Sans,sans-serif" font-size="10.8" fill="#53666F">a tablet bug, flat rate</text>
+<text x="122" y="134" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" font-weight="700">income</text>
+<rect x="132" y="116" width="122.9" height="26" fill="#8F5D0A" rx="3"/>
+<text x="262.9" y="134" font-family="JetBrains Mono,monospace" font-size="12" fill="#8F5D0A" font-weight="700">16.5%</text>
+<rect x="132" y="149" width="60" height="17" fill="#8F5D0A" rx="2"/>
+<text x="162" y="161.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#fff" font-weight="700">MAR</text>
+<text x="202" y="161.5" font-family="Public Sans,sans-serif" font-size="10.8" fill="#53666F">refusal falls with age</text>
+<text x="122" y="206" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" font-weight="700">health_score</text>
+<rect x="132" y="188" width="268.2" height="26" fill="#B02F3B" rx="3"/>
+<text x="408.2" y="206" font-family="JetBrains Mono,monospace" font-size="12" fill="#B02F3B" font-weight="700">36.0%</text>
+<rect x="132" y="221" width="60" height="17" fill="#B02F3B" rx="2"/>
+<text x="162" y="233.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#fff" font-weight="700">MNAR</text>
+<text x="202" y="233.5" font-family="Public Sans,sans-serif" font-size="10.8" fill="#53666F">low scores withheld</text>
+<line x1="132" y1="258" x2="430" y2="258" stroke="#DCE4E8"/>
+<text x="132.0" y="269" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">0%</text>
+<text x="206.5" y="269" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">10%</text>
+<text x="281.0" y="269" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">20%</text>
+<text x="355.5" y="269" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">30%</text>
+<text x="430.0" y="269" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9">40%</text>
+</svg>
+        <div class="rd">Real data gives you the bar and nothing else. The tag under it is what the
+        rest of this lecture tries to recover.</div>
+      </div>
+
+      <div class="colstack fill">
+        <div class="outlbl">make_survey.py &#183; the three mechanisms, as written</div>
+        <pre class="code xs"><span class="py-cm"># gender: a flat rate, independent of everything</span>
+mcar = rng.random(n) &lt; <span class="py-num">0.06</span>
+
+<span class="py-cm"># income: depends on age, an observed column</span>
+mar  = rng.random(n) &lt; (<span class="py-num">0.42</span> - <span class="py-num">0.006</span>*age)
+
+<span class="py-cm"># health: depends on health itself</span>
+mnar = rng.random(n) &lt; <span class="py-num">1</span>/(<span class="py-num">1</span>+np.exp((health-<span class="py-num">78</span>)/<span class="py-num">5</span>))</pre>
+        <div class="callout sm">Three lines, three mechanisms. The middle one reads
+        <code class="k">age</code>, which the file contains. The last reads
+        <code class="k">health</code>, which the file is about to lose.</div>
+        <div class="callout good sm">A test that marks gender MCAR and the other two not-MCAR has
+        done its job. The open question is whether anything separates the last two lines.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4 · LITTLE'S TEST, THE IDEA ============ -->
+<section class="slide" data-sec="Little's test · 1 of 2">
+  <div class="eyebrow">Little's MCAR test · 1 of 2 · Little (1988), JASA</div>
+  <h1 class="t">Compare the group means, pattern by pattern
+    <small>Under MCAR the rows in every missingness pattern are a random slice of the same
+    population, so their means on the observed columns should agree.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack fill">
+        <div class="card b">
+          <h3>The idea in one line</h3>
+          <p>Split the rows by which columns are missing. If the groups differ on the columns they
+          all share, missingness is carrying information.</p>
+        </div>
+        <div class="callout sm">Every row belongs to one pattern. With <i>k</i> columns there are at
+        most 2<sup><i>k</i></sup> of them, and the survey uses all 8 of its possible 3-column
+        patterns.</div>
+        <div class="callout warn sm">The test pools all patterns into one number, so it answers
+        "is anything non-random anywhere", and does not say which column is the problem.</div>
+      </div>
+      <div class="colstack">
+        <h2 class="s">The statistic</h2>
+        <div class="out xs">d&#178; = &#8721;<sub>j</sub>  n<sub>j</sub> (x&#772;<sub>j</sub> &#8722; &#956;&#770;<sub>j</sub>)&#8242; &#931;&#770;<sub>j</sub><sup>&#8722;1</sup> (x&#772;<sub>j</sub> &#8722; &#956;&#770;<sub>j</sub>)
+
+  j        each missingness pattern
+  n<sub>j</sub>       rows in that pattern
+  x&#772;<sub>j</sub>       its mean on the columns it observes
+  &#956;&#770;, &#931;&#770;     ML estimates from all the data
+                                   </div>
+        <ul class="b sm">
+          <li>A Mahalanobis distance per pattern, weighted by how many rows it holds.</li>
+          <li>Under MCAR it follows &#967;&#178; with &#8721;<sub>j</sub> k<sub>j</sub> &#8722; k
+          degrees of freedom, where k<sub>j</sub> counts the columns pattern j observes.</li>
+          <li>Large d&#178; means the pattern means disagree by more than sampling noise.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · LITTLE'S TEST, RUN ============ -->
+<section class="slide" data-sec="Little's test · 2 of 2">
+  <div class="eyebrow">Little's MCAR test · 2 of 2 · run on survey.csv</div>
+  <h1 class="t">chi2 = 73.96 on 8 df, p = 8e-13
+    <small>Run twice: once on all four numeric columns, once on the column we know is MCAR.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="fig">
+        <div class="cap">Where each statistic falls under the null</div>
+        <svg viewBox="0 0 520 232" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Chi-square reference distributions. The all-column statistic 73.96 on 8 degrees of freedom is far past the 5 percent cut. The gender-only statistic 2.75 on 2 degrees of freedom sits inside the body.">
+<polygon points="163.9,148 164.5,132.8 165.5,133.3 166.5,133.7 167.4,134.2 168.4,134.6 169.4,135.0 170.3,135.4 171.3,135.8 172.3,136.2 173.3,136.6 174.2,136.9 175.2,137.3 176.2,137.6 177.1,137.9 178.1,138.3 179.1,138.6 180.0,138.9 181.0,139.2 182.0,139.5 183.0,139.7 183.9,140.0 184.9,140.3 185.9,140.5 186.8,140.8 187.8,141.0 188.8,141.2 189.7,141.4 190.7,141.7 191.7,141.9 192.7,142.1 193.6,142.3 194.6,142.5 195.6,142.7 196.5,142.8 197.5,143.0 198.5,143.2 199.4,143.3 200.4,143.5 201.4,143.6 202.4,143.8 203.3,143.9 204.3,144.1 205.3,144.2 206.2,144.3 207.2,144.5 208.2,144.6 209.1,144.7 210.1,144.8 211.1,144.9 212.1,145.0 213.0,145.1 214.0,145.2 215.0,145.3 215.9,145.4 216.9,145.5 217.9,145.6 218.8,145.7 219.8,145.8 220.8,145.9 221.8,145.9 222.7,146.0 223.7,146.1 224.7,146.1 225.6,146.2 226.6,146.3 227.6,146.3 228.5,146.4 229.5,146.5 230.5,146.5 231.5,146.6 232.4,146.6 233.4,146.7 234.4,146.7 235.3,146.8 236.3,146.8 237.3,146.8 238.2,146.9 239.2,146.9 240.2,147.0 241.2,147.0 242.1,147.0 243.1,147.1 244.1,147.1 245.0,147.1 246.0,147.2 246.0,148" fill="#F3D6DA"/>
+<polyline points="14.2,148.0 15.2,148.0 16.1,147.9 17.1,147.7 18.1,147.4 19.0,146.9 20.0,146.3 21.0,145.5 22.0,144.4 22.9,143.2 23.9,141.8 24.9,140.2 25.8,138.4 26.8,136.4 27.8,134.3 28.7,132.0 29.7,129.6 30.7,127.0 31.7,124.4 32.6,121.6 33.6,118.8 34.6,115.9 35.5,112.9 36.5,109.9 37.5,106.9 38.4,103.8 39.4,100.8 40.4,97.8 41.4,94.8 42.3,91.8 43.3,88.9 44.3,86.0 45.2,83.2 46.2,80.4 47.2,77.7 48.1,75.1 49.1,72.6 50.1,70.2 51.0,67.9 52.0,65.7 53.0,63.5 54.0,61.5 54.9,59.6 55.9,57.8 56.9,56.1 57.8,54.6 58.8,53.1 59.8,51.8 60.7,50.5 61.7,49.4 62.7,48.4 63.7,47.5 64.6,46.7 65.6,46.0 66.6,45.4 67.5,45.0 68.5,44.6 69.5,44.3 70.4,44.1 71.4,44.0 72.4,44.0 73.4,44.1 74.3,44.2 75.3,44.5 76.3,44.8 77.2,45.2 78.2,45.6 79.2,46.2 80.1,46.8 81.1,47.4 82.1,48.1 83.1,48.9 84.0,49.7 85.0,50.6 86.0,51.5 86.9,52.5 87.9,53.5 88.9,54.5 89.8,55.6 90.8,56.7 91.8,57.8 92.8,59.0 93.7,60.2 94.7,61.4 95.7,62.6 96.6,63.9 97.6,65.1 98.6,66.4 99.5,67.7 100.5,69.0 101.5,70.3 102.5,71.6 103.4,73.0 104.4,74.3 105.4,75.6 106.3,76.9 107.3,78.3 108.3,79.6 109.2,80.9 110.2,82.2 111.2,83.5 112.2,84.8 113.1,86.1 114.1,87.4 115.1,88.7 116.0,89.9 117.0,91.2 118.0,92.4 118.9,93.7 119.9,94.9 120.9,96.1 121.9,97.3 122.8,98.4 123.8,99.6 124.8,100.7 125.7,101.8 126.7,102.9 127.7,104.0 128.6,105.1 129.6,106.2 130.6,107.2 131.6,108.2 132.5,109.2 133.5,110.2 134.5,111.2 135.4,112.1 136.4,113.0 137.4,114.0 138.3,114.9 139.3,115.7 140.3,116.6 141.3,117.4 142.2,118.3 143.2,119.1 144.2,119.9 145.1,120.6 146.1,121.4 147.1,122.1 148.0,122.9 149.0,123.6 150.0,124.3 150.9,124.9 151.9,125.6 152.9,126.2 153.9,126.9 154.8,127.5 155.8,128.1 156.8,128.7 157.7,129.2 158.7,129.8 159.7,130.3 160.6,130.9 161.6,131.4 162.6,131.9 163.6,132.4 164.5,132.8 165.5,133.3 166.5,133.7 167.4,134.2 168.4,134.6 169.4,135.0 170.3,135.4 171.3,135.8 172.3,136.2 173.3,136.6 174.2,136.9 175.2,137.3 176.2,137.6 177.1,137.9 178.1,138.3 179.1,138.6 180.0,138.9 181.0,139.2 182.0,139.5 183.0,139.7 183.9,140.0 184.9,140.3 185.9,140.5 186.8,140.8 187.8,141.0 188.8,141.2 189.7,141.4 190.7,141.7 191.7,141.9 192.7,142.1 193.6,142.3 194.6,142.5 195.6,142.7 196.5,142.8 197.5,143.0 198.5,143.2 199.4,143.3 200.4,143.5 201.4,143.6 202.4,143.8 203.3,143.9 204.3,144.1 205.3,144.2 206.2,144.3 207.2,144.5 208.2,144.6 209.1,144.7 210.1,144.8 211.1,144.9 212.1,145.0 213.0,145.1 214.0,145.2 215.0,145.3 215.9,145.4 216.9,145.5 217.9,145.6 218.8,145.7 219.8,145.8 220.8,145.9 221.8,145.9 222.7,146.0 223.7,146.1 224.7,146.1 225.6,146.2 226.6,146.3 227.6,146.3 228.5,146.4 229.5,146.5 230.5,146.5 231.5,146.6 232.4,146.6 233.4,146.7 234.4,146.7 235.3,146.8 236.3,146.8 237.3,146.8 238.2,146.9 239.2,146.9 240.2,147.0 241.2,147.0 242.1,147.0 243.1,147.1 244.1,147.1 245.0,147.1 246.0,147.2" fill="none" stroke="#53666F" stroke-width="1.4"/>
+<line x1="14" y1="148" x2="246" y2="148" stroke="#C3CFD5"/>
+<text x="130.0" y="26.0" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="11" fill="#14222B" font-weight="700">all four numeric columns</text>
+<line x1="246.0" y1="40" x2="246.0" y2="148" stroke="#B02F3B" stroke-width="2"/>
+<path d="M242.0 40 L246.0 32 L250.0 40 Z" fill="#B02F3B"/>
+<text x="246.0" y="28.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#B02F3B" font-weight="700">observed (off scale)</text>
+<text x="163.9" y="161.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9" font-weight="400">5% cut</text>
+<text x="130.0" y="180.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#B02F3B" font-weight="700">chi2 = 73.96   df = 8</text>
+<text x="130.0" y="195.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#B02F3B" font-weight="700">p = 7.97e-13</text>
+<text x="130.0" y="212.0" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="11" fill="#B02F3B" font-weight="700">REJECT MCAR</text>
+<polygon points="351.2,148 351.8,142.9 352.8,143.1 353.8,143.2 354.7,143.4 355.7,143.6 356.7,143.7 357.6,143.9 358.6,144.1 359.6,144.2 360.6,144.3 361.5,144.5 362.5,144.6 363.5,144.7 364.4,144.9 365.4,145.0 366.4,145.1 367.3,145.2 368.3,145.3 369.3,145.4 370.3,145.5 371.2,145.6 372.2,145.7 373.2,145.8 374.1,145.8 375.1,145.9 376.1,146.0 377.0,146.1 378.0,146.1 379.0,146.2 379.9,146.3 380.9,146.3 381.9,146.4 382.9,146.5 383.8,146.5 384.8,146.6 385.8,146.6 386.7,146.7 387.7,146.7 388.7,146.8 389.6,146.8 390.6,146.9 391.6,146.9 392.6,146.9 393.5,147.0 394.5,147.0 395.5,147.1 396.4,147.1 397.4,147.1 398.4,147.2 399.3,147.2 400.3,147.2 401.3,147.2 402.2,147.3 403.2,147.3 404.2,147.3 405.2,147.4 406.1,147.4 407.1,147.4 408.1,147.4 409.0,147.4 410.0,147.5 411.0,147.5 411.9,147.5 412.9,147.5 413.9,147.5 414.9,147.6 415.8,147.6 416.8,147.6 417.8,147.6 418.7,147.6 419.7,147.6 420.7,147.6 421.6,147.7 422.6,147.7 423.6,147.7 424.6,147.7 425.5,147.7 426.5,147.7 427.5,147.7 428.4,147.7 429.4,147.7 430.4,147.8 431.3,147.8 432.3,147.8 433.3,147.8 434.2,147.8 435.2,147.8 436.2,147.8 437.2,147.8 438.1,147.8 439.1,147.8 440.1,147.8 441.0,147.8 442.0,147.8 443.0,147.9 443.9,147.9 444.9,147.9 445.9,147.9 446.9,147.9 447.8,147.9 448.8,147.9 449.8,147.9 450.7,147.9 451.7,147.9 452.7,147.9 453.6,147.9 454.6,147.9 455.6,147.9 456.5,147.9 457.5,147.9 458.5,147.9 459.5,147.9 460.4,147.9 461.4,147.9 462.4,147.9 463.3,147.9 464.3,147.9 465.3,147.9 466.2,147.9 467.2,147.9 468.2,147.9 469.2,147.9 470.1,147.9 471.1,147.9 472.1,148.0 473.0,148.0 474.0,148.0 475.0,148.0 475.9,148.0 476.9,148.0 477.9,148.0 478.9,148.0 479.8,148.0 480.8,148.0 481.8,148.0 482.7,148.0 483.7,148.0 484.7,148.0 485.6,148.0 486.6,148.0 487.6,148.0 488.5,148.0 489.5,148.0 490.5,148.0 491.5,148.0 492.4,148.0 493.4,148.0 494.4,148.0 495.3,148.0 496.3,148.0 497.3,148.0 498.2,148.0 499.2,148.0 500.2,148.0 501.2,148.0 502.1,148.0 503.1,148.0 504.1,148.0 505.0,148.0 506.0,148.0 506.0,148" fill="#F3D6DA"/>
+<polyline points="274.3,44.0 275.2,47.8 276.2,51.5 277.2,55.1 278.1,58.5 279.1,61.8 280.1,65.0 281.0,68.1 282.0,71.0 283.0,73.9 284.0,76.6 284.9,79.2 285.9,81.8 286.9,84.2 287.8,86.6 288.8,88.8 289.8,91.0 290.7,93.1 291.7,95.2 292.7,97.1 293.7,99.0 294.6,100.8 295.6,102.5 296.6,104.2 297.5,105.8 298.5,107.4 299.5,108.9 300.4,110.3 301.4,111.7 302.4,113.1 303.3,114.4 304.3,115.6 305.3,116.8 306.3,117.9 307.2,119.1 308.2,120.1 309.2,121.2 310.1,122.1 311.1,123.1 312.1,124.0 313.0,124.9 314.0,125.8 315.0,126.6 316.0,127.4 316.9,128.1 317.9,128.9 318.9,129.6 319.8,130.2 320.8,130.9 321.8,131.5 322.7,132.1 323.7,132.7 324.7,133.3 325.6,133.8 326.6,134.4 327.6,134.9 328.6,135.3 329.5,135.8 330.5,136.3 331.5,136.7 332.4,137.1 333.4,137.5 334.4,137.9 335.3,138.3 336.3,138.6 337.3,139.0 338.3,139.3 339.2,139.6 340.2,139.9 341.2,140.2 342.1,140.5 343.1,140.8 344.1,141.1 345.0,141.3 346.0,141.6 347.0,141.8 347.9,142.0 348.9,142.3 349.9,142.5 350.9,142.7 351.8,142.9 352.8,143.1 353.8,143.2 354.7,143.4 355.7,143.6 356.7,143.7 357.6,143.9 358.6,144.1 359.6,144.2 360.6,144.3 361.5,144.5 362.5,144.6 363.5,144.7 364.4,144.9 365.4,145.0 366.4,145.1 367.3,145.2 368.3,145.3 369.3,145.4 370.3,145.5 371.2,145.6 372.2,145.7 373.2,145.8 374.1,145.8 375.1,145.9 376.1,146.0 377.0,146.1 378.0,146.1 379.0,146.2 379.9,146.3 380.9,146.3 381.9,146.4 382.9,146.5 383.8,146.5 384.8,146.6 385.8,146.6 386.7,146.7 387.7,146.7 388.7,146.8 389.6,146.8 390.6,146.9 391.6,146.9 392.6,146.9 393.5,147.0 394.5,147.0 395.5,147.1 396.4,147.1 397.4,147.1 398.4,147.2 399.3,147.2 400.3,147.2 401.3,147.2 402.2,147.3 403.2,147.3 404.2,147.3 405.2,147.4 406.1,147.4 407.1,147.4 408.1,147.4 409.0,147.4 410.0,147.5 411.0,147.5 411.9,147.5 412.9,147.5 413.9,147.5 414.9,147.6 415.8,147.6 416.8,147.6 417.8,147.6 418.7,147.6 419.7,147.6 420.7,147.6 421.6,147.7 422.6,147.7 423.6,147.7 424.6,147.7 425.5,147.7 426.5,147.7 427.5,147.7 428.4,147.7 429.4,147.7 430.4,147.8 431.3,147.8 432.3,147.8 433.3,147.8 434.2,147.8 435.2,147.8 436.2,147.8 437.2,147.8 438.1,147.8 439.1,147.8 440.1,147.8 441.0,147.8 442.0,147.8 443.0,147.9 443.9,147.9 444.9,147.9 445.9,147.9 446.9,147.9 447.8,147.9 448.8,147.9 449.8,147.9 450.7,147.9 451.7,147.9 452.7,147.9 453.6,147.9 454.6,147.9 455.6,147.9 456.5,147.9 457.5,147.9 458.5,147.9 459.5,147.9 460.4,147.9 461.4,147.9 462.4,147.9 463.3,147.9 464.3,147.9 465.3,147.9 466.2,147.9 467.2,147.9 468.2,147.9 469.2,147.9 470.1,147.9 471.1,147.9 472.1,148.0 473.0,148.0 474.0,148.0 475.0,148.0 475.9,148.0 476.9,148.0 477.9,148.0 478.9,148.0 479.8,148.0 480.8,148.0 481.8,148.0 482.7,148.0 483.7,148.0 484.7,148.0 485.6,148.0 486.6,148.0 487.6,148.0 488.5,148.0 489.5,148.0 490.5,148.0 491.5,148.0 492.4,148.0 493.4,148.0 494.4,148.0 495.3,148.0 496.3,148.0 497.3,148.0 498.2,148.0 499.2,148.0 500.2,148.0 501.2,148.0 502.1,148.0 503.1,148.0 504.1,148.0 505.0,148.0 506.0,148.0" fill="none" stroke="#53666F" stroke-width="1.4"/>
+<line x1="274" y1="148" x2="506" y2="148" stroke="#C3CFD5"/>
+<text x="390.0" y="26.0" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="11" fill="#14222B" font-weight="700">gender only</text>
+<line x1="309.4" y1="40" x2="309.4" y2="148" stroke="#0E7A55" stroke-width="2"/>
+<path d="M305.4 40 L309.4 32 L313.4 40 Z" fill="#0E7A55"/>
+<text x="309.4" y="28.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#0E7A55" font-weight="700">observed</text>
+<text x="351.2" y="161.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.4" fill="#8FA0A9" font-weight="400">5% cut</text>
+<text x="390.0" y="180.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#0E7A55" font-weight="700">chi2 = 2.75   df = 2</text>
+<text x="390.0" y="195.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#0E7A55" font-weight="700">p = 0.252</text>
+<text x="390.0" y="212.0" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="11" fill="#0E7A55" font-weight="700">cannot reject</text>
+</svg>
+      </div>
+      <div class="colstack fill">
+        <div class="callout bad sm"><b>All four columns together: MCAR is rejected.</b> Correct, and
+        expected, since two of the three mechanisms we planted are not MCAR.</div>
+        <div class="callout good sm"><b>gender on its own: chi2 = 2.75, df = 2, p = 0.25.</b> The
+        test cannot reject MCAR for the column that is genuinely MCAR.</div>
+        <div class="card o">
+          <h3>Reading a p-value you failed to reject</h3>
+          <p>p = 0.25 says the data holds no evidence against MCAR. With 28 missing values it also
+          holds little power to find any. Absence of evidence, at n = 28.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · LITTLE'S ASSUMPTIONS ============ -->
+<section class="slide" data-sec="Little's test · limits">
+  <div class="eyebrow">Little's MCAR test · what it assumes</div>
+  <h1 class="t">Four conditions, and what breaks when they fail
+    <small>The test is standard and it is fragile. Check these before quoting the p-value.</small></h1>
+  <div class="wrap">
+    <table class="d sm free roomy tall">
+      <tr><th style="width:180px">Assumption</th><th>What happens when it fails</th></tr>
+      <tr><td><b>Multivariate normality</b></td>
+        <td>The &#967;&#178; reference is wrong. Income here has skew 1.91. Take logs (skew 0.05)
+        and the statistic moves to 80.95, p = 3e-14, so the verdict survives. Worth checking on any
+        skewed column before quoting a p-value.</td></tr>
+      <tr><td><b>Enough rows per pattern</b></td>
+        <td>&#931;&#770;<sub>j</sub> is estimated per pattern. The survey has one row in the
+        all-three-missing pattern, and a pattern that thin contributes noise.</td></tr>
+      <tr class="hl"><td><b>Sample size</b></td>
+        <td>Large n rejects on differences too small to matter; small n misses real ones. Under 200
+        rows the test has little power. It answers "is there a difference", never "is it big
+        enough to care about".</td></tr>
+      <tr class="hl"><td><b>MCAR is the only alternative</b></td>
+        <td>Rejection means not-MCAR. It says nothing about whether MAR or MNAR produced the
+        pattern, which is the question you actually have.</td></tr>
+    </table>
+    <div class="callout"><b>In Python.</b> There is no Little's test in scipy or scikit-learn. R has
+    <code class="k">naniar::mcar_test</code> and <code class="k">MissMech</code>; the version here is
+    forty lines of numpy, given in the notebook for this lecture.</div>
+  </div>
+</section>
+
+<!-- ============ 7 · PERMUTATION TEST, LIVE ============ -->
+<section class="slide" data-sec="Permutation test · live">
+  <div class="eyebrow">Permutation test &#183; live</div>
+  <h1 class="t">Build the null distribution by shuffling
+    <small>If missingness is unrelated to age, relabelling at random should produce gaps as large as
+    the one you measured. Press Run and see how often it does.</small></h1>
+  <div class="wrap">
+    <div class="lab">
+      <div class="plot">
+        <div class="seg" role="group" aria-label="column under test">
+          <button data-c="gender">gender</button>
+          <button data-c="income" class="on">income</button>
+          <button data-c="health_score">health</button>
+          <button id="permrun" class="alt">Run 2,000 shuffles</button>
+          <button id="permreset" class="alt">Reset</button>
+        </div>
+        <svg id="permsvg" viewBox="0 0 560 400" preserveAspectRatio="xMidYMid meet" role="img"
+             aria-label="Histogram of the difference in mean age between missing and observed rows
+             under random relabelling, with the observed difference marked."></svg>
+        <div class="plotnote">Each shuffle keeps the same number of missing labels and reassigns
+          them at random. Bars at least as far from zero as the observed gap are coloured.</div>
+      </div>
+
+      <div class="colstack" style="gap:9px">
+        <div class="card sm b">
+          <h3>Testing <span id="permcol" style="color:#8F5D0A">income · MAR</span></h3>
+          <p>Statistic: mean age of the rows whose value is missing, minus mean age of the rest.</p>
+        </div>
+        <table class="d xs">
+          <tr><th>Shuffles run</th><td class="c" id="permdraws">0</td></tr>
+          <tr><th>At least as extreme</th><td class="c" id="permp">&#8212;</td></tr>
+        </table>
+        <div class="callout sm" id="permverdict">Press <b>Run</b>.</div>
+        <div class="callout warn sm"><b>No distribution assumed.</b> The reference comes from your
+        own data, relabelled. That makes it safe on skewed columns where the t-test is not.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 · PERMUTATION RESULTS ============ -->
+<section class="slide" data-sec="Permutation test · results">
+  <div class="eyebrow">Permutation test &#183; all three columns</div>
+  <h1 class="t">MCAR survives, the other two do not
+    <small>5,000 shuffles per column, and the parametric cousin beside each for comparison.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <table class="d sm free roomy">
+          <tr><th style="width:132px">Column</th><th style="width:104px">Gap in mean age</th>
+            <th style="width:92px">Permutation p</th><th>Welch t-test</th></tr>
+          <tr class="ok"><td><b>gender</b> (MCAR)</td><td class="c">&#8722;1.58 yrs</td>
+            <td class="c">0.568</td><td class="o">t = &#8722;0.65, p = 0.52</td></tr>
+          <tr class="wr"><td><b>income</b> (MAR)</td><td class="c">&#8722;10.23 yrs</td>
+            <td class="c">&lt; 0.0002</td><td class="o">t = &#8722;6.64, p = 1.3e&#8722;09</td></tr>
+          <tr class="hl"><td><b>health_score</b> (MNAR)</td><td class="c">+6.36 yrs</td>
+            <td class="c">&lt; 0.0002</td><td class="o">t = +4.46, p = 1.2e&#8722;05</td></tr>
+        </table>
+        <div class="callout good sm">Both tests agree on all three columns. On this data the t-test
+        would have done, and it is cheaper.</div>
+      </div>
+      <div class="colstack fill">
+        <div class="card g">
+          <h3>When the permutation test earns its cost</h3>
+          <p>Skewed or heavy-tailed columns, small samples, and statistics with no tractable null
+          such as a median gap or a Gini difference. It also handles any statistic you can write as
+          a function of the labels.</p>
+        </div>
+        <div class="callout bad"><b>The result that matters is on the last two rows.</b> The MAR
+        column and the MNAR column both reject, at similar strength. Nothing in either number says
+        which is which.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9 · LOGISTIC, THE IDEA ============ -->
+<section class="slide" data-sec="Logistic test · 1 of 2">
+  <div class="eyebrow">Logistic regression on the missingness indicator &#183; 1 of 2</div>
+  <h1 class="t">Model the missingness itself
+    <small>Turn "is this cell blank" into a 0/1 outcome and predict it from the columns you have.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack fill">
+        <pre class="code xs">R = s.income.isna().astype(<span class="py-bi">int</span>)
+
+<span class="py-cm"># logit P(R=1) = b0 + b1*age + b2*education</span>
+fit(X=s[[<span class="py-str">"age"</span>,<span class="py-str">"education_years"</span>]], y=R)</pre>
+        <div class="card b">
+          <h3>Why this beats a t-test</h3>
+          <p>It takes every observed column at once, so it separates a real driver from a column
+          that merely correlates with one. Age and education move together here; the model says
+          which one carries the missingness.</p>
+        </div>
+        <div class="callout sm">Read the coefficient on each predictor, and the likelihood-ratio
+        test of the whole model against an intercept only.</div>
+      </div>
+      <div class="colstack">
+        <table class="d sm free roomy">
+          <tr><th style="width:150px">Result</th><th>What it supports</th></tr>
+          <tr class="ok"><td><b>No predictor significant</b></td>
+            <td>Consistent with MCAR. Nothing you measured predicts who went missing.</td></tr>
+          <tr class="wr"><td><b>Some predictor significant</b></td>
+            <td>Consistent with MAR. The missingness is systematic and the driver is in your file,
+            so imputation and weighting can use it.</td></tr>
+          <tr class="hl"><td><b>The MNAR case</b></td>
+            <td>Produces either of the two rows above. The driver is a column you do not have, and
+            its correlation with a column you do have decides which.</td></tr>
+        </table>
+        <div class="callout warn sm">Fit one model per column with gaps. Predictors must be columns
+        that are complete, or you are modelling one gap with another.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 · LOGISTIC RESULTS ============ -->
+<section class="slide" data-sec="Logistic test · 2 of 2">
+  <div class="eyebrow">Logistic regression &#183; 2 of 2 &#183; fitted on survey.csv</div>
+  <h1 class="t">Age predicts missingness in two of the three columns
+    <small>Coefficient on age with its 95% interval, one model per column.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="fig">
+        <div class="cap">Effect of age on P(missing)</div>
+        <svg viewBox="0 0 520 200" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Coefficient on age in each missingness model with 95 percent intervals. Gender crosses zero. Income and health are both clear of zero, in opposite directions.">
+<line x1="322.1" y1="36" x2="322.1" y2="146" stroke="#C3CFD5" stroke-dasharray="4 3"/>
+<text x="322.1" y="30.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#8FA0A9" font-weight="400">no effect</text>
+<text x="138.0" y="60.0" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" font-weight="700">gender  (MCAR)</text>
+<line x1="278.3" y1="56" x2="390.1" y2="56" stroke="#0E7A55" stroke-width="2.4"/>
+<line x1="278.3" y1="51" x2="278.3" y2="61" stroke="#0E7A55" stroke-width="2"/>
+<line x1="390.1" y1="51" x2="390.1" y2="61" stroke="#0E7A55" stroke-width="2"/>
+<circle cx="334.2" cy="56" r="4.5" fill="#0E7A55"/>
+<text x="397.1" y="59.5" text-anchor="start" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#0E7A55" font-weight="700">p = 0.67</text>
+<text x="138.0" y="96.0" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" font-weight="700">income  (MAR)</text>
+<line x1="193.2" y1="92" x2="278.7" y2="92" stroke="#8F5D0A" stroke-width="2.4"/>
+<line x1="193.2" y1="87" x2="193.2" y2="97" stroke="#8F5D0A" stroke-width="2"/>
+<line x1="278.7" y1="87" x2="278.7" y2="97" stroke="#8F5D0A" stroke-width="2"/>
+<circle cx="235.9" cy="92" r="4.5" fill="#8F5D0A"/>
+<text x="285.7" y="95.5" text-anchor="start" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#8F5D0A" font-weight="700">p = 7.8e-05</text>
+<text x="138.0" y="132.0" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" font-weight="700">health  (MNAR)</text>
+<line x1="371.4" y1="128" x2="435.3" y2="128" stroke="#B02F3B" stroke-width="2.4"/>
+<line x1="371.4" y1="123" x2="371.4" y2="133" stroke="#B02F3B" stroke-width="2"/>
+<line x1="435.3" y1="123" x2="435.3" y2="133" stroke="#B02F3B" stroke-width="2"/>
+<circle cx="403.4" cy="128" r="4.5" fill="#B02F3B"/>
+<text x="442.3" y="131.5" text-anchor="start" font-family="JetBrains Mono,monospace" font-size="9.4" fill="#B02F3B" font-weight="700">p = 6.4e-07</text>
+<text x="192.5" y="164.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9" font-weight="400">-0.08</text>
+<text x="257.3" y="164.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9" font-weight="400">-0.04</text>
+<text x="322.1" y="164.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9" font-weight="400">+0.00</text>
+<text x="386.9" y="164.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9" font-weight="400">+0.04</text>
+<text x="451.7" y="164.0" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9" font-weight="400">+0.08</text>
+<text x="314.0" y="184.0" text-anchor="middle" font-family="Public Sans,system-ui,sans-serif" font-size="10" fill="#53666F" font-weight="400">coefficient on age in the logistic model of P(missing)</text>
+</svg>
+        <div class="rd"><b>gender</b> straddles zero. <b>income</b> sits below it, so each extra
+        year cuts the odds of refusing by 5%. <b>health</b> sits above, so each year raises them
+        by 5%.</div>
+      </div>
+      <div class="colstack">
+        <div class="outlbl">income &#183; MAR</div>
+        <div class="out xxs">term              coef      SE       p     OR
+age            <span class="h-bad">-0.0532</span>  0.0135  7.8e-05  0.948
+education_yrs  -0.0723  0.0633    0.254  0.930
+LR chi2 = 33.61, df = 2, <span class="h-bad">p = 5.0e-08</span></div>
+        <div class="outlbl">health_score &#183; MNAR</div>
+        <div class="out xxs">term              coef      SE       p     OR
+age            <span class="h-bad">+0.0502</span>  0.0101  6.4e-07  1.051
+education_yrs  <span class="h-bad">-0.1328</span>  0.0495   0.0073  0.876
+LR chi2 = 27.31, df = 2, <span class="h-bad">p = 1.2e-06</span></div>
+        <div class="outlbl">gender &#183; MCAR</div>
+        <div class="out xxs">age            +0.0075  0.0176    0.672  1.007
+education_yrs  -0.1413  0.0912    0.122  0.868
+LR chi2 =  2.82, df = 2, <span class="h-ok">p = 0.244</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 · THE PUNCHLINE ============ -->
+<section class="slide" data-sec="The punchline">
+  <div class="eyebrow">Three tests, three columns, one blind spot</div>
+  <h1 class="t">Every test gives the MNAR column a MAR verdict
+    <small>Read the last two rows. They are the same, and one of them is wrong.</small></h1>
+  <div class="wrap">
+    <table class="d sm free roomy tall">
+      <tr><th style="width:150px">Column</th><th style="width:130px">Little</th>
+        <th style="width:130px">Permutation</th><th style="width:150px">Logistic</th>
+        <th>Verdict the tests support</th></tr>
+      <tr class="ok"><td><b>gender</b><br/><i>truly MCAR</i></td>
+        <td class="c">p = 0.25</td><td class="c">p = 0.57</td><td class="c">p = 0.24</td>
+        <td><b>MCAR is plausible.</b> Correct.</td></tr>
+      <tr class="wr"><td><b>income</b><br/><i>truly MAR</i></td>
+        <td class="c">rejects</td><td class="c">p &lt; 0.0002</td><td class="c">p = 5e&#8722;08</td>
+        <td><b>Not MCAR; age predicts it.</b> Correct.</td></tr>
+      <tr class="hl"><td><b>health_score</b><br/><i>truly MNAR</i></td>
+        <td class="c">rejects</td><td class="c">p &lt; 0.0002</td><td class="c">p = 1e&#8722;06</td>
+        <td><b>Not MCAR; age predicts it.</b> The same verdict, and it misses the mechanism
+        entirely.</td></tr>
+    </table>
+    <div class="cols" style="flex:none;gap:14px">
+      <div class="callout bad"><b>Health missingness is driven by the health score.</b> Age looks
+      guilty because older respondents score lower, so age inherits the signal. Every test sees the
+      inherited signal and reports MAR.</div>
+      <div class="callout warn"><b>Act on that verdict and you impute health from age</b>, which
+      fills the withheld low scores with the average of the people who answered. That is the bias
+      from Lecture 1, now with a p-value behind it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 · PATTERN MIXTURE, THE IDEA ============ -->
+<section class="slide" data-sec="Pattern mixture · 1 of 2">
+  <div class="eyebrow">Pattern-mixture models &#183; 1 of 2</div>
+  <h1 class="t">Pattern mixture is a framework, not a test
+    <small>It gives you a place to write the assumption down and a way to price it.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack fill">
+        <div class="card b">
+          <h3>The split</h3>
+          <p>Model the responders and the non-responders as two populations, then recombine them
+          weighted by how many of each you have.</p>
+        </div>
+        <div class="out xs">&#956; = (1 &#8722; &#960;) &#956;<sub>obs</sub> + &#960; &#956;<sub>mis</sub>
+
+  &#960;        fraction missing        <span class="h-ok">0.360</span>
+  &#956;<sub>obs</sub>     mean of responders    <span class="h-ok">87.0</span>
+  &#956;<sub>mis</sub>     mean of the rest      <span class="h-bad">unobservable</span></div>
+        <div class="callout bad sm">Two of the three are in the data. The third is the whole
+        problem, and no amount of arithmetic produces it.</div>
+      </div>
+      <div class="colstack">
+        <div class="card o">
+          <h3>The sensitivity parameter</h3>
+          <p>Write <b>&#956;<sub>mis</sub> = &#956;<sub>obs</sub> + &#948;</b>. Then
+          <b>&#956; = &#956;<sub>obs</sub> + &#960;&#948;</b>, and the entire MNAR problem is one
+          number you have to supply.</p>
+        </div>
+        <table class="d sm free">
+          <tr><th style="width:96px">&#948; you assume</th><th>What you are claiming</th></tr>
+          <tr class="ok"><td class="c">0</td><td>Non-responders look like responders. This is
+            the MAR answer, and it is what every imputation method defaults to.</td></tr>
+          <tr class="hl"><td class="c">&#8722;13</td><td>Those who withheld score 13 points lower.
+            A claim about behaviour, defended from how the survey was run.</td></tr>
+        </table>
+        <div class="callout sm">Sources for &#948;: a follow-up study, an administrative record, a
+        clinician's judgement, or a range you report rather than a value you pick.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 · SENSITIVITY, LIVE ============ -->
+<section class="slide" data-sec="Pattern mixture · live">
+  <div class="eyebrow">Pattern-mixture models &#183; 2 of 2 &#183; live</div>
+  <h1 class="t">Move the assumption and watch the answer move
+    <small>health_score, 36% withheld. Drag &#948; and read the estimate off the line.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="fig">
+        <div class="cap">Estimated mean health against the assumed shift</div>
+        <svg id="senssvg" viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" role="img"
+             aria-label="Estimated overall mean health falls linearly as the assumed shift for the
+             withheld scores becomes more negative, crossing the true mean near delta -13."></svg>
+        <div class="rd" style="display:flex;align-items:center;gap:12px">
+          <label for="sensdelta" style="font-family:var(--mono);font-size:10.5px;color:var(--soft);
+            letter-spacing:.08em;white-space:nowrap">assumed &#948;</label>
+          <input type="range" id="sensdelta" min="-30" max="0" step="1" value="0"
+                 style="flex:1;accent-color:#B02F3B" aria-label="assumed shift delta"/>
+          <span id="sensd" style="font-family:var(--mono);font-weight:700;font-size:13px;
+            color:#B02F3B;width:34px;text-align:right">0</span>
+        </div>
+      </div>
+      <div class="colstack">
+        <table class="d sm">
+          <tr><th>Estimated mean health</th><td class="c" id="sensest" style="font-weight:700">87.0</td></tr>
+          <tr><th>Distance from the truth</th><td class="c" id="sensgap" style="font-weight:700">+4.7</td></tr>
+        </table>
+        <div class="callout sm" id="sensnote">Every point on this line is defensible from the
+        observed data alone.</div>
+        <div class="callout bad"><b>The dashed line is only there because the data was simulated.</b>
+        In a real study you get the sloping line and no marker on it.</div>
+        <div class="card g">
+          <h3>What you report</h3>
+          <p>Not a point. A range of &#948; you can defend, the estimate at each end, and whether
+          your conclusion changes anywhere inside it. If it does not, the MNAR worry is priced and
+          closed.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 · CHOOSING ============ -->
+<section class="slide" data-sec="Choosing a test">
+  <div class="eyebrow">Choosing among them</div>
+  <h1 class="t">4 tests and what each is for
+    <small>Run them in this order. Stop when the answer stops changing what you would do.</small></h1>
+  <div class="wrap">
+    <table class="d sm free roomy">
+      <tr><th style="width:150px">Test</th><th style="width:200px">Question it answers</th>
+        <th style="width:150px">Assumes</th><th>Use it when</th></tr>
+      <tr><td><b>t-test / ANOVA</b><br/>per column pair</td>
+        <td>Do the missing and observed rows differ on one other column?</td>
+        <td class="o">normality, equal-ish variance</td>
+        <td>First look. Cheap, and it names the column that differs.</td></tr>
+      <tr><td><b>Permutation</b><br/>per column pair</td>
+        <td>Same question, without a distributional claim.</td>
+        <td class="o">exchangeable labels</td>
+        <td>Skewed or small data, or a statistic with no closed-form null.</td></tr>
+      <tr><td><b>Little's MCAR</b><br/>whole dataset</td>
+        <td>Is anything non-random anywhere across all patterns?</td>
+        <td class="o">multivariate normality, n &gt; 200</td>
+        <td>One summary number for a report. It will not name the culprit.</td></tr>
+      <tr class="wr"><td><b>Logistic on R</b><br/>per column</td>
+        <td>Which observed columns predict the missingness, holding the others fixed?</td>
+        <td class="o">the usual logistic conditions</td>
+        <td>The one that pays. Its predictors are what your imputation model needs.</td></tr>
+      <tr class="hl"><td><b>Pattern mixture</b><br/>per column</td>
+        <td>How far could the answer move if the missing values differ?</td>
+        <td class="o">a &#948; you supply</td>
+        <td>Whenever MNAR is plausible. It prices the doubt instead of testing it.</td></tr>
+    </table>
+    <div class="callout"><b>Only the last row addresses MNAR</b>, and it does so by making you state
+    an assumption out loud rather than by producing evidence.</div>
+  </div>
+</section>
+
+<!-- ============ 15 · WHAT THE RESULT LICENSES ============ -->
+<section class="slide" data-sec="Acting on the result">
+  <div class="eyebrow">Acting on the result</div>
+  <h1 class="t">What each outcome lets you do next
+    <small>The reason to run any of this is the row it puts you in.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack fill">
+        <div class="card g">
+          <h3><span class="num">01</span>Nothing predicts missingness</h3>
+          <p>Deletion is defensible and imputation is optional. Say which test you ran and at what
+          sample size, because a small sample fails to reject almost anything.</p>
+        </div>
+        <div class="card o">
+          <h3><span class="num">02</span>Observed columns predict it</h3>
+          <p>Deletion is now biased. Impute or weight, and the predictors that came out significant
+          are exactly the columns the imputation model has to include.</p>
+        </div>
+      </div>
+      <div class="colstack fill">
+        <div class="card r">
+          <h3><span class="num">03</span>You suspect the value drives its own absence</h3>
+          <p>No test settles it. Fit under MAR, then repeat across a range of &#948; and report the
+          span. Say plainly which numbers survive the whole range.</p>
+        </div>
+        <div class="card b">
+          <h3><span class="num">04</span>You cannot tell</h3>
+          <p>The common case. Write down what would have decided it, collect that next time, and
+          carry the ambiguity into the writeup rather than resolving it silently.</p>
+        </div>
+      </div>
+    </div>
+    <div class="callout warn"><b>Collect the reason for non-response while you collect the data.</b>
+    A single "why did you skip this" field turns an untestable MNAR problem into an observed column,
+    which is the only clean way this argument ever ends.</div>
+  </div>
+</section>
+
+<!-- ============ 16 · THE LOG ============ -->
+<section class="slide" data-sec="The log">
+  <div class="eyebrow">The log &#183; what Lecture 2 adds</div>
+  <h1 class="t">Test results belong in the log
+    <small>A p-value that never leaves the notebook cannot defend a decision later.</small></h1>
+  <div class="wrap">
+    <table class="log roomy">
+      <tr><th style="width:120px">Column</th><th style="width:180px">Finding</th>
+        <th style="width:118px">Evidence</th><th style="width:190px">Assumption it rests on</th>
+        <th>Consequence</th></tr>
+      <tr><td>gender</td><td>MCAR not rejected</td>
+        <td class="o">Little p=0.25<br/>perm p=0.57</td>
+        <td>28 missing values give little power</td>
+        <td>Deletion acceptable. Note the sample size beside the p-value.</td></tr>
+      <tr><td>income</td><td>Not MCAR. Age predicts it</td>
+        <td class="o">perm p&lt;0.0002<br/>logit p=5e-08</td>
+        <td>MAR given age, which the collection story supports</td>
+        <td>Impute with age in the model. Complete-case analysis is biased.</td></tr>
+      <tr class="hl"><td>health_score</td><td>Not MCAR. Tests point at age</td>
+        <td class="o">perm p&lt;0.0002<br/>logit p=1e-06</td>
+        <td><b>Contested.</b> Age may be inheriting the signal from the score itself</td>
+        <td>Treat as MNAR. Report the estimate across &#948; from 0 to &#8722;20, and say which conclusions hold
+        throughout.</td></tr>
+      <tr><td>&#8212; method &#8212;</td><td>Little's test on log(income)</td>
+        <td class="o">chi2 80.95<br/>p=3e-14</td>
+        <td>Skew 1.91 raw, 0.05 logged</td>
+        <td>Verdict holds on both scales, so the result does not rest on normality.</td></tr>
+    </table>
+    <div class="callout"><b>The third row is the honest one.</b> It records a disagreement between
+    what the tests said and what the collection story suggests, and it says which one the analysis
+    followed.</div>
+  </div>
+</section>
+
+<!-- ============ 17 · RECAP ============ -->
+<section class="slide" data-sec="Recap">
+  <div class="eyebrow">Recap</div>
+  <h1 class="t">What to take from this lecture
+    <small>Five things, in the order they will save you time.</small></h1>
+  <div class="wrap">
+    <div class="cols">
+      <div class="colstack fill">
+        <div class="card b">
+          <h3><span class="num">01</span>Tests rule out MCAR, and stop there</h3>
+          <p>All four rejected MCAR for both non-MCAR columns, and all four gave the MNAR column a
+          MAR verdict.</p>
+        </div>
+        <div class="card b">
+          <h3><span class="num">02</span>Failing to reject is not proof</h3>
+          <p>gender passed at p = 0.25 on 28 missing values. A small sample fails to reject almost
+          anything, so quote n beside the p-value.</p>
+        </div>
+        <div class="card b">
+          <h3><span class="num">03</span>The logistic fit is the one that pays</h3>
+          <p>Its significant predictors are the columns your imputation model must include. The
+          other tests give you a verdict; this one gives you a variable list.</p>
+        </div>
+      </div>
+      <div class="colstack fill">
+        <div class="card r">
+          <h3><span class="num">04</span>A predictor can inherit the signal</h3>
+          <p>Age looked like the driver of missing health scores because older people score lower.
+          The real driver was the score. Correlation among your columns is how MNAR disguises
+          itself.</p>
+        </div>
+        <div class="card g">
+          <h3><span class="num">05</span>For MNAR, price it</h3>
+          <p>Pattern mixture turns the untestable part into one number, &#948;. Report the estimate
+          across a defensible range and say whether the conclusion holds throughout.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18 · PRACTICE ============ -->
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice &#183; and what comes next</div>
+  <h1 class="t">Before Lecture 3
+    <small>Four exercises on survey.csv and on your own scraped file.</small></h1>
+  <div class="wrap">
+    <div class="cols w6040">
+      <div class="colstack">
+        <ol class="n">
+          <li><b>Reproduce the three verdicts.</b> Run the permutation test yourself at 5,000
+          shuffles and confirm the p-values on slide 8. Then rerun with 200 shuffles and report how
+          much the answer moves.</li>
+          <li><b>Break Little's test.</b> Take <code class="k">survey.csv</code>, keep the first 60
+          rows, and rerun it. Report the statistic, the p-value, and what changed about your
+          conclusion.</li>
+          <li><b>Fit the missingness model on your own data.</b> Pick a column with gaps in a file
+          you scraped. Regress its indicator on every complete column and report the significant
+          predictors, with odds ratios.</li>
+          <li><b>Price an MNAR worry.</b> For one column, choose a plausible range of &#948;,
+          compute the estimate at both ends, and write two sentences on whether your conclusion
+          survives the range.</li>
+        </ol>
+      </div>
+      <div class="colstack fill">
+        <div class="card b">
+          <h3>Lecture 3 &#183; Filling gaps</h3>
+          <p>Mean and median, random draw, hot deck, regression, kNN, MICE, pattern mixture. Each
+          as an assumption plus something it silently breaks, tested against the truth we planted
+          here.</p>
+        </div>
+        <div class="callout warn sm"><b>Carry the verdicts forward.</b> Lecture 3 imputes these same
+        three columns, and the results from today decide which methods are allowed on each.</div>
+        <div class="callout sm"><code class="k">survey.csv</code> and
+        <code class="k">make_survey.py</code> are in <code class="k">data cleaning/data/</code>.
+        The Little's test implementation and every fit on these slides ship in the lecture notebook.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div></div>
+
+<div id="nav"><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></div>
+<div id="hint">&#8592; &#8594; navigate &#183; F fullscreen &#183; P print</div>
+<script type="application/json" id="perm-data">{"age": [52, 43, 39, 42, 39, 22, 57, 61, 36, 32, 56, 51, 38, 54, 34, 47, 65, 28, 63, 62, 47, 41, 47, 23, 42, 33, 22, 21, 24, 63, 61, 20, 27, 31, 48, 47, 32, 57, 60, 28, 20, 31, 28, 31, 23, 36, 38, 58, 33, 38, 33, 52, 63, 47, 46, 22, 52, 25, 51, 47, 53, 32, 31, 27, 52, 49, 42, 29, 45, 63, 61, 23, 46, 27, 34, 27, 22, 49, 21, 52, 55, 45, 30, 60, 45, 35, 65, 36, 52, 50, 56, 63, 54, 34, 31, 33, 18, 19, 31, 63, 46, 19, 19, 34, 28, 36, 25, 30, 60, 63, 37, 24, 64, 38, 52, 58, 61, 19, 18, 48, 39, 21, 44, 50, 64, 46, 54, 33, 47, 62, 62, 55, 37, 41, 48, 39, 21, 26, 33, 20, 28, 32, 61, 25, 23, 60, 32, 24, 46, 45, 27, 37, 64, 28, 35, 42, 58, 35, 45, 29, 54, 41, 63, 49, 47, 21, 53, 42, 26, 62, 54, 63, 55, 50, 38, 23, 48, 56, 31, 39, 26, 38, 41, 53, 20, 25, 47, 42, 31, 54, 38, 28, 53, 22, 62, 42, 21, 32, 24, 23, 34, 45, 35, 59, 43, 31, 44, 62, 33, 29, 27, 46, 64, 60, 27, 47, 36, 31, 51, 23, 38, 55, 55, 23, 36, 44, 43, 28, 60, 19, 63, 61, 20, 43, 22, 26, 37, 42, 32, 64, 21, 62, 21, 48, 19, 41, 26, 26, 46, 33, 60, 36, 34, 22, 35, 19, 20, 50, 28, 54, 28, 36, 43, 22, 51, 53, 53, 45, 32, 21, 23, 62, 48, 43, 46, 41, 54, 45, 60, 60, 56, 27, 35, 18, 36, 64, 42, 59, 64, 31, 18, 65, 56, 35, 42, 18, 18, 31, 38, 53, 32, 18, 52, 30, 64, 34, 29, 32, 43, 18, 40, 22, 33, 57, 22, 32, 34, 54, 23, 64, 50, 56, 38, 42, 18, 54, 46, 32, 29, 53, 50, 31, 52, 26, 46, 47, 58, 54, 49, 31, 42, 58, 46, 50, 26, 61, 53, 57, 41, 61, 61, 51, 41, 52, 22, 39, 20, 52, 52, 28, 54, 43, 49, 38, 36, 28, 39, 19, 58, 43, 57, 49, 56, 28, 25, 43, 43, 62, 35, 60, 23, 43, 25, 22, 24, 56, 26, 21, 39, 48, 29, 44, 59, 29, 62, 44, 64, 33, 42, 64], "R": {"gender": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "income": [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0], "health_score": [0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0]}, "obs": {"gender": -1.5776, "income": -10.2297, "health_score": 6.3602}}</script>
+<script type="application/json" id="pmm-data">{"pi": 0.36, "obs": 87.03, "true_all": 82.31, "true_missing": 73.94, "delta_true": -13.09, "curve": []}</script>
+
+<script>
+/* ============================================================
+   cover ornament — the four tests and what they return
+   ============================================================ */
+(function(){
+  const box=document.getElementById('cvp'); if(!box) return;
+  const M='c-miss', V='c-val', D='c-dim', H='c-hdr';
+  const rows=[
+    [[H,"Little's MCAR test"]],
+    [[D,'chi2 = '],[V,'73.96'],[D,'  df = 8   p = '],[M,'7.97e-13']],
+    [[D,'gender only:  chi2 = '],[V,'2.75'],[D,'   p = '],[V,'0.252']],
+    [[D,'']],
+    [[H,'permutation test  ·  5,000 shuffles']],
+    [[D,'gender  diff = '],[V,'-1.58'],[D,'  p = '],[V,'0.568']],
+    [[D,'income  diff = '],[M,'-10.23'],[D,'  p < '],[M,'0.0002']],
+    [[D,'health  diff = '],[M,'+6.36'],[D,'  p < '],[M,'0.0002']],
+    [[D,'']],
+    [[H,'logit  R ~ age + education']],
+    [[D,'income  age '],[M,'-0.0532'],[D,'  OR 0.948  p '],[M,'7.8e-05']],
+    [[D,'health  age '],[M,'+0.0502'],[D,'  OR 1.051  p '],[M,'6.4e-07']],
+    [[D,'gender  age '],[V,'+0.0075'],[D,'  OR 1.007  p '],[V,'0.672']],
+    [[D,'']],
+    [[H,'pattern mixture']],
+    [[D,'mu = mu_obs + pi*delta']],
+    [[D,'delta =   0  ->  '],[V,'87.0']],
+    [[D,'delta = -13  ->  '],[M,'82.3']],
+    [[D,'']],
+    [[H,'the verdict on every column']],
+    [[D,'MCAR  '],[V,'ruled out where it should be']],
+    [[D,'MNAR  '],[M,'indistinguishable from MAR']]
+  ];
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  box.innerHTML=rows.map(r=>'<div>'+r.map(([c,t])=>'<span class="'+c+'">'+esc(t)+'</span>').join('')+'</div>').join('');
+})();
+
+/* ============================================================
+   L2 widget 1 - the permutation test, run live
+   The 400 (age, missing?) pairs are the real survey.csv rows.
+   Shuffling happens in the browser, so the null distribution the
+   student sees is one they generated, not one we pasted.
+   ============================================================ */
+(function () {
+  const host = document.getElementById('permsvg'); if (!host) return;
+  const D = JSON.parse(document.getElementById('perm-data').textContent);
+
+  const COL = { gender: '#0E7A55', income: '#8F5D0A', health_score: '#B02F3B' };
+  const NAME = { gender: 'gender · MCAR', income: 'income · MAR', health_score: 'health · MNAR' };
+
+  const W = 560, H = 400, L = 44, R = 548, T = 20, B = 336;
+  const LO = -14, HI = 14, NB = 56;                 // histogram of the shuffled differences
+  const px = v => L + (v - LO) / (HI - LO) * (R - L);
+  const bin = v => Math.max(0, Math.min(NB - 1, Math.floor((v - LO) / (HI - LO) * NB)));
+
+  let col = 'income', counts = new Int32Array(NB), draws = 0, extreme = 0, timer = null;
+  const age = D.age, R_ = D.R;                      // R_[col] is the 0/1 missingness vector
+
+  function shuffled(mask) {                          // Fisher-Yates on a copy
+    const a = mask.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function diff(mask) {
+    let s1 = 0, n1 = 0, s0 = 0, n0 = 0;
+    for (let i = 0; i < mask.length; i++) {
+      if (mask[i]) { s1 += age[i]; n1++; } else { s0 += age[i]; n0++; }
+    }
+    return s1 / n1 - s0 / n0;
+  }
+
+  function draw() {
+    const c = COL[col], obs = D.obs[col];
+    const top = Math.max(1, Math.max(...counts));
+    const bw = (R - L) / NB;
+    const g = [];
+    // axis
+    g.push(`<line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="#C3CFD5"/>`);
+    for (let v = LO; v <= HI; v += 7) {
+      g.push(`<text x="${px(v).toFixed(1)}" y="${B + 15}" text-anchor="middle"
+        font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">${v > 0 ? '+' : ''}${v}</text>`);
+    }
+    g.push(`<text x="${(L + R) / 2}" y="${B + 33}" text-anchor="middle"
+      font-family="Public Sans,sans-serif" font-size="10" fill="#53666F">
+      difference in mean age (missing minus observed), years</text>`);
+    // bars, red where at least as extreme as the observed statistic
+    for (let i = 0; i < NB; i++) {
+      if (!counts[i]) continue;
+      const h = counts[i] / top * (B - T);
+      const centre = LO + (i + 0.5) / NB * (HI - LO);
+      const far = Math.abs(centre) >= Math.abs(obs);
+      g.push(`<rect x="${(L + i * bw).toFixed(1)}" y="${(B - h).toFixed(1)}"
+        width="${(bw - 0.6).toFixed(1)}" height="${h.toFixed(1)}"
+        fill="${far ? c : '#9DB2BD'}" opacity="${far ? .95 : .8}"/>`);
+    }
+    // the observed statistic
+    const xo = px(Math.max(LO, Math.min(HI, obs)));
+    g.push(`<line x1="${xo.toFixed(1)}" y1="${T - 2}" x2="${xo.toFixed(1)}" y2="${B}"
+      stroke="${c}" stroke-width="2.2"/>`);
+    g.push(`<path d="M${(xo - 5).toFixed(1)} ${T - 2} L${xo.toFixed(1)} ${T - 11}
+      L${(xo + 5).toFixed(1)} ${T - 2} Z" fill="${c}"/>`);
+    const side = obs < 0 ? 'start' : 'end';
+    g.push(`<text x="${(xo + (obs < 0 ? 8 : -8)).toFixed(1)}" y="${T + 9}" text-anchor="${side}"
+      font-family="JetBrains Mono,monospace" font-size="10" font-weight="700"
+      fill="${c}">observed ${obs > 0 ? '+' : ''}${obs.toFixed(2)}${Math.abs(obs) > HI ? ' (off scale)' : ''}</text>`);
+    host.innerHTML = g.join('');
+
+    const p = draws ? extreme / draws : 0;
+    document.getElementById('permdraws').textContent = draws.toLocaleString('en-IN');
+    const pe = document.getElementById('permp');
+    pe.textContent = draws ? (extreme === 0 ? `< ${(1 / draws).toFixed(4)}` : p.toFixed(4)) : '—';
+    pe.style.color = draws && p < 0.05 ? c : '';
+    document.getElementById('permverdict').innerHTML = !draws ? 'Press <b>Run</b>.'
+      : p < 0.05
+        ? `<b style="color:${c}">Reject MCAR.</b> ${extreme} of ${draws} shuffles reached the observed gap.`
+        : `<b style="color:#0E7A55">Cannot reject MCAR.</b> ${extreme} of ${draws} shuffles reached it, so chance explains the gap.`;
+  }
+
+  function step(n) {
+    const mask = R_[col];
+    for (let k = 0; k < n; k++) {
+      const d = diff(shuffled(mask));
+      counts[bin(d)]++; draws++;
+      if (Math.abs(d) >= Math.abs(D.obs[col])) extreme++;
+    }
+    draw();
+  }
+  function reset() {
+    clearInterval(timer); timer = null;
+    counts = new Int32Array(NB); draws = 0; extreme = 0;
+    document.getElementById('permrun').textContent = 'Run 2,000 shuffles';
+    draw();
+  }
+  function run() {
+    if (timer) { clearInterval(timer); timer = null;
+                 document.getElementById('permrun').textContent = 'Resume'; return; }
+    document.getElementById('permrun').textContent = 'Pause';
+    timer = setInterval(() => {
+      step(draws < 60 ? 1 : draws < 300 ? 12 : 60);       // slow at first, so the build is visible
+      if (draws >= 2000) { clearInterval(timer); timer = null;
+                           document.getElementById('permrun').textContent = 'Run again'; }
+    }, 40);
+  }
+
+  document.querySelectorAll('.seg button[data-c]').forEach(b =>
+    b.addEventListener('click', () => {
+      col = b.dataset.c;
+      document.querySelectorAll('.seg button[data-c]').forEach(x =>
+        x.classList.toggle('on', x === b));
+      document.getElementById('permcol').textContent = NAME[col];
+      document.getElementById('permcol').style.color = COL[col];
+      reset();
+    }));
+  document.getElementById('permrun').addEventListener('click', run);
+  document.getElementById('permreset').addEventListener('click', reset);
+  host.closest('.slide').addEventListener('hidden', () => { clearInterval(timer); timer = null; });
+  reset();
+})();
+
+/* ============================================================
+   L2 widget 2 - pattern-mixture sensitivity for MNAR
+   delta is the assumption you cannot test: how much lower the
+   withheld health scores are. Slide it and watch the estimate move.
+   ============================================================ */
+(function () {
+  const host = document.getElementById('senssvg'); if (!host) return;
+  const P = JSON.parse(document.getElementById('pmm-data').textContent);
+  const slider = document.getElementById('sensdelta');
+
+  const W = 520, H = 300, L = 46, R = 500, T = 22, B = 240;
+  const DLO = -30, DHI = 0, YLO = 74, YHI = 89;
+  const px = d => L + (d - DLO) / (DHI - DLO) * (R - L);
+  const py = v => B - (v - YLO) / (YHI - YLO) * (B - T);
+
+  function draw(d) {
+    const est = P.obs + P.pi * d;
+    const g = [];
+    for (let v = 76; v <= 88; v += 4) {
+      g.push(`<line x1="${L}" y1="${py(v).toFixed(1)}" x2="${R}" y2="${py(v).toFixed(1)}" stroke="#EDF1F3"/>`);
+      g.push(`<text x="${L - 6}" y="${(py(v) + 3.3).toFixed(1)}" text-anchor="end"
+        font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">${v}</text>`);
+    }
+    // the sensitivity line
+    g.push(`<line x1="${px(DLO)}" y1="${py(P.obs + P.pi * DLO).toFixed(1)}"
+      x2="${px(DHI)}" y2="${py(P.obs).toFixed(1)}" stroke="#53666F" stroke-width="1.6"/>`);
+    // the truth, which only exists because the data was simulated
+    g.push(`<line x1="${L}" y1="${py(P.true_all).toFixed(1)}" x2="${R}" y2="${py(P.true_all).toFixed(1)}"
+      stroke="#0E7A55" stroke-width="1.4" stroke-dasharray="5 4"/>`);
+    g.push(`<text x="${R}" y="${(py(P.true_all) - 5).toFixed(1)}" text-anchor="end"
+      font-family="JetBrains Mono,monospace" font-size="9" fill="#0E7A55">true mean ${P.true_all}</text>`);
+    // the naive estimate at delta = 0
+    g.push(`<circle cx="${px(0)}" cy="${py(P.obs).toFixed(1)}" r="3.4" fill="#8FA0A9"/>`);
+    g.push(`<text x="${px(0) - 6}" y="${(py(P.obs) - 6).toFixed(1)}" text-anchor="end"
+      font-family="JetBrains Mono,monospace" font-size="9" fill="#8FA0A9">assume nothing: ${P.obs}</text>`);
+    // the live estimate
+    g.push(`<line x1="${px(d).toFixed(1)}" y1="${T}" x2="${px(d).toFixed(1)}" y2="${B}"
+      stroke="#B02F3B" stroke-width="1.2" stroke-dasharray="3 3"/>`);
+    g.push(`<circle cx="${px(d).toFixed(1)}" cy="${py(est).toFixed(1)}" r="5.5" fill="#B02F3B"/>`);
+    g.push(`<line x1="${L}" y1="${B}" x2="${R}" y2="${B}" stroke="#C3CFD5"/>`);
+    for (let v = DLO; v <= DHI; v += 10) {
+      g.push(`<text x="${px(v).toFixed(1)}" y="${B + 15}" text-anchor="middle"
+        font-family="JetBrains Mono,monospace" font-size="8.6" fill="#8FA0A9">${v}</text>`);
+    }
+    g.push(`<text x="${(L + R) / 2}" y="${B + 33}" text-anchor="middle"
+      font-family="Public Sans,sans-serif" font-size="10" fill="#53666F">
+      assumed shift for the withheld scores (delta)</text>`);
+    g.push(`<text x="${L}" y="${T - 4}" font-family="Public Sans,sans-serif" font-size="10"
+      fill="#53666F">estimated mean health of everyone</text>`);
+    host.innerHTML = g.join('');
+
+    document.getElementById('sensd').textContent = (d > 0 ? '+' : '') + d;
+    document.getElementById('sensest').textContent = est.toFixed(1);
+    const gap = est - P.true_all;
+    const ge = document.getElementById('sensgap');
+    ge.textContent = (gap > 0 ? '+' : '') + gap.toFixed(1);
+    ge.style.color = Math.abs(gap) < 0.5 ? '#0E7A55' : '#B02F3B';
+    document.getElementById('sensnote').innerHTML = Math.abs(gap) < 0.5
+      ? '<b>This is the right answer,</b> and the data cannot tell you that you have reached it.'
+      : 'Every point on this line is defensible from the observed data alone.';
+  }
+
+  slider.addEventListener('input', () => draw(+slider.value));
+  draw(+slider.value);
+})();
+
+/* ============================================================
+   deck mechanics — identical to the other decks in the module
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 &#183; Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 2 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  function show(n){
+    const prev=i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(slides[i]) slides[i].dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+</script>
+</body>
+</html>
