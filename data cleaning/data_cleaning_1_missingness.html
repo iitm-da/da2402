@@ -374,10 +374,10 @@ table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
 .colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
 
 /* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
-table.d.roomy td,table.d.roomy th{padding:15px 10px}
+table.d.roomy td,table.d.roomy th{padding:19px 10px}
 table.d.roomy.tall td,table.d.roomy.tall th{padding:27px 10px}
-table.log.roomy td,table.log.roomy th{padding:13px 10px}
-.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:17px 12px;margin-bottom:9px}
+table.log.roomy td,table.log.roomy th{padding:17px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:24px 12px;margin-bottom:10px}
 
 /* ---------- cover ornament: a wall of raw cells ---------- */
 .coverpat .c-miss{color:var(--t-asr);font-weight:700}
@@ -506,8 +506,8 @@ table.log.roomy td,table.log.roomy th{padding:13px 10px}
 
       <div class="rung now" style="display:contents">
         <div class="sym"><b>A gap</b><i>Lectures 1 &#183; 2 &#183; 3</i></div>
-        <div class="mid">Lost &#183; withheld &#183; never existed &#183;
-          <b class="q">or never a gap, and you misread a sentinel</b></div>
+        <div class="mid">The value was lost &#183; it was withheld &#183; it did not exist &#183;
+          <b class="q">or your count is wrong, because a sentinel is hiding it</b></div>
         <div class="rgt">Which fills are honest, which estimates survive, when to fill nothing</div>
       </div>
 
@@ -1610,9 +1610,9 @@ miss  miss  miss    -    <span class="h-bad">1932</span>
         <td>none, a parsing correction</td>
         <td>The exchange writes a hyphen for "not published".</td></tr>
       <tr><td>OPEN, HIGH, LOW</td><td>Do <b>not</b> impute pre-2011-10-03</td><td class="n">1,932</td>
-        <td>These values were never published</td>
-        <td>MAR on date, but no overlap, so no model can be fitted. Analyses needing OHLC start
-        2011-10-03.</td></tr>
+        <td>The exchange did not publish these values</td>
+        <td>MAR on date, but with no overlap, so a model has nothing to fit. Analyses needing OHLC
+        start 2011-10-03.</td></tr>
       <tr><td>Index Name</td><td>Drop the column</td><td class="n">5,463</td>
         <td>An empty column carries nothing</td>
         <td>100% null, with a populated <code class="k">INDEX_NAME</code> beside it. One field
@@ -1665,8 +1665,8 @@ miss  miss  miss    -    <span class="h-bad">1932</span>
         </div>
         <div class="card o">
           <h3><span class="num">05</span>MAR does not mean fillable</h3>
-          <p>Perfectly explained missingness with no overlap is un-imputable. Ask what the model has
-          to learn from before reaching for a method that answers regardless.</p>
+          <p>A predictor that explains the gaps perfectly can leave the model with no rows to learn
+          from. Ask what it has to fit before reaching for a method that answers regardless.</p>
         </div>
         <div class="card g">
           <h3><span class="num">06</span>Documentation beats inference</h3>
