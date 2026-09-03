@@ -350,7 +350,6 @@ table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
    tables and code keep their natural height.                                 */
 .colstack.fill{gap:12px}
 .colstack.fill > .card{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
-.colstack.fill.cal > .callout{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
 .colstack.fill > .callout,.colstack.fill > table,.colstack.fill > pre,
 .colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
 
@@ -401,23 +400,43 @@ table.log.roomy td,table.log.roomy th{padding:10px 10px}
     <div class="cols w4060">
 
       <div class="colstack">
-        <div class="card b">
-          <h3>The quoted number</h3>
-          <p>The CrowdFlower <i>Data Science Report</i> (2016) put it at <b>60%</b> of a data
-          scientist's time on cleaning and organising data, another <b>19%</b> on collecting it —
-          and <b>57%</b> naming cleaning the least enjoyable part of the job.</p>
+        <div class="fig">
+          <div class="cap">Where a data scientist's time goes</div>
+          <svg viewBox="0 0 520 244" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Where a data scientist's time goes, CrowdFlower 2016: cleaning and organising data 60 percent, collecting data sets 19 percent, mining data for patterns 9 percent, other 5 percent, refining algorithms 4 percent, building training sets 3 percent.">
+<line x1="183.5" y1="22" x2="183.5" y2="200" stroke="#DCE4E8" stroke-width="1"/>
+<path d="M184 30 H381.0 a4 4 0 0 1 4 4 V42 a4 4 0 0 1 -4 4 H184 Z" fill="#125F9E"/>
+<text x="176" y="42" text-anchor="end" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" font-weight="600">Cleaning and organising data</text>
+<text x="392.0" y="42" font-family="JetBrains Mono,monospace" font-size="12.5" font-weight="700" fill="#14222B">60%</text>
+<path d="M184 60 H243.65 a4 4 0 0 1 4 4 V72 a4 4 0 0 1 -4 4 H184 Z" fill="#125F9E"/>
+<text x="176" y="72" text-anchor="end" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" font-weight="600">Collecting data sets</text>
+<text x="254.65" y="72" font-family="JetBrains Mono,monospace" font-size="12.5" font-weight="700" fill="#14222B">19%</text>
+<path d="M184 90 H210.15 a4 4 0 0 1 4 4 V102 a4 4 0 0 1 -4 4 H184 Z" fill="#8CB4D8"/>
+<text x="176" y="102" text-anchor="end" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#53666F" >Mining data for patterns</text>
+<text x="221.15" y="102" font-family="JetBrains Mono,monospace" font-size="12.5" font-weight="400" fill="#53666F">9%</text>
+<path d="M184 120 H193.4 a4 4 0 0 1 4 4 V132 a4 4 0 0 1 -4 4 H184 Z" fill="#8CB4D8"/>
+<text x="176" y="132" text-anchor="end" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#53666F" >Refining algorithms</text>
+<text x="204.4" y="132" font-family="JetBrains Mono,monospace" font-size="12.5" font-weight="400" fill="#53666F">4%</text>
+<path d="M184 150 H190.05 a4 4 0 0 1 4 4 V162 a4 4 0 0 1 -4 4 H184 Z" fill="#8CB4D8"/>
+<text x="176" y="162" text-anchor="end" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#53666F" >Building training sets</text>
+<text x="201.05" y="162" font-family="JetBrains Mono,monospace" font-size="12.5" font-weight="400" fill="#53666F">3%</text>
+<path d="M184 180 H196.75 a4 4 0 0 1 4 4 V192 a4 4 0 0 1 -4 4 H184 Z" fill="#8CB4D8"/>
+<text x="176" y="192" text-anchor="end" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#53666F" >Other</text>
+<text x="207.75" y="192" font-family="JetBrains Mono,monospace" font-size="12.5" font-weight="400" fill="#53666F">5%</text>
+<path d="M420.0 32 h5 V74 h-5" fill="none" stroke="#125F9E" stroke-width="1.4"/>
+<text x="432.0" y="52.0" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#125F9E">79%</text>
+<text x="432.0" y="66.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F">getting data</text>
+<text x="432.0" y="78.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F">usable at all</text>
+<text x="0" y="236" font-family="JetBrains Mono,monospace" font-size="9" fill="#8FA0A9">CrowdFlower 2016 Data Science Report &#183; self-reported, n &#8776; 80</text>
+</svg>
+          <div class="rd"><b>Two of the six bars are not analysis.</b> Cleaning and collecting
+          together take <b>79%</b> of the working week &#8212; the whole job of getting data into a
+          state where the other four bars are even possible.</div>
         </div>
-        <div class="callout warn sm"><b>Read it honestly.</b> That is a self-report survey of
-        around eighty people, repeated in every slide deck since. Treat it as a mood, not a
-        measurement. The claim it supports is not "cleaning takes 60% of your time" — it is
-        "nobody plans for this, and everybody spends real time on it."</div>
-        <div class="out xs">Cleaning and organising data      60%
-Collecting data sets              19%
-Mining data for patterns           9%
-Refining algorithms                4%
-Building training sets             3%
-Other                              5%
-<span class="h-dim">CrowdFlower 2016 Data Science Report</span></div>
+        <div class="callout warn sm"><b>Read it honestly.</b> This is a self-report survey of around
+        eighty people, repeated in every slide deck since &#8212; a mood, not a measurement. The same
+        report has <b>57%</b> naming cleaning the least enjoyable part of the job. The claim these
+        numbers support is not "cleaning takes 60% of your time"; it is <b>"nobody plans for this,
+        and everybody spends real time on it."</b></div>
       </div>
 
       <div class="colstack">
