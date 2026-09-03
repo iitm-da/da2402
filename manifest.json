@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-09-02 08:05 UTC",
+ "generated": "2026-09-03 07:40 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -13,10 +13,19 @@
    "updated": "2026-07-29"
   },
   {
+   "path": "data cleaning/data_cleaning_1_missingness.html",
+   "name": "data_cleaning_1_missingness.html",
+   "folder": "data cleaning",
+   "section": "Data cleaning",
+   "kind": "deck",
+   "size": 122152,
+   "updated": "2026-09-03"
+  },
+  {
    "path": "data cleaning/regex_part1.html",
    "name": "regex_part1.html",
    "folder": "data cleaning",
-   "section": "Data cleaning \u00b7 regular expressions",
+   "section": "Data cleaning",
    "kind": "deck",
    "size": 108220,
    "updated": "2026-08-12"
@@ -25,7 +34,7 @@
    "path": "data cleaning/regex_part1.ipynb",
    "name": "regex_part1.ipynb",
    "folder": "data cleaning",
-   "section": "Data cleaning \u00b7 regular expressions",
+   "section": "Data cleaning",
    "kind": "notebook",
    "size": 68355,
    "updated": "2026-08-12"
@@ -34,7 +43,7 @@
    "path": "data cleaning/regex_part2.html",
    "name": "regex_part2.html",
    "folder": "data cleaning",
-   "section": "Data cleaning \u00b7 regular expressions",
+   "section": "Data cleaning",
    "kind": "deck",
    "size": 154290,
    "updated": "2026-08-13"
@@ -43,7 +52,7 @@
    "path": "data cleaning/regex_part2.ipynb",
    "name": "regex_part2.ipynb",
    "folder": "data cleaning",
-   "section": "Data cleaning \u00b7 regular expressions",
+   "section": "Data cleaning",
    "kind": "notebook",
    "size": 84603,
    "updated": "2026-08-13"
