@@ -2025,10 +2025,59 @@ d&#178; = 0.19 + 2.57 = 2.76</div>
   </div>
 </section>
 
+<!-- ============ TEST 2 THE STATISTIC ASSEMBLED ============ -->
+<section class="slide" data-sec="MCAR &#183; Little&#39;s test">
+  <div class="eyebrow">MCAR &#183; Test 2: Little&#39;s test &#183; the statistic assembled</div>
+  <h1 class="t">Mechanism
+    <small>The six steps in one line, and the four patterns of
+    <code class="k">survey.csv</code> put through it.</small></h1>
+  <div class="wrap">
+    <div class="cols w4060">
+      <div class="colstack fill">
+        <div class="out xs">d&#178; = &#8721;&#8342; n&#8342; (x&#772;&#8342; &#8722; &#956;&#770;<sub>J&#8342;</sub>)&#8242; &#931;&#770;<sub>J&#8342;</sub><sup>&#8722;1</sup> (x&#772;&#8342; &#8722; &#956;&#770;<sub>J&#8342;</sub>)
+
+  k        a missingness pattern
+  J&#8342;       the columns it observes
+  n&#8342;       rows in it
+  x&#772;&#8342;       their mean on those columns
+  &#956;&#770;, &#931;&#770;    ML estimates from all 400 rows
+
+f  = &#8721;&#8342; |J&#8342;| &#8722; p</div>
+        <div class="card b">
+          <h3>Reading the subscript</h3>
+          <p>J&#8342; is the only thing that changes from term to term.
+          &#956;&#770; and &#931;&#770; are estimated once on the whole file, then cut down to the
+          columns each pattern observes.</p>
+        </div>
+      </div>
+      <div class="colstack fill">
+        <table class="d xs">
+          <thead><tr><th>k</th><th>observes</th><th class="m">n&#8342;</th><th class="m">x&#772;&#8342; &#8722; &#956;&#770;, in sd units</th><th class="m">d&#8342;</th></tr></thead>
+          <tbody>
+          <tr><td>1</td><td>age, educ, income, health</td><td class="m">213</td><td class="m">&#8722;0.07, +0.08, &#8722;0.01, +0.06</td><td class="m">5.58</td></tr>
+          <tr class="hl"><td>2</td><td>age, educ, income</td><td class="m">121</td><td class="m">+0.45, +0.10, +0.28</td><td class="m">29.40</td></tr>
+          <tr class="hl"><td>3</td><td>age, educ, health</td><td class="m">43</td><td class="m">&#8722;0.67, &#8722;0.50, +0.41</td><td class="m">19.98</td></tr>
+          <tr><td>4</td><td>age, educ</td><td class="m">23</td><td class="m">&#8722;0.53, &#8722;0.36</td><td class="m">6.63</td></tr>
+          </tbody>
+        </table>
+        <div class="out xs">d&#178; = 5.5790 + 29.4013 + 19.9807 + 6.6342 = 61.5952
+f  = (4 + 3 + 3 + 2) &#8722; 4 = 8</div>
+        <div class="callout sm">Pattern 1 sits on the file mean and still contributes 5.58,
+        because 213 rows make a small deviation count.</div>
+        <div class="card o">
+          <h3>Direction does not matter</h3>
+          <p>Pattern 2 runs older than the file and pattern 3 runs younger. Squaring keeps both
+          positive, so opposite shifts add instead of cancelling.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ 14 · TEST 2 MECHANISM, EM ============ -->
 <section class="slide" data-sec="MCAR &#183; Little's test">
   <div class="eyebrow">MCAR &#183; Test 2: Little's test</div>
-  <h1 class="t">Mechanism
+  <h1 class="t">Mechanism continued 1
     <small>The statistic needs the file's mean and covariance, and the file has holes, so EM
     estimates both by filling and refitting until the numbers stop moving.</small></h1>
   <div class="wrap">
@@ -2117,7 +2166,7 @@ d&#178; = 0.19 + 2.57 = 2.76</div>
 <!-- ============ 15 · TEST 2 MECHANISM ============ -->
 <section class="slide" data-sec="MCAR &#183; Little's test">
   <div class="eyebrow">MCAR &#183; Test 2: Little's test</div>
-  <h1 class="t">Mechanism continued 1
+  <h1 class="t">Mechanism continued 2
     <small>The ladder treated &#956;&#770; and &#931;&#770; as given. EM produces them from all
     400 rows, holes included.</small></h1>
   <div class="wrap">
