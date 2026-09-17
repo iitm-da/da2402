@@ -1074,8 +1074,8 @@ gender   Male 53.8%  ->  57.0%
 <section class="slide" data-sec="MCAR &#183; mean, median, mode">
   <div class="eyebrow">MCAR &#183; Method 1: mean, median and mode</div>
   <h1 class="t">Drawbacks
-    <small>The spread falls 9%, the correlation with age falls from +0.703 to +0.638, and the
-    histogram grows a spike.</small></h1>
+    <small>Mean imputation cuts the spread 9% and the correlation from +0.703 to +0.638, median
+    is milder on both, and mode moves the gender split to 57.0/43.0.</small></h1>
   <div class="wrap">
     <div class="cols w6040">
       <div class="fig">
@@ -1129,15 +1129,18 @@ gender   Male 53.8%  ->  57.0%
         <div class="card r">
           <h3>Where the damage lands</h3>
           <table class="d sm free">
-            <tr><td>sd</td><td class="n">100,444 &#8594; 91,762</td><td class="n">&#8722;9%</td></tr>
-            <tr><td>corr(age, income)</td><td class="n">+0.703 &#8594; +0.638</td><td class="n">&#8722;0.065</td></tr>
-            <tr><td>RMSE on the 66</td><td class="n">93,629</td><td class="n"></td></tr>
+            <tr><th>income, 66 missing</th><th class="n">observed</th><th class="n">mean</th><th class="n">median</th></tr>
+            <tr><td>mean</td><td class="n">137,617</td><td class="n">137,617</td><td class="n">132,714</td></tr>
+            <tr><td>sd</td><td class="n">100,444</td><td class="n">91,762</td><td class="n">92,424</td></tr>
+            <tr><td>corr(age, income)</td><td class="n">+0.703</td><td class="n">+0.638</td><td class="n">+0.666</td></tr>
+            <tr><td>reported SE</td><td class="n">5,496</td><td class="n">4,588</td><td class="n">4,621</td></tr>
+            <tr class="hl"><td>RMSE on the 66</td><td class="n"></td><td class="n">93,629</td><td class="n">82,628</td></tr>
           </table>
         </div>
-        <div class="callout bad sm"><b>Standard errors shrink too.</b> The reported SE falls from
-        5,496 to 4,588 while the file gained no information at all.</div>
-        <div class="callout sm">Median imputation is milder on the mean (132,714) and no better on
-        the spread (92,424).</div>
+        <div class="callout bad sm"><b>Every standard error shrinks.</b> The file gained no
+        information, and both fills report a tighter interval than the 334 measurements support.</div>
+        <div class="callout sm"><b>Mode, on gender.</b> All 28 missing rows become Male and the
+        split moves from 53.8/46.2 to 57.0/43.0. Hot deck on slide 14 keeps it.</div>
       </div>
     </div>
   </div>
