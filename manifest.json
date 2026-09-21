@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-09-17 08:48 UTC",
+ "generated": "2026-09-21 09:13 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -85,6 +85,15 @@
    "updated": "2026-08-13"
   },
   {
+   "path": "data cleaning/practice/data_cleaning_worksheet.ipynb",
+   "name": "data_cleaning_worksheet.ipynb",
+   "folder": "data cleaning/practice",
+   "section": "Data Cleaning/Practice",
+   "kind": "notebook",
+   "size": 13672,
+   "updated": "2026-09-21"
+  },
+  {
    "path": "data collection/beautifulsoup_step_by_step.ipynb",
    "name": "beautifulsoup_step_by_step.ipynb",
    "folder": "data collection",
@@ -157,6 +166,15 @@
    "updated": "2026-08-27"
   },
   {
+   "path": "data collection/practice/data_collection_worksheet.ipynb",
+   "name": "data_collection_worksheet.ipynb",
+   "folder": "data collection/practice",
+   "section": "Data Collection/Practice",
+   "kind": "notebook",
+   "size": 13372,
+   "updated": "2026-09-21"
+  },
+  {
    "path": "intro/pandas1.ipynb",
    "name": "pandas1.ipynb",
    "folder": "intro",
@@ -173,6 +191,15 @@
    "kind": "notebook",
    "size": 195363,
    "updated": "2026-08-14"
+  },
+  {
+   "path": "intro/practice/pandas_worksheet.ipynb",
+   "name": "pandas_worksheet.ipynb",
+   "folder": "intro/practice",
+   "section": "Intro/Practice",
+   "kind": "notebook",
+   "size": 11069,
+   "updated": "2026-09-21"
   }
  ]
 }
