@@ -23,7 +23,9 @@ def reveal(sol, out):
     return block + "\n</details>"
 
 def build(spec, outpath):
-    cells = [md(BADGE.format(path=spec["colab_path"])), md(spec["intro"]), code(spec["setup"])]
+    pre = spec.get("pre") or [("md", spec["intro"]), ("code", spec["setup"])]
+    cells = [md(BADGE.format(path=spec["colab_path"]))]
+    cells += [(md if kind == "md" else code)(src) for kind, src in pre]
     for i, q in enumerate(spec["questions"], 1):
         var = f"q{i}"
         head = f"### Q{i}  {q['title']}\n\n{q['task'].rstrip()}\n\nAnswer variable `{var}`: {q['shape']}"

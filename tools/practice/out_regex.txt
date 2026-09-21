@@ -1,0 +1,37 @@
+@@q1
+state
+TN    7
+KL    7
+KA    7
+AP    7
+MH    6
+GJ    6
+Name: count, dtype: int64
+@@end
+@@q2
+(44200, 579)
+@@end
+@@q3
+('error', 'look-behind requires fixed-width pattern')
+@@end
+@@q4
+(14, 7.78)
+@@end
+@@q5
+{'ip': '132.88.107.108', 'user': 'user0', 'ts': '28/Jun/2026:05:45:24 +0530', 'method': 'GET', 'path': '/', 'proto': 'HTTP/1.1', 'status': '200', 'size': '32170', 'referer': '-', 'agent': 'Mozilla/5.0'}
+@@end
+@@q6
+((60, 10), 7, 15)
+@@end
+@@q7
+['on', 'patient', 'report', 'the', 'was']
+@@end
+@@q8
+('2026-01-09', '2026-06-24', 40)
+@@end
+@@q9
+'[urgent] Reviewed on 2026-02-18 by Dr Iyer. Referral REF-TN-4099. Fasting sample collected at the camp. HbA1c: 8.1%. Consult charged ₹900. Contact XXXXXX9135. [followup]'
+@@end
+@@q10
+('[urgent] Reviewed on 2026-02-18 by Dr Iyer. Referral REF-TN-4099. Fasting sample collected at the camp. HbA1c: 8.1%. Consult charged ₹900. Contact 9745409135. [followup]', '[urgent]')
+@@end

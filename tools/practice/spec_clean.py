@@ -5,74 +5,198 @@ INTRO = """# Practice · data cleaning
 
 DA2402 · Data Curation and Visualization · Dr. Arun B Ayyar
 
-Ten questions on one file. Each question names a variable. Put your result in that variable and run
-the cell. The worked answer sits under **Answer**. Click it open once you have tried.
+Ten questions covering Lectures 1 to 3: the missingness patterns, the three tests for the mechanism,
+the sensitivity analysis and the imputation scoreboard. Each question names a variable. Put your
+result in that variable and run the cell. The worked answer sits under **Answer**. Click it open
+once you have tried.
 
-**The data.** 620 outpatient visits, generated for this worksheet. The defects are planted:
-sentinel strings, mixed units, mixed date formats, repeated rows. Nothing has been cleaned.
+**The data.** `panel.csv`, 500 households, written for this worksheet the way `survey.csv` was
+written for the lectures: the mechanism is known because it was planted.
 
-Columns: `visit_id`, `patient_ref`, `visit_date`, `department`, `age`, `weight_kg`, `systolic_bp`,
-`phone`.
+| column | mechanism | missing |
+|---|---|---|
+| `power_backup` | MCAR, a flat tablet-failure rate | 22 |
+| `rent` | MAR on `age` and `household_size` | 154 |
+| `savings` | MNAR on itself, low savers withhold | 74 |
 
-Read the `dtypes` before you start.
+`age`, `household_size`, `education_years` and `commute_min` are complete.
+
+`truth_rent` and `truth_savings` hold the values before anything was deleted. No real study has
+them, which is why the last two questions can be scored at all.
 """
 
-SETUP = """import numpy as np
+SETUP = """import io
+import requests
+import numpy as np
 import pandas as pd
+from scipy import stats
+import statsmodels.api as sm
+from sklearn.impute import KNNImputer
 
 URL = "https://raw.githubusercontent.com/iitm-da/da2402/master/data%20cleaning/practice/data/"
-visits = pd.read_csv(URL + "clinic_visits.csv")
+panel = pd.read_csv(URL + "panel.csv")
 
-print(visits.shape)
-print(visits.dtypes)
-visits.head()"""
+def load_npy(name):
+    return np.load(io.BytesIO(requests.get(URL + name).content))
+
+truth_rent = load_npy("truth_rent.npy")
+truth_savings = load_npy("truth_savings.npy")
+
+NUM = ["age", "household_size", "education_years", "commute_min", "rent", "savings"]
+print(panel.isna().sum().to_string())"""
+
+GIVEN_MD = """### Given: the ML mean and covariance under missingness
+
+Little's test needs μ̂ and Σ̂ estimated from all 500 rows, which is the EM step from Lecture 2. It is
+supplied here so Q5 is the assembly of the statistic rather than the estimator. Q1 to Q4 do not
+need it."""
+
+GIVEN = '''def em_mean_cov(X, iters=300, tol=1e-8):
+    """ML mean and covariance of X (n by p, holding NaN), by EM."""
+    X = np.asarray(X, float)
+    n, p = X.shape
+    mu = np.nanmean(X, 0)
+    S = np.cov(np.where(np.isnan(X), mu, X), rowvar=False)
+    for _ in range(iters):
+        T1 = np.zeros(p)
+        T2 = np.zeros((p, p))
+        for i in range(n):
+            row = X[i]
+            obs = ~np.isnan(row)
+            mis = ~obs
+            z = row.copy()
+            C = np.zeros((p, p))
+            if mis.any():
+                B = S[np.ix_(mis, obs)] @ np.linalg.pinv(S[np.ix_(obs, obs)])
+                z[mis] = mu[mis] + B @ (row[obs] - mu[obs])
+                C[np.ix_(mis, mis)] = S[np.ix_(mis, mis)] - B @ S[np.ix_(obs, mis)]
+            T1 += z
+            T2 += np.outer(z, z) + C
+        mu_new, S_new = T1 / n, T2 / n - np.outer(T1 / n, T1 / n)
+        done = max(np.abs(mu_new - mu).max(), np.abs(S_new - S).max()) < tol
+        mu, S = mu_new, S_new
+        if done:
+            break
+    return mu, S'''
 
 Q = [
- dict(title="Sentinel values in systolic_bp", out="q1",
-      task="`systolic_bp` carries blanks and three sentinel strings: `-`, `999` and `not recorded`.\nReport what `isna()` counts on that column, and the count once the sentinels are included.",
-      shape="a tuple `(isna_count, true_count)`.",
-      solution='SENTINELS = ["-", "999", "not recorded"]\n\nq1 = (int(visits["systolic_bp"].isna().sum()),\n      int((visits["systolic_bp"].isna() | visits["systolic_bp"].isin(SENTINELS)).sum()))\nq1'),
- dict(title="Repairing the dtype", out="q2",
-      task="Those strings are why `systolic_bp` reads as `object`. Convert it to numeric with the\nsentinels turned into `NaN`, then report its mean rounded to 1 decimal.",
-      shape="a `float`.",
-      solution='bp = pd.to_numeric(visits["systolic_bp"], errors="coerce").mask(lambda s: s == 999)\nq2 = float(bp.mean().round(1))\nq2'),
- dict(title="Exact duplicates and repeated ids", out="q3",
-      task="Count the rows that repeat whole, and the rows that repeat a `visit_id`. The two counts differ.",
-      shape="a tuple `(exact, by_visit_id)`.",
-      solution='q3 = (int(visits.duplicated().sum()), int(visits.duplicated(subset="visit_id").sum()))\nq3'),
- dict(title="Parsing visit_date", out="q4",
-      task="`visit_date` mixes `2025-03-14`, `14/03/2025` and `14-Mar-2025`, and some cells are blank.\nParse all three into datetimes, then count the visits that fall in March 2025.",
-      shape="an `int`.",
-      solution='dates = pd.to_datetime(visits["visit_date"], format="mixed", dayfirst=True, errors="coerce")\nq4 = int(((dates.dt.year == 2025) & (dates.dt.month == 3)).sum())\nq4'),
- dict(title="Mobile numbers from the phone column", out="q5",
-      task="`phone` holds `+91 98765 43210`, `9876543210`, `098765-43210` and `(044) 2345 6789`. Strip\neverything that is not a digit and take the last ten. A first digit of 6, 7, 8 or 9 means a mobile.\nCount those.",
-      shape="an `int`.",
-      solution='last10 = visits["phone"].str.replace(r"\\D", "", regex=True).str.extract(r"(\\d{10})$")[0]\nq5 = int(last10.str[0].isin(list("6789")).sum())\nq5'),
- dict(title="Kilograms and grams in weight_kg", out="q6",
-      task="`weight_kg` is in kilograms, except where somebody filed grams. Count the rows in grams.",
-      shape="an `int`.",
-      solution='q6 = int((visits["weight_kg"] > 300).sum())\nq6'),
- dict(title="Outliers by the IQR rule", out="q7",
-      task="Repair `systolic_bp`, drop the whole-row duplicates, then flag the values outside\n1.5 IQR of the quartiles. Count them.",
-      shape="an `int`.",
-      solution='bp = pd.to_numeric(visits["systolic_bp"], errors="coerce").mask(lambda s: s == 999)\nclean = visits.assign(systolic_bp=bp).drop_duplicates()\n\nlo, hi = clean["systolic_bp"].quantile([0.25, 0.75])\niqr = hi - lo\nq7 = int(((clean["systolic_bp"] < lo - 1.5 * iqr) | (clean["systolic_bp"] > hi + 1.5 * iqr)).sum())\nq7'),
- dict(title="Missingness patterns", out="q8",
-      task="Build a boolean frame over `visit_date`, `age` and `systolic_bp`, `True` where the value is\nmissing, counting `999` in `age` and the three sentinels in `systolic_bp`. Count the rows of each\npattern.",
+ dict(title="Missingness patterns", out="q1",
+      task="Count the rows of each missingness pattern over `rent`, `savings` and `power_backup`.\nSeven of the eight possible patterns occur.",
       shape="a Series indexed by the three booleans.",
-      solution='miss = pd.DataFrame({\n    "visit_date": visits["visit_date"].isna(),\n    "age": visits["age"].isna() | (visits["age"] == 999),\n    "systolic_bp": visits["systolic_bp"].isna() | visits["systolic_bp"].isin(SENTINELS),\n})\nq8 = miss.value_counts()\nq8'),
- dict(title="Department means for imputation", out="q9",
-      task="Filling a missing `systolic_bp` from its department needs those means. Compute them on the\nrepaired, deduplicated frame, rounded to 1 decimal.",
-      shape="a Series indexed by department.",
-      solution='bp = pd.to_numeric(visits["systolic_bp"], errors="coerce").mask(lambda s: s == 999)\nclean = visits.assign(systolic_bp=bp).drop_duplicates()\n\nq9 = clean.groupby("department")["systolic_bp"].mean().round(1)\nq9'),
- dict(title="A cleaning log row", out="q10p",
-      task="Write the log row for the decision you made in Q6, as a dict with the keys `column`,\n`decision`, `rows`, `assumption`, `why`. Wording is yours. Keep the five keys.",
-      shape="a `dict`.",
-      stub='q10 = {\n    "column": ...,\n    "decision": ...,\n    "rows": ...,\n    "assumption": ...,\n    "why": ...,\n}',
-      solution='from pprint import pprint\n\nq10 = {\n    "column": "weight_kg",\n    "decision": "divided values above 300 by 1000",\n    "rows": 77,\n    "assumption": "no patient in this clinic weighs over 300 kg, so a large value is grams",\n    "why": "the column mixes two units and the mean is meaningless until they agree",\n}\npprint(q10, sort_dicts=False)'),
+      solution='q1 = panel[["rent", "savings", "power_backup"]].isna().value_counts()\nq1'),
+ dict(title="Group-mean comparison on rent", out="q2",
+      task="Test 1 from Lecture 2. Split `age` by whether `rent` is missing and run Welch's t-test\nacross the two groups. Report the statistic and the p-value.",
+      shape="a tuple `(t, p)`.",
+      solution='R = panel["rent"].isna()\nt, p = stats.ttest_ind(panel["age"][R], panel["age"][~R], equal_var=False)\n\nq2 = (round(float(t), 3), float(f"{p:.3g}"))\nq2'),
+ dict(title="The permutation version, on power_backup", out="q3",
+      task="The same comparison for `power_backup`, with the null built by relabelling instead of\nlooked up in a t distribution. 5,000 permutations, `np.random.default_rng(0)`, the statistic being\nthe difference in mean `age` between the two groups. Report the observed difference in years and\nthe two-sided p. A loop that draws differently will move the last digit.",
+      shape="a tuple `(observed_difference, p)`.",
+      solution='''rng = np.random.default_rng(0)
+age = panel["age"].to_numpy()
+B = panel["power_backup"].isna()
+obs = age[B].mean() - age[~B].mean()
+
+null = np.empty(5000)
+for i in range(5000):
+    idx = rng.permutation(len(panel))
+    null[i] = age[idx[:B.sum()]].mean() - age[idx[B.sum():]].mean()
+
+q3 = (round(float(obs), 3), round(float((np.abs(null) >= abs(obs)).mean()), 4))
+q3'''),
+ dict(title="Degrees of freedom for Little's test", out="q4",
+      task="Over the six columns in `NUM`, count the missingness patterns, the observed-column slots\nthey contribute between them, and the degrees of freedom `sum(|J_k|) - p`.",
+      shape="a tuple `(patterns, slots, df)`.",
+      solution='patt = panel[NUM].notna().apply(tuple, axis=1)\n\nslots = sum(sum(k) for k in patt.unique())\nq4 = (len(patt.unique()), slots, slots - len(NUM))\nq4'),
+ dict(title="Little's test on the six numeric columns", out="q5",
+      task="Assemble `d2 = sum_k n_k (xbar_k - mu_Jk)' inv(Sigma_Jk) (xbar_k - mu_Jk)`, taking μ̂ and Σ̂\nfrom `em_mean_cov` on all 500 rows and cutting each down to the columns its pattern observes.\nReport the statistic, its degrees of freedom and the p-value.",
+      shape="a tuple `(d2, df, p)`.",
+      solution='''def littles_test(df, cols):
+    X = df[cols].to_numpy(float)
+    mu, S = em_mean_cov(X)
+
+    groups = {}
+    for i, row in enumerate(~np.isnan(X)):
+        groups.setdefault(tuple(row), []).append(i)
+
+    d2, dfree = 0.0, 0
+    for key, idx in groups.items():
+        J = np.array(key, bool)
+        if not J.any():
+            continue
+        diff = X[np.ix_(idx, np.where(J)[0])].mean(0) - mu[J]
+        d2 += len(idx) * diff @ np.linalg.pinv(S[np.ix_(J, J)]) @ diff
+        dfree += J.sum()
+    dfree -= len(cols)
+    return d2, int(dfree), float(stats.chi2.sf(d2, dfree))
+
+
+d2, dfree, pval = littles_test(panel, NUM)
+q5 = (round(float(d2), 2), dfree, float(f"{pval:.3g}"))
+q5'''),
+ dict(title="Logistic on the rent missingness indicator", out="q6",
+      task="Test 3. Fit `rent.isna() ~ age + household_size + education_years` with `sm.Logit` and\nreport the model-level likelihood-ratio test: `2 * (llf - llnull)`, its degrees of freedom and its\np-value.",
+      shape="a tuple `(lr_chi2, df, p)`.",
+      solution='''PRED = ["age", "household_size", "education_years"]
+
+def fit_logit(col):
+    y = panel[col].isna().astype(int)
+    return sm.Logit(y, sm.add_constant(panel[PRED])).fit(disp=0)
+
+
+m = fit_logit("rent")
+q6 = (round(float(2 * (m.llf - m.llnull)), 2), int(m.df_model),
+      float(f"{m.llr_pvalue:.3g}"))
+q6'''),
+ dict(title="Wald table for that fit", out="q7",
+      task="Report coefficient, standard error, odds ratio and Wald p for every term of the same fit,\nintercept included. The odds ratio is `exp(coef)`, the multiplier on the odds of withholding per\nunit of the predictor.",
+      shape="a DataFrame, 4 rows by 4 columns.",
+      solution='q7 = pd.DataFrame({"coef": m.params.round(4), "se": m.bse.round(4),\n                   "OR": np.exp(m.params).round(3),\n                   "p": m.pvalues.map(lambda v: float(f"{v:.3g}"))})\nq7'),
+ dict(title="The same test on all three incomplete columns", out="q8",
+      task="Fit that model for `rent`, `savings` and `power_backup`, and report the LR p-value for each.\nTwo of the three reject. The test names a predictor of missingness, and separating MAR from MNAR\ntakes Q9.",
+      shape="a Series indexed by column.",
+      solution='q8 = pd.Series({c: float(f"{fit_logit(c).llr_pvalue:.3g}")\n                for c in ["rent", "savings", "power_backup"]}, name="LR p")\nq8'),
+ dict(title="Pattern mixture on savings", out="q9",
+      task="`savings` is the MNAR column, so `mu = mu_obs + pi * delta` from Lecture 2 applies. Report\nthe missing fraction π, the observed mean, the estimate at an assumed shift of δ = −300000, and the\ntrue δ, which `truth_savings` can give and no real study can.",
+      shape="a tuple of four numbers.",
+      solution='''M = panel["savings"].isna()
+pi = float(M.mean())
+mu_obs = float(panel["savings"][~M].mean())
+delta = -300000.0
+
+q9 = (round(pi, 3), round(mu_obs, 0), round(mu_obs + pi * delta, 0),
+      round(float(truth_savings[M].mean() - truth_savings[~M].mean()), 0))
+q9'''),
+ dict(title="Imputation scored against the truth", out="q10",
+      task="Fill `rent` four ways: the column mean; a regression on `age`, `household_size`,\n`education_years` and `commute_min`; that regression plus a draw from `N(0, residual sd)` with\n`np.random.default_rng(0)`; and `KNNImputer(n_neighbors=5)` over those four columns and `rent`.\nScore each by RMSE against `truth_rent`, on the missing rows only.",
+      shape="a Series of four RMSEs.",
+      solution='''Rm = panel["rent"].isna().to_numpy()
+XCOLS = ["age", "household_size", "education_years", "commute_min"]
+
+def rmse(filled):
+    return float(np.sqrt(np.mean((filled[Rm] - truth_rent[Rm]) ** 2)))
+
+
+scores = {"mean": rmse(panel["rent"].fillna(panel["rent"].mean()).to_numpy())}
+
+ols = sm.OLS(panel["rent"][~Rm], sm.add_constant(panel[XCOLS][~Rm])).fit()
+pred = ols.predict(sm.add_constant(panel[XCOLS])).to_numpy()
+scores["regression"] = rmse(np.where(Rm, pred, panel["rent"]))
+
+rng2 = np.random.default_rng(0)
+sd = float(np.sqrt(ols.mse_resid))
+scores["stochastic regression"] = rmse(
+    np.where(Rm, pred + rng2.normal(0, sd, len(panel)), panel["rent"]))
+
+knn = KNNImputer(n_neighbors=5).fit_transform(panel[XCOLS + ["rent"]])
+scores["knn k=5"] = rmse(knn[:, -1])
+
+q10 = pd.Series(scores, name="rmse").round(0)
+q10'''),
 ]
 for q in Q:
     q["output"] = O[q["out"]]
 
 build(dict(colab_path="data%20cleaning/practice/data_cleaning_worksheet.ipynb",
-           intro=INTRO, setup=SETUP, questions=Q),
+           pre=[("md", INTRO), ("code", SETUP), ("md", GIVEN_MD), ("code", GIVEN)],
+           questions=Q),
       "/mnt/e/iitm course/da2402-26/data cleaning/practice/data_cleaning_worksheet.ipynb")

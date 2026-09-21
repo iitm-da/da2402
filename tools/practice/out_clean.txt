@@ -1,62 +1,49 @@
-visit_id        object
-patient_ref     object
-visit_date      object
-department      object
-age            float64
-weight_kg      float64
-systolic_bp     object
-phone           object
-shape (620, 8)
 @@q1
-(28, 62)
-@@end
-@@q2
-128.7
-@@end
-@@q3
-(12, 20)
-@@end
-parsed 599 of 599
-@@q4
-173
-@@end
-@@q5
-533
-@@end
-@@q6
-77
-@@end
-@@q7
-12
-@@end
-@@q8
-visit_date  age    systolic_bp
-False       False  False          519
-                   True            58
-            True   False           19
-True        False  False           17
-False       True   True             3
-True        True   False            3
-            False  True             1
+rent   savings  power_backup
+False  False    False           281
+True   False    False           126
+False  True     False            52
+True   True     False            19
+False  False    True             10
+True   False    True              9
+False  True     True              3
 Name: count, dtype: int64
 @@end
+@@q2
+(3.992, 8.27e-05)
+@@end
+@@q3
+(2.762, 0.3578)
+@@end
+@@q4
+(4, 20, 14)
+@@end
+@@q5
+(108.44, 14, 1.12e-16)
+@@end
+@@q6
+(20.79, 3, 0.000116)
+@@end
+@@q7
+                   coef      se     OR         p
+const           -2.2979  0.6103  0.100  0.000166
+age              0.0329  0.0088  1.033  0.000192
+household_size   0.1359  0.0623  1.146  0.029200
+education_years -0.0397  0.0488  0.961  0.416000
+@@end
+@@q8
+rent            1.160000e-04
+savings         2.870000e-21
+power_backup    1.280000e-01
+Name: LR p, dtype: float64
+@@end
 @@q9
-department
-Cardiology          143.0
-General Medicine    126.7
-Orthopaedics        127.5
-Paediatrics         108.5
-Name: systolic_bp, dtype: float64
+(0.148, 448432.0, 404032.0, -352310.0)
 @@end
 @@q10
-{'column': 'weight_kg', 'decision': 'divided values above 300 by 1000', 'rows': 77, 'assumption': 'no patient in this clinic weighs over 300 kg, so a large value is grams', 'why': 'the column mixes two units and the mean is meaningless until they agree'}
-@@end
-@@q10p
-{'column': 'weight_kg',
- 'decision': 'divided values above 300 by 1000',
- 'rows': 77,
- 'assumption': 'no patient in this clinic weighs over 300 kg, so a large value '
-               'is grams',
- 'why': 'the column mixes two units and the mean is meaningless until they '
-        'agree'}
+mean                     20172.0
+regression               13515.0
+stochastic regression    17340.0
+knn k=5                  15749.0
+Name: rmse, dtype: float64
 @@end
