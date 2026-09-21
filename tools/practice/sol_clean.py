@@ -85,17 +85,7 @@ q8 = pd.Series({c: float(f"{fit_logit(c).llr_pvalue:.3g}")
                 for c in ["rent", "savings", "power_backup"]}, name="LR p")
 show("q8", q8)
 
-# Q9  pattern mixture on savings
-truth_sav = np.load(D + "truth_savings.npy")
-M = panel["savings"].isna()
-pi = float(M.mean())
-mu_obs = float(panel["savings"][~M].mean())
-delta = -300000.0
-q9 = (round(pi, 3), round(mu_obs, 0), round(mu_obs + pi * delta, 0),
-      round(float(truth_sav[M].mean() - truth_sav[~M].mean()), 0))
-show("q9", q9)
-
-# Q10  imputation scoreboard on rent, against the held-out truth
+# Q9  imputation scoreboard on rent, against the held-out truth
 truth_rent = np.load(D + "truth_rent.npy")
 Rm = panel["rent"].isna().to_numpy()
 XCOLS = ["age", "household_size", "education_years", "commute_min"]
@@ -120,5 +110,5 @@ scores["stochastic regression"] = rmse(np.where(Rm, pred + rng2.normal(0, sd, le
 knn = KNNImputer(n_neighbors=5).fit_transform(panel[XCOLS + ["rent"]])
 scores["knn k=5"] = rmse(knn[:, -1])
 
-q10 = pd.Series(scores, name="rmse").round(0)
-show("q10", q10)
+q9 = pd.Series(scores, name="rmse").round(0)
+show("q9", q9)

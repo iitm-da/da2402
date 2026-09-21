@@ -5,8 +5,8 @@ INTRO = """# Practice · data cleaning
 
 DA2402 · Data Curation and Visualization · Dr. Arun B Ayyar
 
-Ten questions covering Lectures 1 to 3: the missingness patterns, the three tests for the mechanism,
-the sensitivity analysis and the imputation scoreboard. Each question names a variable. Put your
+Nine questions covering Lectures 1 to 3: the missingness patterns, the three tests for the mechanism,
+and the imputation scoreboard. Each question names a variable. Put your
 result in that variable and run the cell. The worked answer sits under **Answer**. Click it open
 once you have tried.
 
@@ -21,8 +21,8 @@ written for the lectures: the mechanism is known because it was planted.
 
 `age`, `household_size`, `education_years` and `commute_min` are complete.
 
-`truth_rent` and `truth_savings` hold the values before anything was deleted. No real study has
-them, which is why the last two questions can be scored at all.
+`truth_rent` holds the rent values before any were deleted. No real study has that, which is why
+the last question can be scored at all.
 """
 
 SETUP = """import io
@@ -40,7 +40,6 @@ def load_npy(name):
     return np.load(io.BytesIO(requests.get(URL + name).content))
 
 truth_rent = load_npy("truth_rent.npy")
-truth_savings = load_npy("truth_savings.npy")
 
 NUM = ["age", "household_size", "education_years", "commute_min", "rent", "savings"]
 print(panel.isna().sum().to_string())"""
@@ -152,21 +151,10 @@ q6'''),
       shape="a DataFrame, 4 rows by 4 columns.",
       solution='q7 = pd.DataFrame({"coef": m.params.round(4), "se": m.bse.round(4),\n                   "OR": np.exp(m.params).round(3),\n                   "p": m.pvalues.map(lambda v: float(f"{v:.3g}"))})\nq7'),
  dict(title="The same test on all three incomplete columns", out="q8",
-      task="Fit that model for `rent`, `savings` and `power_backup`, and report the LR p-value for each.\nTwo of the three reject. The test names a predictor of missingness, and separating MAR from MNAR\ntakes Q9.",
+      task="Fit that model for `rent`, `savings` and `power_backup`, and report the LR p-value for each.\nTwo of the three reject. `savings` is missing on its own value, and the test rejects for it too, so\na rejection here does not separate MAR from MNAR.",
       shape="a Series indexed by column.",
       solution='q8 = pd.Series({c: float(f"{fit_logit(c).llr_pvalue:.3g}")\n                for c in ["rent", "savings", "power_backup"]}, name="LR p")\nq8'),
- dict(title="Pattern mixture on savings", out="q9",
-      task="`savings` is the MNAR column, so `mu = mu_obs + pi * delta` from Lecture 2 applies. Report\nthe missing fraction π, the observed mean, the estimate at an assumed shift of δ = −300000, and the\ntrue δ, which `truth_savings` can give and no real study can.",
-      shape="a tuple of four numbers.",
-      solution='''M = panel["savings"].isna()
-pi = float(M.mean())
-mu_obs = float(panel["savings"][~M].mean())
-delta = -300000.0
-
-q9 = (round(pi, 3), round(mu_obs, 0), round(mu_obs + pi * delta, 0),
-      round(float(truth_savings[M].mean() - truth_savings[~M].mean()), 0))
-q9'''),
- dict(title="Imputation scored against the truth", out="q10",
+ dict(title="Imputation scored against the truth", out="q9",
       task="Fill `rent` four ways: the column mean; a regression on `age`, `household_size`,\n`education_years` and `commute_min`; that regression plus a draw from `N(0, residual sd)` with\n`np.random.default_rng(0)`; and `KNNImputer(n_neighbors=5)` over those four columns and `rent`.\nScore each by RMSE against `truth_rent`, on the missing rows only.",
       shape="a Series of four RMSEs.",
       solution='''Rm = panel["rent"].isna().to_numpy()
@@ -190,8 +178,8 @@ scores["stochastic regression"] = rmse(
 knn = KNNImputer(n_neighbors=5).fit_transform(panel[XCOLS + ["rent"]])
 scores["knn k=5"] = rmse(knn[:, -1])
 
-q10 = pd.Series(scores, name="rmse").round(0)
-q10'''),
+q9 = pd.Series(scores, name="rmse").round(0)
+q9'''),
 ]
 for q in Q:
     q["output"] = O[q["out"]]

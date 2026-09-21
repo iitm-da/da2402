@@ -38,9 +38,6 @@ power_backup    1.280000e-01
 Name: LR p, dtype: float64
 @@end
 @@q9
-(0.148, 448432.0, 404032.0, -352310.0)
-@@end
-@@q10
 mean                     20172.0
 regression               13515.0
 stochastic regression    17340.0
