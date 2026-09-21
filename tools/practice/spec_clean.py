@@ -5,8 +5,8 @@ INTRO = """# Practice · data cleaning
 
 DA2402 · Data Curation and Visualization · Dr. Arun B Ayyar
 
-Nine questions covering Lectures 1 to 3: the missingness patterns, the three tests for the mechanism,
-and the imputation scoreboard. Each question names a variable. Put your
+Nine questions covering Lectures 1 to 3: the missingness patterns, the three tests of MCAR, and the
+imputation scoreboard. Each question names a variable. Put your
 result in that variable and run the cell. The worked answer sits under **Answer**. Click it open
 once you have tried.
 
@@ -20,6 +20,11 @@ written for the lectures: the mechanism is known because it was planted.
 | `savings` | MNAR on itself, low savers withhold | 74 |
 
 `age`, `household_size`, `education_years` and `commute_min` are complete.
+
+All three tests below share one null: missingness depends on nothing observed. Rejecting it rules out
+MCAR and leaves MAR and MNAR standing together. Neither of those two is testable, MNAR not even in
+principle, so the mechanism column above comes from `make_panel.py`. Nothing in this worksheet could
+establish it.
 
 `truth_rent` holds the rent values before any were deleted. No real study has that, which is why
 the last question can be scored at all.
@@ -151,7 +156,7 @@ q6'''),
       shape="a DataFrame, 4 rows by 4 columns.",
       solution='q7 = pd.DataFrame({"coef": m.params.round(4), "se": m.bse.round(4),\n                   "OR": np.exp(m.params).round(3),\n                   "p": m.pvalues.map(lambda v: float(f"{v:.3g}"))})\nq7'),
  dict(title="The same test on all three incomplete columns", out="q8",
-      task="Fit that model for `rent`, `savings` and `power_backup`, and report the LR p-value for each.\nTwo of the three reject. `savings` is missing on its own value, and the test rejects for it too, so\na rejection here does not separate MAR from MNAR.",
+      task="Fit that model for `rent`, `savings` and `power_backup`, and report the LR p-value for each.\nTwo of the three reject. `savings` was deleted on its own value, and `corr(age, savings) = 0.621`\nlets `age` stand in for it, so the test rejects without seeing the real cause. A rejection rules out\nMCAR and stops there.",
       shape="a Series indexed by column.",
       solution='q8 = pd.Series({c: float(f"{fit_logit(c).llr_pvalue:.3g}")\n                for c in ["rent", "savings", "power_backup"]}, name="LR p")\nq8'),
  dict(title="Imputation scored against the truth", out="q9",
