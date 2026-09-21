@@ -1,0 +1,8 @@
+User-agent: *
+Crawl-delay: 5
+Disallow: /admin/
+Disallow: /register/
+Allow: /
+
+User-agent: GPTBot
+Disallow: /

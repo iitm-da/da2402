@@ -1,0 +1,62 @@
+visit_id        object
+patient_ref     object
+visit_date      object
+department      object
+age            float64
+weight_kg      float64
+systolic_bp     object
+phone           object
+shape (620, 8)
+@@q1
+(28, 62)
+@@end
+@@q2
+128.7
+@@end
+@@q3
+(12, 20)
+@@end
+parsed 599 of 599
+@@q4
+173
+@@end
+@@q5
+533
+@@end
+@@q6
+77
+@@end
+@@q7
+12
+@@end
+@@q8
+visit_date  age    systolic_bp
+False       False  False          519
+                   True            58
+            True   False           19
+True        False  False           17
+False       True   True             3
+True        True   False            3
+            False  True             1
+Name: count, dtype: int64
+@@end
+@@q9
+department
+Cardiology          143.0
+General Medicine    126.7
+Orthopaedics        127.5
+Paediatrics         108.5
+Name: systolic_bp, dtype: float64
+@@end
+@@q10
+{'column': 'weight_kg', 'decision': 'divided values above 300 by 1000', 'rows': 77, 'assumption': 'no patient in this clinic weighs over 300 kg, so a large value is grams', 'why': 'the column mixes two units and the mean is meaningless until they agree'}
+@@end
+@@q10p
+{'column': 'weight_kg',
+ 'decision': 'divided values above 300 by 1000',
+ 'rows': 77,
+ 'assumption': 'no patient in this clinic weighs over 300 kg, so a large value '
+               'is grams',
+ 'why': 'the column mixes two units and the mean is meaningless until they '
+        'agree'}
+@@end

@@ -1,0 +1,56 @@
+@@q1
+(3258, 5)
+@@end
+@@q2
+159
+@@end
+@@q3
+-17.07
+@@end
+@@q4
+station
+Chennai Central    3878155
+Alandur            2975714
+CMBT               2724415
+Egmore             2462107
+Guindy             2253643
+Name: entries, dtype: int64
+@@end
+@@q5
+line
+Blue     529.99
+Green    447.27
+Name: fare_collected, dtype: float64
+@@end
+@@q6
+line      Blue    Green
+month                  
+1      2713437  2249636
+2      2573761  2126102
+3      3065335  2560637
+4      2883446  2387161
+5      2894025  2344404
+6      2689197  2210113
+@@end
+@@q7
+date
+2025-01-31    4963073
+2025-02-28    4699863
+2025-03-31    5625972
+2025-04-30    5270607
+2025-05-31    5238429
+2025-06-30    4899310
+Freq: ME, Name: entries, dtype: int64
+@@end
+@@q8
+line
+Blue     Chennai Central
+Green               CMBT
+Name: station, dtype: object
+@@end
+@@q9
+day_type  weekday  weekend
+line                      
+Blue      11587.0   7193.0
+Green      9558.0   5943.0
+@@end

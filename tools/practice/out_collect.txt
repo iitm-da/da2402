@@ -1,0 +1,35 @@
+@@q1
+(200, 'text/html')
+@@end
+@@q2
+12
+@@end
+@@q3
+'Time series forecasting with statsmodels'
+@@end
+link text was: 'Time series forecasting with stats â\x80¦'
+@@q4
+[4, 5, 3, 4, 5, 3, 4, 5, 4, 2, 4, 3]
+@@end
+@@q5
+159
+@@end
+@@q6
+18
+@@end
+@@q7
+(18, 7)
+@@end
+@@q8
+['W-105', 'W-113']
+@@end
+['workshop_id', 'mode', 'fee_inr', 'starts_on', 'seats.total', 'seats.left', 'venue.campus', 'venue.room']
+@@q9
+mode
+in-person    118
+online       132
+Name: seats.left, dtype: int64
+@@end
+@@q10
+(True, False, False, 5)
+@@end

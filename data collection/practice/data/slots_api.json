@@ -1,0 +1,262 @@
+{
+  "meta": {
+    "page": 1,
+    "per_page": 18,
+    "total": 18,
+    "generated": "2026-09-21"
+  },
+  "results": [
+    {
+      "workshop_id": "W-101",
+      "mode": "online",
+      "fee_inr": 2500,
+      "seats": {
+        "total": 40,
+        "left": 12
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "Research Park"
+      },
+      "starts_on": "2026-10-08"
+    },
+    {
+      "workshop_id": "W-102",
+      "mode": "in-person",
+      "fee_inr": 1800,
+      "seats": {
+        "total": 40,
+        "left": 4
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "ICSR Hall"
+      },
+      "starts_on": "2026-10-09"
+    },
+    {
+      "workshop_id": "W-103",
+      "mode": "online",
+      "fee_inr": 2500,
+      "seats": {
+        "total": 40,
+        "left": 22
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "Research Park"
+      },
+      "starts_on": "2026-10-10"
+    },
+    {
+      "workshop_id": "W-104",
+      "mode": "in-person",
+      "fee_inr": 1200,
+      "seats": {
+        "total": 40,
+        "left": 9
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "ICSR Hall"
+      },
+      "starts_on": "2026-10-13"
+    },
+    {
+      "workshop_id": "W-105",
+      "mode": "online",
+      "fee_inr": null,
+      "seats": {
+        "total": 40,
+        "left": 0
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "Research Park"
+      },
+      "starts_on": "2026-10-14"
+    },
+    {
+      "workshop_id": "W-106",
+      "mode": "in-person",
+      "fee_inr": 1800,
+      "seats": {
+        "total": 40,
+        "left": 17
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "DSAI Seminar Room"
+      },
+      "starts_on": "2026-10-15"
+    },
+    {
+      "workshop_id": "W-107",
+      "mode": "in-person",
+      "fee_inr": 2500,
+      "seats": {
+        "total": 40,
+        "left": 6
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "ICSR Hall"
+      },
+      "starts_on": "2026-10-16"
+    },
+    {
+      "workshop_id": "W-108",
+      "mode": "online",
+      "fee_inr": 1200,
+      "seats": {
+        "total": 40,
+        "left": 11
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "Research Park"
+      },
+      "starts_on": "2026-10-17"
+    },
+    {
+      "workshop_id": "W-109",
+      "mode": "online",
+      "fee_inr": 1800,
+      "seats": {
+        "total": 40,
+        "left": 31
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "DSAI Seminar Room"
+      },
+      "starts_on": "2026-10-20"
+    },
+    {
+      "workshop_id": "W-110",
+      "mode": "in-person",
+      "fee_inr": 900,
+      "seats": {
+        "total": 40,
+        "left": 25
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "ICSR Hall"
+      },
+      "starts_on": "2026-10-21"
+    },
+    {
+      "workshop_id": "W-111",
+      "mode": "online",
+      "fee_inr": 2500,
+      "seats": {
+        "total": 40,
+        "left": 8
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "Research Park"
+      },
+      "starts_on": "2026-10-22"
+    },
+    {
+      "workshop_id": "W-112",
+      "mode": "in-person",
+      "fee_inr": 900,
+      "seats": {
+        "total": 40,
+        "left": 14
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "DSAI Seminar Room"
+      },
+      "starts_on": "2026-10-23"
+    },
+    {
+      "workshop_id": "W-113",
+      "mode": "online",
+      "fee_inr": null,
+      "seats": {
+        "total": 40,
+        "left": 3
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "Research Park"
+      },
+      "starts_on": "2026-10-24"
+    },
+    {
+      "workshop_id": "W-114",
+      "mode": "online",
+      "fee_inr": 1800,
+      "seats": {
+        "total": 40,
+        "left": 19
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "ICSR Hall"
+      },
+      "starts_on": "2026-10-27"
+    },
+    {
+      "workshop_id": "W-115",
+      "mode": "in-person",
+      "fee_inr": 1200,
+      "seats": {
+        "total": 40,
+        "left": 27
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "DSAI Seminar Room"
+      },
+      "starts_on": "2026-10-28"
+    },
+    {
+      "workshop_id": "W-116",
+      "mode": "online",
+      "fee_inr": 2500,
+      "seats": {
+        "total": 40,
+        "left": 5
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "Research Park"
+      },
+      "starts_on": "2026-10-29"
+    },
+    {
+      "workshop_id": "W-117",
+      "mode": "in-person",
+      "fee_inr": 1800,
+      "seats": {
+        "total": 40,
+        "left": 16
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "ICSR Hall"
+      },
+      "starts_on": "2026-10-30"
+    },
+    {
+      "workshop_id": "W-118",
+      "mode": "online",
+      "fee_inr": 900,
+      "seats": {
+        "total": 40,
+        "left": 21
+      },
+      "venue": {
+        "campus": "IIT Madras",
+        "room": "DSAI Seminar Room"
+      },
+      "starts_on": "2026-10-31"
+    }
+  ]
+}

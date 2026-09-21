@@ -1,0 +1,19 @@
+station,line,zone,opened,interchange
+Washermanpet,Blue,1,2016-05-14,False
+Chennai Central,Blue,1,2015-06-29,True
+Government Estate,Blue,1,2015-06-29,False
+Thousand Lights,Blue,1,2015-06-29,False
+Teynampet,Blue,2,2015-06-29,False
+Saidapet,Blue,2,2015-06-29,False
+Guindy,Blue,2,2015-06-29,False
+Alandur,Blue,3,2015-06-29,True
+Airport,Blue,3,2015-06-29,False
+Egmore,Green,1,2016-05-14,False
+Nehru Park,Green,1,2016-05-14,False
+CMBT,Green,2,2016-05-14,True
+Koyambedu,Green,2,2015-06-29,False
+Arumbakkam,Green,2,2015-06-29,False
+Vadapalani,Green,2,2015-06-29,False
+Ashok Nagar,Green,3,2015-06-29,False
+Ekkattuthangal,Green,3,2015-06-29,False
+St Thomas Mount,Green,3,2015-06-29,False
