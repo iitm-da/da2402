@@ -557,18 +557,24 @@ input.sel.err{border-color:var(--t-asr);background:#FFF5F5}
       <div class="colstack">
         <pre class="code sm"><span class="py-kw">from</span> urllib <span class="py-kw">import</span> robotparser
 
+ROBOTS = <span class="py-bi">open</span>(<span class="py-str">"robots.txt"</span>).read()   <span class="py-cm"># the file on slide 4, saved</span>
 rp = robotparser.RobotFileParser()
-rp.parse(ROBOTS.splitlines())   <span class="py-cm"># the file from slide 4</span>
-<span class="py-cm"># live: rp.set_url(base + '/robots.txt'); rp.read()</span>
+rp.parse(ROBOTS.splitlines())
 
+checks = [(<span class="py-str">"*"</span>, <span class="py-str">"/news/2026/08/markets"</span>),
+          (<span class="py-str">"*"</span>, <span class="py-str">"/api/history?index=BLUE%2050"</span>),
+          (<span class="py-str">"*"</span>, <span class="py-str">"/api/public/feed.xml"</span>),
+          (<span class="py-str">"*"</span>, <span class="py-str">"/search?q=cleaning"</span>),
+          (<span class="py-str">"GPTBot"</span>, <span class="py-str">"/news/2026/08/markets"</span>),
+          (<span class="py-str">"da2402-student-bot"</span>, <span class="py-str">"/news/2026/08/markets"</span>)]
 <span class="py-kw">for</span> ua, path <span class="py-kw">in</span> checks:
-    <span class="py-bi">print</span>(ua, path, rp.can_fetch(ua, path))
-<span class="py-bi">print</span>(rp.crawl_delay(<span class="py-str">'*'</span>), rp.crawl_delay(<span class="py-str">'GPTBot'</span>))
+    <span class="py-bi">print</span>(<span class="py-str">f"{ua:18} {path:30} -> {rp.can_fetch(ua, path)}"</span>)
+<span class="py-bi">print</span>(rp.crawl_delay(<span class="py-str">"*"</span>), rp.crawl_delay(<span class="py-str">"GPTBot"</span>))
 <span class="py-bi">print</span>(rp.site_maps())</pre>
         <div class="outlbl">Output · Python 3.12.7</div>
         <div class="out">*                  /news/2026/08/markets          -&gt; <span class="h-ok">True</span>
 *                  /api/history?index=BLUE%2050   -&gt; <span class="h-bad">False</span>
-*                  /api/public/feed.xml           -&gt; <span class="h-bad">False</span>   ?
+*                  /api/public/feed.xml           -&gt; <span class="h-bad">False</span>
 *                  /search?q=cleaning             -&gt; <span class="h-bad">False</span>
 GPTBot             /news/2026/08/markets          -&gt; <span class="h-bad">False</span>
 da2402-student-bot /news/2026/08/markets          -&gt; <span class="h-ok">True</span>
@@ -576,12 +582,15 @@ da2402-student-bot /news/2026/08/markets          -&gt; <span class="h-ok">True<
 ['https://www.dailyledger.example/sitemap.xml']</div>
       </div>
       <div class="colstack">
-        <div class="callout bad"><b>Look at the third line.</b> The file says <code class="k">Allow:
-          /api/public/</code>, so <code class="k">/api/public/feed.xml</code> should be fetchable. Python says
-          <code class="k">False</code>. Swap the two lines in the file and it says <code class="k">True</code>
-          — we tested both orders:</div>
-        <div class="out">Disallow first, Allow second -&gt; <span class="h-bad">False</span>
-Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
+        <div class="callout bad"><b>Third line:</b> the file allows
+          <code class="k">/api/public/</code>, and Python says <code class="k">False</code>. Swap the rules:</div>
+        <pre class="code sm"><span class="py-kw">for</span> rules <span class="py-kw">in</span> ([<span class="py-str">"Disallow: /api/"</span>, <span class="py-str">"Allow: /api/public/"</span>],
+              [<span class="py-str">"Allow: /api/public/"</span>, <span class="py-str">"Disallow: /api/"</span>]):
+    rp = robotparser.RobotFileParser()
+    rp.parse([<span class="py-str">"User-agent: *"</span>, *rules])
+    <span class="py-bi">print</span>(rules[0], <span class="py-str">"first ->"</span>, rp.can_fetch(<span class="py-str">"*"</span>, <span class="py-str">"/api/public/feed.xml"</span>))</pre>
+        <div class="out">Disallow: /api/ first -&gt; <span class="h-bad">False</span>
+Allow: /api/public/ first -&gt; <span class="h-ok">True</span></div>
         <table class="d sm free">
           <tr><th style="width:120px">Parser</th><th>Rule when Allow and Disallow both match</th></tr>
           <tr class="hl"><td><code class="k">urllib.robotparser</code></td><td><b>First match in file order
@@ -590,13 +599,12 @@ Allow first, Disallow second -&gt; <span class="h-ok">True</span></div>
             <td><b>Longest matching path wins</b>, Allow on ties. <code class="k">/api/public/</code> is longer
             than <code class="k">/api/</code>, so Allow.</td></tr>
         </table>
-        <div class="callout good"><b>The failure is in the safe direction</b> — the stdlib will tell you
-          <i>no</i> where the owner said <i>yes</i>, never the reverse. For a course scraper that is
-          acceptable. For anything you ship, use <code class="k">protego</code>, and write the unit test that
-          would have caught this: one Allow inside one Disallow.</div>
-        <div class="callout"><b>Also note</b> <code class="k">crawl_delay('GPTBot')</code> is
-          <code class="k">None</code>: the GPTBot group has no delay line and the parser does <i>not</i>
-          inherit from <code class="k">*</code>. Groups are islands.</div>
+        <div class="callout good"><b>This error is on the safe side:</b> the stdlib says <i>no</i> where
+          the owner said <i>yes</i>. For anything you ship, use <code class="k">protego</code>, and write the
+          test that catches it: one Allow inside one Disallow.</div>
+        <div class="callout"><b>Also note</b> <code class="k">crawl_delay("GPTBot")</code> is
+          <code class="k">None</code>: its group has no delay line and does not inherit from
+          <code class="k">*</code>.</div>
       </div>
     </div>
   </div>
