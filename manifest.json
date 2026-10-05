@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-05 12:32 UTC",
+ "generated": "2026-10-05 12:42 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -298,6 +298,33 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 665369,
+   "updated": "2026-10-05"
+  },
+  {
+   "path": "data visualisation/data_vis_5_gestalt.html",
+   "name": "data_vis_5_gestalt.html",
+   "folder": "data visualisation",
+   "section": "Data Visualisation",
+   "kind": "deck",
+   "size": 236362,
+   "updated": "2026-10-05"
+  },
+  {
+   "path": "data visualisation/data_vis_6_perception.html",
+   "name": "data_vis_6_perception.html",
+   "folder": "data visualisation",
+   "section": "Data Visualisation",
+   "kind": "deck",
+   "size": 123928,
+   "updated": "2026-10-05"
+  },
+  {
+   "path": "data visualisation/data_vis_7_colour_honest_charts.html",
+   "name": "data_vis_7_colour_honest_charts.html",
+   "folder": "data visualisation",
+   "section": "Data Visualisation",
+   "kind": "deck",
+   "size": 219324,
    "updated": "2026-10-05"
   },
   {
