@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Visualisation · Part 6: Perception</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d th.m,table.d td.m{font-family:var(--mono);text-align:right;white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d.tight th,table.d.tight td{padding:2.4px 7px}
+table.d.tight th{text-transform:none}
+table.d.tight tr.tot td{font-weight:700}
+
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- embedded demo ---------- */
+.demo-frame{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--line);
+  background:var(--paper)}
+.demo-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--t-cls);
+  text-decoration:none;border-bottom:1px solid currentColor;margin-left:8px;white-space:nowrap}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+<style>
+/* ================= additions for the Data Cleaning series =================
+   Vocabulary specific to this module. Everything above is the shared theme,
+   copied verbatim from the Data Collection decks.                          */
+
+/* ---------- the spine: symptom -> mechanisms -> what it permits ---------- */
+.spine{display:grid;grid-template-columns:150px 1fr 1fr;gap:0 12px;align-items:stretch}
+.spine .hd{font-family:var(--mono);font-size:9.3px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft);padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.spine .sym{background:var(--ink);color:#fff;padding:8px 11px;margin-bottom:7px;
+  display:flex;flex-direction:column;justify-content:center}
+.spine .sym b{font-family:var(--disp);font-size:13.5px;font-weight:700;display:block;line-height:1.15}
+.spine .sym i{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:#9BB4C0;margin-top:3px}
+.spine .mid,.spine .rgt{background:var(--card);border:1px solid var(--hair);padding:8px 11px;
+  margin-bottom:7px;font-size:11.7px;line-height:1.4;color:#31444F;display:flex;align-items:center}
+.spine .rgt{border-left:3px solid var(--t-grp)}
+.spine .mid{border-left:3px solid var(--t-anc)}
+.spine .now .sym{background:var(--t-asr)}
+.spine .now .mid,.spine .now .rgt{background:#FFF9F9}
+.spine b.q{font-weight:700;color:var(--ink)}
+
+/* ---------- three-mechanism cards ---------- */
+.mech{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;flex:1;min-height:0}
+.mech .m{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.mech .m.a{border-top-color:var(--t-grp)}
+.mech .m.b{border-top-color:var(--t-anc)}
+.mech .m.c{border-top-color:var(--t-asr)}
+.mech .m h3{font-family:var(--disp);font-size:15px;font-weight:700;line-height:1.1}
+.mech .m h3 span{display:block;font-family:var(--mono);font-size:9.2px;font-weight:400;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+.mech .m .def{font-size:12.2px;line-height:1.42;color:#31444F}
+.mech .m .def b{font-weight:700;color:var(--ink)}
+.mech .m .ex{font-size:11.4px;line-height:1.4;color:var(--soft);border-top:1px solid var(--hair);
+  padding-top:6px;margin-top:auto}
+.mech .m .ex b{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);display:block;margin-bottom:3px}
+
+/* ---------- figures (inline SVG, no image files) ---------- */
+.fig{background:var(--card);border:1px solid var(--hair);padding:10px 12px 8px;
+  display:flex;flex-direction:column;min-height:0}
+.fig .cap{font-family:var(--mono);font-size:9.3px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:7px}
+.fig .rd{font-size:11.6px;line-height:1.4;color:#31444F;margin-top:7px;
+  border-top:1px solid var(--hair);padding-top:6px}
+.fig .rd b{font-weight:700;color:var(--ink)}
+.fig svg{display:block;max-height:100%}
+.fig .rd{margin-top:auto}
+
+/* ---------- the cleaning log ---------- */
+table.log{width:100%;border-collapse:collapse;font-size:11.6px;background:var(--card)}
+table.log th,table.log td{border:1px solid var(--hair);padding:5px 9px;text-align:left;
+  vertical-align:top;line-height:1.38}
+table.log th{background:var(--ink);color:#fff;font-weight:600;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.log td:nth-child(1){font-family:var(--mono);font-size:10.6px;white-space:nowrap;color:#26404E}
+table.log td:nth-child(4){font-style:italic;color:var(--soft)}
+table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+/* ---------- the missingness lab (slides 6, 23 and 35) ---------- */
+.lab{display:grid;grid-template-columns:1.62fr 1fr;gap:15px;flex:1;min-height:0}
+.lab .plot{background:var(--card);border:1px solid var(--hair);padding:9px 11px 7px;
+  display:flex;flex-direction:column;min-height:0}
+.lab .plot svg{flex:1;min-height:0;display:block}
+.plotnote{font-size:10.6px;color:var(--soft);line-height:1.35;margin-top:5px;
+  border-top:1px solid var(--hair);padding-top:5px}
+.plotnote b{color:var(--ink)}
+.seg{display:flex;gap:6px;flex:none;margin-bottom:7px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.09em;padding:5px 13px;
+  border:1px solid var(--line);background:var(--paper);color:var(--soft);cursor:pointer;
+  border-radius:2px;transition:background .15s,color .15s,border-color .15s}
+.seg button:hover{background:#E2EBF0;color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.seg button.alt{margin-left:auto;font-size:10.4px;letter-spacing:.12em}
+.seg button:focus-visible{outline:2px solid var(--t-cls);outline-offset:1px}
+.meanbox{background:var(--card);border:1px solid var(--hair);padding:8px 10px;flex:none}
+.meanbox svg{display:block;width:100%}
+.pt{transition:fill .28s ease,stroke .28s ease,opacity .28s ease}
+g.knobpt{transition:transform .45s cubic-bezier(.4,0,.2,1)}
+@media (prefers-reduced-motion:reduce){g.knobpt{transition:none}}
+
+/* ---------- fill: let a short column spread over the stage instead of
+   piling its cards at the top. Cards grow and centre their own text; callouts,
+   tables and code keep their natural height.                                 */
+.colstack.fill{gap:12px}
+.colstack.fill > .card{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
+.colstack.fill > .callout,.colstack.fill > table,.colstack.fill > pre,
+.colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
+
+/* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
+table.d.roomy td,table.d.roomy th{padding:19px 10px}
+table.d.roomy.tall td,table.d.roomy.tall th{padding:27px 10px}
+table.log.roomy td,table.log.roomy th{padding:17px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:24px 12px;margin-bottom:10px}
+
+/* ---------- cover ornament: a wall of raw cells ---------- */
+.coverpat .c-miss{color:var(--t-asr);font-weight:700}
+.coverpat .c-val{color:var(--t-grp)}
+.coverpat .c-dim{color:#9BAAB3}
+.coverpat .c-hdr{color:var(--t-cls);font-weight:700}
+
+/* ---------- intuition-slide reveals: the figure arrives in the order the
+   lecturer speaks it, so the picture is not finished before the sentence is. */
+@media (prefers-reduced-motion:no-preference){
+  .slide.on .fig svg .hi{animation:hifade .55s ease .15s both}
+  .slide.on .fig svg .mk{animation:hifade .5s ease both}
+  .slide.on .fig svg .mk0{animation-delay:.55s}
+  .slide.on .fig svg .mk1{animation-delay:.95s}
+  .slide.on .fig svg .drawline{stroke-dasharray:900;stroke-dashoffset:900;
+    animation:drawin 1.15s .25s ease-out forwards}
+  @keyframes hifade{from{opacity:0}to{opacity:1}}
+  @keyframes drawin{to{stroke-dashoffset:0}}
+}
+
+.fig .expl{margin-top:auto;padding:12px 16px}
+.fig .expl p + p{margin-top:6px}
+/* ---------- staged builds: on a slide marked .build, one arrow press
+   reveals one more [data-at] piece before the deck moves to the next slide.
+   The lecturer speaks a term, then presses once, and that term appears. */
+.slide.build [data-at]{opacity:0}
+.slide.build [data-at].shown{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  .slide.build [data-at]{transition:opacity .34s ease}
+}
+.bld{position:absolute;right:58px;bottom:38px;display:flex;gap:5px;z-index:3}
+.bld i{width:17px;height:3px;background:var(--line);border-radius:2px;display:block;
+  transition:background .25s ease}
+.bld i.on{background:var(--t-asr)}
+</style>
+
+<style>
+/* storage L1 additions: column-read widget */
+.bwpick{display:flex;flex-direction:column;gap:7px}
+.bwrow{display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:center;margin:14px 0}
+.bwrow .k{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right}
+.bwtrack{position:relative;height:40px;background:var(--paper);border:1px solid var(--hair)}
+.bwbar{position:absolute;left:0;top:0;bottom:0;transition:width .3s ease}
+.bwbar.csv{background:#125F9E}.bwbar.pq{background:#0E7A55}
+.bwrow .v{font-family:var(--mono);font-size:12.5px;font-weight:700;margin-top:5px;color:var(--ink)}
+.bwrow .v i{font-style:normal;font-weight:400;color:var(--soft);margin-left:8px}
+</style>
+<style>
+/* perception L8 additions: experiment widgets */
+#ps-svg .it{cursor:pointer}
+#ps-tab td,#ps-tab th,#cm-tab td,#cm-tab th{font-family:var(--mono)}
+.cmbtn{font-family:var(--mono);font-size:12px;padding:6px 14px;border:1px solid var(--ink);
+  background:var(--ink);color:#fff;cursor:pointer;border-radius:2px}
+.cmbtn:hover{background:#26414F}
+#ps-msg.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat">
+    <div><span class="h-dim">position, common scale</span>  <span class="h-val">&#9632;&#9632;&#9632;&#9632;&#9632;&#9632;</span></div>
+    <div><span class="h-dim">position, non-aligned</span>  <span class="h-val">&#9632;&#9632;&#9632;&#9632;&#9632;</span></div>
+    <div><span class="h-dim">length, direction, angle</span>  <span class="h-hdr">&#9632;&#9632;&#9632;&#9632;</span></div>
+    <div><span class="h-dim">area</span>  <span class="h-mth">&#9632;&#9632;&#9632;</span></div>
+    <div><span class="h-dim">volume, curvature</span>  <span class="h-bad">&#9632;&#9632;</span></div>
+    <div><span class="h-dim">shading, saturation</span>  <span class="h-bad">&#9632;</span></div>
+    <div>&#160;</div>
+    <div><span class="h-dim">error = log2(|judged - true| + 1/8)</span></div>
+  </div>
+  <div class="kicker">DA2402 &#183; Data Curation and Visualization</div>
+  <h1>Data<br/>Visualisation</h1>
+  <div class="pt">Part 6 &#8212; Perception</div>
+  <div class="rule"></div>
+  <p class="sub">Which visual features the eye picks out before attention arrives, which encodings it reads
+  accurately, and what that means for the charts built in lectures 2 to 6.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 &#183; BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data visualisation</td></tr>
+    <tr><td>Lecture</td><td>8 of 9 &#183; Perception</td></tr>
+    <tr><td>Data</td><td>gapminder &#183; sales.parquet</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Perception &#183; the question of this lecture</div>
+  <h1 class="t">2007 population by continent as a pie, a bar and bubbles
+    <small>Population by continent, 2007. Africa holds 14.9% and the Americas 14.4%. Only one of these charts lets you see which is bigger.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">gapminder 2007, population share by continent</div><svg viewBox="0 0 1100 256" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="The 2007 population of five continents as a pie, a sorted bar and bubbles"><text x="110.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >pie: angle</text><path d="M110,130 L110.0,35.0 L114.9,35.1 L119.8,35.5 L124.7,36.1 L129.5,37.0 L134.3,38.2 L139.0,39.5 L143.7,41.2 L148.2,43.0 L152.7,45.1 L157.0,47.5 L161.2,50.0 L165.3,52.8 L169.2,55.7 L173.0,58.9 L176.6,62.2 L180.0,65.8 L183.2,69.5 L186.3,73.4 L189.1,77.4 L191.7,81.5 L194.1,85.8 L196.3,90.3 L198.2,94.8 L199.9,99.4 L201.4,104.1 L202.6,108.8 L203.6,113.7 L204.3,118.5 L204.8,123.4 L205.0,128.3 L204.9,133.3 L204.6,138.2 L204.1,143.1 L203.3,147.9 L202.2,152.7 L200.9,157.5 L199.4,162.1 L197.6,166.7 L195.6,171.2 L193.4,175.6 L190.9,179.8 L188.2,183.9 L185.3,187.9 L182.2,191.7 L178.9,195.4 L175.4,198.9 L171.8,202.2 L168.0,205.3 L164.0,208.2 L159.9,210.9 L155.6,213.3 L151.2,215.6 L146.8,217.6 L142.2,219.4 L137.5,220.9 L132.8,222.2 L128.0,223.3 L123.1,224.1 L118.2,224.6 L113.3,224.9 L108.4,225.0 L103.5,224.8 L98.6,224.3 L93.7,223.6 L88.9,222.6 L84.1,221.4 L79.4,219.9 L74.8,218.2 L70.3,216.3 L65.9,214.1 L61.6,211.7 L57.4,209.1 L53.4,206.3 L49.5,203.3 Z" fill="#B02F3B" stroke="#FFFFFF" stroke-width="1.2"/><path d="M110,130 L49.5,203.3 L45.8,200.0 L42.3,196.6 L38.9,193.0 L35.7,189.2 L32.8,185.3 L30.0,181.2 L27.4,177.0 L25.1,172.6 L23.0,168.2 L21.1,163.6 L19.5,159.0 L18.1,154.2 L17.0,149.4 L16.1,144.6 L15.5,139.7 L15.1,134.8 L15.0,129.8 L15.1,124.9 Z" fill="#8F5D0A" stroke="#FFFFFF" stroke-width="1.2"/><path d="M110,130 L15.1,124.9 L15.5,120.2 L16.1,115.4 L17.0,110.7 L18.1,106.1 L19.4,101.5 L20.9,97.0 L22.7,92.6 L24.7,88.2 L26.9,84.0 L29.3,79.9 L31.9,75.9 L34.7,72.1 L37.7,68.4 L40.9,64.8 L44.3,61.4 L47.8,58.2 L51.5,55.2 L55.3,52.3 Z" fill="#125F9E" stroke="#FFFFFF" stroke-width="1.2"/><path d="M110,130 L55.3,52.3 L59.2,49.7 L63.2,47.4 L67.3,45.2 L71.5,43.2 L75.8,41.4 L80.2,39.8 L84.6,38.4 L89.2,37.3 L93.7,36.4 L98.4,35.7 L103.0,35.3 L107.7,35.0 Z" fill="#0E7A55" stroke="#FFFFFF" stroke-width="1.2"/><path d="M110,130 L107.7,35.0 L108.8,35.0 L110.0,35.0 Z" fill="#9B2C7E" stroke="#FFFFFF" stroke-width="1.2"/><text x="330.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="start" font-weight="400" >sorted bar: length on a common baseline</text><text x="400.0" y="50.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="end" font-weight="500" >Asia</text><rect x="410.0" y="34.0" width="330.0" height="24.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="746.0" y="51.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="700" >61.0%</text><text x="400.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="end" font-weight="500" >Africa</text><rect x="410.0" y="74.0" width="80.5" height="24.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="496.5" y="91.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="700" >14.9%</text><text x="400.0" y="130.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="end" font-weight="500" >Americas</text><rect x="410.0" y="114.0" width="77.8" height="24.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="493.8" y="131.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="700" >14.4%</text><text x="400.0" y="170.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="end" font-weight="500" >Europe</text><rect x="410.0" y="154.0" width="50.7" height="24.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="466.7" y="171.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="700" >9.4%</text><text x="400.0" y="210.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="end" font-weight="500" >Oceania</text><rect x="410.0" y="194.0" width="2.1" height="24.0" fill="#9B2C7E" stroke="none" stroke-width="1" /><text x="418.1" y="211.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="700" >0.4%</text><text x="980.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >bubbles: area</text><circle cx="950" cy="110" r="72.0" fill="#B02F3B" fill-opacity=".85"/><circle cx="1060" cy="70" r="35.6" fill="#8F5D0A" fill-opacity=".85"/><circle cx="1060" cy="170" r="35.0" fill="#125F9E" fill-opacity=".85"/><circle cx="985" cy="205" r="28.2" fill="#0E7A55" fill-opacity=".85"/><circle cx="910" cy="205" r="5.8" fill="#9B2C7E" fill-opacity=".85"/><text x="110.0" y="248.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="middle" font-weight="600" >Africa or Americas?</text><text x="980.0" y="248.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="middle" font-weight="600" >Africa or Americas?</text></svg><div class="rd">The bar chart answers it at a glance. In the pie the two slices differ by <b>1.77°</b> of a 360° circle.</div></div><div style="font-family:var(--mono);font-size:11px;color:var(--soft)"><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#B02F3B;display:inline-block"></i>Asia</span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#8F5D0A;display:inline-block"></i>Africa</span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#125F9E;display:inline-block"></i>Americas</span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#0E7A55;display:inline-block"></i>Europe</span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#9B2C7E;display:inline-block"></i>Oceania</span></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Preattentive">
+  <div class="eyebrow">Preattentive attributes &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>Some differences are found in a single glance, before the eye searches item by item. These are called preattentive attributes.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">one odd item in each panel</div><svg viewBox="0 0 1092 200" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Seven preattentive features, each with one target among fifteen distractors"><rect x="0.0" y="22.0" width="150.0" height="150.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="75.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >hue</text><text x="75.0" y="190.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >colour</text><circle cx="22" cy="44" r="8" fill="#125F9E"/><circle cx="57" cy="44" r="8" fill="#125F9E"/><circle cx="92" cy="44" r="8" fill="#125F9E"/><circle cx="127" cy="44" r="8" fill="#125F9E"/><circle cx="22" cy="77" r="8" fill="#125F9E"/><circle cx="57" cy="77" r="8" fill="#125F9E"/><circle cx="92" cy="77" r="8" fill="#125F9E"/><circle cx="127" cy="77" r="8" fill="#B02F3B"/><circle cx="22" cy="110" r="8" fill="#125F9E"/><circle cx="57" cy="110" r="8" fill="#125F9E"/><circle cx="92" cy="110" r="8" fill="#125F9E"/><circle cx="127" cy="110" r="8" fill="#125F9E"/><circle cx="22" cy="143" r="8" fill="#125F9E"/><circle cx="57" cy="143" r="8" fill="#125F9E"/><circle cx="92" cy="143" r="8" fill="#125F9E"/><circle cx="127" cy="143" r="8" fill="#125F9E"/><rect x="156.0" y="22.0" width="150.0" height="150.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="231.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >intensity</text><text x="231.0" y="190.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >light vs dark</text><circle cx="178" cy="44" r="8" fill="#A9C3D9"/><circle cx="213" cy="44" r="8" fill="#A9C3D9"/><circle cx="248" cy="44" r="8" fill="#A9C3D9"/><circle cx="283" cy="44" r="8" fill="#A9C3D9"/><circle cx="178" cy="77" r="8" fill="#A9C3D9"/><circle cx="213" cy="77" r="8" fill="#A9C3D9"/><circle cx="248" cy="77" r="8" fill="#A9C3D9"/><circle cx="283" cy="77" r="8" fill="#14222B"/><circle cx="178" cy="110" r="8" fill="#A9C3D9"/><circle cx="213" cy="110" r="8" fill="#A9C3D9"/><circle cx="248" cy="110" r="8" fill="#A9C3D9"/><circle cx="283" cy="110" r="8" fill="#A9C3D9"/><circle cx="178" cy="143" r="8" fill="#A9C3D9"/><circle cx="213" cy="143" r="8" fill="#A9C3D9"/><circle cx="248" cy="143" r="8" fill="#A9C3D9"/><circle cx="283" cy="143" r="8" fill="#A9C3D9"/><rect x="312.0" y="22.0" width="150.0" height="150.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="387.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >orientation</text><text x="387.0" y="190.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >tilt</text><rect x="331.5" y="34" width="5" height="20" fill="#125F9E" transform="rotate(0 334 44)"/><rect x="366.5" y="34" width="5" height="20" fill="#125F9E" transform="rotate(0 369 44)"/><rect x="401.5" y="34" width="5" height="20" fill="#125F9E" transform="rotate(0 404 44)"/><rect x="436.5" y="34" width="5" height="20" fill="#125F9E" transform="rotate(0 439 44)"/><rect x="331.5" y="67" width="5" height="20" fill="#125F9E" transform="rotate(0 334 77)"/><rect x="366.5" y="67" width="5" height="20" fill="#125F9E" transform="rotate(0 369 77)"/><rect x="401.5" y="67" width="5" height="20" fill="#125F9E" transform="rotate(0 404 77)"/><rect x="436.5" y="67" width="5" height="20" fill="#125F9E" transform="rotate(45 439 77)"/><rect x="331.5" y="100" width="5" height="20" fill="#125F9E" transform="rotate(0 334 110)"/><rect x="366.5" y="100" width="5" height="20" fill="#125F9E" transform="rotate(0 369 110)"/><rect x="401.5" y="100" width="5" height="20" fill="#125F9E" transform="rotate(0 404 110)"/><rect x="436.5" y="100" width="5" height="20" fill="#125F9E" transform="rotate(0 439 110)"/><rect x="331.5" y="133" width="5" height="20" fill="#125F9E" transform="rotate(0 334 143)"/><rect x="366.5" y="133" width="5" height="20" fill="#125F9E" transform="rotate(0 369 143)"/><rect x="401.5" y="133" width="5" height="20" fill="#125F9E" transform="rotate(0 404 143)"/><rect x="436.5" y="133" width="5" height="20" fill="#125F9E" transform="rotate(0 439 143)"/><rect x="468.0" y="22.0" width="150.0" height="150.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="543.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >size</text><text x="543.0" y="190.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >bigger</text><circle cx="490" cy="44" r="6" fill="#125F9E"/><circle cx="525" cy="44" r="6" fill="#125F9E"/><circle cx="560" cy="44" r="6" fill="#125F9E"/><circle cx="595" cy="44" r="6" fill="#125F9E"/><circle cx="490" cy="77" r="6" fill="#125F9E"/><circle cx="525" cy="77" r="6" fill="#125F9E"/><circle cx="560" cy="77" r="6" fill="#125F9E"/><circle cx="595" cy="77" r="13" fill="#125F9E"/><circle cx="490" cy="110" r="6" fill="#125F9E"/><circle cx="525" cy="110" r="6" fill="#125F9E"/><circle cx="560" cy="110" r="6" fill="#125F9E"/><circle cx="595" cy="110" r="6" fill="#125F9E"/><circle cx="490" cy="143" r="6" fill="#125F9E"/><circle cx="525" cy="143" r="6" fill="#125F9E"/><circle cx="560" cy="143" r="6" fill="#125F9E"/><circle cx="595" cy="143" r="6" fill="#125F9E"/><rect x="624.0" y="22.0" width="150.0" height="150.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="699.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >shape</text><text x="699.0" y="190.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >square among circles</text><circle cx="646" cy="44" r="8" fill="#125F9E"/><circle cx="681" cy="44" r="8" fill="#125F9E"/><circle cx="716" cy="44" r="8" fill="#125F9E"/><circle cx="751" cy="44" r="8" fill="#125F9E"/><circle cx="646" cy="77" r="8" fill="#125F9E"/><circle cx="681" cy="77" r="8" fill="#125F9E"/><circle cx="716" cy="77" r="8" fill="#125F9E"/><rect x="743" y="69" width="16" height="16" fill="#125F9E"/><circle cx="646" cy="110" r="8" fill="#125F9E"/><circle cx="681" cy="110" r="8" fill="#125F9E"/><circle cx="716" cy="110" r="8" fill="#125F9E"/><circle cx="751" cy="110" r="8" fill="#125F9E"/><circle cx="646" cy="143" r="8" fill="#125F9E"/><circle cx="681" cy="143" r="8" fill="#125F9E"/><circle cx="716" cy="143" r="8" fill="#125F9E"/><circle cx="751" cy="143" r="8" fill="#125F9E"/><rect x="780.0" y="22.0" width="150.0" height="150.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="855.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >enclosure</text><text x="855.0" y="190.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >boxed</text><circle cx="802" cy="44" r="7" fill="#125F9E"/><circle cx="837" cy="44" r="7" fill="#125F9E"/><circle cx="872" cy="44" r="7" fill="#125F9E"/><circle cx="907" cy="44" r="7" fill="#125F9E"/><circle cx="802" cy="77" r="7" fill="#125F9E"/><circle cx="837" cy="77" r="7" fill="#125F9E"/><circle cx="872" cy="77" r="7" fill="#125F9E"/><circle cx="907" cy="77" r="7" fill="#125F9E"/><rect x="893" y="63" width="28" height="28" fill="none" stroke="#14222B" stroke-width="1.6"/><circle cx="802" cy="110" r="7" fill="#125F9E"/><circle cx="837" cy="110" r="7" fill="#125F9E"/><circle cx="872" cy="110" r="7" fill="#125F9E"/><circle cx="907" cy="110" r="7" fill="#125F9E"/><circle cx="802" cy="143" r="7" fill="#125F9E"/><circle cx="837" cy="143" r="7" fill="#125F9E"/><circle cx="872" cy="143" r="7" fill="#125F9E"/><circle cx="907" cy="143" r="7" fill="#125F9E"/><rect x="936.0" y="22.0" width="150.0" height="150.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="1011.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >position</text><text x="1011.0" y="190.0" font-family="Public Sans,system-ui,sans-serif" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >off the line</text><circle cx="958" cy="44" r="7" fill="#125F9E"/><circle cx="993" cy="44" r="7" fill="#125F9E"/><circle cx="1028" cy="44" r="7" fill="#125F9E"/><circle cx="1063" cy="44" r="7" fill="#125F9E"/><circle cx="958" cy="77" r="7" fill="#125F9E"/><circle cx="993" cy="77" r="7" fill="#125F9E"/><circle cx="1028" cy="77" r="7" fill="#125F9E"/><circle cx="1063" cy="65" r="7" fill="#125F9E"/><circle cx="958" cy="110" r="7" fill="#125F9E"/><circle cx="993" cy="110" r="7" fill="#125F9E"/><circle cx="1028" cy="110" r="7" fill="#125F9E"/><circle cx="1063" cy="110" r="7" fill="#125F9E"/><circle cx="958" cy="143" r="7" fill="#125F9E"/><circle cx="993" cy="143" r="7" fill="#125F9E"/><circle cx="1028" cy="143" r="7" fill="#125F9E"/><circle cx="1063" cy="143" r="7" fill="#125F9E"/></svg><div class="rd">Each panel has 16 items and one differs on a single feature. The odd one is found without scanning.</div></div><div class="callout sm">Lists of these features come from visual-search experiments; Colin Ware's <i>Information Visualization: Perception for Design</i> collects them.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Preattentive">
+  <div class="eyebrow">Preattentive attributes &#183; Example: find the odd one</div>
+  <h1 class="t">Example
+    <small>Time yourself. With a colour or a shape difference the time stays flat as items are added. With colour and shape together it grows.</small></h1>
+  <div class="wrap">
+<div class="cols w4060" style="flex:1;min-height:0">
+<div class="colstack">
+  <div class="outlbl">target differs by</div>
+  <div class="seg" id="ps-cond"><button data-c="colour" class="on">colour</button><button data-c="shape">shape</button><button data-c="both">colour + shape</button></div>
+  <div class="outlbl">items on screen</div>
+  <div class="seg" id="ps-n"><button data-n="8" class="on">8</button><button data-n="24">24</button><button data-n="48">48</button></div>
+  <div class="callout sm" id="ps-msg">Click the odd item. A new screen appears after each find. Do five or more per setting.</div>
+  <div class="outlbl">your mean time, ms (trials)</div>
+  <table class="d sm" id="ps-tab"></table>
+</div>
+<div class="colstack">
+  <div class="fig" style="flex:1;padding:6px"><div class="cap">search field <span class="jsbadge">classroom experiment &#183; browser JS</span></div>
+  <svg id="ps-svg" viewBox="0 0 640 330" width="100%" style="cursor:crosshair;display:block"></svg></div>
+</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Preattentive">
+  <div class="eyebrow">Preattentive attributes &#183; Mechanism: feature integration</div>
+  <h1 class="t">Mechanism
+    <small>Treisman and Gelade (1980): single features are registered across the whole field at once; a conjunction needs attention to move from item to item.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="fig"><div class="cap">feature integration theory</div><svg viewBox="0 0 600 270" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Prediction of feature integration theory: flat for one feature, rising for a conjunction"><line x1="60.0" y1="20.0" x2="60.0" y2="230.0" stroke="#14222B" stroke-width="1.5" /><line x1="60.0" y1="230.0" x2="560.0" y2="230.0" stroke="#14222B" stroke-width="1.5" /><text x="310.0" y="262.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >items on screen</text><text x="20.0" y="125.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" transform="rotate(-90 20 125)">time to find</text><line x1="70.0" y1="190.0" x2="550.0" y2="186.0" stroke="#0E7A55" stroke-width="3" /><text x="555.0" y="178.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="end" font-weight="700" >one feature</text><line x1="70.0" y1="190.0" x2="550.0" y2="40.0" stroke="#B02F3B" stroke-width="3" /><text x="540.0" y="32.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#B02F3B" text-anchor="end" font-weight="700" >conjunction</text><text x="320.0" y="110.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >shape of the prediction, not measured data</text></svg></div><div class="colstack fill"><div class="card g"><h3>One feature</h3><p>A red item among blue ones is found in parallel. Adding more blue items costs little time.</p></div><div class="card r"><h3>Conjunction</h3><p>A red square among red circles and blue squares shares each feature with some distractors. The eye checks items one at a time, so time grows with the number of items.</p></div><div class="callout sm">Compare this prediction with the times your own clicks produced on the previous slide.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Preattentive">
+  <div class="eyebrow">Preattentive attributes &#183; Example: one country in 142</div>
+  <h1 class="t">Example continued 1
+    <small>India in the 2007 scatter of lecture 5: GDP per capita 2,452, life expectancy 64.7. Marked by colour it is found at once; marked by shape it has to be searched for.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">gapminder 2007, 142 countries, life expectancy against GDP per capita</div><svg viewBox="0 0 1060 298" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Gapminder 2007 scatter with India marked by colour and by shape"><rect x="40.0" y="10.0" width="450.0" height="230.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><circle cx="150.4" cy="211.5" r="4" fill="#8FA9BD"/><circle cx="297.5" cy="52.0" r="4" fill="#8FA9BD"/><circle cx="301.4" cy="72.1" r="4" fill="#8FA9BD"/><circle cx="280.2" cy="216.8" r="4" fill="#8FA9BD"/><circle cx="360.0" cy="57.4" r="4" fill="#8FA9BD"/><circle cx="440.7" cy="28.4" r="4" fill="#8FA9BD"/><circle cx="444.6" cy="35.3" r="4" fill="#8FA9BD"/><circle cx="428.9" cy="55.8" r="4" fill="#8FA9BD"/><circle cx="179.4" cy="112.5" r="4" fill="#8FA9BD"/><circle cx="438.9" cy="37.2" r="4" fill="#8FA9BD"/><circle cx="182.3" cy="148.4" r="4" fill="#8FA9BD"/><circle cx="261.7" cy="105.2" r="4" fill="#8FA9BD"/><circle cx="316.0" cy="59.7" r="4" fill="#8FA9BD"/><circle cx="358.6" cy="177.7" r="4" fill="#8FA9BD"/><circle cx="332.0" cy="71.7" r="4" fill="#8FA9BD"/><circle cx="345.4" cy="68.7" r="4" fill="#8FA9BD"/><circle cx="168.5" cy="170.0" r="4" fill="#8FA9BD"/><circle cx="83.8" cy="183.3" r="4" fill="#8FA9BD"/><circle cx="196.4" cy="133.7" r="4" fill="#8FA9BD"/><circle cx="210.6" cy="179.2" r="4" fill="#8FA9BD"/><circle cx="445.0" cy="31.3" r="4" fill="#8FA9BD"/><circle cx="124.2" cy="207.0" r="4" fill="#8FA9BD"/><circle cx="195.9" cy="178.1" r="4" fill="#8FA9BD"/><circle cx="362.4" cy="41.5" r="4" fill="#8FA9BD"/><circle cx="282.9" cy="68.9" r="4" fill="#8FA9BD"/><circle cx="311.0" cy="69.3" r="4" fill="#8FA9BD"/><circle cx="151.4" cy="107.1" r="4" fill="#8FA9BD"/><circle cx="48.1" cy="198.6" r="4" fill="#8FA9BD"/><circle cx="257.5" cy="155.2" r="4" fill="#8FA9BD"/><circle cx="337.1" cy="40.4" r="4" fill="#8FA9BD"/><circle cx="187.9" cy="189.5" r="4" fill="#8FA9BD"/><circle cx="370.9" cy="55.3" r="4" fill="#8FA9BD"/><circle cx="330.9" cy="42.9" r="4" fill="#8FA9BD"/><circle cx="407.2" cy="51.7" r="4" fill="#8FA9BD"/><circle cx="442.7" cy="42.6" r="4" fill="#8FA9BD"/><circle cx="212.2" cy="157.8" r="4" fill="#8FA9BD"/><circle cx="298.7" cy="72.5" r="4" fill="#8FA9BD"/><circle cx="309.5" cy="59.0" r="4" fill="#8FA9BD"/><circle cx="292.5" cy="76.9" r="4" fill="#8FA9BD"/><circle cx="294.6" cy="74.2" r="4" fill="#8FA9BD"/><circle cx="355.9" cy="173.5" r="4" fill="#8FA9BD"/><circle cx="116.3" cy="141.9" r="4" fill="#8FA9BD"/><circle cx="122.4" cy="166.9" r="4" fill="#8FA9BD"/><circle cx="437.7" cy="37.8" r="4" fill="#8FA9BD"/><circle cx="430.7" cy="31.3" r="4" fill="#8FA9BD"/><circle cx="362.6" cy="148.3" r="4" fill="#8FA9BD"/><circle cx="129.4" cy="135.0" r="4" fill="#8FA9BD"/><circle cx="435.1" cy="37.4" r="4" fill="#8FA9BD"/><circle cx="175.6" cy="132.2" r="4" fill="#8FA9BD"/><circle cx="422.5" cy="37.0" r="4" fill="#8FA9BD"/><circle cx="286.5" cy="82.1" r="4" fill="#8FA9BD"/><circle cx="147.7" cy="151.9" r="4" fill="#8FA9BD"/><circle cx="108.0" cy="199.0" r="4" fill="#8FA9BD"/><circle cx="167.5" cy="127.9" r="4" fill="#8FA9BD"/><circle cx="255.6" cy="82.4" r="4" fill="#8FA9BD"/><circle cx="452.3" cy="23.7" r="4" fill="#8FA9BD"/><circle cx="387.9" cy="67.1" r="4" fill="#8FA9BD"/><circle cx="444.7" cy="25.9" r="4" fill="#8FA9BD"/><circle cx="225.5" cy="109.4" r="5" fill="#B02F3B"/><circle cx="255.5" cy="80.2" r="4" fill="#8FA9BD"/><circle cx="352.1" cy="78.7" r="4" fill="#8FA9BD"/><circle cx="274.5" cy="134.6" r="4" fill="#8FA9BD"/><circle cx="454.3" cy="39.9" r="4" fill="#8FA9BD"/><circle cx="416.3" cy="30.8" r="4" fill="#8FA9BD"/><circle cx="425.5" cy="31.8" r="4" fill="#8FA9BD"/><circle cx="314.6" cy="70.8" r="4" fill="#8FA9BD"/><circle cx="433.8" cy="21.7" r="4" fill="#8FA9BD"/><circle cx="275.3" cy="71.0" r="4" fill="#8FA9BD"/><circle cx="183.5" cy="161.2" r="4" fill="#8FA9BD"/><circle cx="190.4" cy="96.6" r="4" fill="#8FA9BD"/><circle cx="409.0" cy="41.2" r="4" fill="#8FA9BD"/><circle cx="466.5" cy="46.3" r="4" fill="#8FA9BD"/><circle cx="343.7" cy="73.7" r="4" fill="#8FA9BD"/><circle cx="189.2" cy="217.5" r="4" fill="#8FA9BD"/><circle cx="80.8" cy="202.4" r="4" fill="#8FA9BD"/><circle cx="355.2" cy="64.1" r="4" fill="#8FA9BD"/><circle cx="156.1" cy="135.1" r="4" fill="#8FA9BD"/><circle cx="130.1" cy="189.6" r="4" fill="#8FA9BD"/><circle cx="357.9" cy="62.7" r="4" fill="#8FA9BD"/><circle cx="155.9" cy="159.4" r="4" fill="#8FA9BD"/><circle cx="200.5" cy="112.0" r="4" fill="#8FA9BD"/><circle cx="347.4" cy="69.7" r="4" fill="#8FA9BD"/><circle cx="354.7" cy="53.1" r="4" fill="#8FA9BD"/><circle cx="244.5" cy="99.0" r="4" fill="#8FA9BD"/><circle cx="333.7" cy="61.2" r="4" fill="#8FA9BD"/><circle cx="261.6" cy="77.7" r="4" fill="#8FA9BD"/><circle cx="136.7" cy="220.0" r="4" fill="#8FA9BD"/><circle cx="147.8" cy="122.2" r="4" fill="#8FA9BD"/><circle cx="280.4" cy="167.1" r="4" fill="#8FA9BD"/><circle cx="159.6" cy="113.8" r="4" fill="#8FA9BD"/><circle cx="446.1" cy="35.6" r="4" fill="#8FA9BD"/><circle cx="415.2" cy="33.5" r="4" fill="#8FA9BD"/><circle cx="234.9" cy="69.2" r="4" fill="#8FA9BD"/><circle cx="113.5" cy="147.7" r="4" fill="#8FA9BD"/><circle cx="209.5" cy="196.6" r="4" fill="#8FA9BD"/><circle cx="470.0" cy="33.5" r="4" fill="#8FA9BD"/><circle cx="405.4" cy="55.8" r="4" fill="#8FA9BD"/><circle cx="230.5" cy="105.5" r="4" fill="#8FA9BD"/><circle cx="338.4" cy="56.3" r="4" fill="#8FA9BD"/><circle cx="268.8" cy="74.8" r="4" fill="#8FA9BD"/><circle cx="315.6" cy="76.5" r="4" fill="#8FA9BD"/><circle cx="247.0" cy="75.1" r="4" fill="#8FA9BD"/><circle cx="375.1" cy="56.2" r="4" fill="#8FA9BD"/><circle cx="398.5" cy="43.8" r="4" fill="#8FA9BD"/><circle cx="393.7" cy="40.6" r="4" fill="#8FA9BD"/><circle cx="318.4" cy="51.9" r="4" fill="#8FA9BD"/><circle cx="346.3" cy="71.3" r="4" fill="#8FA9BD"/><circle cx="140.5" cy="199.7" r="4" fill="#8FA9BD"/><circle cx="190.7" cy="105.3" r="4" fill="#8FA9BD"/><circle cx="402.9" cy="69.8" r="4" fill="#8FA9BD"/><circle cx="196.3" cy="117.4" r="4" fill="#8FA9BD"/><circle cx="338.2" cy="63.8" r="4" fill="#8FA9BD"/><circle cx="140.5" cy="217.6" r="4" fill="#8FA9BD"/><circle cx="466.3" cy="34.6" r="4" fill="#8FA9BD"/><circle cx="390.9" cy="60.6" r="4" fill="#8FA9BD"/><circle cx="417.1" cy="44.6" r="4" fill="#8FA9BD"/><circle cx="146.3" cy="190.3" r="4" fill="#8FA9BD"/><circle cx="333.8" cy="184.5" r="4" fill="#8FA9BD"/><circle cx="426.2" cy="29.9" r="4" fill="#8FA9BD"/><circle cx="264.8" cy="71.7" r="4" fill="#8FA9BD"/><circle cx="230.4" cy="139.4" r="4" fill="#8FA9BD"/><circle cx="275.2" cy="232.1" r="4" fill="#8FA9BD"/><circle cx="439.3" cy="30.1" r="4" fill="#8FA9BD"/><circle cx="447.6" cy="26.1" r="4" fill="#8FA9BD"/><circle cx="269.1" cy="63.1" r="4" fill="#8FA9BD"/><circle cx="425.9" cy="42.3" r="4" fill="#8FA9BD"/><circle cx="160.8" cy="169.0" r="4" fill="#8FA9BD"/><circle cx="316.1" cy="80.4" r="4" fill="#8FA9BD"/><circle cx="142.4" cy="140.1" r="4" fill="#8FA9BD"/><circle cx="387.9" cy="84.3" r="4" fill="#8FA9BD"/><circle cx="312.0" cy="64.2" r="4" fill="#8FA9BD"/><circle cx="326.4" cy="74.7" r="4" fill="#8FA9BD"/><circle cx="157.0" cy="173.7" r="4" fill="#8FA9BD"/><circle cx="437.7" cy="37.3" r="4" fill="#8FA9BD"/><circle cx="458.7" cy="43.1" r="4" fill="#8FA9BD"/><circle cx="344.8" cy="52.2" r="4" fill="#8FA9BD"/><circle cx="350.8" cy="65.1" r="4" fill="#8FA9BD"/><circle cx="225.2" cy="62.6" r="4" fill="#8FA9BD"/><circle cx="242.6" cy="66.7" r="4" fill="#8FA9BD"/><circle cx="219.6" cy="119.1" r="4" fill="#8FA9BD"/><circle cx="172.0" cy="218.5" r="4" fill="#8FA9BD"/><circle cx="91.0" cy="213.1" r="4" fill="#8FA9BD"/><text x="265.0" y="264.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >GDP per capita, log scale</text><rect x="580.0" y="10.0" width="450.0" height="230.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><circle cx="690.4" cy="211.5" r="4" fill="#8FA9BD"/><circle cx="837.5" cy="52.0" r="4" fill="#8FA9BD"/><circle cx="841.4" cy="72.1" r="4" fill="#8FA9BD"/><circle cx="820.2" cy="216.8" r="4" fill="#8FA9BD"/><circle cx="900.0" cy="57.4" r="4" fill="#8FA9BD"/><circle cx="980.7" cy="28.4" r="4" fill="#8FA9BD"/><circle cx="984.6" cy="35.3" r="4" fill="#8FA9BD"/><circle cx="968.9" cy="55.8" r="4" fill="#8FA9BD"/><circle cx="719.4" cy="112.5" r="4" fill="#8FA9BD"/><circle cx="978.9" cy="37.2" r="4" fill="#8FA9BD"/><circle cx="722.3" cy="148.4" r="4" fill="#8FA9BD"/><circle cx="801.7" cy="105.2" r="4" fill="#8FA9BD"/><circle cx="856.0" cy="59.7" r="4" fill="#8FA9BD"/><circle cx="898.6" cy="177.7" r="4" fill="#8FA9BD"/><circle cx="872.0" cy="71.7" r="4" fill="#8FA9BD"/><circle cx="885.4" cy="68.7" r="4" fill="#8FA9BD"/><circle cx="708.5" cy="170.0" r="4" fill="#8FA9BD"/><circle cx="623.8" cy="183.3" r="4" fill="#8FA9BD"/><circle cx="736.4" cy="133.7" r="4" fill="#8FA9BD"/><circle cx="750.6" cy="179.2" r="4" fill="#8FA9BD"/><circle cx="985.0" cy="31.3" r="4" fill="#8FA9BD"/><circle cx="664.2" cy="207.0" r="4" fill="#8FA9BD"/><circle cx="735.9" cy="178.1" r="4" fill="#8FA9BD"/><circle cx="902.4" cy="41.5" r="4" fill="#8FA9BD"/><circle cx="822.9" cy="68.9" r="4" fill="#8FA9BD"/><circle cx="851.0" cy="69.3" r="4" fill="#8FA9BD"/><circle cx="691.4" cy="107.1" r="4" fill="#8FA9BD"/><circle cx="588.1" cy="198.6" r="4" fill="#8FA9BD"/><circle cx="797.5" cy="155.2" r="4" fill="#8FA9BD"/><circle cx="877.1" cy="40.4" r="4" fill="#8FA9BD"/><circle cx="727.9" cy="189.5" r="4" fill="#8FA9BD"/><circle cx="910.9" cy="55.3" r="4" fill="#8FA9BD"/><circle cx="870.9" cy="42.9" r="4" fill="#8FA9BD"/><circle cx="947.2" cy="51.7" r="4" fill="#8FA9BD"/><circle cx="982.7" cy="42.6" r="4" fill="#8FA9BD"/><circle cx="752.2" cy="157.8" r="4" fill="#8FA9BD"/><circle cx="838.7" cy="72.5" r="4" fill="#8FA9BD"/><circle cx="849.5" cy="59.0" r="4" fill="#8FA9BD"/><circle cx="832.5" cy="76.9" r="4" fill="#8FA9BD"/><circle cx="834.6" cy="74.2" r="4" fill="#8FA9BD"/><circle cx="895.9" cy="173.5" r="4" fill="#8FA9BD"/><circle cx="656.3" cy="141.9" r="4" fill="#8FA9BD"/><circle cx="662.4" cy="166.9" r="4" fill="#8FA9BD"/><circle cx="977.7" cy="37.8" r="4" fill="#8FA9BD"/><circle cx="970.7" cy="31.3" r="4" fill="#8FA9BD"/><circle cx="902.6" cy="148.3" r="4" fill="#8FA9BD"/><circle cx="669.4" cy="135.0" r="4" fill="#8FA9BD"/><circle cx="975.1" cy="37.4" r="4" fill="#8FA9BD"/><circle cx="715.6" cy="132.2" r="4" fill="#8FA9BD"/><circle cx="962.5" cy="37.0" r="4" fill="#8FA9BD"/><circle cx="826.5" cy="82.1" r="4" fill="#8FA9BD"/><circle cx="687.7" cy="151.9" r="4" fill="#8FA9BD"/><circle cx="648.0" cy="199.0" r="4" fill="#8FA9BD"/><circle cx="707.5" cy="127.9" r="4" fill="#8FA9BD"/><circle cx="795.6" cy="82.4" r="4" fill="#8FA9BD"/><circle cx="992.3" cy="23.7" r="4" fill="#8FA9BD"/><circle cx="927.9" cy="67.1" r="4" fill="#8FA9BD"/><circle cx="984.7" cy="25.9" r="4" fill="#8FA9BD"/><rect x="760.5" y="104.4" width="10" height="10" fill="#8FA9BD"/><circle cx="795.5" cy="80.2" r="4" fill="#8FA9BD"/><circle cx="892.1" cy="78.7" r="4" fill="#8FA9BD"/><circle cx="814.5" cy="134.6" r="4" fill="#8FA9BD"/><circle cx="994.3" cy="39.9" r="4" fill="#8FA9BD"/><circle cx="956.3" cy="30.8" r="4" fill="#8FA9BD"/><circle cx="965.5" cy="31.8" r="4" fill="#8FA9BD"/><circle cx="854.6" cy="70.8" r="4" fill="#8FA9BD"/><circle cx="973.8" cy="21.7" r="4" fill="#8FA9BD"/><circle cx="815.3" cy="71.0" r="4" fill="#8FA9BD"/><circle cx="723.5" cy="161.2" r="4" fill="#8FA9BD"/><circle cx="730.4" cy="96.6" r="4" fill="#8FA9BD"/><circle cx="949.0" cy="41.2" r="4" fill="#8FA9BD"/><circle cx="1006.5" cy="46.3" r="4" fill="#8FA9BD"/><circle cx="883.7" cy="73.7" r="4" fill="#8FA9BD"/><circle cx="729.2" cy="217.5" r="4" fill="#8FA9BD"/><circle cx="620.8" cy="202.4" r="4" fill="#8FA9BD"/><circle cx="895.2" cy="64.1" r="4" fill="#8FA9BD"/><circle cx="696.1" cy="135.1" r="4" fill="#8FA9BD"/><circle cx="670.1" cy="189.6" r="4" fill="#8FA9BD"/><circle cx="897.9" cy="62.7" r="4" fill="#8FA9BD"/><circle cx="695.9" cy="159.4" r="4" fill="#8FA9BD"/><circle cx="740.5" cy="112.0" r="4" fill="#8FA9BD"/><circle cx="887.4" cy="69.7" r="4" fill="#8FA9BD"/><circle cx="894.7" cy="53.1" r="4" fill="#8FA9BD"/><circle cx="784.5" cy="99.0" r="4" fill="#8FA9BD"/><circle cx="873.7" cy="61.2" r="4" fill="#8FA9BD"/><circle cx="801.6" cy="77.7" r="4" fill="#8FA9BD"/><circle cx="676.7" cy="220.0" r="4" fill="#8FA9BD"/><circle cx="687.8" cy="122.2" r="4" fill="#8FA9BD"/><circle cx="820.4" cy="167.1" r="4" fill="#8FA9BD"/><circle cx="699.6" cy="113.8" r="4" fill="#8FA9BD"/><circle cx="986.1" cy="35.6" r="4" fill="#8FA9BD"/><circle cx="955.2" cy="33.5" r="4" fill="#8FA9BD"/><circle cx="774.9" cy="69.2" r="4" fill="#8FA9BD"/><circle cx="653.5" cy="147.7" r="4" fill="#8FA9BD"/><circle cx="749.5" cy="196.6" r="4" fill="#8FA9BD"/><circle cx="1010.0" cy="33.5" r="4" fill="#8FA9BD"/><circle cx="945.4" cy="55.8" r="4" fill="#8FA9BD"/><circle cx="770.5" cy="105.5" r="4" fill="#8FA9BD"/><circle cx="878.4" cy="56.3" r="4" fill="#8FA9BD"/><circle cx="808.8" cy="74.8" r="4" fill="#8FA9BD"/><circle cx="855.6" cy="76.5" r="4" fill="#8FA9BD"/><circle cx="787.0" cy="75.1" r="4" fill="#8FA9BD"/><circle cx="915.1" cy="56.2" r="4" fill="#8FA9BD"/><circle cx="938.5" cy="43.8" r="4" fill="#8FA9BD"/><circle cx="933.7" cy="40.6" r="4" fill="#8FA9BD"/><circle cx="858.4" cy="51.9" r="4" fill="#8FA9BD"/><circle cx="886.3" cy="71.3" r="4" fill="#8FA9BD"/><circle cx="680.5" cy="199.7" r="4" fill="#8FA9BD"/><circle cx="730.7" cy="105.3" r="4" fill="#8FA9BD"/><circle cx="942.9" cy="69.8" r="4" fill="#8FA9BD"/><circle cx="736.3" cy="117.4" r="4" fill="#8FA9BD"/><circle cx="878.2" cy="63.8" r="4" fill="#8FA9BD"/><circle cx="680.5" cy="217.6" r="4" fill="#8FA9BD"/><circle cx="1006.3" cy="34.6" r="4" fill="#8FA9BD"/><circle cx="930.9" cy="60.6" r="4" fill="#8FA9BD"/><circle cx="957.1" cy="44.6" r="4" fill="#8FA9BD"/><circle cx="686.3" cy="190.3" r="4" fill="#8FA9BD"/><circle cx="873.8" cy="184.5" r="4" fill="#8FA9BD"/><circle cx="966.2" cy="29.9" r="4" fill="#8FA9BD"/><circle cx="804.8" cy="71.7" r="4" fill="#8FA9BD"/><circle cx="770.4" cy="139.4" r="4" fill="#8FA9BD"/><circle cx="815.2" cy="232.1" r="4" fill="#8FA9BD"/><circle cx="979.3" cy="30.1" r="4" fill="#8FA9BD"/><circle cx="987.6" cy="26.1" r="4" fill="#8FA9BD"/><circle cx="809.1" cy="63.1" r="4" fill="#8FA9BD"/><circle cx="965.9" cy="42.3" r="4" fill="#8FA9BD"/><circle cx="700.8" cy="169.0" r="4" fill="#8FA9BD"/><circle cx="856.1" cy="80.4" r="4" fill="#8FA9BD"/><circle cx="682.4" cy="140.1" r="4" fill="#8FA9BD"/><circle cx="927.9" cy="84.3" r="4" fill="#8FA9BD"/><circle cx="852.0" cy="64.2" r="4" fill="#8FA9BD"/><circle cx="866.4" cy="74.7" r="4" fill="#8FA9BD"/><circle cx="697.0" cy="173.7" r="4" fill="#8FA9BD"/><circle cx="977.7" cy="37.3" r="4" fill="#8FA9BD"/><circle cx="998.7" cy="43.1" r="4" fill="#8FA9BD"/><circle cx="884.8" cy="52.2" r="4" fill="#8FA9BD"/><circle cx="890.8" cy="65.1" r="4" fill="#8FA9BD"/><circle cx="765.2" cy="62.6" r="4" fill="#8FA9BD"/><circle cx="782.6" cy="66.7" r="4" fill="#8FA9BD"/><circle cx="759.6" cy="119.1" r="4" fill="#8FA9BD"/><circle cx="712.0" cy="218.5" r="4" fill="#8FA9BD"/><circle cx="631.0" cy="213.1" r="4" fill="#8FA9BD"/><text x="805.0" y="264.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >GDP per capita, log scale</text><text x="250.0" y="290.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#B02F3B" text-anchor="middle" font-weight="700" >India by colour</text><text x="790.0" y="290.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >India by shape</text></svg><div class="rd">Same data, same position for India. A square among circles of the same colour is a weaker difference at this marker size.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Preattentive">
+  <div class="eyebrow">Preattentive attributes &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>A preattentive feature marks one thing. Using two of them for two variables puts the reader back into a conjunction search.</small></h1>
+  <div class="wrap">
+<div class="cols3"><div class="card o"><h3>One highlight per chart</h3><p>Colour India, and India pops out. Colour India and Brazil and China in three hues, and each needs a legend lookup.</p></div><div class="card r"><h3>Features compete</h3><p>Colour by continent and shape by income group on one scatter: finding "rich Asian countries" is a colour + shape conjunction.</p></div><div class="card o"><h3>Hues run out</h3><p>Each extra category needs a hue the reader can tell apart. Palettes and colour blindness are lecture 9.</p></div></div><div class="callout sm">Lecture 7 uses the same features for grouping: similarity of colour and shape makes items read as one group.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Encoding accuracy &#183; Concept: the Cleveland-McGill ranking</div>
+  <h1 class="t">Concept
+    <small>Cleveland and McGill (1984) ranked the elementary tasks a reader performs to decode a number from a chart, from most to least accurate.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">elementary perceptual tasks, ranked</div><svg viewBox="0 0 960 278" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Cleveland and McGill ranking of elementary perceptual tasks"><rect x="0.0" y="0.0" width="40.0" height="38.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="20.0" y="25.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >1</text><rect x="46.0" y="0.0" width="600.0" height="38.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="60.0" y="17.0" font-family="Public Sans,system-ui,sans-serif" font-size="13.5" fill="#14222B" text-anchor="start" font-weight="700" >position on a common scale</text><text x="60.0" y="32.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >dots or bar ends against one axis</text><line x1="670.0" y1="34.0" x2="790.0" y2="34.0" stroke="#14222B" stroke-width="1.2" /><circle cx="700" cy="12" r="5" fill="#125F9E"/><circle cx="750" cy="20" r="5" fill="#125F9E"/><rect x="0.0" y="46.0" width="40.0" height="38.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="20.0" y="71.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >2</text><rect x="46.0" y="46.0" width="600.0" height="38.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="60.0" y="63.0" font-family="Public Sans,system-ui,sans-serif" font-size="13.5" fill="#14222B" text-anchor="start" font-weight="700" >position on non-aligned scales</text><text x="60.0" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >the same, in separate panels</text><line x1="670.0" y1="80.0" x2="720.0" y2="80.0" stroke="#14222B" stroke-width="1.2" /><line x1="740.0" y1="84.0" x2="790.0" y2="84.0" stroke="#14222B" stroke-width="1.2" /><circle cx="695" cy="58" r="5" fill="#125F9E"/><circle cx="765" cy="68" r="5" fill="#125F9E"/><rect x="0.0" y="92.0" width="40.0" height="38.0" fill="#53666F" stroke="none" stroke-width="1" /><text x="20.0" y="117.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >3</text><rect x="46.0" y="92.0" width="600.0" height="38.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="60.0" y="109.0" font-family="Public Sans,system-ui,sans-serif" font-size="13.5" fill="#14222B" text-anchor="start" font-weight="700" >length, direction, angle</text><text x="60.0" y="124.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >stacked segments, slopes, pie slices</text><path d="M695,112 L695.0,95.0 L695.9,95.0 L696.7,95.1 L697.6,95.2 L698.4,95.4 L699.3,95.5 L700.1,95.8 L700.9,96.1 L701.7,96.4 L702.5,96.8 L703.3,97.2 L704.0,97.6 L704.8,98.1 L705.4,98.6 L706.1,99.1 L706.8,99.7 L707.4,100.3 L707.9,101.0 L708.5,101.7 L709.0,102.4 L709.5,103.1 L709.9,103.8 L710.3,104.6 L710.7,105.4 L711.0,106.2 Z" fill="#125F9E" stroke="#FFFFFF" stroke-width="1.2"/><rect x="730.0" y="98.0" width="12.0" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="750.0" y="106.0" width="12.0" height="20.0" fill="#125F9E" stroke="none" stroke-width="1" /><line x1="770.0" y1="124.0" x2="795.0" y2="100.0" stroke="#125F9E" stroke-width="3" /><rect x="0.0" y="138.0" width="40.0" height="38.0" fill="#53666F" stroke="none" stroke-width="1" /><text x="20.0" y="163.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >4</text><rect x="46.0" y="138.0" width="600.0" height="38.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="60.0" y="155.0" font-family="Public Sans,system-ui,sans-serif" font-size="13.5" fill="#14222B" text-anchor="start" font-weight="700" >area</text><text x="60.0" y="170.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >bubbles, treemap tiles</text><circle cx="695" cy="157" r="16" fill="#125F9E"/><circle cx="745" cy="157" r="10" fill="#125F9E"/><rect x="0.0" y="184.0" width="40.0" height="38.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="20.0" y="209.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >5</text><rect x="46.0" y="184.0" width="600.0" height="38.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="60.0" y="201.0" font-family="Public Sans,system-ui,sans-serif" font-size="13.5" fill="#14222B" text-anchor="start" font-weight="700" >volume, curvature</text><text x="60.0" y="216.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >3D bars, curved lines</text><path d="M680,218 l20,0 l0,-20 l-20,0 z M680,198 l8,-8 l20,0 l-8,8 z M700,198 l8,-8 l0,20 l-8,8 z" fill="#125F9E" stroke="#FFFFFF"/><path d="M730,216 Q760,178 795,214" fill="none" stroke="#125F9E" stroke-width="3"/><rect x="0.0" y="230.0" width="40.0" height="38.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="20.0" y="255.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >6</text><rect x="46.0" y="230.0" width="600.0" height="38.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="60.0" y="247.0" font-family="Public Sans,system-ui,sans-serif" font-size="13.5" fill="#14222B" text-anchor="start" font-weight="700" >shading, colour saturation</text><text x="60.0" y="262.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >heatmap and choropleth fills</text><rect x="670.0" y="236.0" width="26.0" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" fill-opacity="0.2"/><rect x="700.0" y="236.0" width="26.0" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" fill-opacity="0.45"/><rect x="730.0" y="236.0" width="26.0" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" fill-opacity="0.7"/><rect x="760.0" y="236.0" width="26.0" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" fill-opacity="1"/><text x="820.0" y="12.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#0E7A55" text-anchor="start" font-weight="700" >more accurate</text><line x1="840.0" y1="20.0" x2="840.0" y2="249.0" stroke="#53666F" stroke-width="1.4" /><path d="M840.0,255.0 L844.0,247.0 L836.0,247.0 z" fill="#53666F"/><text x="820.0" y="272.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#B02F3B" text-anchor="start" font-weight="700" >less accurate</text></svg><div class="rd">Source: W. S. Cleveland and R. McGill, Graphical perception, <i>Journal of the American Statistical Association</i> 79 (1984). Their experiments tested a subset of these tasks; the rest of the order is their argument from other findings.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Encoding accuracy &#183; Test: rerun the experiment</div>
+  <h1 class="t">Test
+    <small>The same task Cleveland and McGill gave their subjects: judge what percent the smaller value is of the larger. Four encodings, shown in random order.</small></h1>
+  <div class="wrap">
+<div class="cols w6040" style="flex:1;min-height:0">
+<div class="colstack">
+  <div class="fig" style="flex:1;padding:6px"><div class="cap">trial <span id="cm-k">1</span> &#183; <span id="cm-enc"></span> <span class="jsbadge">classroom experiment &#183; browser JS</span></div>
+  <svg id="cm-svg" viewBox="0 0 600 260" width="100%" style="display:block"></svg></div>
+  <div style="display:flex;gap:10px;align-items:center;font-size:13px">
+    <span>The smaller (<b>A</b>) is what % of the larger (<b>B</b>)?</span>
+    <input id="cm-in" type="number" min="0" max="100" style="width:80px;font-family:var(--mono);font-size:15px;padding:4px 6px;border:1px solid var(--line)"/>
+    <button id="cm-go" class="cmbtn">Enter</button>
+  </div>
+  <div class="out xs" id="cm-last">Type a percentage and press Enter.</div>
+</div>
+<div class="colstack">
+  <div class="outlbl">your mean error by encoding, best first</div>
+  <table class="d sm" id="cm-tab"></table>
+  <div class="callout sm">error = log<sub>2</sub>(|judged &#8722; true| + 1/8). A perfect answer scores &#8722;3. Each student runs this; collect the table from the room.</div>
+</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Encoding accuracy &#183; Mechanism: scoring a judgement</div>
+  <h1 class="t">Mechanism
+    <small>Each answer is scored by the log of its absolute error in percentage points, with 1/8 added so that an exact answer does not give log of zero.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><div class="out" style="font-size:17px;padding:16px 18px">error = log<sub>2</sub>( |judged % &#8722; true %| + 1/8 )</div><table class="d roomy"><tr><th>answer</th><th>absolute error</th><th>score</th></tr><tr><td>judged 60, true 50</td><td>|60 − 50| = 10</td><td>log₂(10.125) = 3.34</td></tr><tr><td>judged 52, true 50</td><td>|52 − 50| = 2</td><td>log₂(2.125) = 1.09</td></tr><tr><td>judged 50, true 50</td><td>0</td><td>log₂(0.125) = -3.00</td></tr><tr><td>judged 90, true 50</td><td>40</td><td>log₂(40.125) = 5.33</td></tr></table></div><div class="colstack fill"><div class="card b"><h3>Why a log</h3><p>An error of 40 points scores 5.33, not four times the 10-point score of 3.34. One wild guess does not swamp an encoding's average.</p></div><div class="card g"><h3>Why 1/8</h3><p>It sets the floor at −3 for an exact answer and keeps every score finite.</p></div><div class="card o"><h3>Same measure in the replication</h3><p>Heer and Bostock (2010) scored their crowdsourced judgements with this formula, so the two studies compare directly.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Encoding accuracy &#183; Example: the replication</div>
+  <h1 class="t">Example
+    <small>Heer and Bostock (2010) reran the position, length and angle judgements with Amazon Mechanical Turk workers and recovered the same order.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack fill"><div class="card b"><h3>The 1984 study</h3><p>Subjects judged percentages on printed charts in two experiments: position against angle (bars and pies) and position against length.</p></div><div class="card g"><h3>The 2010 replication</h3><p>Online workers judged the same kinds of charts in a browser. Position on a common scale again came first and angle below length.</p></div><div class="card o"><h3>Added in 2010</h3><p>Area judgements on circles and rectangles ranked below position and length, as the 1984 ordering placed them.</p></div></div><div class="colstack"><table class="d roomy free"><tr><th></th><th>1984</th><th>2010</th></tr><tr><td>who</td><td>lab subjects</td><td>Mechanical Turk workers</td></tr><tr><td>task</td><td>smaller is what % of larger</td><td>the same</td></tr><tr><td>score</td><td>log₂(|error| + 1/8)</td><td>the same</td></tr><tr><td>top</td><td>position, common scale</td><td>position, common scale</td></tr></table><div class="callout sm">J. Heer and M. Bostock, Crowdsourcing graphical perception, <i>Proceedings of CHI</i> 2010. The point for this course is the order of the encodings, which held.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Encoding accuracy &#183; Mechanism: Weber's law</div>
+  <h1 class="t">Mechanism continued 1
+    <small>Weber's law: the smallest difference a person can detect is a fixed fraction of the magnitude. A common baseline turns a long-length comparison into a short one.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">two bars of 100 and 104</div><svg viewBox="0 0 1080 150" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Weber law: comparing two long bars without and with a common baseline"><text x="0.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="start" font-weight="400" >non-aligned: compare 100 with 104</text><rect x="20.0" y="40.0" width="400.0" height="26.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="430.0" y="58.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >100</text><rect x="70.0" y="86.0" width="416.0" height="26.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="496.0" y="104.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >104</text><text x="0.0" y="140.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="400" >the eye compares two whole lengths: a 4% difference</text><text x="560.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="start" font-weight="400" >common scale with a gridline at 100</text><line x1="980.0" y1="30.0" x2="980.0" y2="122.0" stroke="#B02F3B" stroke-width="1.4" stroke-dasharray="4 3"/><rect x="580.0" y="40.0" width="400.0" height="26.0" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="580.0" y="86.0" width="416.0" height="26.0" fill="#125F9E" stroke="none" stroke-width="1" /><line x1="580.0" y1="30.0" x2="580.0" y2="122.0" stroke="#14222B" stroke-width="1.4" /><text x="1000.0" y="104.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#B02F3B" text-anchor="start" font-weight="700" >+4</text><text x="560.0" y="140.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="400" >the eye compares the 4-unit overhang with nothing: easy</text></svg><div class="rd">Cleveland and McGill used this argument for why position on a common scale beats length: with an aligned axis or gridline, the reader judges the small difference directly.</div></div><div class="callout sm">This is why gridlines and a shared axis help, and why the middle segments of a stacked bar are hard: each sits on a different baseline.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Encoding accuracy &#183; Mechanism: Stevens' power law</div>
+  <h1 class="t">Mechanism continued 2
+    <small>Perceived size grows as actual size raised to a power. For length the power is close to 1; for area studies report about 0.7, so a bubble 4.4 times larger reads as about 2.8 times.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="fig"><div class="cap">perceived = actual ^ exponent</div><svg viewBox="0 0 600 292" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Stevens power law curves for length and area"><line x1="60.0" y1="10.0" x2="60.0" y2="250.0" stroke="#14222B" stroke-width="1.4" /><line x1="60.0" y1="250.0" x2="580.0" y2="250.0" stroke="#14222B" stroke-width="1.4" /><polyline points="60.0,250.0 70.4,245.2 80.8,240.4 91.2,235.6 101.6,230.8 112.0,226.0 122.4,221.2 132.8,216.4 143.2,211.6 153.6,206.8 164.0,202.0 174.4,197.2 184.8,192.4 195.2,187.6 205.6,182.8 216.0,178.0 226.4,173.2 236.8,168.4 247.2,163.6 257.6,158.8 268.0,154.0 278.4,149.2 288.8,144.4 299.2,139.6 309.6,134.8 320.0,130.0 330.4,125.2 340.8,120.4 351.2,115.6 361.6,110.8 372.0,106.0 382.4,101.2 392.8,96.4 403.2,91.6 413.6,86.8 424.0,82.0 434.4,77.2 444.8,72.4 455.2,67.6 465.6,62.8 476.0,58.0 486.4,53.2 496.8,48.4 507.2,43.6 517.6,38.8 528.0,34.0 538.4,29.2 548.8,24.4 559.2,19.6 569.6,14.8 580.0,10.0" fill="none" stroke="#0E7A55" stroke-width="3"/><text x="576.0" y="32.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="end" font-weight="700" >length, exponent ≈ 1</text><polyline points="60.0,250.0 70.4,246.7 80.8,243.4 91.2,240.2 101.6,237.1 112.0,234.1 122.4,231.1 132.8,228.1 143.2,225.2 153.6,222.3 164.0,219.5 174.4,216.7 184.8,213.9 195.2,211.2 205.6,208.5 216.0,205.8 226.4,203.2 236.8,200.6 247.2,198.0 257.6,195.4 268.0,192.9 278.4,190.4 288.8,187.9 299.2,185.4 309.6,183.0 320.0,180.5 330.4,178.1 340.8,175.7 351.2,173.4 361.6,171.0 372.0,168.7 382.4,166.4 392.8,164.1 403.2,161.8 413.6,159.5 424.0,157.2 434.4,155.0 444.8,152.8 455.2,150.6 465.6,148.3 476.0,146.2 486.4,144.0 496.8,141.8 507.2,139.7 517.6,137.5 528.0,135.4 538.4,133.3 548.8,131.2 559.2,129.1 569.6,127.0 580.0,124.9" fill="none" stroke="#B02F3B" stroke-width="3"/><text x="576.0" y="114.9" font-family="JetBrains Mono,monospace" font-size="12" fill="#B02F3B" text-anchor="end" font-weight="700" >area, exponent ≈ 0.7</text><text x="60.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >1×</text><text x="52.0" y="254.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="end" font-weight="400" >1×</text><text x="190.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >2×</text><text x="52.0" y="194.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="end" font-weight="400" >2×</text><text x="320.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >3×</text><text x="52.0" y="134.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="end" font-weight="400" >3×</text><text x="450.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >4×</text><text x="52.0" y="74.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="end" font-weight="400" >4×</text><text x="580.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >5×</text><text x="52.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="end" font-weight="400" >5×</text><text x="320.0" y="284.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >actual ratio</text><text x="16.0" y="125.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" transform="rotate(-90 16 125.0)">perceived ratio</text></svg></div><div class="colstack fill"><div class="card g"><h3>Length</h3><p>Twice as long looks twice as long. Bars and dots inherit this.</p></div><div class="card r"><h3>Area</h3><p>China's population is 4.38 times that of the US. An area-scaled bubble shows 4.38×, and with an exponent of 0.7 it reads as 2.81×.</p></div><div class="callout warn sm">The area exponent varies by study and by shape; values from about 0.6 to 0.9 are reported. 0.7 is the value attributed to S. S. Stevens.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Encoding accuracy &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>The ranking measures one task: reading the ratio of two values. It holds for that task and for readers like the subjects tested.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>the ranking assumes</th><th>which holds when</th><th>and fails when</th></tr><tr><td>the reader compares two values</td><td>Africa against the Americas</td><td>the reader wants the overall shape, such as a trend over 12 years</td></tr><tr><td>accuracy is the goal</td><td>a report where numbers drive a decision</td><td>the chart only has to show that Asia is the largest</td></tr><tr><td>one encoding per value</td><td>a bar chart</td><td>a bubble chart uses position, area and colour at once</td></tr><tr><td>readers with typical vision and time to look</td><td>a lecture or a report</td><td>a dashboard glanced at for a second, or a colour-blind reader</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Encodings">
+  <div class="eyebrow">Encoding accuracy &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>Position is the best channel and there are two of them, x and y. Every further variable goes to a channel lower down the ranking.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack fill"><div class="card o"><h3>The bubble chart of lecture 6</h3><p>x = GDP per capita (position), y = life expectancy (position), size = population (area, rank 4), colour = continent (hue). Two variables get accurate channels; two do not.</p></div><div class="card g"><h3>Small multiples reuse position</h3><p>Facets by continent give each panel its own x and y. Comparing across panels drops to rank 2, non-aligned scales.</p></div></div><div class="colstack fill"><div class="card b"><h3>Silent on grouping</h3><p>The ranking does not say which items read as one group. That is gestalt, lecture 7.</p></div><div class="card b"><h3>Silent on colour choice</h3><p>Saturation ranks last for reading values; which palette to use is lecture 9.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Applied">
+  <div class="eyebrow">Applied to our charts &#183; Example 1: pie against dots</div>
+  <h1 class="t">Example
+    <small>Africa 14.9%, the Americas 14.4%: 1.77° apart in the pie, 0.49 points apart on a common scale.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">gapminder 2007, population share</div><svg viewBox="0 0 960 250" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Africa and the Americas as pie slices and as dots on a common scale"><text x="120.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >pie, same order as plotly</text><path d="M120,135 L120.0,30.0 L125.4,30.1 L130.9,30.6 L136.2,31.3 L141.6,32.2 L146.9,33.5 L152.1,35.0 L157.2,36.8 L162.3,38.9 L167.2,41.2 L172.0,43.8 L176.6,46.6 L181.1,49.6 L185.5,52.9 L189.6,56.4 L193.6,60.1 L197.4,64.0 L200.9,68.1 L204.3,72.4 L207.4,76.8 L210.3,81.4 L213.0,86.2 L215.4,91.1 L217.5,96.1 L219.4,101.2 L221.0,106.4 L222.4,111.6 L223.4,116.9 L224.2,122.3 L224.7,127.7 L225.0,133.2 L224.9,138.6 L224.6,144.0 L224.0,149.4 L223.1,154.8 L222.0,160.1 L220.5,165.3 L218.8,170.5 L216.8,175.6 L214.6,180.5 L212.1,185.4 L209.4,190.1 L206.4,194.6 L203.2,199.0 L199.8,203.2 L196.2,207.3 L192.3,211.1 L188.3,214.8 L184.1,218.2 L179.7,221.4 L175.1,224.4 L170.4,227.1 L165.6,229.6 L160.6,231.8 L155.6,233.8 L150.4,235.5 L145.2,236.9 L139.9,238.1 L134.5,239.0 L129.1,239.6 L123.7,239.9 L118.2,240.0 L112.8,239.8 L107.4,239.2 L102.0,238.4 L96.7,237.4 L91.4,236.0 L86.2,234.4 L81.1,232.5 L76.1,230.4 L71.2,228.0 L66.5,225.3 L61.9,222.5 L57.4,219.3 L53.2,216.0 Z" fill="#B02F3B" stroke="#FFFFFF" stroke-width="1.2"/><text x="185.9" y="162.7" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >61.0%</text><path d="M120,135 L53.2,216.0 L49.1,212.4 L45.1,208.6 L41.4,204.6 L37.9,200.5 L34.6,196.1 L31.6,191.6 L28.7,186.9 L26.2,182.1 L23.9,177.2 L21.8,172.2 L20.0,167.0 L18.5,161.8 L17.2,156.5 L16.2,151.1 L15.5,145.7 L15.1,140.3 L15.0,134.8 L15.2,129.4 Z" fill="#8F5D0A" stroke="#FFFFFF" stroke-width="1.2"/><text x="55.9" y="167.1" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >14.9%</text><path d="M120,135 L15.2,129.4 L15.6,124.1 L16.2,118.9 L17.2,113.7 L18.4,108.6 L19.8,103.5 L21.5,98.5 L23.5,93.6 L25.7,88.9 L28.1,84.2 L30.8,79.6 L33.7,75.2 L36.8,71.0 L40.1,66.9 L43.6,63.0 L47.3,59.2 L51.2,55.7 L55.3,52.3 L59.5,49.2 Z" fill="#125F9E" stroke="#FFFFFF" stroke-width="1.2"/><text x="58.7" y="105.1" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >14.4%</text><path d="M120,135 L59.5,49.2 L63.8,46.3 L68.2,43.7 L72.8,41.2 L77.4,39.0 L82.2,37.0 L87.0,35.3 L92.0,33.8 L97.0,32.6 L102.0,31.5 L107.1,30.8 L112.3,30.3 L117.4,30.0 Z" fill="#0E7A55" stroke="#FFFFFF" stroke-width="1.2"/><text x="98.0" y="72.5" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >9.4%</text><path d="M120,135 L117.4,30.0 L118.7,30.0 L120.0,30.0 Z" fill="#9B2C7E" stroke="#FFFFFF" stroke-width="1.2"/><text x="300.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >dot plot on a common scale, zoomed to the two</text><line x1="410.0" y1="150.0" x2="940.0" y2="150.0" stroke="#14222B" stroke-width="1.2" /><line x1="410.0" y1="40.0" x2="410.0" y2="150.0" stroke="#DCE4E8" stroke-width="1" /><text x="410.0" y="168.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >14.0%</text><line x1="586.7" y1="40.0" x2="586.7" y2="150.0" stroke="#DCE4E8" stroke-width="1" /><text x="586.7" y="168.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >14.4%</text><line x1="763.3" y1="40.0" x2="763.3" y2="150.0" stroke="#DCE4E8" stroke-width="1" /><text x="763.3" y="168.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >14.8%</text><line x1="940.0" y1="40.0" x2="940.0" y2="150.0" stroke="#DCE4E8" stroke-width="1" /><text x="940.0" y="168.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >15.2%</text><text x="400.0" y="74.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="end" font-weight="500" >Africa</text><line x1="410.0" y1="70.0" x2="794.3" y2="70.0" stroke="#DCE4E8" stroke-width="1" stroke-dasharray="2 3"/><circle cx="794.3" cy="70" r="8" fill="#8F5D0A"/><text x="808.3" y="74.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >14.9%</text><text x="400.0" y="124.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="end" font-weight="500" >Americas</text><line x1="410.0" y1="120.0" x2="577.7" y2="120.0" stroke="#DCE4E8" stroke-width="1" stroke-dasharray="2 3"/><circle cx="577.7" cy="120" r="8" fill="#125F9E"/><text x="591.7" y="124.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >14.4%</text></svg><div class="rd">The pie asks for an angle judgement (rank 3) between two slices that do not share an edge. The dots ask for position on a common scale (rank 1).</div></div><pre class="code sm">px.bar(share.sort_values(), orientation=<span class="py-str">&#x27;h&#x27;</span>)<span class="py-cm">      # sorted bars: length and position on one axis</span></pre>
+  </div>
+</section>
+
+<section class="slide" data-sec="Applied">
+  <div class="eyebrow">Applied to our charts &#183; Example 2: the tilted pie</div>
+  <h1 class="t">Example continued 1
+    <small>The Americas slice is 51.8°. Tilt the pie to half height and the same slice spans 88.3° of screen angle at the front and 27.3° at the side.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">one slice, 14.4% of the world, two positions in a tilted pie</div><svg viewBox="0 0 980 280" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="The same pie slice tilted at the front and at the side of a 3D pie"><ellipse cx="220" cy="150" rx="170" ry="85" fill="#9FB3C2"/><ellipse cx="220" cy="132" rx="170" ry="85" fill="#D7E0E6" stroke="#FFFFFF"/><path d="M220,132 L294.2,208.5 L286.4,210.2 L278.5,211.8 L270.4,213.2 L262.2,214.3 L253.9,215.3 L245.5,216.0 L237.0,216.6 L228.5,216.9 L220.0,217.0 L211.5,216.9 L203.0,216.6 L194.5,216.0 L186.1,215.3 L177.8,214.3 L169.6,213.2 L161.5,211.8 L153.6,210.2 L145.8,208.5 Z" fill="#125F9E" stroke="#FFFFFF" stroke-width="1.2"/><text x="220.0" y="248.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >Americas slice at the front</text><text x="220.0" y="268.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="middle" font-weight="700" >drawn angle on screen 88.3°</text><ellipse cx="740" cy="150" rx="170" ry="85" fill="#9FB3C2"/><ellipse cx="740" cy="132" rx="170" ry="85" fill="#D7E0E6" stroke="#FFFFFF"/><path d="M740,132 L892.9,94.9 L896.5,98.8 L899.6,102.7 L902.3,106.8 L904.7,110.9 L906.6,115.0 L908.1,119.2 L909.1,123.5 L909.8,127.7 L910.0,132.0 L909.8,136.3 L909.1,140.5 L908.1,144.8 L906.6,149.0 L904.7,153.1 L902.3,157.2 L899.6,161.3 L896.5,165.2 L892.9,169.1 Z" fill="#125F9E" stroke="#FFFFFF" stroke-width="1.2"/><text x="740.0" y="248.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >Americas slice at the side</text><text x="740.0" y="268.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="middle" font-weight="700" >drawn angle on screen 27.3°</text></svg><div class="rd">The front position is <b>3.2 times</b> the side position for the same number. Tilt changes angles by position; the side wall adds area to the front slices only.</div></div><div class="callout sm">Computed by projecting the circle onto an ellipse of half height: a screen angle is atan2(0.5 &#183; sin &#952;, cos &#952;).</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Applied">
+  <div class="eyebrow">Applied to our charts &#183; Example 3: stacked bars</div>
+  <h1 class="t">Example continued 2
+    <small>Keyboard sales are 54,004 to 58,890 in all four regions, within 4,886 of each other. Stacked, each Keyboard segment starts at a different height.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">sales.parquet, sales by region and product</div><svg viewBox="0 0 980 272" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Sales by region and product as stacked and grouped bars"><text x="0.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >stacked: Keyboard is the second segment</text><rect x="40.0" y="216.7" width="60.0" height="33.3" fill="#4B5A87" stroke="#FFFFFF" stroke-width="1" /><rect x="40.0" y="180.7" width="60.0" height="36.1" fill="#8F5D0A" stroke="#FFFFFF" stroke-width="1" /><rect x="38.5" y="179.2" width="63.0" height="39.1" fill="none" stroke="#B02F3B" stroke-width="2.2" /><rect x="40.0" y="141.3" width="60.0" height="39.3" fill="#125F9E" stroke="#FFFFFF" stroke-width="1" /><rect x="40.0" y="115.5" width="60.0" height="25.8" fill="#0E7A55" stroke="#FFFFFF" stroke-width="1" /><rect x="40.0" y="82.5" width="60.0" height="33.0" fill="#9B2C7E" stroke="#FFFFFF" stroke-width="1" /><text x="70.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >East</text><rect x="140.0" y="195.3" width="60.0" height="54.7" fill="#4B5A87" stroke="#FFFFFF" stroke-width="1" /><rect x="140.0" y="160.3" width="60.0" height="35.0" fill="#8F5D0A" stroke="#FFFFFF" stroke-width="1" /><rect x="138.5" y="158.8" width="63.0" height="38.0" fill="none" stroke="#B02F3B" stroke-width="2.2" /><rect x="140.0" y="121.2" width="60.0" height="39.1" fill="#125F9E" stroke="#FFFFFF" stroke-width="1" /><rect x="140.0" y="98.0" width="60.0" height="23.2" fill="#0E7A55" stroke="#FFFFFF" stroke-width="1" /><rect x="140.0" y="48.7" width="60.0" height="49.3" fill="#9B2C7E" stroke="#FFFFFF" stroke-width="1" /><text x="170.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >North</text><rect x="240.0" y="200.5" width="60.0" height="49.5" fill="#4B5A87" stroke="#FFFFFF" stroke-width="1" /><rect x="240.0" y="164.5" width="60.0" height="36.1" fill="#8F5D0A" stroke="#FFFFFF" stroke-width="1" /><rect x="238.5" y="163.0" width="63.0" height="39.1" fill="none" stroke="#B02F3B" stroke-width="2.2" /><rect x="240.0" y="121.6" width="60.0" height="42.9" fill="#125F9E" stroke="#FFFFFF" stroke-width="1" /><rect x="240.0" y="73.3" width="60.0" height="48.3" fill="#0E7A55" stroke="#FFFFFF" stroke-width="1" /><rect x="240.0" y="32.1" width="60.0" height="41.1" fill="#9B2C7E" stroke="#FFFFFF" stroke-width="1" /><text x="270.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >South</text><rect x="340.0" y="205.7" width="60.0" height="44.3" fill="#4B5A87" stroke="#FFFFFF" stroke-width="1" /><rect x="340.0" y="172.6" width="60.0" height="33.1" fill="#8F5D0A" stroke="#FFFFFF" stroke-width="1" /><rect x="338.5" y="171.1" width="63.0" height="36.1" fill="none" stroke="#B02F3B" stroke-width="2.2" /><rect x="340.0" y="127.0" width="60.0" height="45.6" fill="#125F9E" stroke="#FFFFFF" stroke-width="1" /><rect x="340.0" y="67.7" width="60.0" height="59.4" fill="#0E7A55" stroke="#FFFFFF" stroke-width="1" /><rect x="340.0" y="30.0" width="60.0" height="37.7" fill="#9B2C7E" stroke="#FFFFFF" stroke-width="1" /><text x="370.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >West</text><text x="520.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >grouped: Keyboard on its own baseline</text><rect x="550.0" y="130.6" width="15.0" height="119.4" fill="#4B5A87" stroke="none" stroke-width="0" /><rect x="567.0" y="120.4" width="15.0" height="129.6" fill="#8F5D0A" stroke="#B02F3B" stroke-width="2" /><rect x="584.0" y="108.9" width="15.0" height="141.1" fill="#125F9E" stroke="none" stroke-width="0" /><rect x="601.0" y="157.4" width="15.0" height="92.6" fill="#0E7A55" stroke="none" stroke-width="0" /><rect x="618.0" y="131.5" width="15.0" height="118.5" fill="#9B2C7E" stroke="none" stroke-width="0" /><text x="592.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >East</text><rect x="655.0" y="53.8" width="15.0" height="196.2" fill="#4B5A87" stroke="none" stroke-width="0" /><rect x="672.0" y="124.2" width="15.0" height="125.8" fill="#8F5D0A" stroke="#B02F3B" stroke-width="2" /><rect x="689.0" y="109.6" width="15.0" height="140.4" fill="#125F9E" stroke="none" stroke-width="0" /><rect x="706.0" y="166.7" width="15.0" height="83.3" fill="#0E7A55" stroke="none" stroke-width="0" /><rect x="723.0" y="73.1" width="15.0" height="176.9" fill="#9B2C7E" stroke="none" stroke-width="0" /><text x="697.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >North</text><rect x="760.0" y="72.4" width="15.0" height="177.6" fill="#4B5A87" stroke="none" stroke-width="0" /><rect x="777.0" y="120.5" width="15.0" height="129.5" fill="#8F5D0A" stroke="#B02F3B" stroke-width="2" /><rect x="794.0" y="96.1" width="15.0" height="153.9" fill="#125F9E" stroke="none" stroke-width="0" /><rect x="811.0" y="76.6" width="15.0" height="173.4" fill="#0E7A55" stroke="none" stroke-width="0" /><rect x="828.0" y="102.3" width="15.0" height="147.7" fill="#9B2C7E" stroke="none" stroke-width="0" /><text x="802.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >South</text><rect x="865.0" y="91.0" width="15.0" height="159.0" fill="#4B5A87" stroke="none" stroke-width="0" /><rect x="882.0" y="131.2" width="15.0" height="118.8" fill="#8F5D0A" stroke="#B02F3B" stroke-width="2" /><rect x="899.0" y="86.4" width="15.0" height="163.6" fill="#125F9E" stroke="none" stroke-width="0" /><rect x="916.0" y="36.9" width="15.0" height="213.1" fill="#0E7A55" stroke="none" stroke-width="0" /><rect x="933.0" y="114.7" width="15.0" height="135.3" fill="#9B2C7E" stroke="none" stroke-width="0" /><text x="907.0" y="266.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >West</text><line x1="540.0" y1="250.0" x2="970.0" y2="250.0" stroke="#14222B" stroke-width="1" /><line x1="30.0" y1="250.0" x2="440.0" y2="250.0" stroke="#14222B" stroke-width="1" /></svg><div class="rd">In the stack only the bottom segment and the total sit on the axis. Keyboard needs a length judgement (rank 3) between floating segments; grouped bars give it a common baseline.</div></div><div style="font-family:var(--mono);font-size:11px;color:var(--soft)"><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#4B5A87;display:inline-block"></i>Headphones</span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#8F5D0A;display:inline-block"></i>Keyboard</span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#125F9E;display:inline-block"></i>Laptop</span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#0E7A55;display:inline-block"></i>Monitor</span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><i style="width:11px;height:11px;background:#9B2C7E;display:inline-block"></i>Mouse</span></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Applied">
+  <div class="eyebrow">Applied to our charts &#183; Example 4: bubble sizes</div>
+  <h1 class="t">Example continued 3
+    <small>China has 4.38 times the US population (2007). Scaled by area the ink ratio is 4.4×; scaled by radius it is 19.2×.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">gapminder 2007, population</div><svg viewBox="0 0 980 282" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="China and the US as area-scaled and radius-scaled bubbles"><text x="40.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="start" font-weight="400" >area-scaled (px default)</text><circle cx="58" cy="212" r="18" fill="#125F9E"/><circle cx="133.6667838450858" cy="192.3" r="37.7" fill="#B02F3B" fill-opacity=".85"/><text x="58.0" y="250.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="middle" font-weight="700" >US</text><text x="133.7" y="250.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="middle" font-weight="700" >China</text><text x="40.0" y="272.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >ink ratio 4.4×   reads as about 2.8×</text><text x="540.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="start" font-weight="400" >radius-scaled</text><circle cx="558" cy="212" r="18" fill="#125F9E"/><circle cx="674.8214780684676" cy="151.2" r="78.8" fill="#B02F3B" fill-opacity=".85"/><text x="558.0" y="250.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="middle" font-weight="700" >US</text><text x="674.8" y="250.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="middle" font-weight="700" >China</text><text x="540.0" y="272.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#B02F3B" text-anchor="start" font-weight="700" >ink ratio 19.2×   reads as about 7.9×</text></svg><div class="rd">px.scatter(size=...) scales by area, which is the honest choice. With an area exponent near 0.7 the reader still under-reads it; the radius-scaled version over-reads it.</div></div><div class="callout sm">Put the population number in the hover text or a label when the size matters. Area is rank 4.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Applied">
+  <div class="eyebrow">Applied to our charts &#183; Example 5: the dot plot</div>
+  <h1 class="t">Example continued 4
+    <small>Median life expectancy by continent, 2007, sorted. Every value is a position on one scale; the axis can start at 50 because a dot has no length to distort.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">gapminder 2007</div><svg viewBox="0 0 960 244" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Dot plot of median life expectancy by continent in 2007"><line x1="140.0" y1="10.0" x2="140.0" y2="200.0" stroke="#DCE4E8" stroke-width="1" /><text x="140.0" y="218.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >50</text><line x1="258.8" y1="10.0" x2="258.8" y2="200.0" stroke="#DCE4E8" stroke-width="1" /><text x="258.8" y="218.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >55</text><line x1="377.5" y1="10.0" x2="377.5" y2="200.0" stroke="#DCE4E8" stroke-width="1" /><text x="377.5" y="218.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >60</text><line x1="496.2" y1="10.0" x2="496.2" y2="200.0" stroke="#DCE4E8" stroke-width="1" /><text x="496.2" y="218.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >65</text><line x1="615.0" y1="10.0" x2="615.0" y2="200.0" stroke="#DCE4E8" stroke-width="1" /><text x="615.0" y="218.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >70</text><line x1="733.8" y1="10.0" x2="733.8" y2="200.0" stroke="#DCE4E8" stroke-width="1" /><text x="733.8" y="218.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >75</text><line x1="852.5" y1="10.0" x2="852.5" y2="200.0" stroke="#DCE4E8" stroke-width="1" /><text x="852.5" y="218.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >80</text><text x="128.0" y="34.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="end" font-weight="500" >Africa</text><line x1="140.0" y1="30.0" x2="209.5" y2="30.0" stroke="#C3CFD5" stroke-width="1" stroke-dasharray="2 3"/><circle cx="209.5" cy="30" r="8" fill="#8F5D0A"/><text x="223.5" y="34.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >52.9</text><text x="128.0" y="74.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="end" font-weight="500" >Asia</text><line x1="140.0" y1="70.0" x2="671.9" y2="70.0" stroke="#C3CFD5" stroke-width="1" stroke-dasharray="2 3"/><circle cx="671.9" cy="70" r="8" fill="#B02F3B"/><text x="685.9" y="74.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >72.4</text><text x="128.0" y="114.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="end" font-weight="500" >Americas</text><line x1="140.0" y1="110.0" x2="683.9" y2="110.0" stroke="#C3CFD5" stroke-width="1" stroke-dasharray="2 3"/><circle cx="683.9" cy="110" r="8" fill="#125F9E"/><text x="697.9" y="114.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >72.9</text><text x="128.0" y="154.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="end" font-weight="500" >Europe</text><line x1="140.0" y1="150.0" x2="819.5" y2="150.0" stroke="#C3CFD5" stroke-width="1" stroke-dasharray="2 3"/><circle cx="819.5" cy="150" r="8" fill="#0E7A55"/><text x="833.5" y="154.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >78.6</text><text x="128.0" y="194.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="end" font-weight="500" >Oceania</text><line x1="140.0" y1="190.0" x2="869.6" y2="190.0" stroke="#C3CFD5" stroke-width="1" stroke-dasharray="2 3"/><circle cx="869.6" cy="190" r="8" fill="#9B2C7E"/><text x="883.6" y="194.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >80.7</text><text x="520.0" y="238.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >median life expectancy, 2007, years</text></svg><div class="rd">Americas 72.9 against Asia 72.4: a 0.5-year gap read straight off the axis. W. S. Cleveland proposed the dot chart for this reason (<i>The American Statistician</i>, 1984).</div></div><pre class="code sm">px.scatter(x=med.sort_values().values, y=med.sort_values().index)<span class="py-cm">   # a dot plot</span></pre>
+  </div>
+</section>
+
+<section class="slide" data-sec="Applied">
+  <div class="eyebrow">Applied to our charts &#183; Verdict</div>
+  <h1 class="t">Verdict
+    <small>The charts from lectures 2 to 6, by the encoding that carries the number the reader is asked to compare.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>chart (lecture)</th><th>number read from</th><th>rank</th><th>higher-ranked alternative</th></tr><tr><td>bar chart of sales (2)</td><td>position and length, common baseline</td><td>1</td><td>sort the bars</td></tr><tr><td>scatter, GDP against life expectancy (5)</td><td>position, common scale</td><td>1</td><td>already at the top</td></tr><tr><td>small multiples by continent (6)</td><td>position, non-aligned scales</td><td>2</td><td>one panel with shared axes when comparing across</td></tr><tr><td>pie of continent population (5)</td><td>angle</td><td>3</td><td>sorted bar or dot plot</td></tr><tr><td>stacked bar, middle segments (5, 6)</td><td>length, floating</td><td>3</td><td>grouped bars or small multiples</td></tr><tr><td>bubble size, population (5, 6)</td><td>area</td><td>4</td><td>label the value, or a separate bar</td></tr><tr><td>choropleth, life expectancy (6)</td><td>colour saturation</td><td>6</td><td>dot plot by country, map for location only</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Summary">
+  <div class="eyebrow">Summary</div>
+  <h1 class="t">What the eye reads accurately
+    <small>Two findings carry the lecture: single features pop out, and position on a common scale is read best.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>idea</th><th>source</th><th>use it to</th></tr><tr><td>preattentive pop-out for one feature</td><td>Treisman and Gelade 1980</td><td>highlight one item with one colour</td></tr><tr><td>conjunctions need serial search</td><td>Treisman and Gelade 1980</td><td>avoid coding two variables by colour + shape</td></tr><tr><td>ranking of elementary tasks</td><td>Cleveland and McGill 1984</td><td>put the key comparison on position</td></tr><tr><td>ranking replicated online</td><td>Heer and Bostock 2010</td><td>trust the order for a general audience</td></tr><tr><td>Weber's law</td><td>psychophysics</td><td>add a common baseline or gridline</td></tr><tr><td>Stevens' power law, area ≈ 0.7</td><td>Stevens</td><td>label bubble values; size by area</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Practice
+    <small>Five exercises on gapminder and sales.parquet.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><ol class="n"><li>Run the encoding experiment for at least 10 trials per encoding. Report your mean error for each and compare the order with Cleveland and McGill.</li><li>Redraw the 2007 continent pie as a sorted horizontal bar and as a dot plot in Plotly.</li><li>Turn the stacked sales bar into grouped bars and into small multiples by product. Which makes the Keyboard comparison easiest?</li><li>In the 2007 gapminder scatter, highlight Indian and Chinese points with one colour and everything else grey.</li><li>Rank every chart in your project dashboard by the encoding of its main comparison, using the verdict table.</li></ol></div><div class="colstack fill"><div class="card b"><h3>For the project</h3><p>Put the comparison your dashboard is about on position. Use colour for one highlight.</p></div><div class="card g"><h3>Next lecture</h3><p>Colour palettes, colour blindness, truncated and dual axes, and redrawing misleading charts.</p></div></div></div>
+  </div>
+</section>
+</div></div>
+<div id="nav"><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></div>
+<div id="hint">&#8592; &#8594; navigate &#183; F fullscreen &#183; P print</div>
+<script>
+/* ============================================================
+   deck mechanics — identical to the other decks in the module
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 &#183; Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 8 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  // ---- staged builds ------------------------------------------------
+  // A slide carrying .build holds its [data-at] pieces back. Arrow
+  // right releases the next one; only when they are all out does the
+  // deck advance. Entering backwards lands on the finished slide.
+  function maxStep(s){
+    let m=0;
+    s.querySelectorAll('[data-at]').forEach(e=>{ m=Math.max(m,+e.dataset.at||0); });
+    return m;
+  }
+  function paint(s){
+    const k=+s.dataset.step||0;
+    // data-to="k" retires a piece once the build moves past step k
+    s.querySelectorAll('[data-at]').forEach(e=>
+      e.classList.toggle('shown',(+e.dataset.at||0)<=k&&
+        (e.dataset.to===undefined||k<=+e.dataset.to)));
+    const d=s.querySelector('.bld');
+    if(d)[...d.children].forEach((c,n)=>c.classList.toggle('on',n<k));
+  }
+  function build(s,dir){
+    if(!s||!s.classList.contains('build'))return false;
+    const t=(+s.dataset.step||0)+dir;
+    if(t<0||t>maxStep(s))return false;
+    s.dataset.step=t; paint(s); return true;
+  }
+  function show(n){
+    const prev=i, back=n<i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    const cur=slides[i];
+    if(cur&&cur.classList.contains('build')){
+      cur.dataset.step=back?maxStep(cur):0; paint(cur);
+    }
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(cur) cur.dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>{ if(!build(slides[i],1))show(i+1); };
+  document.getElementById('prev').onclick=()=>{ if(!build(slides[i],-1))show(i-1); };
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){
+      if(!build(slides[i],1))show(i+1); e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){
+      if(!build(slides[i],-1))show(i-1); e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+
+
+
+(function(){
+  const sv=document.getElementById('ps-svg'); if(!sv) return;
+  const NS='http://www.w3.org/2000/svg', RED='#B02F3B', BLUE='#125F9E';
+  let cond='colour', N=8, t0=0, tgt=-1; const res={};
+  const msg=document.getElementById('ps-msg'), tab=document.getElementById('ps-tab');
+  const NAMES={colour:'colour',shape:'shape',both:'colour + shape'};
+  function el(tag,a){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);return e;}
+  function draw(){
+    sv.innerHTML='';
+    const cells=[];
+    for(let r=0;r<6;r++)for(let c=0;c<12;c++)
+      cells.push([30+c*52+(Math.random()*16-8),30+r*53+(Math.random()*14-7)]);
+    for(let i=cells.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
+    tgt=Math.floor(Math.random()*N);
+    for(let i=0;i<N;i++){
+      const [x,y]=cells[i]; let sq=false, col=BLUE;
+      if(i===tgt){ if(cond==='colour'){col=RED;} else if(cond==='shape'){sq=true;} else {col=RED;sq=true;} }
+      else if(cond==='both'){ if(i%2){col=RED;} else {sq=true;} }
+      const e=sq?el('rect',{x:x-10,y:y-10,width:20,height:20,fill:col}):el('circle',{cx:x,cy:y,r:10.5,fill:col});
+      e.setAttribute('class','it'); e.dataset.i=i; sv.appendChild(e);
+    }
+    t0=performance.now();
+  }
+  function render(){
+    let h='<tr><th>target differs by</th><th>8</th><th>24</th><th>48</th></tr>';
+    for(const c of ['colour','shape','both']){
+      h+='<tr><td>'+NAMES[c]+'</td>';
+      for(const n of [8,24,48]){
+        const a=res[c+'|'+n];
+        h+='<td>'+(a&&a.length?Math.round(a.reduce((p,q)=>p+q,0)/a.length)+' ('+a.length+')':'&#183;')+'</td>';
+      }
+      h+='</tr>';
+    }
+    tab.innerHTML=h;
+  }
+  sv.addEventListener('click',e=>{
+    const t=e.target.closest('.it'); if(!t) return;
+    if(+t.dataset.i!==tgt){ msg.classList.add('bad'); msg.textContent='Not that one. Keep looking; the timer is still running.'; return; }
+    const dt=performance.now()-t0; const k=cond+'|'+N; (res[k]=res[k]||[]).push(dt);
+    msg.classList.remove('bad'); msg.textContent='Found in '+Math.round(dt)+' ms. Next screen.';
+    render(); draw();
+  });
+  document.querySelectorAll('#ps-cond button').forEach(b=>b.addEventListener('click',()=>{
+    cond=b.dataset.c; document.querySelectorAll('#ps-cond button').forEach(x=>x.classList.toggle('on',x===b)); draw();}));
+  document.querySelectorAll('#ps-n button').forEach(b=>b.addEventListener('click',()=>{
+    N=+b.dataset.n; document.querySelectorAll('#ps-n button').forEach(x=>x.classList.toggle('on',x===b)); draw();}));
+  render(); draw();
+})();
+
+(function(){
+  const sv=document.getElementById('cm-svg'); if(!sv) return;
+  const ENC=[['common','position, common scale'],['unaligned','position, non-aligned'],['angle','angle'],['area','area']];
+  const acc={}; let cur=null, k=1;
+  const inp=document.getElementById('cm-in'), last=document.getElementById('cm-last'), tab=document.getElementById('cm-tab');
+  const INK='#14222B', BLUE='#125F9E', SOFT='#53666F';
+  function txt(x,y,s,anchor){return '<text x="'+x+'" y="'+y+'" font-family="JetBrains Mono,monospace" font-size="14" font-weight="700" fill="'+INK+'" text-anchor="'+(anchor||'middle')+'">'+s+'</text>';}
+  function wedge(cx,cy,r,deg){
+    if(deg>=359.5) return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+BLUE+'"/>';
+    const a=deg*Math.PI/180, x=cx+r*Math.sin(a), y=cy-r*Math.cos(a);
+    return '<path d="M'+cx+','+cy+' L'+cx+','+(cy-r)+' A'+r+','+r+' 0 '+(deg>180?1:0)+' 1 '+x.toFixed(1)+','+y.toFixed(1)+' Z" fill="'+BLUE+'"/>';
+  }
+  function draw(){
+    const {e,A,B}=cur; let s='';
+    if(e==='common'){
+      s+='<line x1="120" y1="230" x2="480" y2="230" stroke="'+INK+'" stroke-width="1.5"/>';
+      s+='<rect x="200" y="'+(230-A*2)+'" width="70" height="'+(A*2)+'" fill="'+BLUE+'"/>';
+      s+='<rect x="330" y="'+(230-B*2)+'" width="70" height="'+(B*2)+'" fill="'+BLUE+'"/>';
+      s+=txt(235,250,'A')+txt(365,250,'B');
+    } else if(e==='unaligned'){
+      s+='<line x1="160" y1="238" x2="300" y2="238" stroke="'+INK+'" stroke-width="1.5"/>';
+      s+='<line x1="320" y1="200" x2="460" y2="200" stroke="'+INK+'" stroke-width="1.5"/>';
+      s+='<rect x="195" y="'+(238-A*2)+'" width="70" height="'+(A*2)+'" fill="'+BLUE+'"/>';
+      s+='<rect x="355" y="'+(200-B*2)+'" width="70" height="'+(B*2)+'" fill="'+BLUE+'"/>';
+      s+=txt(230,256,'A')+txt(390,218,'B');
+    } else if(e==='angle'){
+      s+='<circle cx="170" cy="120" r="95" fill="none" stroke="#C3CFD5" stroke-width="1.5"/>'+wedge(170,120,95,A*3.6);
+      s+='<circle cx="430" cy="120" r="95" fill="none" stroke="#C3CFD5" stroke-width="1.5"/>'+wedge(430,120,95,B*3.6);
+      s+=txt(170,250,'A')+txt(430,250,'B');
+    } else {
+      const rA=105*Math.sqrt(A/100), rB=105*Math.sqrt(B/100);
+      s+='<circle cx="170" cy="120" r="'+rA.toFixed(1)+'" fill="'+BLUE+'"/>';
+      s+='<circle cx="430" cy="120" r="'+rB.toFixed(1)+'" fill="'+BLUE+'"/>';
+      s+=txt(170,250,'A')+txt(430,250,'B');
+    }
+    sv.innerHTML=s;
+    document.getElementById('cm-k').textContent=k;
+    document.getElementById('cm-enc').textContent=cur.name;
+  }
+  function next(){
+    const e=ENC[Math.floor(Math.random()*ENC.length)];
+    const B=60+Math.random()*35, p=15+Math.random()*80;
+    cur={e:e[0],name:e[1],A:B*p/100,B:B,t:p}; draw(); inp.value='';
+  }
+  function render(){
+    const rows=ENC.filter(e=>acc[e[0]]&&acc[e[0]].length).map(e=>{const a=acc[e[0]];return [e[1],a.reduce((p,q)=>p+q,0)/a.length,a.length];})
+      .sort((x,y)=>x[1]-y[1]);
+    tab.innerHTML='<tr><th>encoding</th><th>mean error</th><th>trials</th></tr>'+
+      (rows.length?rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1].toFixed(2)+'</td><td>'+r[2]+'</td></tr>').join('')
+                  :'<tr><td colspan="3">no answers yet</td></tr>');
+  }
+  function submit(){
+    const j=parseFloat(inp.value); if(isNaN(j)) return;
+    const err=Math.log2(Math.abs(j-cur.t)+1/8);
+    (acc[cur.e]=acc[cur.e]||[]).push(err);
+    last.textContent='last: '+cur.name+'   true '+cur.t.toFixed(1)+'%   you said '+j+'%   error '+err.toFixed(2);
+    k++; render(); next();
+  }
+  document.getElementById('cm-go').addEventListener('click',submit);
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ submit(); e.stopPropagation(); } });
+  render(); next();
+})();
+
+</script>
+</body>
+</html>
