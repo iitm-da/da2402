@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-05 12:54 UTC",
+ "generated": "2026-10-05 12:55 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -325,6 +325,15 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 219327,
+   "updated": "2026-10-05"
+  },
+  {
+   "path": "data visualisation/plotly_dash_layout.ipynb",
+   "name": "plotly_dash_layout.ipynb",
+   "folder": "data visualisation",
+   "section": "Data Visualisation",
+   "kind": "notebook",
+   "size": 87623,
    "updated": "2026-10-05"
   },
   {
