@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-05 12:55 UTC",
+ "generated": "2026-10-05 13:03 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -234,16 +234,16 @@
    "folder": "data storage",
    "section": "Data Storage",
    "kind": "deck",
-   "size": 139521,
+   "size": 139518,
    "updated": "2026-10-05"
   },
   {
-   "path": "data storage/data_storage_4_sqlite.html",
-   "name": "data_storage_4_sqlite.html",
+   "path": "data storage/data_storage_2_sqlite.html",
+   "name": "data_storage_2_sqlite.html",
    "folder": "data storage",
    "section": "Data Storage",
    "kind": "deck",
-   "size": 124295,
+   "size": 124292,
    "updated": "2026-10-05"
   },
   {
@@ -265,66 +265,66 @@
    "updated": "2026-10-05"
   },
   {
-   "path": "data visualisation/data_vis_2_plotly_dash_layout.html",
-   "name": "data_vis_2_plotly_dash_layout.html",
+   "path": "data visualisation/data_vis_1_plotly_dash_layout.html",
+   "name": "data_vis_1_plotly_dash_layout.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 193152,
+   "size": 193149,
    "updated": "2026-10-05"
   },
   {
-   "path": "data visualisation/data_vis_3_dash_callbacks.html",
-   "name": "data_vis_3_dash_callbacks.html",
+   "path": "data visualisation/data_vis_2_dash_callbacks.html",
+   "name": "data_vis_2_dash_callbacks.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 99182,
+   "size": 99179,
    "updated": "2026-10-05"
   },
   {
-   "path": "data visualisation/data_vis_5_one_two_variables.html",
-   "name": "data_vis_5_one_two_variables.html",
+   "path": "data visualisation/data_vis_3_one_two_variables.html",
+   "name": "data_vis_3_one_two_variables.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 438649,
+   "size": 438646,
    "updated": "2026-10-05"
   },
   {
-   "path": "data visualisation/data_vis_6_many_variables.html",
-   "name": "data_vis_6_many_variables.html",
+   "path": "data visualisation/data_vis_4_many_variables.html",
+   "name": "data_vis_4_many_variables.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 665372,
+   "size": 665369,
    "updated": "2026-10-05"
   },
   {
-   "path": "data visualisation/data_vis_7_gestalt.html",
-   "name": "data_vis_7_gestalt.html",
+   "path": "data visualisation/data_vis_5_gestalt.html",
+   "name": "data_vis_5_gestalt.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 236338,
+   "size": 236335,
    "updated": "2026-10-05"
   },
   {
-   "path": "data visualisation/data_vis_8_perception.html",
-   "name": "data_vis_8_perception.html",
+   "path": "data visualisation/data_vis_6_perception.html",
+   "name": "data_vis_6_perception.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 123931,
+   "size": 123928,
    "updated": "2026-10-05"
   },
   {
-   "path": "data visualisation/data_vis_9_colour_honest_charts.html",
-   "name": "data_vis_9_colour_honest_charts.html",
+   "path": "data visualisation/data_vis_7_colour_honest_charts.html",
+   "name": "data_vis_7_colour_honest_charts.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 219327,
+   "size": 219324,
    "updated": "2026-10-05"
   },
   {
