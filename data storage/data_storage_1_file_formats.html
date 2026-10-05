@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Storage · Part 1: File formats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d th.m,table.d td.m{font-family:var(--mono);text-align:right;white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d.tight th,table.d.tight td{padding:2.4px 7px}
+table.d.tight th{text-transform:none}
+table.d.tight tr.tot td{font-weight:700}
+
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- embedded demo ---------- */
+.demo-frame{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--line);
+  background:var(--paper)}
+.demo-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--t-cls);
+  text-decoration:none;border-bottom:1px solid currentColor;margin-left:8px;white-space:nowrap}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+<style>
+/* ================= additions for the Data Cleaning series =================
+   Vocabulary specific to this module. Everything above is the shared theme,
+   copied verbatim from the Data Collection decks.                          */
+
+/* ---------- the spine: symptom -> mechanisms -> what it permits ---------- */
+.spine{display:grid;grid-template-columns:150px 1fr 1fr;gap:0 12px;align-items:stretch}
+.spine .hd{font-family:var(--mono);font-size:9.3px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft);padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.spine .sym{background:var(--ink);color:#fff;padding:8px 11px;margin-bottom:7px;
+  display:flex;flex-direction:column;justify-content:center}
+.spine .sym b{font-family:var(--disp);font-size:13.5px;font-weight:700;display:block;line-height:1.15}
+.spine .sym i{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:#9BB4C0;margin-top:3px}
+.spine .mid,.spine .rgt{background:var(--card);border:1px solid var(--hair);padding:8px 11px;
+  margin-bottom:7px;font-size:11.7px;line-height:1.4;color:#31444F;display:flex;align-items:center}
+.spine .rgt{border-left:3px solid var(--t-grp)}
+.spine .mid{border-left:3px solid var(--t-anc)}
+.spine .now .sym{background:var(--t-asr)}
+.spine .now .mid,.spine .now .rgt{background:#FFF9F9}
+.spine b.q{font-weight:700;color:var(--ink)}
+
+/* ---------- three-mechanism cards ---------- */
+.mech{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;flex:1;min-height:0}
+.mech .m{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.mech .m.a{border-top-color:var(--t-grp)}
+.mech .m.b{border-top-color:var(--t-anc)}
+.mech .m.c{border-top-color:var(--t-asr)}
+.mech .m h3{font-family:var(--disp);font-size:15px;font-weight:700;line-height:1.1}
+.mech .m h3 span{display:block;font-family:var(--mono);font-size:9.2px;font-weight:400;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+.mech .m .def{font-size:12.2px;line-height:1.42;color:#31444F}
+.mech .m .def b{font-weight:700;color:var(--ink)}
+.mech .m .ex{font-size:11.4px;line-height:1.4;color:var(--soft);border-top:1px solid var(--hair);
+  padding-top:6px;margin-top:auto}
+.mech .m .ex b{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);display:block;margin-bottom:3px}
+
+/* ---------- figures (inline SVG, no image files) ---------- */
+.fig{background:var(--card);border:1px solid var(--hair);padding:10px 12px 8px;
+  display:flex;flex-direction:column;min-height:0}
+.fig .cap{font-family:var(--mono);font-size:9.3px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:7px}
+.fig .rd{font-size:11.6px;line-height:1.4;color:#31444F;margin-top:7px;
+  border-top:1px solid var(--hair);padding-top:6px}
+.fig .rd b{font-weight:700;color:var(--ink)}
+.fig svg{display:block;max-height:100%}
+.fig .rd{margin-top:auto}
+
+/* ---------- the cleaning log ---------- */
+table.log{width:100%;border-collapse:collapse;font-size:11.6px;background:var(--card)}
+table.log th,table.log td{border:1px solid var(--hair);padding:5px 9px;text-align:left;
+  vertical-align:top;line-height:1.38}
+table.log th{background:var(--ink);color:#fff;font-weight:600;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.log td:nth-child(1){font-family:var(--mono);font-size:10.6px;white-space:nowrap;color:#26404E}
+table.log td:nth-child(4){font-style:italic;color:var(--soft)}
+table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+/* ---------- the missingness lab (slides 6, 23 and 35) ---------- */
+.lab{display:grid;grid-template-columns:1.62fr 1fr;gap:15px;flex:1;min-height:0}
+.lab .plot{background:var(--card);border:1px solid var(--hair);padding:9px 11px 7px;
+  display:flex;flex-direction:column;min-height:0}
+.lab .plot svg{flex:1;min-height:0;display:block}
+.plotnote{font-size:10.6px;color:var(--soft);line-height:1.35;margin-top:5px;
+  border-top:1px solid var(--hair);padding-top:5px}
+.plotnote b{color:var(--ink)}
+.seg{display:flex;gap:6px;flex:none;margin-bottom:7px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.09em;padding:5px 13px;
+  border:1px solid var(--line);background:var(--paper);color:var(--soft);cursor:pointer;
+  border-radius:2px;transition:background .15s,color .15s,border-color .15s}
+.seg button:hover{background:#E2EBF0;color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.seg button.alt{margin-left:auto;font-size:10.4px;letter-spacing:.12em}
+.seg button:focus-visible{outline:2px solid var(--t-cls);outline-offset:1px}
+.meanbox{background:var(--card);border:1px solid var(--hair);padding:8px 10px;flex:none}
+.meanbox svg{display:block;width:100%}
+.pt{transition:fill .28s ease,stroke .28s ease,opacity .28s ease}
+g.knobpt{transition:transform .45s cubic-bezier(.4,0,.2,1)}
+@media (prefers-reduced-motion:reduce){g.knobpt{transition:none}}
+
+/* ---------- fill: let a short column spread over the stage instead of
+   piling its cards at the top. Cards grow and centre their own text; callouts,
+   tables and code keep their natural height.                                 */
+.colstack.fill{gap:12px}
+.colstack.fill > .card{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
+.colstack.fill > .callout,.colstack.fill > table,.colstack.fill > pre,
+.colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
+
+/* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
+table.d.roomy td,table.d.roomy th{padding:19px 10px}
+table.d.roomy.tall td,table.d.roomy.tall th{padding:27px 10px}
+table.log.roomy td,table.log.roomy th{padding:17px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:24px 12px;margin-bottom:10px}
+
+/* ---------- cover ornament: a wall of raw cells ---------- */
+.coverpat .c-miss{color:var(--t-asr);font-weight:700}
+.coverpat .c-val{color:var(--t-grp)}
+.coverpat .c-dim{color:#9BAAB3}
+.coverpat .c-hdr{color:var(--t-cls);font-weight:700}
+
+/* ---------- intuition-slide reveals: the figure arrives in the order the
+   lecturer speaks it, so the picture is not finished before the sentence is. */
+@media (prefers-reduced-motion:no-preference){
+  .slide.on .fig svg .hi{animation:hifade .55s ease .15s both}
+  .slide.on .fig svg .mk{animation:hifade .5s ease both}
+  .slide.on .fig svg .mk0{animation-delay:.55s}
+  .slide.on .fig svg .mk1{animation-delay:.95s}
+  .slide.on .fig svg .drawline{stroke-dasharray:900;stroke-dashoffset:900;
+    animation:drawin 1.15s .25s ease-out forwards}
+  @keyframes hifade{from{opacity:0}to{opacity:1}}
+  @keyframes drawin{to{stroke-dashoffset:0}}
+}
+
+.fig .expl{margin-top:auto;padding:12px 16px}
+.fig .expl p + p{margin-top:6px}
+/* ---------- staged builds: on a slide marked .build, one arrow press
+   reveals one more [data-at] piece before the deck moves to the next slide.
+   The lecturer speaks a term, then presses once, and that term appears. */
+.slide.build [data-at]{opacity:0}
+.slide.build [data-at].shown{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  .slide.build [data-at]{transition:opacity .34s ease}
+}
+.bld{position:absolute;right:58px;bottom:38px;display:flex;gap:5px;z-index:3}
+.bld i{width:17px;height:3px;background:var(--line);border-radius:2px;display:block;
+  transition:background .25s ease}
+.bld i.on{background:var(--t-asr)}
+</style>
+
+<style>
+/* storage L1 additions: column-read widget */
+.bwpick{display:flex;flex-direction:column;gap:7px}
+.bwrow{display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:center;margin:14px 0}
+.bwrow .k{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right}
+.bwtrack{position:relative;height:40px;background:var(--paper);border:1px solid var(--hair)}
+.bwbar{position:absolute;left:0;top:0;bottom:0;transition:width .3s ease}
+.bwbar.csv{background:#125F9E}.bwbar.pq{background:#0E7A55}
+.bwrow .v{font-family:var(--mono);font-size:12.5px;font-weight:700;margin-top:5px;color:var(--ink)}
+.bwrow .v i{font-style:normal;font-weight:400;color:var(--soft);margin-left:8px}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat">
+    <div><span class="h-dim">INDEX_NAME,HistoryDate,OPEN,HIGH,LOW,CLOSE</span></div>
+    <div><span class="h-hdr">Blue Metal</span>,<span class="h-bad">2004-01-01</span>,,,,<span class="h-val">1000.0</span></div>
+    <div><span class="h-hdr">Blue Metal</span>,<span class="h-bad">2004-01-02</span>,,,,<span class="h-val">1016.64</span></div>
+    <div>&#160;</div>
+    <div><span class="h-mth">PAR1</span> <span class="h-dim">.. .. .. .. .. .. .. ..</span></div>
+    <div><span class="h-dim">INDEX_NAME: string</span></div>
+    <div><span class="h-hdr">HistoryDate: timestamp[ns]</span></div>
+    <div><span class="h-dim">OPEN: double  null_count 1932</span></div>
+    <div><span class="h-mth">PAR1</span></div>
+    <div>&#160;</div>
+    <div><span class="h-dim">&#8377; = </span><span class="h-val">E2 82 B9</span><span class="h-dim"> &#8594; </span><span class="h-bad">&#226;&#8218;&#185;</span></div>
+  </div>
+  <div class="kicker">DA2402 &#183; Data Curation and Visualization</div>
+  <h1>Data<br/>Storage</h1>
+  <div class="pt">Part 1 &#8212; File formats</div>
+  <div class="rule"></div>
+  <p class="sub">What CSV, JSON, Parquet and Feather keep of a cleaned data frame, how big each file is,
+  how fast it reads back, and why.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 &#183; BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data storage</td></tr>
+    <tr><td>Lecture</td><td>1 of 9 &#183; File formats</td></tr>
+    <tr><td>Data</td><td>BLUE METAL.csv &#183; patients.csv &#183; sales</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-sec="Storage">
+  <div class="eyebrow">Data storage &#183; where this lecture sits</div>
+  <h1 class="t">From a cleaned data frame to a file on disk
+    <small>Every lecture from here reads its data from a file. The format of that file decides which column types come back.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">the course so far and what comes next</div><svg viewBox="0 0 1120 132" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Course pipeline: collect, clean, save, plot, query"><rect x="0.0" y="10.0" width="196.0" height="112.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><rect x="0.0" y="10.0" width="196.0" height="32.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="98.0" y="31.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >collect</text><text x="98.0" y="72.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >Data collection</text><text x="98.0" y="96.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >4 lectures</text><line x1="200.0" y1="66.0" x2="221.0" y2="66.0" stroke="#53666F" stroke-width="1.6" /><path d="M227.0,66.0 L219.0,62.0 L219.0,70.0 z" fill="#53666F"/><rect x="231.0" y="10.0" width="196.0" height="112.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><rect x="231.0" y="10.0" width="196.0" height="32.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="329.0" y="31.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >clean</text><text x="329.0" y="72.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >Data cleaning</text><text x="329.0" y="96.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >6 lectures</text><line x1="431.0" y1="66.0" x2="452.0" y2="66.0" stroke="#53666F" stroke-width="1.6" /><path d="M458.0,66.0 L450.0,62.0 L450.0,70.0 z" fill="#53666F"/><rect x="462.0" y="10.0" width="196.0" height="112.0" fill="#FFF9F9" stroke="#B02F3B" stroke-width="1.6" /><rect x="462.0" y="10.0" width="196.0" height="32.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="560.0" y="31.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >save</text><text x="560.0" y="72.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >this lecture</text><text x="560.0" y="96.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >file formats</text><line x1="662.0" y1="66.0" x2="683.0" y2="66.0" stroke="#53666F" stroke-width="1.6" /><path d="M689.0,66.0 L681.0,62.0 L681.0,70.0 z" fill="#53666F"/><rect x="693.0" y="10.0" width="196.0" height="112.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><rect x="693.0" y="10.0" width="196.0" height="32.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="791.0" y="31.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >plot</text><text x="791.0" y="72.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >lectures 2 and 3</text><text x="791.0" y="96.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >Plotly and Dash</text><line x1="893.0" y1="66.0" x2="914.0" y2="66.0" stroke="#53666F" stroke-width="1.6" /><path d="M920.0,66.0 L912.0,62.0 L912.0,70.0 z" fill="#53666F"/><rect x="924.0" y="10.0" width="196.0" height="112.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><rect x="924.0" y="10.0" width="196.0" height="32.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="1022.0" y="31.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >query</text><text x="1022.0" y="72.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >lecture 4</text><text x="1022.0" y="96.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >SQLite</text></svg></div><div class="cols3"><div class="card b"><h3>Types</h3><p>Does a date column come back as a date, and a pincode as an integer?</p></div><div class="card o"><h3>Size</h3><p>How many bytes does the same table take on disk?</p></div><div class="card g"><h3>Speed</h3><p>How long does it take to read back, all of it or two of its columns?</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Storage">
+  <div class="eyebrow">Data storage &#183; the round trip</div>
+  <h1 class="t">Saving cleaned BLUE METAL as CSV and reading it back
+    <small>HistoryDate went in as datetime64 and came back as object. All 5,463 rows and their values are intact.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code ">df.to_csv(<span class="py-str">&#x27;bm.csv&#x27;</span>, index=<span class="py-kw">False</span>)
+back = pd.read_csv(<span class="py-str">&#x27;bm.csv&#x27;</span>)
+back.equals(df)</pre><div class="outlbl">output</div><div class="out ">False</div><pre class="code ">back.HistoryDate.dt.year</pre><div class="outlbl">output</div><div class="out ">AttributeError: Can only use .dt accessor with datetimelike values</div></div><div class="colstack"><table class="d sm"><tr><th>column</th><th>before saving</th><th>after read_csv</th></tr><tr><td>INDEX_NAME</td><td>object</td><td>object</td></tr><tr><td>HistoryDate</td><td>datetime64[ns]</td><td><b style="color:#B02F3B">object</b></td></tr><tr><td>OPEN</td><td>float64</td><td>float64</td></tr><tr><td>HIGH</td><td>float64</td><td>float64</td></tr><tr><td>LOW</td><td>float64</td><td>float64</td></tr><tr><td>CLOSE</td><td>float64</td><td>float64</td></tr></table></div></div><div class="fig"><div class="cap">what happened to one value of HistoryDate</div><svg viewBox="0 0 1060 80" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="A date written to CSV becomes text and is read back as a string"><text x="0.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >in memory</text><rect x="0.0" y="22.0" width="300.0" height="52.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.8" /><text x="14.0" y="44.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#0E7A55" text-anchor="start" font-weight="700" >Timestamp 2004-01-01</text><text x="14.0" y="63.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >datetime64[ns]</text><line x1="304.0" y1="48.0" x2="370.0" y2="48.0" stroke="#53666F" stroke-width="1.6" /><path d="M376.0,48.0 L368.0,44.0 L368.0,52.0 z" fill="#53666F"/><text x="340.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >to_csv</text><text x="380.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >in bm.csv</text><rect x="380.0" y="22.0" width="300.0" height="52.0" fill="#FFFFFF" stroke="#8F5D0A" stroke-width="1.8" /><text x="394.0" y="44.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#8F5D0A" text-anchor="start" font-weight="700" >2004-01-01</text><text x="394.0" y="63.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >10 characters of text</text><line x1="684.0" y1="48.0" x2="750.0" y2="48.0" stroke="#53666F" stroke-width="1.6" /><path d="M756.0,48.0 L748.0,44.0 L748.0,52.0 z" fill="#53666F"/><text x="720.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >read_csv</text><text x="760.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >after read_csv</text><rect x="760.0" y="22.0" width="300.0" height="52.0" fill="#FFFFFF" stroke="#B02F3B" stroke-width="1.8" /><text x="774.0" y="44.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#B02F3B" text-anchor="start" font-weight="700" >&#x27;2004-01-01&#x27;</text><text x="774.0" y="63.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >object: a Python string</text></svg></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Storage">
+  <div class="eyebrow">Data storage &#183; the scoreboard</div>
+  <h1 class="t">The format scoreboard
+    <small>Five questions asked of each format. The table fills in as the lecture reaches each one.</small></h1>
+  <div class="wrap">
+<table class="d roomy"><tr><th>format</th><th>types survive</th><th>BLUE METAL size</th><th>1M rows: read</th><th>1M rows: 2 of 6 columns</th><th>opens as text</th></tr><tr><td>CSV</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr><tr><td>JSON</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr><tr><td>Parquet</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr><tr><td>Feather</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr></table><div class="cols"><div class="card b"><h3>BLUE METAL</h3><p>5,463 trading days, 6 columns, cleaned in the data cleaning lectures. 1,932 missing values in each of OPEN, HIGH and LOW.</p></div><div class="card o"><h3>1 million sales rows</h3><p>Date, Product, Region, Category, Sales, Quantity. Generated with a fixed seed, large enough for timings to mean something.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSV">
+  <div class="eyebrow">CSV &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>A CSV file is text: one line per row, a comma between values, column names on the first line.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="fig"><div class="cap">bm.csv, first two rows and the last</div><div class="out" style="font-size:16px;line-height:1.75;padding:16px 18px"><span class="hit">INDEX_NAME,HistoryDate,OPEN,HIGH,LOW,CLOSE</span>
+Blue Metal,<span class="hit wrn">2004-01-01</span>,<span class="hit bad">,,,</span>1000.0
+Blue Metal,<span class="hit wrn">2004-01-02</span>,<span class="hit bad">,,,</span>1016.64
+<span class="h-dim">...</span>
+Blue Metal,2025-12-31,11154.45,11216.05,11108.9,11167.65</div><div class="rd">Blue: the header. Amber: ten characters that a person reads as a date. Red: empty fields where OPEN, HIGH and LOW were missing.</div></div><div class="colstack fill"><div class="card g"><h3>Stored</h3><p>Characters, separated by commas and newlines. 247,290 bytes for BLUE METAL.</p></div><div class="card r"><h3>Left out</h3><p>Column types, a marker for missing values, and the character encoding.</p></div><div class="callout sm">Whatever the file leaves out, <code class="k">read_csv</code> has to guess.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSV">
+  <div class="eyebrow">CSV &#183; Example 1: pincode</div>
+  <h1 class="t">Example
+    <small>7 of the 508 pincodes in patients.csv are missing, so the column reads as float64 and every pincode is written back with .0.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code ">p = pd.read_csv(<span class="py-str">&#x27;patients.csv&#x27;</span>)
+<span class="py-kw">print</span>(p.pincode.isna().sum(), p.pincode.dtype)</pre><div class="outlbl">output</div><div class="out ">7 float64</div></div><div class="colstack"><pre class="code ">p = pd.read_csv(<span class="py-str">&#x27;patients.csv&#x27;</span>, dtype={<span class="py-str">&#x27;pincode&#x27;</span>: <span class="py-str">&#x27;Int64&#x27;</span>})
+<span class="py-kw">print</span>(p.pincode.dtype, p.pincode[<span class="py-num">0</span>])</pre><div class="outlbl">output</div><div class="out ">Int64 600015</div></div></div><pre class="code ">p.to_csv(<span class="py-str">&#x27;p2.csv&#x27;</span>, index=<span class="py-kw">False</span>)<span class="py-cm">          # p read without dtype=</span>
+<span class="py-kw">print</span>(open(<span class="py-str">&#x27;p2.csv&#x27;</span>).readlines()[<span class="py-num">1</span>])</pre><div class="outlbl">output</div><div class="out xs">1001,2021-01-01,P. Prakash,Male,1986-06-29,7607260783,&quot;No. 81, Station Rd, Saidapet&quot;,600015.0,315</div><div class="callout good sm"><code class="k">Int64</code> with a capital I is the pandas integer type that can hold a missing value. <code class="k">int64</code> cannot.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSV">
+  <div class="eyebrow">CSV &#183; Example 2: phone numbers and NA</div>
+  <h1 class="t">Example continued 1
+    <small>A phone number made only of digits loses its leading zero. The country code NA, for Namibia, becomes a missing value.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><h2 class="s xs">phone</h2><pre class="code sm">t = pd.DataFrame({<span class="py-str">&#x27;phone&#x27;</span>: [<span class="py-str">&#x27;04422574800&#x27;</span>, <span class="py-str">&#x27;9840012345&#x27;</span>]})
+t.to_csv(<span class="py-str">&#x27;t.csv&#x27;</span>, index=<span class="py-kw">False</span>)
+pd.read_csv(<span class="py-str">&#x27;t.csv&#x27;</span>).phone.tolist()</pre><div class="outlbl">output</div><div class="out ">[4422574800, 9840012345]</div><pre class="code sm">pd.read_csv(<span class="py-str">&#x27;t.csv&#x27;</span>, dtype={<span class="py-str">&#x27;phone&#x27;</span>: str}).phone.tolist()</pre><div class="outlbl">output</div><div class="out ">[&#x27;04422574800&#x27;, &#x27;9840012345&#x27;]</div></div><div class="colstack"><h2 class="s xs">country code</h2><div class="outlbl">countries.csv</div><div class="out xs">country,code
+Namibia,NA
+India,IN</div><pre class="code sm">pd.read_csv(<span class="py-str">&#x27;countries.csv&#x27;</span>)</pre><div class="outlbl">output</div><div class="out ">   country code
+0  Namibia  NaN
+1    India   IN</div><pre class="code sm">pd.read_csv(<span class="py-str">&#x27;countries.csv&#x27;</span>, keep_default_na=<span class="py-kw">False</span>).code.tolist()</pre><div class="outlbl">output</div><div class="out ">[&#x27;NA&#x27;, &#x27;IN&#x27;]</div><div class="callout sm">read_csv treats <code class="k">NA</code>, <code class="k">NULL</code>, <code class="k">nan</code>, <code class="k">N/A</code> and the empty string as missing unless told otherwise.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSV">
+  <div class="eyebrow">CSV &#183; Example 3: encoding</div>
+  <h1 class="t">Example continued 2
+    <small>₹ is 3 bytes in UTF-8. A program that reads the file as Windows-1252 shows each byte as a character of its own.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">one headline from ndtv_headlines.csv, the scraping lectures</div><svg viewBox="0 0 800 125" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="The rupee sign is three bytes in UTF-8 and shows as three wrong characters in Windows-1252"><rect x="0.0" y="30.0" width="120.0" height="90.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><text x="60.0" y="92.0" font-family="Public Sans,system-ui,sans-serif" font-size="46" fill="#14222B" text-anchor="middle" font-weight="600" >₹</text><text x="60.0" y="20.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >character</text><line x1="126.0" y1="75.0" x2="190.0" y2="75.0" stroke="#53666F" stroke-width="1.6" /><path d="M196.0,75.0 L188.0,71.0 L188.0,79.0 z" fill="#53666F"/><text x="161.0" y="66.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#0E7A55" text-anchor="middle" font-weight="700" >UTF-8</text><rect x="200.0" y="45.0" width="72.0" height="60.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.5" /><text x="236.0" y="82.0" font-family="JetBrains Mono,monospace" font-size="18" fill="#0E7A55" text-anchor="middle" font-weight="700" >E2</text><rect x="280.0" y="45.0" width="72.0" height="60.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.5" /><text x="316.0" y="82.0" font-family="JetBrains Mono,monospace" font-size="18" fill="#0E7A55" text-anchor="middle" font-weight="700" >82</text><rect x="360.0" y="45.0" width="72.0" height="60.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.5" /><text x="396.0" y="82.0" font-family="JetBrains Mono,monospace" font-size="18" fill="#0E7A55" text-anchor="middle" font-weight="700" >B9</text><text x="316.0" y="20.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >3 bytes in the file</text><line x1="446.0" y1="75.0" x2="540.0" y2="75.0" stroke="#53666F" stroke-width="1.6" /><path d="M546.0,75.0 L538.0,71.0 L538.0,79.0 z" fill="#53666F"/><text x="496.0" y="66.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#B02F3B" text-anchor="middle" font-weight="700" >read as</text><text x="496.0" y="96.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#B02F3B" text-anchor="middle" font-weight="700" >Windows-1252</text><rect x="550.0" y="45.0" width="72.0" height="60.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.5" /><text x="586.0" y="86.0" font-family="Public Sans,system-ui,sans-serif" font-size="26" fill="#B02F3B" text-anchor="middle" font-weight="600" >â</text><rect x="630.0" y="45.0" width="72.0" height="60.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.5" /><text x="666.0" y="86.0" font-family="Public Sans,system-ui,sans-serif" font-size="26" fill="#B02F3B" text-anchor="middle" font-weight="600" >‚</text><rect x="710.0" y="45.0" width="72.0" height="60.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.5" /><text x="746.0" y="86.0" font-family="Public Sans,system-ui,sans-serif" font-size="26" fill="#B02F3B" text-anchor="middle" font-weight="600" >¹</text><text x="666.0" y="20.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >3 characters on screen</text></svg></div><div class="cols"><div class="outlbl">read as utf-8</div><div class="out ">Delhi Family Refuses To Pay ₹5.74 Lakh Bill After Stay At Oberoi Udaivilas</div><div class="outlbl">read as cp1252</div><div class="out ">Delhi Family Refuses To Pay â‚¹5.74 Lakh Bill After Stay At Oberoi Udaivilas</div></div><div class="callout sm">The CSV does not record its encoding. Pass <code class="k">encoding='utf-8'</code> on both ends, and <code class="k">'utf-8-sig'</code> for a file that someone will open in Excel.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSV">
+  <div class="eyebrow">CSV &#183; Test: check every read</div>
+  <h1 class="t">Test
+    <small>Two checks after reading a file you wrote. On BLUE METAL both point at HistoryDate.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><h2 class="s xs">1. Compare the dtypes with the frame you saved.</h2><pre class="code ">back = pd.read_csv(<span class="py-str">&#x27;bm.csv&#x27;</span>)
+back.dtypes[back.dtypes != df.dtypes]</pre><div class="outlbl">output</div><div class="out ">HistoryDate    object
+dtype: object</div><h2 class="s xs">2. Compare the values.</h2><pre class="code ">back.equals(df)</pre><div class="outlbl">output</div><div class="out ">False</div></div><div class="colstack"><h2 class="s xs">Read again, with the types stated.</h2><pre class="code ">back = pd.read_csv(<span class="py-str">&#x27;bm.csv&#x27;</span>,
+                   parse_dates=[<span class="py-str">&#x27;HistoryDate&#x27;</span>])
+back.equals(df)</pre><div class="outlbl">output</div><div class="out ">True</div><div class="callout warn sm">The types now live in the code that reads the file. Every script that opens <code class="k">bm.csv</code> has to repeat <code class="k">parse_dates=</code>.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSV">
+  <div class="eyebrow">CSV &#183; Mechanism: how read_csv picks a type</div>
+  <h1 class="t">Mechanism
+    <small>read_csv tries integer, then float, and keeps strings when both fail. An empty field is NaN, and NaN only fits in a float.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">type inference, column by column, with examples from our files</div><svg viewBox="0 0 1100 250" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="read_csv type inference: whole numbers to int64, numbers or empties to float64, everything else to object"><rect x="0.0" y="95.0" width="150.0" height="60.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="75.0" y="121.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#FFFFFF" text-anchor="middle" font-weight="700" >a column</text><text x="75.0" y="140.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#FFFFFF" text-anchor="middle" font-weight="700" >of text</text><rect x="200.0" y="95.0" width="250.0" height="60.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><text x="325.0" y="120.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >every field a</text><text x="325.0" y="140.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >whole number?</text><rect x="520.0" y="95.0" width="250.0" height="60.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><text x="645.0" y="120.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >every field a number</text><text x="645.0" y="140.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="600" >or empty?</text><line x1="150.0" y1="125.0" x2="190.0" y2="125.0" stroke="#53666F" stroke-width="1.6" /><path d="M196.0,125.0 L188.0,121.0 L188.0,129.0 z" fill="#53666F"/><line x1="450.0" y1="125.0" x2="510.0" y2="125.0" stroke="#53666F" stroke-width="1.6" /><path d="M516.0,125.0 L508.0,121.0 L508.0,129.0 z" fill="#53666F"/><text x="483.0" y="117.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >no</text><line x1="770.0" y1="125.0" x2="830.0" y2="125.0" stroke="#53666F" stroke-width="1.6" /><path d="M836.0,125.0 L828.0,121.0 L828.0,129.0 z" fill="#53666F"/><text x="803.0" y="117.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >no</text><line x1="325.0" y1="95.0" x2="325.0" y2="70.0" stroke="#53666F" stroke-width="1.6" /><path d="M325.0,64.0 L321.0,72.0 L329.0,72.0 z" fill="#53666F"/><text x="335.0" y="84.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >yes</text><rect x="200.0" y="6.0" width="250.0" height="54.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="2" /><text x="325.0" y="30.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#0E7A55" text-anchor="middle" font-weight="700" >int64</text><text x="325.0" y="49.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >Quantity, rec_id</text><line x1="645.0" y1="95.0" x2="645.0" y2="70.0" stroke="#53666F" stroke-width="1.6" /><path d="M645.0,64.0 L641.0,72.0 L649.0,72.0 z" fill="#53666F"/><text x="655.0" y="84.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >yes</text><rect x="520.0" y="6.0" width="250.0" height="54.0" fill="#FFFFFF" stroke="#8F5D0A" stroke-width="2" /><text x="645.0" y="30.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#8F5D0A" text-anchor="middle" font-weight="700" >float64</text><text x="645.0" y="49.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >OPEN, pincode</text><rect x="840.0" y="95.0" width="250.0" height="60.0" fill="#FFFFFF" stroke="#B02F3B" stroke-width="2" /><text x="965.0" y="121.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#B02F3B" text-anchor="middle" font-weight="700" >object</text><text x="965.0" y="141.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >HistoryDate, INDEX_NAME</text><rect x="520.0" y="195.0" width="570.0" height="46.0" fill="#FFFBF2" stroke="#8F5D0A" stroke-width="1" /><text x="535.0" y="223.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="400" >dates: tried only for columns named in parse_dates=</text></svg><div class="rd">Examples are columns of <b>bm.csv</b> and <b>patients.csv</b>. A single empty field moves a column of integers to float64.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSV">
+  <div class="eyebrow">CSV &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>A CSV round trip works when the writer and the reader agree on four things that the file does not record.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>the reader assumes</th><th>what breaks when it is wrong</th><th>in our files</th></tr><tr><td>the column types</td><td>dates come back as text, integers as floats</td><td>HistoryDate &#8594; object; pincode &#8594; 600015.0</td></tr><tr><td>which strings mean missing</td><td>a real value turns into NaN</td><td>country code NA &#8594; NaN</td></tr><tr><td>the encoding</td><td>every non-ASCII character is garbled</td><td>₹ &#8594; â‚¹</td></tr><tr><td>the delimiter and quoting</td><td>a comma inside a value splits it into two columns</td><td>"No. 81, Station Rd, Saidapet" is quoted</td></tr></table><div class="callout sm">pandas writes the quotes round the address on its own. A hand-written CSV, or one exported from another tool, may not.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSV">
+  <div class="eyebrow">CSV &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>Text is big and has to be parsed in full. 1 million sales rows take 44.3 MB on disk and 0.43 s to read.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><pre class="code sm">pd.read_csv(<span class="py-str">&#x27;big.csv&#x27;</span>)<span class="py-cm">                              # all 6 columns</span>
+pd.read_csv(<span class="py-str">&#x27;big.csv&#x27;</span>, usecols=[<span class="py-str">&#x27;Region&#x27;</span>, <span class="py-str">&#x27;Sales&#x27;</span>])<span class="py-cm">  # 2 of them</span></pre><div class="outlbl">output</div><div class="out ">0.43 s
+0.26 s      best of 3 runs</div><div class="callout sm"><code class="k">usecols</code> skips converting the other 4 columns. The parser still walks every one of the 44 million characters to find the commas.</div></div><div class="colstack fill"><div class="card r"><h3>No schema</h3><p>Types, missing markers and encoding travel in your code.</p></div><div class="card g"><h3>Universal</h3><p>Every tool reads it, and a person can read it in a text editor.</p></div><div class="card g"><h3>Append is easy</h3><p>A new row is one more line at the end of the file.</p></div></div></div><table class="d roomy"><tr><th>format</th><th>types survive</th><th>BLUE METAL size</th><th>1M rows: read</th><th>1M rows: 2 of 6 columns</th><th>opens as text</th></tr><tr class="ok"><td>CSV</td><td>no: dates &#8594; object</td><td>247.3 KB</td><td>0.43 s</td><td>0.26 s</td><td>yes</td></tr><tr><td>JSON</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr><tr><td>Parquet</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr><tr><td>Feather</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="JSON">
+  <div class="eyebrow">JSON &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>JSON stores each record as name: value pairs, and a value can itself be a list or another record.</small></h1>
+  <div class="wrap">
+<div class="colstack"><div class="outlbl">the first row of BLUE METAL, as CSV</div><div class="out" style="font-size:13.5px;line-height:1.7;padding:14px 16px">Blue Metal,2004-01-01,,,,1000.0</div><div class="outlbl">the same row from df.to_json(orient='records')</div><div class="out" style="font-size:13.5px;line-height:1.7;padding:14px 16px;white-space:pre-wrap">{<span class="hit">"INDEX_NAME":</span>"Blue Metal",<span class="hit">"HistoryDate":</span>1072915200000,<span class="hit">"OPEN":</span>null,<span class="hit">"HIGH":</span>null,<span class="hit">"LOW":</span>null,<span class="hit">"CLOSE":</span>1000.0}</div></div><div class="cols3"><div class="card o"><h3>Names on every row</h3><p>The highlighted names take 55 bytes and repeat on all 5,463 rows.</p></div><div class="card g"><h3>null for missing</h3><p>JSON has its own marker for a missing value. CSV has an empty field.</p></div><div class="card b"><h3>Nesting</h3><p>A value can be a list of records. API responses use this, as in data collection lecture 1.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="JSON">
+  <div class="eyebrow">JSON &#183; Example 1: a nested API response</div>
+  <h1 class="t">Example
+    <small>The index API from data collection lecture 1 puts the rows two levels down. json_normalize turns the list of records into a table.</small></h1>
+  <div class="wrap">
+<div class="cols w4060"><div class="colstack"><div class="outlbl">resp, the response body</div><div class="out xs">{&quot;data&quot;: {
+   &quot;closeRecords&quot;: [
+     {&quot;EOD_INDEX_NAME&quot;: &quot;Blue 50&quot;,
+      &quot;EOD_OPEN_VAL&quot;: 21727.75,
+      &quot;EOD_CLOSE_VAL&quot;: 21741.90,
+      &quot;EOD_DATE&quot;: &quot;28-Dec-2023&quot;},
+     ...
+   ],
+   &quot;turnoverRecords&quot;: []
+}}</div></div><div class="colstack"><pre class="code sm">pd.DataFrame(resp)</pre><div class="outlbl">output</div><div class="out xs">                                          data
+closeRecords     [{&#x27;EOD_INDEX_NAME&#x27;: &#x27;Blue 50&#x27;, ...
+turnoverRecords                                 []</div><pre class="code sm">pd.json_normalize(resp[<span class="py-str">&#x27;data&#x27;</span>][<span class="py-str">&#x27;closeRecords&#x27;</span>])</pre><div class="outlbl">output</div><div class="out xs">  EOD_INDEX_NAME  EOD_OPEN_VAL  EOD_CLOSE_VAL     EOD_DATE
+0        Blue 50      21727.75        21741.9  28-Dec-2023
+1        Blue 50      21715.00        21778.7  27-Dec-2023</div><div class="callout sm">The path <code class="k">['data']['closeRecords']</code> is part of the format. A different API needs a different path.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="JSON">
+  <div class="eyebrow">JSON &#183; Example 2: dates</div>
+  <h1 class="t">Example continued 1
+    <small>to_json writes a date as milliseconds since 1 January 1970. read_json turns it back into a date only when the column name looks like a date.</small></h1>
+  <div class="wrap">
+<table class="d roomy"><tr><th>written with</th><th>column name</th><th>in the file</th><th>read_json returns</th></tr><tr><td>to_json(orient='records')</td><td>HistoryDate</td><td>1072915200000</td><td><b style="color:#B02F3B">int64</b></td></tr><tr><td>to_json(..., date_format='iso')</td><td>HistoryDate</td><td>"2004-01-01T00:00:00.000"</td><td><b style="color:#B02F3B">object</b></td></tr><tr><td>to_json(orient='records')</td><td>date</td><td>1072915200000</td><td><b style="color:#0E7A55">datetime64[ns]</b></td></tr></table><div class="cols"><pre class="code ">j = pd.read_json(<span class="py-str">&#x27;bm.json&#x27;</span>)
+j.HistoryDate.head(<span class="py-num">2</span>).tolist()</pre><div class="outlbl">output</div><div class="out ">[1072915200000, 1073001600000]</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="JSON">
+  <div class="eyebrow">JSON &#183; Mechanism: which columns become dates</div>
+  <h1 class="t">Mechanism
+    <small>read_json tries a date parse only on columns whose lower-cased name passes this check. HistoryDate fails it.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-cm"># pandas/io/json/_json.py, pandas 2.3</span>
+col_lower = col.lower()
+<span class="py-kw">if</span> (col_lower.endswith((<span class="py-str">&#x27;_at&#x27;</span>, <span class="py-str">&#x27;_time&#x27;</span>))
+        or col_lower == <span class="py-str">&#x27;modified&#x27;</span>
+        or col_lower == <span class="py-str">&#x27;date&#x27;</span>
+        or col_lower == <span class="py-str">&#x27;datetime&#x27;</span>
+        or col_lower.startswith(<span class="py-str">&#x27;timestamp&#x27;</span>)):
+    <span class="py-kw">return</span> <span class="py-kw">True</span><span class="py-cm">        # try to parse as dates</span></pre></div><div class="colstack"><table class="d sm"><tr><th>name</th><th>parsed?</th></tr><tr><td>date</td><td>yes</td></tr><tr><td>created_at</td><td>yes</td></tr><tr><td>timestamp_utc</td><td>yes</td></tr><tr><td>HistoryDate</td><td><b style="color:#B02F3B">no</b></td></tr><tr><td>order_date</td><td><b style="color:#B02F3B">no</b></td></tr></table><pre class="code sm">pd.read_json(<span class="py-str">&#x27;bm.json&#x27;</span>,
+             convert_dates=[<span class="py-str">&#x27;HistoryDate&#x27;</span>]).equals(df)</pre><div class="outlbl">output</div><div class="out ">True</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="JSON">
+  <div class="eyebrow">JSON &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>Every record repeats every column name: 55 bytes a row, 49% of the BLUE METAL file. On 1 million sales rows JSON takes 4.49 s to read, 10 times the CSV.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">cleaned BLUE METAL on disk</div><svg viewBox="0 0 980 104" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="BLUE METAL as CSV and as JSON; half of the JSON is column names"><text x="110.0" y="32.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >CSV</text><rect x="120.0" y="14.0" width="308.5" height="30.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="436.5" y="34.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >247.3 KB</text><text x="110.0" y="82.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >JSON</text><rect x="120.0" y="64.0" width="374.9" height="30.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><rect x="494.9" y="64.0" width="385.1" height="30.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="128.0" y="84.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="start" font-weight="700" >column names 300.5 KB</text><text x="502.9" y="84.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="start" font-weight="700" >values and punctuation</text><text x="888.0" y="84.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >609.1 KB</text></svg></div><div class="cols"><div class="card r"><h3>No column reads</h3><p>read_json has no usecols. A query on 2 columns reads all 6.</p></div><div class="card g"><h3>Use it for</h3><p>API responses and nested records. Flatten with json_normalize, then store the table in another format.</p></div></div><table class="d roomy"><tr><th>format</th><th>types survive</th><th>BLUE METAL size</th><th>1M rows: read</th><th>1M rows: 2 of 6 columns</th><th>opens as text</th></tr><tr><td>CSV</td><td>no: dates &#8594; object</td><td>247.3 KB</td><td>0.43 s</td><td>0.26 s</td><td>yes</td></tr><tr class="ok"><td>JSON</td><td>no: dates &#8594; int64</td><td>609.1 KB</td><td>4.49 s</td><td>reads all columns</td><td>yes</td></tr><tr><td>Parquet</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr><tr><td>Feather</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr></table>
+  </div>
+</section>
+
+<section class="slide build" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Intuition: row layout and column layout</div>
+  <h1 class="t">Intuition
+    <small>A CSV stores one row after another. Parquet stores one column after another, so the values of a column sit side by side.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">the first four rows of the sales table, four of its columns</div><svg viewBox="0 0 1090 256" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="The same four rows stored row after row and column after column"><text x="0.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >the table</text><rect x="0.0" y="26.0" width="96.0" height="22.0" fill="#4B5A87" stroke="none" stroke-width="1" /><text x="48.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >Date</text><rect x="0.0" y="48.0" width="96.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="48.0" y="63.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >2023-09-28</text><rect x="0.0" y="70.0" width="96.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="48.0" y="85.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >2023-08-03</text><rect x="0.0" y="92.0" width="96.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="48.0" y="107.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >2024-10-25</text><rect x="0.0" y="114.0" width="96.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="48.0" y="129.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >2023-12-10</text><rect x="96.0" y="26.0" width="70.0" height="22.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="131.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >Region</text><rect x="96.0" y="48.0" width="70.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="131.0" y="63.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >North</text><rect x="96.0" y="70.0" width="70.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="131.0" y="85.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >East</text><rect x="96.0" y="92.0" width="70.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="131.0" y="107.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >West</text><rect x="96.0" y="114.0" width="70.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="131.0" y="129.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >South</text><rect x="166.0" y="26.0" width="60.0" height="22.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="196.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >Sales</text><rect x="166.0" y="48.0" width="60.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="196.0" y="63.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >3872</text><rect x="166.0" y="70.0" width="60.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="196.0" y="85.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >4526</text><rect x="166.0" y="92.0" width="60.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="196.0" y="107.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >230</text><rect x="166.0" y="114.0" width="60.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="196.0" y="129.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >2533</text><rect x="226.0" y="26.0" width="70.0" height="22.0" fill="#9B2C7E" stroke="none" stroke-width="1" /><text x="261.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >Quantity</text><rect x="226.0" y="48.0" width="70.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="261.0" y="63.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >21</text><rect x="226.0" y="70.0" width="70.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="261.0" y="85.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >11</text><rect x="226.0" y="92.0" width="70.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="261.0" y="107.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >22</text><rect x="226.0" y="114.0" width="70.0" height="22.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="261.0" y="129.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="middle" font-weight="400" >21</text><g data-at="1"><text x="330.0" y="26.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >CSV and JSON on disk: row after row</text><rect x="330.0" y="34.0" width="44.0" height="34.0" fill="#4B5A87" stroke="none" stroke-width="1" class="cell c0"/><text x="352.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >09-28</text><rect x="377.0" y="34.0" width="44.0" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" class="cell c1"/><text x="399.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >North</text><rect x="424.0" y="34.0" width="44.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" class="cell c2"/><text x="446.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >3872</text><rect x="471.0" y="34.0" width="44.0" height="34.0" fill="#9B2C7E" stroke="none" stroke-width="1" class="cell c3"/><text x="493.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >21</text><rect x="518.0" y="34.0" width="44.0" height="34.0" fill="#4B5A87" stroke="none" stroke-width="1" class="cell c0"/><text x="540.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >08-03</text><rect x="565.0" y="34.0" width="44.0" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" class="cell c1"/><text x="587.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >East</text><rect x="612.0" y="34.0" width="44.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" class="cell c2"/><text x="634.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >4526</text><rect x="659.0" y="34.0" width="44.0" height="34.0" fill="#9B2C7E" stroke="none" stroke-width="1" class="cell c3"/><text x="681.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >11</text><rect x="706.0" y="34.0" width="44.0" height="34.0" fill="#4B5A87" stroke="none" stroke-width="1" class="cell c0"/><text x="728.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >10-25</text><rect x="753.0" y="34.0" width="44.0" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" class="cell c1"/><text x="775.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >West</text><rect x="800.0" y="34.0" width="44.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" class="cell c2"/><text x="822.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >230</text><rect x="847.0" y="34.0" width="44.0" height="34.0" fill="#9B2C7E" stroke="none" stroke-width="1" class="cell c3"/><text x="869.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >22</text><rect x="894.0" y="34.0" width="44.0" height="34.0" fill="#4B5A87" stroke="none" stroke-width="1" class="cell c0"/><text x="916.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >12-10</text><rect x="941.0" y="34.0" width="44.0" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" class="cell c1"/><text x="963.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >South</text><rect x="988.0" y="34.0" width="44.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" class="cell c2"/><text x="1010.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >2533</text><rect x="1035.0" y="34.0" width="44.0" height="34.0" fill="#9B2C7E" stroke="none" stroke-width="1" class="cell c3"/><text x="1057.0" y="55.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >21</text><line x1="330.0" y1="80.0" x2="1073.0" y2="80.0" stroke="#C3CFD5" stroke-width="1.2" /><path d="M1079.0,80.0 L1071.0,76.0 L1071.0,84.0 z" fill="#C3CFD5"/></g><g data-at="2"><text x="330.0" y="120.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Parquet on disk: column after column</text><rect x="330.0" y="128.0" width="44.0" height="34.0" fill="#4B5A87" stroke="none" stroke-width="1" class="cell c0"/><text x="352.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >09-28</text><rect x="377.0" y="128.0" width="44.0" height="34.0" fill="#4B5A87" stroke="none" stroke-width="1" class="cell c0"/><text x="399.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >08-03</text><rect x="424.0" y="128.0" width="44.0" height="34.0" fill="#4B5A87" stroke="none" stroke-width="1" class="cell c0"/><text x="446.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >10-25</text><rect x="471.0" y="128.0" width="44.0" height="34.0" fill="#4B5A87" stroke="none" stroke-width="1" class="cell c0"/><text x="493.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >12-10</text><rect x="518.0" y="128.0" width="44.0" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" class="cell c1"/><text x="540.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >North</text><rect x="565.0" y="128.0" width="44.0" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" class="cell c1"/><text x="587.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >East</text><rect x="612.0" y="128.0" width="44.0" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" class="cell c1"/><text x="634.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >West</text><rect x="659.0" y="128.0" width="44.0" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" class="cell c1"/><text x="681.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >South</text><rect x="706.0" y="128.0" width="44.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" class="cell c2"/><text x="728.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >3872</text><rect x="753.0" y="128.0" width="44.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" class="cell c2"/><text x="775.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >4526</text><rect x="800.0" y="128.0" width="44.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" class="cell c2"/><text x="822.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >230</text><rect x="847.0" y="128.0" width="44.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" class="cell c2"/><text x="869.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >2533</text><rect x="894.0" y="128.0" width="44.0" height="34.0" fill="#9B2C7E" stroke="none" stroke-width="1" class="cell c3"/><text x="916.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >21</text><rect x="941.0" y="128.0" width="44.0" height="34.0" fill="#9B2C7E" stroke="none" stroke-width="1" class="cell c3"/><text x="963.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >11</text><rect x="988.0" y="128.0" width="44.0" height="34.0" fill="#9B2C7E" stroke="none" stroke-width="1" class="cell c3"/><text x="1010.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >22</text><rect x="1035.0" y="128.0" width="44.0" height="34.0" fill="#9B2C7E" stroke="none" stroke-width="1" class="cell c3"/><text x="1057.0" y="149.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >21</text><line x1="330.0" y1="174.0" x2="1073.0" y2="174.0" stroke="#C3CFD5" stroke-width="1.2" /><path d="M1079.0,174.0 L1071.0,170.0 L1071.0,178.0 z" fill="#C3CFD5"/></g><g data-at="3"><rect x="375.5" y="32.5" width="47.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><rect x="422.5" y="32.5" width="47.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><rect x="563.5" y="32.5" width="47.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><rect x="610.5" y="32.5" width="47.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><rect x="751.5" y="32.5" width="47.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><rect x="798.5" y="32.5" width="47.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><rect x="939.5" y="32.5" width="47.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><rect x="986.5" y="32.5" width="47.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><rect x="516.5" y="126.5" width="376.0" height="37.0" fill="none" stroke="#B02F3B" stroke-width="2.4" /><text x="330.0" y="212.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#B02F3B" text-anchor="start" font-weight="700" >a query on Region and Sales:</text><text x="330.0" y="230.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="400" >row layout: 8 cells scattered across the whole file</text><text x="330.0" y="248.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="400" >column layout: one block of 8 cells next to each other</text></g></svg></div><div class="bld"><i></i><i></i><i></i></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Intuition: reading only some columns</div>
+  <h1 class="t">Intuition continued 1
+    <small>Tick the columns a query needs. Parquet reads only their blocks; a CSV reader walks the whole file whatever you tick.</small></h1>
+  <div class="wrap">
+<div class="cols w4060"><div class="colstack"><div class="outlbl">columns the query needs</div><div id="bw-pick" class="bwpick"><label class="tgl"><input type="checkbox" value="Date"/><span><b>Date</b><i>Parquet block 1261.8 KB</i></span></label><label class="tgl"><input type="checkbox" value="Product"/><span><b>Product</b><i>Parquet block 380.1 KB</i></span></label><label class="tgl on"><input type="checkbox" value="Region" checked/><span><b>Region</b><i>Parquet block 254.7 KB</i></span></label><label class="tgl"><input type="checkbox" value="Category"/><span><b>Category</b><i>Parquet block 133.4 KB</i></span></label><label class="tgl on"><input type="checkbox" value="Sales" checked/><span><b>Sales</b><i>Parquet block 1650.8 KB</i></span></label><label class="tgl"><input type="checkbox" value="Quantity"/><span><b>Quantity</b><i>Parquet block 756.4 KB</i></span></label></div></div><div class="colstack"><div class="fig" style="flex:1"><div class="cap">bytes read from disk, 1 million rows</div><div id="bw-bars"></div><div class="rd" id="bw-rd"></div></div><div class="callout sm">Measured on Region and Sales, best of 3: CSV 0.26 s, Parquet 0.05 s.</div></div></div><script type="application/json" id="bw-data">{"cols": {"Date": [1261777, 11000000], "Product": [380072, 8195883], "Region": [254704, 5498975], "Category": [133423, 12000000], "Sales": [1650815, 4816818], "Quantity": [756377, 2815710]}, "csv": 44327430, "pq": 4440603}</script>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Example 1: BLUE METAL</div>
+  <h1 class="t">Example
+    <small>Cleaned BLUE METAL comes back from Parquet exactly as it was saved, in 152.0 KB against 247.3 KB for the CSV.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code ">df.to_parquet(<span class="py-str">&#x27;bm.parquet&#x27;</span>, index=<span class="py-kw">False</span>)
+back = pd.read_parquet(<span class="py-str">&#x27;bm.parquet&#x27;</span>)
+back.equals(df)</pre><div class="outlbl">output</div><div class="out ">True</div><pre class="code ">back.dtypes</pre><div class="outlbl">output</div><div class="out ">INDEX_NAME             object
+HistoryDate    datetime64[ns]
+OPEN                  float64
+HIGH                  float64
+LOW                   float64
+CLOSE                 float64</div></div><div class="colstack fill"><div class="card g"><h3>read_parquet(path) alone</h3><p>The read takes no parse_dates or dtype argument. The types come from the file.</p></div><div class="card g"><h3>Missing values kept</h3><p>1,932 NaN in each of OPEN, HIGH and LOW, as before saving.</p></div><div class="card o"><h3>Needs pyarrow</h3><p>pandas reads and writes Parquet through the pyarrow library.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Example 2: 1 million sales rows</div>
+  <h1 class="t">Example continued 1
+    <small>The same 1 million rows take 4.4 MB as Parquet and 44.3 MB as CSV, 10 times less.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">size on disk, same data frame, four formats</div><svg viewBox="0 0 900 206" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="file sizes of 1 million sales rows"><text x="100.0" y="28.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >CSV</text><rect x="110.0" y="6.0" width="230.0" height="36.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="348.0" y="28.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">44.3 MB</text><text x="100.0" y="78.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >JSON</text><rect x="110.0" y="56.0" width="640.0" height="36.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="758.0" y="78.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">123.3 MB</text><text x="100.0" y="128.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Parquet</text><rect x="110.0" y="106.0" width="23.0" height="36.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="141.0" y="128.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4.4 MB</text><text x="100.0" y="178.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Feather</text><rect x="110.0" y="156.0" width="141.9" height="36.0" fill="#4B5A87" stroke="none" stroke-width="1" /><text x="259.9" y="178.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">27.3 MB</text></svg><div class="rd">JSON is the largest because of the repeated column names. Feather comes up later in the lecture.</div></div><pre class="code sm">big.to_parquet(<span class="py-str">&#x27;big.parquet&#x27;</span>, index=<span class="py-kw">False</span>)<span class="py-cm">        # default settings</span></pre>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Mechanism: dictionary encoding</div>
+  <h1 class="t">Mechanism
+    <small>A column with 4 distinct values is stored as those 4 values once, plus a 2-bit code for each row.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">Region, first eight rows of the sales table</div><svg viewBox="0 0 1000 246" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Dictionary encoding of the Region column"><text x="0.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Region, as stored by CSV</text><rect x="0.0" y="24.0" width="120.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="10.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >North</text><rect x="0.0" y="50.0" width="120.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="10.0" y="67.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >East</text><rect x="0.0" y="76.0" width="120.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="10.0" y="93.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >West</text><rect x="0.0" y="102.0" width="120.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="10.0" y="119.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >South</text><rect x="0.0" y="128.0" width="120.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="10.0" y="145.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >West</text><rect x="0.0" y="154.0" width="120.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="10.0" y="171.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >North</text><rect x="0.0" y="180.0" width="120.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="10.0" y="197.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >West</text><rect x="0.0" y="206.0" width="120.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="10.0" y="223.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >West</text><text x="130.0" y="238.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="end" font-weight="400" >5,498,975 bytes</text><line x1="140.0" y1="125.0" x2="224.0" y2="125.0" stroke="#53666F" stroke-width="1.6" /><path d="M230.0,125.0 L222.0,121.0 L222.0,129.0 z" fill="#53666F"/><text x="250.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >dictionary, stored once</text><rect x="250.0" y="24.0" width="46.0" height="24.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="273.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >0</text><rect x="296.0" y="24.0" width="100.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="306.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >East</text><rect x="250.0" y="50.0" width="46.0" height="24.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="273.0" y="67.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >1</text><rect x="296.0" y="50.0" width="100.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="306.0" y="67.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >North</text><rect x="250.0" y="76.0" width="46.0" height="24.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="273.0" y="93.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >2</text><rect x="296.0" y="76.0" width="100.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="306.0" y="93.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >South</text><rect x="250.0" y="102.0" width="46.0" height="24.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="273.0" y="119.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >3</text><rect x="296.0" y="102.0" width="100.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="306.0" y="119.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >West</text><text x="560.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >one code per row</text><rect x="560.0" y="24.0" width="40.0" height="24.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="580.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >1</text><rect x="606.0" y="24.0" width="60.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="636.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="700" >01</text><rect x="560.0" y="50.0" width="40.0" height="24.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="580.0" y="67.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >0</text><rect x="606.0" y="50.0" width="60.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="636.0" y="67.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="700" >00</text><rect x="560.0" y="76.0" width="40.0" height="24.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="580.0" y="93.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >3</text><rect x="606.0" y="76.0" width="60.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="636.0" y="93.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="700" >11</text><rect x="560.0" y="102.0" width="40.0" height="24.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="580.0" y="119.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >2</text><rect x="606.0" y="102.0" width="60.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="636.0" y="119.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="700" >10</text><rect x="560.0" y="128.0" width="40.0" height="24.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="580.0" y="145.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >3</text><rect x="606.0" y="128.0" width="60.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="636.0" y="145.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="700" >11</text><rect x="560.0" y="154.0" width="40.0" height="24.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="580.0" y="171.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >1</text><rect x="606.0" y="154.0" width="60.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="636.0" y="171.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="700" >01</text><rect x="560.0" y="180.0" width="40.0" height="24.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="580.0" y="197.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >3</text><rect x="606.0" y="180.0" width="60.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="636.0" y="197.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="700" >11</text><rect x="560.0" y="206.0" width="40.0" height="24.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="580.0" y="223.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >3</text><rect x="606.0" y="206.0" width="60.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="636.0" y="223.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="700" >11</text><text x="636.0" y="238.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >2 bits each</text><text x="720.0" y="60.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="start" font-weight="600" >4 distinct values</text><text x="720.0" y="82.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="start" font-weight="400" >→ codes 0 to 3</text><text x="720.0" y="104.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="start" font-weight="400" >→ 2 bits per row</text><text x="720.0" y="140.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="400" >1,000,000 rows × 2 bits</text><text x="720.0" y="162.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#0E7A55" text-anchor="start" font-weight="700" >= 250,000 bytes</text><text x="720.0" y="196.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >measured: 254,704 bytes</text></svg><div class="rd">The extra 4,704 bytes over the prediction are the dictionary and the page headers.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Mechanism: bits per value</div>
+  <h1 class="t">Mechanism continued 1
+    <small>Bits per row = ⌈log₂(distinct values)⌉. That one rule predicts the size of all 6 columns to within 7%.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><table class="d roomy"><tr><th>column</th><th>distinct</th><th>bits</th><th>predicted bytes</th><th>measured bytes</th><th>ratio</th></tr><tr><td>Category</td><td>2</td><td>1</td><td>125,000</td><td>133,423</td><td>1.067</td></tr><tr><td>Region</td><td>4</td><td>2</td><td>250,000</td><td>254,704</td><td>1.019</td></tr><tr><td>Product</td><td>5</td><td>3</td><td>375,000</td><td>380,072</td><td>1.014</td></tr><tr><td>Quantity</td><td>49</td><td>6</td><td>750,000</td><td>756,377</td><td>1.009</td></tr><tr><td>Date</td><td>731</td><td>10</td><td>1,250,000</td><td>1,261,777</td><td>1.009</td></tr><tr><td>Sales</td><td>4,900</td><td>13</td><td>1,625,000</td><td>1,650,815</td><td>1.016</td></tr></table><div class="colstack"><pre class="code xs"><span class="py-kw">import</span> pyarrow.parquet <span class="py-kw">as</span> pq
+md = pq.ParquetFile(<span class="py-str">&#x27;big.parquet&#x27;</span>).metadata
+md.row_group(<span class="py-num">0</span>).column(<span class="py-num">2</span>).total_compressed_size</pre><div class="outlbl">output</div><div class="out xs">254704</div><div class="callout sm">Category has 2 values and needs 1 bit a row; Sales has 4,900 and needs 13.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Mechanism: dictionary encoding and compression</div>
+  <h1 class="t">Mechanism continued 2
+    <small>Dictionary encoding alone takes the file from 58.7 MB to 4.5 MB. Snappy compression on top saves another 18 KB.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">1 million sales rows, to_parquet with use_dictionary and compression switched</div><svg viewBox="0 0 940 198" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Parquet sizes with dictionary encoding and compression switched on and off"><text x="160.0" y="27.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >neither</text><rect x="170.0" y="6.0" width="620.0" height="34.0" fill="#C3CFD5" stroke="none" stroke-width="1" /><text x="798.0" y="27.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">58.7 MB</text><text x="160.0" y="75.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >compression only</text><rect x="170.0" y="54.0" width="154.7" height="34.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="332.7" y="75.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">14.7 MB</text><text x="160.0" y="123.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >dictionary only</text><rect x="170.0" y="102.0" width="47.1" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="225.1" y="123.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4.5 MB</text><text x="160.0" y="171.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >both (default)</text><rect x="170.0" y="150.0" width="46.9" height="34.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="224.9" y="171.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4.4 MB</text></svg></div><pre class="code sm">big.to_parquet(<span class="py-str">&#x27;v.parquet&#x27;</span>, use_dictionary=<span class="py-kw">False</span>, compression=<span class="py-kw">None</span>)<span class="py-cm">   # neither</span>
+big.to_parquet(<span class="py-str">&#x27;v.parquet&#x27;</span>)<span class="py-cm">                                          # both, the default</span></pre><div class="callout sm">The choice of codec, snappy, gzip or zstd, moves this file by less than 2%. The column layout and the dictionary do the work.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Mechanism: the footer</div>
+  <h1 class="t">Mechanism continued 3
+    <small>The end of a Parquet file holds the schema and, for every column, its min, max and null count. read_parquet rebuilds the types from it.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm">pq.ParquetFile(<span class="py-str">&#x27;bm.parquet&#x27;</span>).schema_arrow</pre><div class="outlbl">output</div><div class="out xs">INDEX_NAME: string
+HistoryDate: timestamp[ns]
+OPEN: double
+HIGH: double
+LOW: double
+CLOSE: double</div><div class="fig"><div class="cap">bm.parquet, start to end</div><svg viewBox="0 0 560 72" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Layout of a Parquet file: magic bytes, column blocks, footer, magic bytes"><rect x="0.0" y="8.0" width="46.7" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="23.3" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >PAR1</text><rect x="49.7" y="8.0" width="66.1" height="40.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="82.7" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >INDEX_NAME</text><rect x="118.8" y="8.0" width="66.1" height="40.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="151.9" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >HistoryDate</text><rect x="187.9" y="8.0" width="53.2" height="40.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="214.5" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >OPEN</text><rect x="244.1" y="8.0" width="53.2" height="40.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="270.7" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >HIGH</text><rect x="300.2" y="8.0" width="53.2" height="40.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="326.8" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >LOW</text><rect x="356.4" y="8.0" width="53.2" height="40.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="383.0" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >CLOSE</text><rect x="412.6" y="8.0" width="74.8" height="40.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="449.9" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >footer</text><rect x="490.3" y="8.0" width="46.7" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="513.7" y="32.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >PAR1</text><text x="0.0" y="66.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#0E7A55" text-anchor="start" font-weight="400" >column blocks, one per column</text><text x="412.0" y="66.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#B02F3B" text-anchor="start" font-weight="400" >schema + statistics</text></svg></div></div><div class="colstack"><table class="d sm"><tr><th>column</th><th>min</th><th>max</th><th>nulls</th></tr><tr><td>INDEX_NAME</td><td>Blue Metal</td><td>Blue Metal</td><td>0</td></tr><tr><td>HistoryDate</td><td>2004-01-01 00:00:00</td><td>2025-12-31 00:00:00</td><td>0</td></tr><tr><td>OPEN</td><td>1485.25</td><td>11154.45</td><td>1,932</td></tr><tr><td>HIGH</td><td>1527.6</td><td>11216.05</td><td>1,932</td></tr><tr><td>LOW</td><td>1450.4</td><td>11108.9</td><td>1,932</td></tr><tr><td>CLOSE</td><td>528.43</td><td>11167.65</td><td>0</td></tr></table><div class="callout good sm">The null count of 1,932 for OPEN, HIGH and LOW is the number the data cleaning lectures found, stored in the file.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>Parquet pays off when values repeat and when a file is written once and read many times.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>Parquet assumes</th><th>sales, 1M rows</th><th>BLUE METAL</th></tr><tr><td>values repeat inside a column</td><td>Region has 4 values in 1,000,000 rows: 10 times smaller than CSV</td><td>5,371 of 5,463 closing prices are distinct: 1.6 times smaller than CSV</td></tr><tr><td>the file is written once and read many times</td><td>a monthly extract</td><td>one scrape, cleaned once</td></tr><tr><td>queries read a few columns</td><td>Region and Sales out of 6</td><td>CLOSE alone for a price chart</td></tr><tr><td>the reader has pyarrow</td><td>pandas, Spark, DuckDB, Polars</td><td>Excel cannot open it</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Parquet">
+  <div class="eyebrow">Parquet &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>The file is binary, and pandas with pyarrow has no way to add a row to it in place.</small></h1>
+  <div class="wrap">
+<div class="cols3"><div class="card r"><h3>Binary</h3><p>A text editor shows bytes. A person cannot check the file by eye or open it in Excel.</p></div><div class="card r"><h3>No append</h3><p>Adding one day to bm.parquet means reading it, concatenating and writing the whole file again.</p></div><div class="card o"><h3>A library to read it</h3><p>Every reader needs a Parquet implementation such as pyarrow.</p></div></div><table class="d roomy"><tr><th>format</th><th>types survive</th><th>BLUE METAL size</th><th>1M rows: read</th><th>1M rows: 2 of 6 columns</th><th>opens as text</th></tr><tr><td>CSV</td><td>no: dates &#8594; object</td><td>247.3 KB</td><td>0.43 s</td><td>0.26 s</td><td>yes</td></tr><tr><td>JSON</td><td>no: dates &#8594; int64</td><td>609.1 KB</td><td>4.49 s</td><td>reads all columns</td><td>yes</td></tr><tr class="ok"><td>Parquet</td><td>yes</td><td>152.0 KB</td><td>0.09 s</td><td>0.05 s</td><td>no</td></tr><tr><td>Feather</td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td><td><span style="color:#9BAAB3">?</span></td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Arrow">
+  <div class="eyebrow">Arrow &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>Arrow is a column layout for data in memory. Parquet is a column layout on disk, and Feather writes Arrow memory to disk as it is.</small></h1>
+  <div class="wrap">
+<div class="cols3"><div class="card g"><h3>Parquet</h3><p>On disk. Encoded and compressed to be small. Has to be decoded into memory before use.</p></div><div class="card b"><h3>Arrow</h3><p>In memory. Each column is one block of values, ready for computation. pyarrow is its Python library.</p></div><div class="card p"><h3>Feather</h3><p>On disk. The Arrow blocks written out with light compression, so reading is close to a copy.</p></div></div><div class="callout sm">pandas uses pyarrow to read Parquet, so every <code class="k">read_parquet</code> in this lecture passed through Arrow on its way into a data frame.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Arrow">
+  <div class="eyebrow">Arrow &#183; Example: memory for 1 million rows</div>
+  <h1 class="t">Example
+    <small>As Python strings, Region takes 53.5 bytes a row in memory. As a category it takes 1 byte, and as an Arrow string 8.5.</small></h1>
+  <div class="wrap">
+<div class="cols"><table class="d roomy"><tr><th>column</th><th>object (default)</th><th>category</th><th>Arrow string</th></tr><tr><td>Date</td><td>8.0 MB</td><td>8.0 MB</td><td>8.1 MB</td></tr><tr><td>Product</td><td>56.2 MB</td><td>1.0 MB</td><td>11.2 MB</td></tr><tr><td>Region</td><td>53.5 MB</td><td>1.0 MB</td><td>8.5 MB</td></tr><tr><td>Category</td><td>60.0 MB</td><td>1.0 MB</td><td>15.0 MB</td></tr><tr><td>Sales</td><td>8.0 MB</td><td>8.0 MB</td><td>8.1 MB</td></tr><tr><td>Quantity</td><td>8.0 MB</td><td>8.0 MB</td><td>8.1 MB</td></tr><tr><td><b>total</b></td><td><b>193.7 MB</b></td><td><b>27.0 MB</b></td><td><b>59.1 MB</b></td></tr></table><div class="colstack"><pre class="code sm">big.memory_usage(deep=<span class="py-kw">True</span>)
+
+<span class="py-kw">for</span> c <span class="py-kw">in</span> [<span class="py-str">&#x27;Product&#x27;</span>, <span class="py-str">&#x27;Region&#x27;</span>, <span class="py-str">&#x27;Category&#x27;</span>]:
+    big[c] = big[c].astype(<span class="py-str">&#x27;category&#x27;</span>)
+
+arrow = pd.read_parquet(<span class="py-str">&#x27;big.parquet&#x27;</span>,
+                        dtype_backend=<span class="py-str">&#x27;pyarrow&#x27;</span>)</pre><div class="callout sm">The three text columns account for the difference.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Arrow">
+  <div class="eyebrow">Arrow &#183; Mechanism: three layouts for a text column</div>
+  <h1 class="t">Mechanism
+    <small>pandas object columns hold a pointer to a separate Python string for each row. Category and Arrow keep the text in one place.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">how North, South, North is held in memory</div><svg viewBox="0 0 1100 240" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Three in-memory layouts for a text column"><text x="0.0" y="20.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >object</text><text x="0.0" y="38.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >8-byte pointer per row</text><rect x="210.0" y="6.0" width="54.0" height="30.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="237.0" y="26.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >ptr</text><line x1="237.0" y1="36.0" x2="414.1" y2="61.2" stroke="#53666F" stroke-width="1.1" /><path d="M420.0,62.0 L412.6,56.9 L411.5,64.8 z" fill="#53666F"/><rect x="270.0" y="6.0" width="54.0" height="30.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="297.0" y="26.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >ptr</text><line x1="297.0" y1="36.0" x2="574.0" y2="61.5" stroke="#53666F" stroke-width="1.1" /><path d="M580.0,62.0 L572.4,57.3 L571.7,65.3 z" fill="#53666F"/><rect x="330.0" y="6.0" width="54.0" height="30.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="357.0" y="26.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >ptr</text><line x1="357.0" y1="36.0" x2="734.0" y2="61.6" stroke="#53666F" stroke-width="1.1" /><path d="M740.0,62.0 L732.3,57.5 L731.7,65.4 z" fill="#53666F"/><rect x="380.0" y="62.0" width="140.0" height="32.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.2" /><text x="450.0" y="83.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#B02F3B" text-anchor="middle" font-weight="700" >str &#x27;North&#x27; 46 B</text><rect x="540.0" y="62.0" width="140.0" height="32.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.2" /><text x="610.0" y="83.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#B02F3B" text-anchor="middle" font-weight="700" >str &#x27;South&#x27; 46 B</text><rect x="700.0" y="62.0" width="140.0" height="32.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.2" /><text x="770.0" y="83.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#B02F3B" text-anchor="middle" font-weight="700" >str &#x27;North&#x27; 46 B</text><text x="880.0" y="83.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#B02F3B" text-anchor="start" font-weight="700" >54 bytes a row</text><text x="0.0" y="140.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >category</text><text x="0.0" y="158.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >1-byte code per row</text><rect x="210.0" y="126.0" width="54.0" height="30.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.2" /><text x="237.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >1</text><rect x="270.0" y="126.0" width="54.0" height="30.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.2" /><text x="297.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >2</text><rect x="330.0" y="126.0" width="54.0" height="30.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.2" /><text x="357.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >1</text><text x="410.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="400" >dictionary: 0 East · 1 North · 2 South · 3 West</text><text x="880.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#0E7A55" text-anchor="start" font-weight="700" >1 byte a row</text><text x="0.0" y="210.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >Arrow string</text><text x="0.0" y="228.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >offsets + one buffer</text><rect x="210.0" y="196.0" width="42.0" height="30.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.2" /><text x="231.0" y="216.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="middle" font-weight="700" >0</text><rect x="256.0" y="196.0" width="42.0" height="30.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.2" /><text x="277.0" y="216.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="middle" font-weight="700" >5</text><rect x="302.0" y="196.0" width="42.0" height="30.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.2" /><text x="323.0" y="216.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="middle" font-weight="700" >10</text><rect x="348.0" y="196.0" width="42.0" height="30.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.2" /><text x="369.0" y="216.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="middle" font-weight="700" >15</text><rect x="410.0" y="196.0" width="330.0" height="30.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.2" /><text x="420.0" y="216.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >NorthSouthNorth</text><text x="880.0" y="216.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#125F9E" text-anchor="start" font-weight="700" >4 + 4.5 bytes a row</text></svg><div class="rd">A category column is dictionary encoding again, the same idea Parquet uses on disk. Arrow strings store the characters back to back and a 4-byte offset where each one starts.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Feather">
+  <div class="eyebrow">Feather &#183; Example: what each format keeps of a category</div>
+  <h1 class="t">Example
+    <small>With Product, Region and Category as category columns, Parquet and Feather return categories. CSV returns plain strings.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm">big.to_csv(<span class="py-str">&#x27;bigc.csv&#x27;</span>, index=<span class="py-kw">False</span>)
+big.to_parquet(<span class="py-str">&#x27;bigc.parquet&#x27;</span>, index=<span class="py-kw">False</span>)
+big.to_feather(<span class="py-str">&#x27;bigc.feather&#x27;</span>)</pre><table class="d sm"><tr><th>column</th><th>CSV</th><th>Parquet</th><th>Feather</th></tr><tr><td>Date</td><td>object</td><td>datetime64[ns]</td><td>datetime64[ns]</td></tr><tr><td>Product</td><td>object</td><td>category</td><td>category</td></tr><tr><td>Region</td><td>object</td><td>category</td><td>category</td></tr><tr><td>Category</td><td>object</td><td>category</td><td>category</td></tr><tr><td>Sales</td><td>int64</td><td>int64</td><td>int64</td></tr></table></div><div class="colstack fill"><div class="card g"><h3>Feather reads fastest</h3><p>0.06 s for 1 million rows, against 0.09 s for Parquet and 0.43 s for CSV.</p></div><div class="card r"><h3>Feather is bigger</h3><p>27.3 MB against 4.4 MB for Parquet. It skips dictionary encoding of plain strings.</p></div><div class="card o"><h3>On BLUE METAL</h3><p>Feather is 140.7 KB and Parquet 152.0 KB: the prices do not repeat.</p></div></div></div><table class="d roomy"><tr><th>format</th><th>types survive</th><th>BLUE METAL size</th><th>1M rows: read</th><th>1M rows: 2 of 6 columns</th><th>opens as text</th></tr><tr><td>CSV</td><td>no: dates &#8594; object</td><td>247.3 KB</td><td>0.43 s</td><td>0.26 s</td><td>yes</td></tr><tr><td>JSON</td><td>no: dates &#8594; int64</td><td>609.1 KB</td><td>4.49 s</td><td>reads all columns</td><td>yes</td></tr><tr><td>Parquet</td><td>yes</td><td>152.0 KB</td><td>0.09 s</td><td>0.05 s</td><td>no</td></tr><tr class="ok"><td>Feather</td><td>yes</td><td>140.7 KB</td><td>0.06 s</td><td>0.03 s</td><td>no</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Formats">
+  <div class="eyebrow">Formats &#183; the benchmark</div>
+  <h1 class="t">Benchmark: 1 million sales rows in four formats
+    <small>Best of 3 runs on the lecture laptop, pandas 2.3.3 and pyarrow 23. Timings change from machine to machine; the order between formats did not change across runs.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><table class="d roomy"><tr><th>format</th><th>size</th><th>write</th><th>read all</th><th>read Region and Sales</th></tr><tr><td>CSV</td><td>44.3 MB</td><td>2.84 s</td><td>0.43 s</td><td>0.26 s</td></tr><tr><td>JSON</td><td>123.3 MB</td><td>1.81 s</td><td>4.49 s</td><td>n/a</td></tr><tr><td>Parquet</td><td>4.4 MB</td><td>0.32 s</td><td>0.09 s</td><td>0.05 s</td></tr><tr><td>Feather</td><td>27.3 MB</td><td>0.20 s</td><td>0.06 s</td><td>0.03 s</td></tr></table><div class="fig"><div class="cap">read all, seconds</div><svg viewBox="0 0 520 174" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="read times"><text x="80.0" y="25.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >CSV</text><rect x="90.0" y="6.0" width="26.8" height="30.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="124.8" y="25.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">0.43 s</text><text x="80.0" y="67.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >JSON</text><rect x="90.0" y="48.0" width="280.0" height="30.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="378.0" y="67.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4.49 s</text><text x="80.0" y="109.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Parquet</text><rect x="90.0" y="90.0" width="5.6" height="30.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="103.6" y="109.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">0.09 s</text><text x="80.0" y="151.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Feather</text><rect x="90.0" y="132.0" width="3.7" height="30.0" fill="#4B5A87" stroke="none" stroke-width="1" /><text x="101.7" y="151.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">0.06 s</text></svg></div></div><div class="callout sm">Run the same writes and reads on your own laptop in the practice. The sizes will match these to the byte; the times will not.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Formats">
+  <div class="eyebrow">Formats &#183; Verdict</div>
+  <h1 class="t">Verdict
+    <small>Parquet and Feather return the frame exactly as it was saved. CSV and JSON need the types restated on every read.</small></h1>
+  <div class="wrap">
+<table class="d roomy"><tr><th>format</th><th>types survive</th><th>BLUE METAL size</th><th>1M rows: read</th><th>1M rows: 2 of 6 columns</th><th>opens as text</th></tr><tr><td>CSV</td><td>no: dates &#8594; object</td><td>247.3 KB</td><td>0.43 s</td><td>0.26 s</td><td>yes</td></tr><tr><td>JSON</td><td>no: dates &#8594; int64</td><td>609.1 KB</td><td>4.49 s</td><td>reads all columns</td><td>yes</td></tr><tr><td>Parquet</td><td>yes</td><td>152.0 KB</td><td>0.09 s</td><td>0.05 s</td><td>no</td></tr><tr><td>Feather</td><td>yes</td><td>140.7 KB</td><td>0.06 s</td><td>0.03 s</td><td>no</td></tr></table><div class="cols"><div class="card o"><h3>Text formats</h3><p>CSV and JSON can be read by a person and by every tool. They pay for it in size, speed and lost types.</p></div><div class="card g"><h3>Column formats</h3><p>Parquet and Feather keep the schema in the file and read single columns. They need pyarrow.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Formats">
+  <div class="eyebrow">Formats &#183; choosing one</div>
+  <h1 class="t">Choosing a file format
+    <small>Ask the questions in this order and stop at the first yes. Write the reason down; the project rubric asks for it.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">decision chart</div><svg viewBox="0 0 1000 300" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Decision chart for choosing a file format"><rect x="0.0" y="6.0" width="330.0" height="50.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="27.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >Will a person open it in Excel</text><text x="14.0" y="45.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >or a text editor?</text><line x1="330.0" y1="31.0" x2="414.0" y2="31.0" stroke="#53666F" stroke-width="1.6" /><path d="M420.0,31.0 L412.0,27.0 L412.0,35.0 z" fill="#53666F"/><text x="375.0" y="24.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >yes</text><rect x="424.0" y="6.0" width="140.0" height="50.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="494.0" y="37.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >CSV</text><text x="580.0" y="37.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >utf-8-sig, and dtype= / parse_dates= on every read</text><line x1="165.0" y1="56.0" x2="165.0" y2="61.0" stroke="#53666F" stroke-width="1.6" /><path d="M165.0,67.0 L169.0,59.0 L161.0,59.0 z" fill="#53666F"/><text x="176.0" y="65.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="start" font-weight="400" >no</text><rect x="0.0" y="68.0" width="330.0" height="50.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="89.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >Is it nested records</text><text x="14.0" y="107.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >from an API?</text><line x1="330.0" y1="93.0" x2="414.0" y2="93.0" stroke="#53666F" stroke-width="1.6" /><path d="M420.0,93.0 L412.0,89.0 L412.0,97.0 z" fill="#53666F"/><text x="375.0" y="86.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >yes</text><rect x="424.0" y="68.0" width="140.0" height="50.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="494.0" y="99.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >JSON</text><text x="580.0" y="99.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >then json_normalize and store the table</text><line x1="165.0" y1="118.0" x2="165.0" y2="123.0" stroke="#53666F" stroke-width="1.6" /><path d="M165.0,129.0 L169.0,121.0 L161.0,121.0 z" fill="#53666F"/><text x="176.0" y="127.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="start" font-weight="400" >no</text><rect x="0.0" y="130.0" width="330.0" height="50.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="151.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >Will several people write to it</text><text x="14.0" y="169.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >or join it to other tables?</text><line x1="330.0" y1="155.0" x2="414.0" y2="155.0" stroke="#53666F" stroke-width="1.6" /><path d="M420.0,155.0 L412.0,151.0 L412.0,159.0 z" fill="#53666F"/><text x="375.0" y="148.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >yes</text><rect x="424.0" y="130.0" width="140.0" height="50.0" fill="#9B2C7E" stroke="none" stroke-width="1" /><text x="494.0" y="161.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >database</text><text x="580.0" y="161.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >SQLite, lecture 4</text><line x1="165.0" y1="180.0" x2="165.0" y2="185.0" stroke="#53666F" stroke-width="1.6" /><path d="M165.0,191.0 L169.0,183.0 L161.0,183.0 z" fill="#53666F"/><text x="176.0" y="189.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="start" font-weight="400" >no</text><rect x="0.0" y="192.0" width="330.0" height="50.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="213.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >Is it passed to another process</text><text x="14.0" y="231.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >and read straight back?</text><line x1="330.0" y1="217.0" x2="414.0" y2="217.0" stroke="#53666F" stroke-width="1.6" /><path d="M420.0,217.0 L412.0,213.0 L412.0,221.0 z" fill="#53666F"/><text x="375.0" y="210.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >yes</text><rect x="424.0" y="192.0" width="140.0" height="50.0" fill="#4B5A87" stroke="none" stroke-width="1" /><text x="494.0" y="223.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >Feather</text><text x="580.0" y="223.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >fast read, keeps categories</text><line x1="165.0" y1="242.0" x2="165.0" y2="247.0" stroke="#53666F" stroke-width="1.6" /><path d="M165.0,253.0 L169.0,245.0 L161.0,245.0 z" fill="#53666F"/><rect x="0.0" y="254.0" width="330.0" height="44.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.5" /><text x="14.0" y="281.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="600" >Otherwise, a table kept for analysis</text><line x1="330.0" y1="276.0" x2="414.0" y2="276.0" stroke="#53666F" stroke-width="1.6" /><path d="M420.0,276.0 L412.0,272.0 L412.0,280.0 z" fill="#53666F"/><rect x="424.0" y="254.0" width="140.0" height="44.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="494.0" y="282.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#FFFFFF" text-anchor="middle" font-weight="700" >Parquet</text><text x="580.0" y="282.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >smallest, keeps types, reads single columns</text></svg><div class="rd">HDF5, from scientific computing, stores arrays of numbers. Nothing in this course needs it.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Formats">
+  <div class="eyebrow">Formats &#183; the file for lecture 2</div>
+  <h1 class="t">Writing the sales table for lecture 2
+    <small>make_sales.py writes the 500-row sales table that the Dash lectures use. Lecture 2 opens by reading the Parquet file.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">for</span> c <span class="py-kw">in</span> [<span class="py-str">&#x27;Product&#x27;</span>, <span class="py-str">&#x27;Region&#x27;</span>, <span class="py-str">&#x27;Category&#x27;</span>]:
+    df[c] = df[c].astype(<span class="py-str">&#x27;category&#x27;</span>)
+
+df.to_csv(<span class="py-str">&#x27;sales.csv&#x27;</span>, index=<span class="py-kw">False</span>)
+df.to_parquet(<span class="py-str">&#x27;sales.parquet&#x27;</span>, index=<span class="py-kw">False</span>)</pre><pre class="code sm">pd.read_parquet(<span class="py-str">&#x27;sales.parquet&#x27;</span>).head(<span class="py-num">3</span>)</pre><div class="outlbl">output</div><div class="out xs">        Date     Product Region     Category  Sales  Quantity    Month  Year
+0 2023-09-28       Mouse  North  Accessories   3872        21  2023-09  2023
+1 2023-08-03     Monitor   East  Electronics   4526        11  2023-08  2023
+2 2024-10-25  Headphones   West  Accessories    230        22  2024-10  2024</div></div><div class="colstack fill"><div class="card b"><h3>500 rows, 8 columns</h3><p>2023 and 2024, five products, four regions. Same generator and seed as the Dash practice notebooks.</p></div><div class="card g"><h3>12.9 KB against 28.8 KB</h3><p>Parquet keeps Date as datetime64 and the three categories, so lecture 2 needs no parsing.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Summary">
+  <div class="eyebrow">Summary</div>
+  <h1 class="t">What each format stores and what it costs
+    <small>The scoreboard, reduced to one line per format.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>format</th><th>stores</th><th>keeps types</th><th>weak at</th><th>use for</th></tr><tr><td>CSV</td><td>text, row by row</td><td>no</td><td>size, speed, types, encoding</td><td>handing data to a person or another tool</td></tr><tr><td>JSON</td><td>records of name: value pairs</td><td>no</td><td>repeated names, dates</td><td>API responses, nested records</td></tr><tr><td>Parquet</td><td>encoded columns + schema footer</td><td>yes</td><td>binary, no append</td><td>tables kept for analysis</td></tr><tr><td>Feather</td><td>Arrow memory, written out</td><td>yes</td><td>bigger than Parquet</td><td>passing frames between processes</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Practice
+    <small>Five exercises. sales.parquet and make_sales.py sit in data/ beside this deck.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><ol class="n"><li>Save cleaned BLUE METAL as CSV, JSON, Parquet and Feather. For each, report the size and whether <code class="k">equals</code> returns True after reading back.</li><li>Make the CSV and JSON round trips return True by adding arguments to the read only.</li><li>Read patients.csv so that pincode is Int64 and phone keeps its leading zeros. Check with <code class="k">dtypes</code>.</li><li>Predict the Parquet size of a column of 1 million random integers from 0 to 999 with the bits rule, then measure it.</li><li>Time reading Region and Sales from the 1 million row file as CSV and as Parquet on your laptop.</li></ol></div><div class="colstack fill"><div class="card b"><h3>For the project</h3><p>State which format your cleaned data is stored in and why, and check the dtypes after reading it back.</p></div><div class="card g"><h3>Next lecture</h3><p>Plotly figures and a first Dash app, built on sales.parquet.</p></div></div></div>
+  </div>
+</section>
+</div></div>
+<div id="nav"><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></div>
+<div id="hint">&#8592; &#8594; navigate &#183; F fullscreen &#183; P print</div>
+<script>
+/* ============================================================
+   deck mechanics — identical to the other decks in the module
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 &#183; Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 1 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  // ---- staged builds ------------------------------------------------
+  // A slide carrying .build holds its [data-at] pieces back. Arrow
+  // right releases the next one; only when they are all out does the
+  // deck advance. Entering backwards lands on the finished slide.
+  function maxStep(s){
+    let m=0;
+    s.querySelectorAll('[data-at]').forEach(e=>{ m=Math.max(m,+e.dataset.at||0); });
+    return m;
+  }
+  function paint(s){
+    const k=+s.dataset.step||0;
+    // data-to="k" retires a piece once the build moves past step k
+    s.querySelectorAll('[data-at]').forEach(e=>
+      e.classList.toggle('shown',(+e.dataset.at||0)<=k&&
+        (e.dataset.to===undefined||k<=+e.dataset.to)));
+    const d=s.querySelector('.bld');
+    if(d)[...d.children].forEach((c,n)=>c.classList.toggle('on',n<k));
+  }
+  function build(s,dir){
+    if(!s||!s.classList.contains('build'))return false;
+    const t=(+s.dataset.step||0)+dir;
+    if(t<0||t>maxStep(s))return false;
+    s.dataset.step=t; paint(s); return true;
+  }
+  function show(n){
+    const prev=i, back=n<i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    const cur=slides[i];
+    if(cur&&cur.classList.contains('build')){
+      cur.dataset.step=back?maxStep(cur):0; paint(cur);
+    }
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(cur) cur.dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>{ if(!build(slides[i],1))show(i+1); };
+  document.getElementById('prev').onclick=()=>{ if(!build(slides[i],-1))show(i-1); };
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){
+      if(!build(slides[i],1))show(i+1); e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){
+      if(!build(slides[i],-1))show(i-1); e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+
+
+(function(){
+  const el=document.getElementById('bw-data'); if(!el) return;
+  const D=JSON.parse(el.textContent), box=document.getElementById('bw-bars'), rd=document.getElementById('bw-rd');
+  const pick=document.getElementById('bw-pick');
+  const mb=b=>(b/1e6).toFixed(2)+' MB';
+  function upd(){
+    const sel=[...pick.querySelectorAll('input')].filter(x=>x.checked).map(x=>x.value);
+    pick.querySelectorAll('label').forEach(l=>l.classList.toggle('on',l.querySelector('input').checked));
+    const pq=sel.reduce((a,c)=>a+D.cols[c][0],0);
+    const w=v=>Math.max(0.4,v/D.csv*100).toFixed(2)+'%';
+    box.innerHTML=
+      '<div class="bwrow"><div class="k">CSV</div><div><div class="bwtrack"><div class="bwbar csv" style="width:100%"></div></div>'+
+      '<div class="v">'+mb(D.csv)+'<i>the whole file, whatever is ticked</i></div></div></div>'+
+      '<div class="bwrow"><div class="k">Parquet</div><div><div class="bwtrack"><div class="bwbar pq" style="width:'+w(pq)+'"></div></div>'+
+      '<div class="v">'+mb(pq)+'<i>'+(sel.length?sel.join(' + ')+' blocks':'nothing ticked')+'</i></div></div></div>';
+    rd.innerHTML=sel.length?'Parquet reads <b>'+(pq/D.csv*100).toFixed(1)+'%</b> of the bytes the CSV reader goes through.':'Tick at least one column.';
+  }
+  pick.addEventListener('change',upd); upd();
+})();
+
+</script>
+</body>
+</html>
