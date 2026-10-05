@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-01 09:59 UTC",
+ "generated": "2026-10-05 06:42 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -74,6 +74,15 @@
    "kind": "notebook",
    "size": 52782,
    "updated": "2026-09-17"
+  },
+  {
+   "path": "data cleaning/outlier_detection_techniques.ipynb",
+   "name": "outlier_detection_techniques.ipynb",
+   "folder": "data cleaning",
+   "section": "Data cleaning",
+   "kind": "notebook",
+   "size": 1534403,
+   "updated": "2026-10-05"
   },
   {
    "path": "data cleaning/regex_part1.html",
