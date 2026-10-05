@@ -453,7 +453,7 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
   </div>
   <div class="kicker">DA2402 &#183; Data Curation and Visualization</div>
   <h1>Data<br/>Storage</h1>
-  <div class="pt">Part 1 &#8212; File formats</div>
+  <div class="pt">Lecture 1 &#8212; File formats</div>
   <div class="rule"></div>
   <p class="sub">What CSV, JSON, Parquet and Feather keep of a cleaned data frame, how big each file is,
   how fast it reads back, and why.</p>
@@ -838,10 +838,10 @@ big.to_feather(<span class="py-str">&#x27;bigc.feather&#x27;</span>)</pre><table
     df[c] = df[c].astype(<span class="py-str">&#x27;category&#x27;</span>)
 
 df.to_csv(<span class="py-str">&#x27;sales.csv&#x27;</span>, index=<span class="py-kw">False</span>)
-df.to_parquet(<span class="py-str">&#x27;sales.parquet&#x27;</span>, index=<span class="py-kw">False</span>)</pre><pre class="code sm">pd.read_parquet(<span class="py-str">&#x27;sales.parquet&#x27;</span>).head(<span class="py-num">3</span>)</pre><div class="outlbl">output</div><div class="out xs">        Date     Product Region     Category  Sales  Quantity    Month  Year
-0 2023-09-28       Mouse  North  Accessories   3872        21  2023-09  2023
-1 2023-08-03     Monitor   East  Electronics   4526        11  2023-08  2023
-2 2024-10-25  Headphones   West  Accessories    230        22  2024-10  2024</div></div><div class="colstack fill"><div class="card b"><h3>500 rows, 8 columns</h3><p>2023 and 2024, five products, four regions. Same generator and seed as the Dash practice notebooks.</p></div><div class="card g"><h3>12.9 KB against 28.8 KB</h3><p>Parquet keeps Date as datetime64 and the three categories, so lecture 2 needs no parsing.</p></div></div></div>
+df.to_parquet(<span class="py-str">&#x27;sales.parquet&#x27;</span>, index=<span class="py-kw">False</span>)</pre><pre class="code sm">pd.read_parquet(<span class="py-str">&#x27;sales.parquet&#x27;</span>).head(<span class="py-num">3</span>)</pre><div class="outlbl">output</div><div class="out xs">        Date     Product Region     Category  Sales  Quantity  Profit    Month  Year
+0 2023-09-28       Mouse  North  Accessories   3872        21    1371  2023-09  2023
+1 2023-08-03     Monitor   East  Electronics   4526        11     835  2023-08  2023
+2 2024-10-25  Headphones   West  Accessories    230        22     204  2024-10  2024</div></div><div class="colstack fill"><div class="card b"><h3>500 rows, 9 columns</h3><p>2023 and 2024, five products, four regions. Same generator and seed as the Dash notebooks, plus a Profit column.</p></div><div class="card g"><h3>15.7 KB against 30.8 KB</h3><p>Parquet keeps Date as datetime64 and the three categories, so lecture 2 needs no parsing.</p></div></div></div>
   </div>
 </section>
 
