@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Visualisation · Part 2: Dash callbacks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d th.m,table.d td.m{font-family:var(--mono);text-align:right;white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d.tight th,table.d.tight td{padding:2.4px 7px}
+table.d.tight th{text-transform:none}
+table.d.tight tr.tot td{font-weight:700}
+
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- embedded demo ---------- */
+.demo-frame{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--line);
+  background:var(--paper)}
+.demo-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--t-cls);
+  text-decoration:none;border-bottom:1px solid currentColor;margin-left:8px;white-space:nowrap}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+<style>
+/* ================= additions for the Data Cleaning series =================
+   Vocabulary specific to this module. Everything above is the shared theme,
+   copied verbatim from the Data Collection decks.                          */
+
+/* ---------- the spine: symptom -> mechanisms -> what it permits ---------- */
+.spine{display:grid;grid-template-columns:150px 1fr 1fr;gap:0 12px;align-items:stretch}
+.spine .hd{font-family:var(--mono);font-size:9.3px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft);padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.spine .sym{background:var(--ink);color:#fff;padding:8px 11px;margin-bottom:7px;
+  display:flex;flex-direction:column;justify-content:center}
+.spine .sym b{font-family:var(--disp);font-size:13.5px;font-weight:700;display:block;line-height:1.15}
+.spine .sym i{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:#9BB4C0;margin-top:3px}
+.spine .mid,.spine .rgt{background:var(--card);border:1px solid var(--hair);padding:8px 11px;
+  margin-bottom:7px;font-size:11.7px;line-height:1.4;color:#31444F;display:flex;align-items:center}
+.spine .rgt{border-left:3px solid var(--t-grp)}
+.spine .mid{border-left:3px solid var(--t-anc)}
+.spine .now .sym{background:var(--t-asr)}
+.spine .now .mid,.spine .now .rgt{background:#FFF9F9}
+.spine b.q{font-weight:700;color:var(--ink)}
+
+/* ---------- three-mechanism cards ---------- */
+.mech{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;flex:1;min-height:0}
+.mech .m{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.mech .m.a{border-top-color:var(--t-grp)}
+.mech .m.b{border-top-color:var(--t-anc)}
+.mech .m.c{border-top-color:var(--t-asr)}
+.mech .m h3{font-family:var(--disp);font-size:15px;font-weight:700;line-height:1.1}
+.mech .m h3 span{display:block;font-family:var(--mono);font-size:9.2px;font-weight:400;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+.mech .m .def{font-size:12.2px;line-height:1.42;color:#31444F}
+.mech .m .def b{font-weight:700;color:var(--ink)}
+.mech .m .ex{font-size:11.4px;line-height:1.4;color:var(--soft);border-top:1px solid var(--hair);
+  padding-top:6px;margin-top:auto}
+.mech .m .ex b{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);display:block;margin-bottom:3px}
+
+/* ---------- figures (inline SVG, no image files) ---------- */
+.fig{background:var(--card);border:1px solid var(--hair);padding:10px 12px 8px;
+  display:flex;flex-direction:column;min-height:0}
+.fig .cap{font-family:var(--mono);font-size:9.3px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:7px}
+.fig .rd{font-size:11.6px;line-height:1.4;color:#31444F;margin-top:7px;
+  border-top:1px solid var(--hair);padding-top:6px}
+.fig .rd b{font-weight:700;color:var(--ink)}
+.fig svg{display:block;max-height:100%}
+.fig .rd{margin-top:auto}
+
+/* ---------- the cleaning log ---------- */
+table.log{width:100%;border-collapse:collapse;font-size:11.6px;background:var(--card)}
+table.log th,table.log td{border:1px solid var(--hair);padding:5px 9px;text-align:left;
+  vertical-align:top;line-height:1.38}
+table.log th{background:var(--ink);color:#fff;font-weight:600;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.log td:nth-child(1){font-family:var(--mono);font-size:10.6px;white-space:nowrap;color:#26404E}
+table.log td:nth-child(4){font-style:italic;color:var(--soft)}
+table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+/* ---------- the missingness lab (slides 6, 23 and 35) ---------- */
+.lab{display:grid;grid-template-columns:1.62fr 1fr;gap:15px;flex:1;min-height:0}
+.lab .plot{background:var(--card);border:1px solid var(--hair);padding:9px 11px 7px;
+  display:flex;flex-direction:column;min-height:0}
+.lab .plot svg{flex:1;min-height:0;display:block}
+.plotnote{font-size:10.6px;color:var(--soft);line-height:1.35;margin-top:5px;
+  border-top:1px solid var(--hair);padding-top:5px}
+.plotnote b{color:var(--ink)}
+.seg{display:flex;gap:6px;flex:none;margin-bottom:7px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.09em;padding:5px 13px;
+  border:1px solid var(--line);background:var(--paper);color:var(--soft);cursor:pointer;
+  border-radius:2px;transition:background .15s,color .15s,border-color .15s}
+.seg button:hover{background:#E2EBF0;color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.seg button.alt{margin-left:auto;font-size:10.4px;letter-spacing:.12em}
+.seg button:focus-visible{outline:2px solid var(--t-cls);outline-offset:1px}
+.meanbox{background:var(--card);border:1px solid var(--hair);padding:8px 10px;flex:none}
+.meanbox svg{display:block;width:100%}
+.pt{transition:fill .28s ease,stroke .28s ease,opacity .28s ease}
+g.knobpt{transition:transform .45s cubic-bezier(.4,0,.2,1)}
+@media (prefers-reduced-motion:reduce){g.knobpt{transition:none}}
+
+/* ---------- fill: let a short column spread over the stage instead of
+   piling its cards at the top. Cards grow and centre their own text; callouts,
+   tables and code keep their natural height.                                 */
+.colstack.fill{gap:12px}
+.colstack.fill > .card{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
+.colstack.fill > .callout,.colstack.fill > table,.colstack.fill > pre,
+.colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
+
+/* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
+table.d.roomy td,table.d.roomy th{padding:19px 10px}
+table.d.roomy.tall td,table.d.roomy.tall th{padding:27px 10px}
+table.log.roomy td,table.log.roomy th{padding:17px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:24px 12px;margin-bottom:10px}
+
+/* ---------- cover ornament: a wall of raw cells ---------- */
+.coverpat .c-miss{color:var(--t-asr);font-weight:700}
+.coverpat .c-val{color:var(--t-grp)}
+.coverpat .c-dim{color:#9BAAB3}
+.coverpat .c-hdr{color:var(--t-cls);font-weight:700}
+
+/* ---------- intuition-slide reveals: the figure arrives in the order the
+   lecturer speaks it, so the picture is not finished before the sentence is. */
+@media (prefers-reduced-motion:no-preference){
+  .slide.on .fig svg .hi{animation:hifade .55s ease .15s both}
+  .slide.on .fig svg .mk{animation:hifade .5s ease both}
+  .slide.on .fig svg .mk0{animation-delay:.55s}
+  .slide.on .fig svg .mk1{animation-delay:.95s}
+  .slide.on .fig svg .drawline{stroke-dasharray:900;stroke-dashoffset:900;
+    animation:drawin 1.15s .25s ease-out forwards}
+  @keyframes hifade{from{opacity:0}to{opacity:1}}
+  @keyframes drawin{to{stroke-dashoffset:0}}
+}
+
+.fig .expl{margin-top:auto;padding:12px 16px}
+.fig .expl p + p{margin-top:6px}
+/* ---------- staged builds: on a slide marked .build, one arrow press
+   reveals one more [data-at] piece before the deck moves to the next slide.
+   The lecturer speaks a term, then presses once, and that term appears. */
+.slide.build [data-at]{opacity:0}
+.slide.build [data-at].shown{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  .slide.build [data-at]{transition:opacity .34s ease}
+}
+.bld{position:absolute;right:58px;bottom:38px;display:flex;gap:5px;z-index:3}
+.bld i{width:17px;height:3px;background:var(--line);border-radius:2px;display:block;
+  transition:background .25s ease}
+.bld i.on{background:var(--t-asr)}
+</style>
+
+<style>
+/* L3 additions: callback widget */
+.cbsel{font-family:var(--mono);font-size:15px;padding:8px 10px;border:1.5px solid var(--t-cls);background:#fff;color:var(--ink);width:100%}
+.cbflow{display:flex;flex-direction:column;align-items:stretch;gap:2px;margin-top:4px}
+.cbn{background:var(--card);border:1.5px solid var(--line);padding:8px 10px;text-align:center;font-family:var(--mono);font-size:12px;line-height:1.35;transition:background .2s,border-color .2s,color .2s}
+.cbn b{font-weight:700}
+.cbn.fn{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.cbn.lit{border-color:var(--t-asr);background:#FFF5F5;color:var(--ink)}
+.cbn.fn.lit{background:var(--t-asr);color:#fff}
+.cba{text-align:center;color:var(--soft);font-size:13px;line-height:1}
+#cb-dash svg{display:block}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat">
+    <div><span class="h-mth">@callback</span><span class="h-dim">(</span></div>
+    <div>&#160;&#160;<span class="h-hdr">Output</span><span class="h-dim">('kpi-sales', 'children'),</span></div>
+    <div>&#160;&#160;<span class="h-hdr">Output</span><span class="h-dim">('by-product', 'figure'),</span></div>
+    <div>&#160;&#160;<span class="h-val">Input</span><span class="h-dim">('region', 'value'))</span></div>
+    <div><span class="h-mth">def</span> update(region):</div>
+    <div>&#160;</div>
+    <div><span class="h-dim">POST /_dash-update-component</span></div>
+    <div><span class="h-val">200</span> <span class="h-dim">328,414 · 123 · 2,670</span></div>
+    <div><span class="h-bad">204</span> <span class="h-dim">PreventUpdate</span></div>
+    <div><span class="h-dim">ctx.triggered_id</span> = <span class="h-val">'reset'</span></div>
+  </div>
+  <div class="kicker">DA2402 &#183; Data Curation and Visualization</div>
+  <h1>Data<br/>Visualisation</h1>
+  <div class="pt">Part 2 &#8212; Inputs, outputs and callbacks</div>
+  <div class="rule"></div>
+  <p class="sub">Making the lecture 2 dashboard respond to the reader: the callback, what each input hands it,
+  what it can write, and the five patterns that cover the rest.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 &#183; BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data visualisation</td></tr>
+    <tr><td>Lecture</td><td>3 of 9 &#183; Dash callbacks</td></tr>
+    <tr><td>Data</td><td>sales.parquet &#183; 500 orders, 2023 to 2024</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-sec="Dashboard">
+  <div class="eyebrow">Dashboard &#183; where lecture 2 stopped</div>
+  <h1 class="t">The static dashboard from lecture 2
+    <small>A header, three KPI cards and two charts on sales.parquet. The region dropdown is drawn, and changing it does nothing yet.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">the layout built in lecture 2, all 500 orders</div><svg viewBox="0 0 1100 300" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Sales dashboard, region All"><rect x="0.0" y="0.0" width="1100.0" height="44.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="18.0" y="28.0" font-family="Public Sans,system-ui,sans-serif" font-size="17" fill="#FFFFFF" text-anchor="start" font-weight="700" >Sales dashboard</text><rect x="880.0" y="9.0" width="200.0" height="26.0" fill="#FFFFFF" stroke="none" stroke-width="1" /><text x="890.0" y="27.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >Region: All  ▾</text><rect x="0.0" y="56.0" width="353.3" height="62.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><rect x="0.0" y="56.0" width="353.3" height="3.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="14.0" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Total sales</text><text x="14.0" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="22" fill="#14222B" text-anchor="start" font-weight="700" >1,316,165</text><rect x="373.3" y="56.0" width="353.3" height="62.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><rect x="373.3" y="56.0" width="353.3" height="3.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="387.3" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Orders</text><text x="387.3" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="22" fill="#14222B" text-anchor="start" font-weight="700" >500</text><rect x="746.7" y="56.0" width="353.3" height="62.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><rect x="746.7" y="56.0" width="353.3" height="3.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="760.7" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Average order</text><text x="760.7" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="22" fill="#14222B" text-anchor="start" font-weight="700" >2,632</text><rect x="0.0" y="130.0" width="540.0" height="170.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="12.0" y="148.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Sales by product</text><line x1="20.0" y1="276.0" x2="520.0" y2="276.0" stroke="#C3CFD5" stroke-width="1" /><rect x="38.0" y="158.0" width="64.0" height="118.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="70.0" y="289.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >Head</text><rect x="138.0" y="184.9" width="64.0" height="91.1" fill="#125F9E" stroke="none" stroke-width="1" /><text x="170.0" y="289.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >Keyb</text><rect x="238.0" y="167.6" width="64.0" height="108.4" fill="#125F9E" stroke="none" stroke-width="1" /><text x="270.0" y="289.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >Lapt</text><rect x="338.0" y="174.2" width="64.0" height="101.8" fill="#125F9E" stroke="none" stroke-width="1" /><text x="370.0" y="289.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >Moni</text><rect x="438.0" y="171.4" width="64.0" height="104.6" fill="#125F9E" stroke="none" stroke-width="1" /><text x="470.0" y="289.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >Mous</text><rect x="560.0" y="130.0" width="540.0" height="170.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="572.0" y="148.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Sales by month</text><line x1="580.0" y1="276.0" x2="1080.0" y2="276.0" stroke="#C3CFD5" stroke-width="1" /><polyline points="580.0,163.7 601.7,201.1 623.5,190.0 645.2,197.2 667.0,189.4 688.7,174.2 710.4,202.1 732.2,168.7 753.9,185.1 775.7,186.7 797.4,209.6 819.1,160.0 840.9,172.9 862.6,223.3 884.3,205.5 906.1,194.7 927.8,175.6 949.6,200.4 971.3,221.8 993.0,206.4 1014.8,227.1 1036.5,199.7 1058.3,194.2 1080.0,210.9" fill="none" stroke="#0E7A55" stroke-width="2"/><text x="580.0" y="289.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F" text-anchor="start" font-weight="400" >2023-01</text><text x="1080.0" y="289.0" font-family="JetBrains Mono,monospace" font-size="9.5" fill="#53666F" text-anchor="end" font-weight="400" >2024-12</text></svg><div class="rd">Total sales 1,316,165 over 500 orders. This lecture connects the dropdown to the five numbers and charts below it.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Callback">
+  <div class="eyebrow">Callback &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>A callback is a Python function. Dash runs it when an input property changes and writes its return values into output properties.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">the callback that makes the region dropdown work</div><svg viewBox="0 0 1100 250" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="callback update(region)"><rect x="420.0" y="93.0" width="260.0" height="64.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="550.0" y="131.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >update(region)</text><rect x="0.0" y="106.0" width="300.0" height="38.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="150.0" y="122.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="middle" font-weight="700" >region.value</text><text x="150.0" y="138.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >Input</text><line x1="300.0" y1="125.0" x2="410.0" y2="125.0" stroke="#125F9E" stroke-width="1.6" /><path d="M416.0,125.0 L408.0,121.0 L408.0,129.0 z" fill="#125F9E"/><rect x="770.0" y="14.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="37.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >kpi-sales.children</text><line x1="680.0" y1="125.0" x2="761.9" y2="37.4" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,33.0 L757.6,36.1 L763.5,41.6 z" fill="#0E7A55"/><rect x="770.0" y="60.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="83.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >kpi-orders.children</text><line x1="680.0" y1="125.0" x2="760.7" y2="81.8" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,79.0 L757.1,79.2 L760.8,86.3 z" fill="#0E7A55"/><rect x="770.0" y="106.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="129.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >kpi-avg.children</text><line x1="680.0" y1="125.0" x2="760.0" y2="125.0" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,125.0 L758.0,121.0 L758.0,129.0 z" fill="#0E7A55"/><rect x="770.0" y="152.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="175.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >by-product.figure</text><line x1="680.0" y1="125.0" x2="760.7" y2="168.2" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,171.0 L760.8,163.7 L757.1,170.8 z" fill="#0E7A55"/><rect x="770.0" y="198.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="221.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >by-month.figure</text><line x1="680.0" y1="125.0" x2="761.9" y2="212.6" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,217.0 L763.5,208.4 L757.6,213.9 z" fill="#0E7A55"/><text x="150.0" y="12.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >component.property</text><text x="935.0" y="12.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >component.property</text></svg><div class="rd">Every box is a <b>component id</b> plus one of its <b>properties</b>. Dash connects properties, never whole components.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Callback">
+  <div class="eyebrow">Callback &#183; Example: the region dropdown</div>
+  <h1 class="t">Example
+    <small>The decorator lists five outputs and one input. Called directly as a Python function with North, it returns five values.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><pre class="code xs">@callback(
+    Output(<span class="py-str">&#x27;kpi-sales&#x27;</span>, <span class="py-str">&#x27;children&#x27;</span>),
+    Output(<span class="py-str">&#x27;kpi-orders&#x27;</span>, <span class="py-str">&#x27;children&#x27;</span>),
+    Output(<span class="py-str">&#x27;kpi-avg&#x27;</span>, <span class="py-str">&#x27;children&#x27;</span>),
+    Output(<span class="py-str">&#x27;by-product&#x27;</span>, <span class="py-str">&#x27;figure&#x27;</span>),
+    Output(<span class="py-str">&#x27;by-month&#x27;</span>, <span class="py-str">&#x27;figure&#x27;</span>),
+    Input(<span class="py-str">&#x27;region&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>))
+<span class="py-kw">def</span> update(region):
+    d = df <span class="py-kw">if</span> region == <span class="py-str">&#x27;All&#x27;</span> <span class="py-kw">else</span> df[df.Region == region]
+    by_p = d.groupby(<span class="py-str">&#x27;Product&#x27;</span>, observed=<span class="py-kw">True</span>).Sales.sum().reset_index()
+    by_m = d.groupby(<span class="py-str">&#x27;Month&#x27;</span>).Sales.sum().reset_index()
+    <span class="py-kw">return</span> (f<span class="py-str">&quot;{d.Sales.sum():,}&quot;</span>, f<span class="py-str">&quot;{len(d)}&quot;</span>, f<span class="py-str">&quot;{d.Sales.mean():,.0f}&quot;</span>,
+            px.bar(by_p, x=<span class="py-str">&#x27;Product&#x27;</span>, y=<span class="py-str">&#x27;Sales&#x27;</span>),
+            px.line(by_m, x=<span class="py-str">&#x27;Month&#x27;</span>, y=<span class="py-str">&#x27;Sales&#x27;</span>))</pre></div><div class="colstack"><pre class="code sm">r = update(<span class="py-str">&#x27;North&#x27;</span>)
+len(r), r[:<span class="py-num">3</span>]</pre><div class="outlbl">output</div><div class="out ">(5, (&#x27;328,414&#x27;, &#x27;123&#x27;, &#x27;2,670&#x27;))</div><pre class="code sm">type(r[<span class="py-num">3</span>]).__name__</pre><div class="outlbl">output</div><div class="out ">&#x27;Figure&#x27;</div><div class="callout sm">The function knows nothing about the browser. It takes a region and returns values, so it can be tested in a notebook like any other function.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Callback">
+  <div class="eyebrow">Callback &#183; Example: try it</div>
+  <h1 class="t">Example continued 1
+    <small>Pick a region. The input, the function and the five outputs light up in turn, as they do in Dash.</small></h1>
+  <div class="wrap">
+<div class="cols w3070"><div class="colstack"><div class="outlbl">region.value</div><select id="cb-region" class="cbsel"><option>All</option><option>East</option><option>North</option><option>South</option><option>West</option></select><div class="cbflow" id="cb-flow"><div class="cbn in">Input<br/><b>region.value</b></div><div class="cba">&#8595;</div><div class="cbn fn">update(region)</div><div class="cba">&#8595;</div><div class="cbn outn">5 Outputs</div></div><div class="callout sm"><span class="jsbadge">browser JS</span> This copy runs in the page and mimics Dash. The sums are the real ones from sales.parquet.</div></div><div class="fig" style="flex:1"><div class="cap">the dashboard after the callback returns</div><div id="cb-dash"></div><div class="rd" id="cb-rd"></div></div></div><script type="application/json" id="cb-data">{"agg": {"All": {"sales": 1316165, "orders": 500, "avg": 2632, "prod": [296452, 228904, 272296, 255635, 262878], "month": [75259, 50217, 57658, 52826, 58029, 68200, 49532, 71902, 60932, 59824, 44534, 77751, 69133, 35341, 47234, 54514, 67300, 50657, 36322, 46676, 32773, 51117, 54795, 43639]}, "East": {"sales": 273276, "orders": 102, "avg": 2679, "prod": [54271, 58890, 64156, 42097, 53862], "month": [24592, 11591, 6357, 15984, 11557, 7653, 12385, 14512, 21267, 8461, 7929, 15624, 6995, 2237, 3881, 17004, 8548, 10244, 8974, 4490, 7122, 19004, 12266, 14599]}, "North": {"sales": 328414, "orders": 123, "avg": 2670, "prod": [89194, 57160, 63818, 37852, 80390], "month": [20512, 12823, 21100, 18117, 14583, 23554, 9369, 7936, 9910, 17661, 15285, 10928, 15914, 10027, 10840, 13056, 16986, 11783, 11576, 15499, 5246, 8551, 14980, 12178]}, "South": {"sales": 355491, "orders": 131, "avg": 2714, "prod": [80706, 58850, 69964, 78835, 67136], "month": [15935, 19327, 12754, 13581, 21153, 6651, 8278, 20272, 14698, 21221, 8218, 26852, 22314, 17676, 11412, 8775, 30009, 17955, 11394, 14975, 7636, 2726, 14479, 7200]}, "West": {"sales": 358984, "orders": 144, "avg": 2493, "prod": [72281, 54004, 74358, 96851, 61490], "month": [14220, 6476, 17447, 5144, 10736, 30342, 19500, 29182, 15057, 12481, 13102, 24347, 23910, 5401, 21101, 15679, 11757, 10675, 4378, 11712, 12769, 20836, 13070, 9662]}}, "prods": ["Headphones", "Keyboard", "Laptop", "Monitor", "Mouse"], "months": ["2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12"]}</script>
+  </div>
+</section>
+
+<section class="slide" data-sec="Callback">
+  <div class="eyebrow">Callback &#183; Mechanism: one change, one request</div>
+  <h1 class="t">Mechanism
+    <small>The browser holds every property. When one changes, it sends the inputs to the server, which runs the function and returns the outputs as JSON.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">recorded from the running app with a headless browser</div><svg viewBox="0 0 1100 240" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="One callback is one HTTP request from browser to server and back"><rect x="0.0" y="30.0" width="220.0" height="200.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><rect x="0.0" y="30.0" width="220.0" height="30.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="110.0" y="51.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#FFFFFF" text-anchor="middle" font-weight="700" >browser</text><text x="110.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >dash-renderer</text><text x="110.0" y="112.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >holds the layout</text><text x="110.0" y="134.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >and every property</text><rect x="880.0" y="30.0" width="220.0" height="200.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><rect x="880.0" y="30.0" width="220.0" height="30.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="990.0" y="51.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#FFFFFF" text-anchor="middle" font-weight="700" >Python server</text><text x="990.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >Flask + Dash</text><text x="990.0" y="112.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >runs update()</text><line x1="230.0" y1="90.0" x2="864.0" y2="90.0" stroke="#125F9E" stroke-width="2" /><path d="M870.0,90.0 L862.0,86.0 L862.0,94.0 z" fill="#125F9E"/><text x="550.0" y="70.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#125F9E" text-anchor="middle" font-weight="700" >POST /_dash-update-component</text><text x="550.0" y="112.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="400" >inputs: region.value = &quot;North&quot;</text><line x1="870.0" y1="170.0" x2="236.0" y2="170.0" stroke="#0E7A55" stroke-width="2" /><path d="M230.0,170.0 L238.0,174.0 L238.0,166.0 z" fill="#0E7A55"/><text x="550.0" y="152.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#0E7A55" text-anchor="middle" font-weight="700" >200 OK, JSON, 14,884 bytes</text><text x="550.0" y="194.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="400" >3 strings + 2 Plotly figures</text><text x="110.0" y="214.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >writes the 5 props</text></svg><div class="rd">The figures travel as JSON specifications, and the browser draws them with plotly.js.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Callback">
+  <div class="eyebrow">Callback &#183; Mechanism: the initial call</div>
+  <h1 class="t">Mechanism continued 1
+    <small>When the page loads, Dash runs every callback once so the outputs start filled. Our app has 7 callbacks; 6 ran before the reader touched a control.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><table class="d sm free"><tr><th>callback</th><th>why it ran on load</th><th>HTTP</th></tr><tr><td>products(category)</td><td>page load</td><td>200</td></tr><tr><td>search(text)</td><td>page load, returned 204</td><td>204</td></tr><tr><td>store(region)</td><td>page load</td><td>200</td></tr><tr><td>product_total(product)</td><td>product.value, written by products()</td><td>200</td></tr><tr><td>store_size(rows)</td><td>filtered.data, written by store()</td><td>200</td></tr><tr><td>update(region)</td><td>page load</td><td>200</td></tr><tr><td>apply(...)</td><td><b style="color:#B02F3B">did not run</b>: prevent_initial_call=True</td><td>&#8212;</td></tr></table><div class="colstack"><pre class="code sm">@callback(Output(<span class="py-str">&#x27;applied&#x27;</span>, <span class="py-str">&#x27;children&#x27;</span>),
+          Input(<span class="py-str">&#x27;apply&#x27;</span>, <span class="py-str">&#x27;n_clicks&#x27;</span>),
+          prevent_initial_call=<span class="py-kw">True</span>)</pre><div class="callout warn sm">The function has to handle the starting value of its input: <code class="k">'All'</code> for the dropdown, <code class="k">None</code> for a button not yet clicked.</div><div class="callout sm">Two of the six ran because another callback wrote their input. Dash follows the chain until nothing is left to update.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Callback">
+  <div class="eyebrow">Callback &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>Dash wires the callback from strings. Each string, and the shape of what the function returns, has to match.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>Dash assumes</th><th>when it is wrong</th></tr><tr><td>every id in Input and Output exists in the layout</td><td>the browser console says ID not found in layout, and the callback never runs</td></tr><tr><td>the function returns one value per Output, in the same order</td><td>HTTP 500 and SchemaTypeValidationError, below</td></tr><tr><td>each value fits its property</td><td>a DataFrame returned to <code class="k">children</code>: HTTP 500, InvalidCallbackReturnValue</td></tr><tr><td>the function reads its inputs, nothing else</td><td>a global changed in one callback is shared by every reader of the app</td></tr></table><div class="outlbl">two Outputs, one value returned</div><div class="out xs">dash._grouping.SchemaTypeValidationError: Schema: [&lt;Output `c1.children`&gt;, &lt;Output `c2.children`&gt;]
+Expected type: (&lt;class &#x27;tuple&#x27;&gt;, &lt;class &#x27;list&#x27;&gt;)
+Received value of type &lt;class &#x27;str&#x27;&gt;:
+    &#x27;x&#x27;</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Callback">
+  <div class="eyebrow">Callback &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>Every change is a round trip to the server. Changing the region sent 3 requests, and a text box sends one per keystroke.</small></h1>
+  <div class="wrap">
+<div class="cols3"><div class="card r"><h3>Latency</h3><p>The reader waits for the network and the function. A 2-second function means a 2-second dashboard.</p></div><div class="card o"><h3>Chatty inputs</h3><p>Typing <code class="k">mouse</code> into a <code class="k">dcc.Input</code> sent 5 requests. With <code class="k">debounce=True</code> it sent 0 until Enter, then 1.</p></div><div class="card o"><h3>The server does the work</h3><p>Every reader's every change runs Python on one machine.</p></div></div><pre class="code sm">dcc.Input(id=<span class="py-str">&#x27;search&#x27;</span>, type=<span class="py-str">&#x27;text&#x27;</span>, debounce=<span class="py-kw">True</span>)<span class="py-cm">   # send on Enter or leaving the box</span></pre>
+  </div>
+</section>
+
+<section class="slide" data-sec="Inputs">
+  <div class="eyebrow">Inputs &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>The function receives the current value of the input property. Ten input components hand it one of four shapes.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">what the function receives, by component</div><svg viewBox="0 0 1000 254" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Four shapes of input value"><rect x="0.0" y="6.0" width="170.0" height="52.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="85.0" y="37.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >one value</text><rect x="176.0" y="6.0" width="290.0" height="52.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.5" /><text x="190.0" y="38.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#125F9E" text-anchor="start" font-weight="700" >&#x27;North&#x27;</text><text x="490.0" y="28.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="start" font-weight="600" >Dropdown · RadioItems · Slider · Input</text><text x="490.0" y="47.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >property: value</text><rect x="0.0" y="68.0" width="170.0" height="52.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="85.0" y="99.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >a list</text><rect x="176.0" y="68.0" width="290.0" height="52.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.5" /><text x="190.0" y="100.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#0E7A55" text-anchor="start" font-weight="700" >[&#x27;Laptop&#x27;, &#x27;Mouse&#x27;]</text><text x="490.0" y="90.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="start" font-weight="600" >Checklist · Dropdown(multi=True)</text><text x="490.0" y="109.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >property: value</text><rect x="0.0" y="130.0" width="170.0" height="52.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="85.0" y="161.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >a pair</text><rect x="176.0" y="130.0" width="290.0" height="52.0" fill="#FFFFFF" stroke="#8F5D0A" stroke-width="1.5" /><text x="190.0" y="162.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#8F5D0A" text-anchor="start" font-weight="700" >[1000, 3000]</text><text x="490.0" y="152.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="start" font-weight="600" >RangeSlider · DatePickerRange</text><text x="490.0" y="171.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >property: value · start_date, end_date</text><rect x="0.0" y="192.0" width="170.0" height="52.0" fill="#9B2C7E" stroke="none" stroke-width="1" /><text x="85.0" y="223.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >a click count</text><rect x="176.0" y="192.0" width="290.0" height="52.0" fill="#FFFFFF" stroke="#9B2C7E" stroke-width="1.5" /><text x="190.0" y="224.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#9B2C7E" text-anchor="start" font-weight="700" >None, 1, 2, ...</text><text x="490.0" y="214.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="start" font-weight="600" >Button</text><text x="490.0" y="233.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >property: n_clicks</text></svg><div class="rd">Write the filter for the shape: <b>==</b> for one value, <b>isin</b> for a list, <b>between</b> for a pair.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Inputs">
+  <div class="eyebrow">Inputs &#183; Example 1: a list and a pair</div>
+  <h1 class="t">Example
+    <small>A checklist hands the function a list, and a range slider a list of two numbers. On sales.parquet each becomes one pandas filter.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><h2 class="s xs">a list: dcc.Checklist</h2><pre class="code xs">dcc.Checklist(id=<span class="py-str">&#x27;products&#x27;</span>, options=PRODUCTS,
+              value=[<span class="py-str">&#x27;Laptop&#x27;</span>, <span class="py-str">&#x27;Mouse&#x27;</span>])
+
+<span class="py-kw">def</span> f(products):<span class="py-cm">           # [&#x27;Laptop&#x27;, &#x27;Mouse&#x27;]</span>
+    d = df[df.Product.isin(products)]</pre><div class="outlbl">output</div><div class="out xs">201 orders</div><div class="callout sm">An empty list is a legal value. <code class="k">isin([])</code> returns 0 rows, and the charts go blank.</div></div><div class="colstack"><h2 class="s xs">a pair: dcc.RangeSlider</h2><pre class="code xs">dcc.RangeSlider(id=<span class="py-str">&#x27;band&#x27;</span>, min=<span class="py-num">0</span>, max=<span class="py-num">5000</span>, step=<span class="py-num">100</span>,
+                value=[<span class="py-num">1000</span>, <span class="py-num">3000</span>])
+
+<span class="py-kw">def</span> f(band):<span class="py-cm">               # [1000, 3000]</span>
+    lo, hi = band
+    d = df[df.Sales.between(lo, hi)]</pre><div class="outlbl">output</div><div class="out xs">194 orders</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Inputs">
+  <div class="eyebrow">Inputs &#183; Example 2: a date range and a button</div>
+  <h1 class="t">Example continued 1
+    <small>DatePickerRange keeps its two ends in two properties, so it takes two Inputs. A button hands over a count of clicks, starting at None.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code xs">@callback(Output(<span class="py-str">&#x27;by-month&#x27;</span>, <span class="py-str">&#x27;figure&#x27;</span>),
+          Input(<span class="py-str">&#x27;dates&#x27;</span>, <span class="py-str">&#x27;start_date&#x27;</span>),
+          Input(<span class="py-str">&#x27;dates&#x27;</span>, <span class="py-str">&#x27;end_date&#x27;</span>))
+<span class="py-kw">def</span> f(start, end):<span class="py-cm">         # &#x27;2024-01-01&#x27;, &#x27;2024-03-31&#x27;</span>
+    d = df[df.Date.between(start, end)]</pre><div class="outlbl">output</div><div class="out xs">59 orders</div><div class="callout sm">The dates arrive as ISO strings. pandas compares them with a datetime64 column directly.</div></div><div class="colstack"><pre class="code xs">@callback(Output(<span class="py-str">&#x27;applied&#x27;</span>, <span class="py-str">&#x27;children&#x27;</span>),
+          Input(<span class="py-str">&#x27;apply&#x27;</span>, <span class="py-str">&#x27;n_clicks&#x27;</span>))
+<span class="py-kw">def</span> f(n):<span class="py-cm">                  # None, then 1, 2, 3 ...</span></pre><div class="callout warn sm">The function sees how many clicks there have been, not the click itself. Recorded from the running app: <code class="k">n_clicks</code> of a button never pressed arrived as <code class="k">None</code>.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Outputs">
+  <div class="eyebrow">Outputs &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>An output names one property, and the return value replaces it. Twelve output components in the 2025 notebooks reduce to five properties.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>property written</th><th>components</th><th>return</th></tr><tr><td>figure</td><td>dcc.Graph</td><td>a Plotly figure: px.bar(...)</td></tr><tr><td>children</td><td>html.Div, html.H2, dcc.Markdown, dbc.Card, dbc.Alert, dbc.Badge</td><td>a string, or a tree of components</td></tr><tr><td>options, value</td><td>dcc.Dropdown, dcc.Checklist</td><td>a list of options; one of them</td></tr><tr><td>data</td><td>dcc.Store, dash_table.DataTable</td><td>a list of dicts: df.to_dict('records')</td></tr><tr><td>style, value</td><td>any component; dbc.Progress</td><td>a dict of CSS; a number</td></tr></table><div class="callout sm">dcc.Loading is the one output component in the list that writes nothing. It wraps other outputs and shows a spinner while their request is open.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Outputs">
+  <div class="eyebrow">Outputs &#183; Example: a KPI card as children</div>
+  <h1 class="t">Example
+    <small>children can take a whole tree of components. The KPI card returns a label and a number, coloured red when the region averages below all 500 orders.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><pre class="code xs">@callback(Output(<span class="py-str">&#x27;kpi-avg&#x27;</span>, <span class="py-str">&#x27;children&#x27;</span>),
+          Output(<span class="py-str">&#x27;kpi-avg&#x27;</span>, <span class="py-str">&#x27;style&#x27;</span>),
+          Input(<span class="py-str">&#x27;region&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>))
+<span class="py-kw">def</span> avg_card(region):
+    d = df <span class="py-kw">if</span> region == <span class="py-str">&#x27;All&#x27;</span> <span class="py-kw">else</span> df[df.Region == region]
+    a = d.Sales.mean()
+    colour = &#x27;<span class="py-cm">#B02F3B&#x27; if a &lt; df.Sales.mean() else &#x27;#14222B&#x27;</span>
+    <span class="py-kw">return</span> ([html.H6(<span class="py-str">&#x27;Average order&#x27;</span>), html.H2(f<span class="py-str">&#x27;{a:,.0f}&#x27;</span>)],
+            {<span class="py-str">&#x27;color&#x27;</span>: colour})</pre></div><div class="colstack"><table class="d sm"><tr><th>region</th><th>average order</th><th>colour</th></tr><tr><td>All</td><td>2,632</td><td>ink</td></tr><tr><td>East</td><td>2,679</td><td>ink</td></tr><tr><td>North</td><td>2,670</td><td>ink</td></tr><tr><td>South</td><td>2,714</td><td>ink</td></tr><tr><td>West</td><td>2,493</td><td><b style="color:#B02F3B">red</b></td></tr></table><div class="callout sm">Two Outputs on the same component are fine when they write different properties.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Patterns">
+  <div class="eyebrow">Patterns &#183; 1 of 5: multiple outputs</div>
+  <h1 class="t">Multiple outputs from one callback
+    <small>One request carried all five values. Splitting update() into five callbacks would send five requests and filter the data five times.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="fig"><div class="cap">recorded: 1 request, 5 properties written</div><svg viewBox="0 0 1100 250" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="callback update(region)"><rect x="420.0" y="93.0" width="260.0" height="64.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="550.0" y="131.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >update(region)</text><rect x="0.0" y="106.0" width="300.0" height="38.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="150.0" y="122.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="middle" font-weight="700" >region.value</text><text x="150.0" y="138.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >Input</text><line x1="300.0" y1="125.0" x2="410.0" y2="125.0" stroke="#125F9E" stroke-width="1.6" /><path d="M416.0,125.0 L408.0,121.0 L408.0,129.0 z" fill="#125F9E"/><rect x="770.0" y="14.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="37.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >kpi-sales.children</text><line x1="680.0" y1="125.0" x2="761.9" y2="37.4" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,33.0 L757.6,36.1 L763.5,41.6 z" fill="#0E7A55"/><rect x="770.0" y="60.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="83.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >kpi-orders.children</text><line x1="680.0" y1="125.0" x2="760.7" y2="81.8" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,79.0 L757.1,79.2 L760.8,86.3 z" fill="#0E7A55"/><rect x="770.0" y="106.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="129.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >kpi-avg.children</text><line x1="680.0" y1="125.0" x2="760.0" y2="125.0" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,125.0 L758.0,121.0 L758.0,129.0 z" fill="#0E7A55"/><rect x="770.0" y="152.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="175.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >by-product.figure</text><line x1="680.0" y1="125.0" x2="760.7" y2="168.2" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,171.0 L760.8,163.7 L757.1,170.8 z" fill="#0E7A55"/><rect x="770.0" y="198.0" width="330.0" height="38.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="935.0" y="221.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >by-month.figure</text><line x1="680.0" y1="125.0" x2="761.9" y2="212.6" stroke="#0E7A55" stroke-width="1.4" /><path d="M766.0,217.0 L763.5,208.4 L757.6,213.9 z" fill="#0E7A55"/><text x="150.0" y="12.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >component.property</text><text x="935.0" y="12.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="middle" font-weight="400" >component.property</text></svg></div><div class="colstack"><pre class="code sm"><span class="py-kw">return</span> (sales, orders, avg,
+        fig_product, fig_month)</pre><div class="callout sm">The tuple is matched to the Output list by position. Swapping two Outputs in the decorator swaps where the values land, with no error when the types fit.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Patterns">
+  <div class="eyebrow">Patterns &#183; 2 of 5: State and a button</div>
+  <h1 class="t">State: read a value without reacting to it
+    <small>A State is sent along with the request, but changing it does not start one. Typing 4000 sent nothing; clicking Apply sent one request.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">recorded from the running app</div><svg viewBox="0 0 1100 96" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="State is read when the button fires, and typing alone sends nothing"><rect x="0.0" y="20.0" width="245.0" height="66.0" fill="#FFFFFF" stroke="#C3CFD5" stroke-width="1.8" /><text x="122.0" y="47.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >type 4000 in min-sales</text><text x="122.0" y="70.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="700" >0 requests</text><line x1="248.0" y1="53.0" x2="266.0" y2="53.0" stroke="#53666F" stroke-width="1.6" /><path d="M272.0,53.0 L264.0,49.0 L264.0,57.0 z" fill="#53666F"/><rect x="275.0" y="20.0" width="245.0" height="66.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.8" /><text x="397.0" y="47.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >click Apply</text><text x="397.0" y="70.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="middle" font-weight="700" >1 request</text><line x1="523.0" y1="53.0" x2="541.0" y2="53.0" stroke="#53666F" stroke-width="1.6" /><path d="M547.0,53.0 L539.0,49.0 L539.0,57.0 z" fill="#53666F"/><rect x="550.0" y="20.0" width="245.0" height="66.0" fill="#FFFFFF" stroke="#8F5D0A" stroke-width="1.8" /><text x="672.0" y="47.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >server reads</text><text x="672.0" y="70.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#8F5D0A" text-anchor="middle" font-weight="700" >State min-sales = 4000</text><line x1="798.0" y1="53.0" x2="816.0" y2="53.0" stroke="#53666F" stroke-width="1.6" /><path d="M822.0,53.0 L814.0,49.0 L814.0,57.0 z" fill="#53666F"/><rect x="825.0" y="20.0" width="245.0" height="66.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.8" /><text x="947.0" y="47.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >writes applied</text><text x="947.0" y="70.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="middle" font-weight="700" >112 orders</text></svg></div><div class="cols"><pre class="code xs">@callback(Output(<span class="py-str">&#x27;applied&#x27;</span>, <span class="py-str">&#x27;children&#x27;</span>),
+          Input(<span class="py-str">&#x27;apply&#x27;</span>, <span class="py-str">&#x27;n_clicks&#x27;</span>),
+          State(<span class="py-str">&#x27;min-sales&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>),
+          prevent_initial_call=<span class="py-kw">True</span>)
+<span class="py-kw">def</span> apply(n, min_sales):
+    <span class="py-kw">return</span> f<span class="py-str">&quot;{(df.Sales &gt;= min_sales).sum()} orders&quot;</span></pre><div class="colstack"><div class="callout sm">Use a State for a form: the reader fills several boxes, then one click runs the filter once.</div><div class="callout sm">2025 notebook, mini dashboard 9, does the same with its region dropdown: the chart changes only when Generate Report is clicked.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Patterns">
+  <div class="eyebrow">Patterns &#183; 2 of 5: which input fired</div>
+  <h1 class="t">Telling two buttons apart with ctx.triggered_id
+    <small>With Apply and Reset both as Inputs, the function gets both click counts. ctx.triggered_id names the one that changed.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code xs"><span class="py-kw">from</span> dash <span class="py-kw">import</span> ctx
+
+@callback(Output(<span class="py-str">&#x27;applied&#x27;</span>, <span class="py-str">&#x27;children&#x27;</span>),
+          Output(<span class="py-str">&#x27;min-sales&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>),
+          Input(<span class="py-str">&#x27;apply&#x27;</span>, <span class="py-str">&#x27;n_clicks&#x27;</span>),
+          Input(<span class="py-str">&#x27;reset&#x27;</span>, <span class="py-str">&#x27;n_clicks&#x27;</span>),
+          State(<span class="py-str">&#x27;min-sales&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>),
+          prevent_initial_call=<span class="py-kw">True</span>)
+<span class="py-kw">def</span> apply(n_apply, n_reset, min_sales):
+    <span class="py-kw">if</span> ctx.triggered_id == <span class="py-str">&#x27;reset&#x27;</span>:
+        <span class="py-kw">return</span> f<span class="py-str">&quot;{len(df)} orders&quot;</span>, <span class="py-num">1000</span>
+    <span class="py-kw">return</span> f<span class="py-str">&quot;{(df.Sales &gt;= min_sales).sum()} orders&quot;</span>, min_sales</pre></div><div class="colstack"><table class="d sm"><tr><th>click</th><th>triggered_id</th><th>n_apply</th><th>n_reset</th><th>shown</th></tr><tr><td>Apply</td><td>'apply'</td><td>1</td><td>None</td><td>112 orders</td></tr><tr><td>Reset</td><td>'reset'</td><td>1</td><td>1</td><td>500 orders</td></tr></table><div class="callout sm">After Reset the min-sales box read 1000 again: one callback wrote back into its own State.</div><div class="callout warn sm">Comparing click counts cannot tell you this. After one click on each, both counts are 1.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Patterns">
+  <div class="eyebrow">Patterns &#183; 3 of 5: chained callbacks</div>
+  <h1 class="t">Chained callbacks: a dropdown that depends on another
+    <small>One callback writes the property another callback reads. Choosing Accessories sent 2 requests, one after the other.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">recorded: Electronics → Accessories</div><svg viewBox="0 0 1110 134" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Chained callbacks: category drives product options, product drives the total"><rect x="0.0" y="40.0" width="210.0" height="50.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="105.0" y="62.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#125F9E" text-anchor="middle" font-weight="700" >category.value</text><text x="105.0" y="78.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >Input</text><line x1="210.0" y1="65.0" x2="254.0" y2="65.0" stroke="#53666F" stroke-width="1.6" /><path d="M260.0,65.0 L252.0,61.0 L252.0,69.0 z" fill="#53666F"/><rect x="264.0" y="33.0" width="200.0" height="64.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="364.0" y="70.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#FFFFFF" text-anchor="middle" font-weight="700" >products(cat)</text><line x1="464.0" y1="55.0" x2="504.7" y2="32.9" stroke="#0E7A55" stroke-width="1.6" /><path d="M510.0,30.0 L501.1,30.3 L504.9,37.3 z" fill="#0E7A55"/><line x1="464.0" y1="75.0" x2="504.7" y2="97.1" stroke="#0E7A55" stroke-width="1.6" /><path d="M510.0,100.0 L504.9,92.7 L501.1,99.7 z" fill="#0E7A55"/><rect x="514.0" y="6.0" width="210.0" height="44.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="619.0" y="32.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >product.options</text><rect x="514.0" y="80.0" width="210.0" height="44.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="619.0" y="106.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >product.value</text><line x1="724.0" y1="102.0" x2="769.2" y2="68.6" stroke="#53666F" stroke-width="1.6" /><path d="M774.0,65.0 L765.2,66.5 L769.9,73.0 z" fill="#53666F"/><rect x="778.0" y="33.0" width="210.0" height="64.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="883.0" y="70.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#FFFFFF" text-anchor="middle" font-weight="700" >product_total(p)</text><line x1="988.0" y1="65.0" x2="1024.0" y2="65.0" stroke="#53666F" stroke-width="1.6" /><path d="M1030.0,65.0 L1022.0,61.0 L1022.0,69.0 z" fill="#53666F"/><text x="1036.0" y="60.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#0E7A55" text-anchor="start" font-weight="700" >Headphones:</text><text x="1036.0" y="76.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#0E7A55" text-anchor="start" font-weight="700" >296,452</text><text x="364.0" y="125.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >request 1</text><text x="883.0" y="125.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >request 2, sent when request 1 returned</text></svg></div><div class="cols"><pre class="code xs">@callback(Output(<span class="py-str">&#x27;product&#x27;</span>, <span class="py-str">&#x27;options&#x27;</span>),
+          Output(<span class="py-str">&#x27;product&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>),
+          Input(<span class="py-str">&#x27;category&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>))
+<span class="py-kw">def</span> products(cat):
+    opts = sorted(df[df.Category == cat].Product.unique())
+    <span class="py-kw">return</span> opts, opts[<span class="py-num">0</span>]</pre><div class="colstack"><div class="outlbl">products(&#x27;Accessories&#x27;)</div><div class="out xs">([&#x27;Headphones&#x27;, &#x27;Keyboard&#x27;, &#x27;Mouse&#x27;], &#x27;Headphones&#x27;)</div><div class="callout warn sm">2025 notebook, output 5, keyed products on region. Each of the 4 regions sells all 5 products, so the product list stays the same whichever region is picked. Category changes it.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Patterns">
+  <div class="eyebrow">Patterns &#183; 4 of 5: dcc.Store</div>
+  <h1 class="t">Sharing data between callbacks with dcc.Store
+    <small>A Store is a property in the browser that callbacks write and read. Data put in it crosses the network twice: out to the browser and back.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">recorded on page load, region All</div><svg viewBox="0 0 1100 186" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="dcc.Store keeps data in the browser, so it crosses the network twice"><rect x="0.0" y="30.0" width="200.0" height="150.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><rect x="0.0" y="30.0" width="200.0" height="28.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="100.0" y="49.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >browser</text><rect x="20.0" y="80.0" width="160.0" height="60.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.5" /><text x="100.0" y="106.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >dcc.Store</text><text x="100.0" y="125.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >id=&#x27;filtered&#x27;</text><rect x="900.0" y="30.0" width="200.0" height="150.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><rect x="900.0" y="30.0" width="200.0" height="28.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="1000.0" y="49.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >server</text><text x="1000.0" y="95.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="400" >store(region)</text><text x="1000.0" y="140.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="400" >store_size(rows)</text><line x1="890.0" y1="90.0" x2="216.0" y2="90.0" stroke="#0E7A55" stroke-width="2" /><path d="M210.0,90.0 L218.0,94.0 L218.0,86.0 z" fill="#0E7A55"/><text x="550.0" y="80.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >500 rows as JSON: 74,753 bytes</text><line x1="210.0" y1="135.0" x2="884.0" y2="135.0" stroke="#125F9E" stroke-width="2" /><path d="M890.0,135.0 L882.0,131.0 L882.0,139.0 z" fill="#125F9E"/><text x="550.0" y="125.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#125F9E" text-anchor="middle" font-weight="700" >the same rows sent back: 74,922 bytes</text><text x="550.0" y="165.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >the second callback reads the Store as its Input</text></svg></div><div class="cols"><pre class="code xs">dcc.Store(id=<span class="py-str">&#x27;filtered&#x27;</span>)
+
+@callback(Output(<span class="py-str">&#x27;filtered&#x27;</span>, <span class="py-str">&#x27;data&#x27;</span>), Input(<span class="py-str">&#x27;region&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>))
+<span class="py-kw">def</span> store(region):
+    <span class="py-kw">return</span> subset(region).to_dict(<span class="py-str">&#x27;records&#x27;</span>)</pre><div class="callout sm">Store what is expensive to recompute and small to send: an aggregate, a list of ids, a user's choices. 500 raw rows cost 150 KB per change.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Patterns">
+  <div class="eyebrow">Patterns &#183; 5 of 5: PreventUpdate and Loading</div>
+  <h1 class="t">Leaving an output alone: PreventUpdate and dcc.Loading
+    <small>Raising PreventUpdate returns HTTP 204 and the output keeps its last value. After the search box was cleared, the result still read 200 orders.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">recorded: type mo, then clear the box</div><svg viewBox="0 0 1100 84" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="PreventUpdate returns HTTP 204 and the output keeps its value"><rect x="0.0" y="20.0" width="240.0" height="50.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="120.0" y="42.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#125F9E" text-anchor="middle" font-weight="700" >search.value = &#x27;&#x27;</text><text x="120.0" y="58.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >Input</text><line x1="240.0" y1="45.0" x2="294.0" y2="45.0" stroke="#53666F" stroke-width="1.6" /><path d="M300.0,45.0 L292.0,41.0 L292.0,49.0 z" fill="#53666F"/><rect x="304.0" y="13.0" width="230.0" height="64.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="419.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#FFFFFF" text-anchor="middle" font-weight="700" >search(text)</text><text x="419.0" y="60.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#F0C46B" text-anchor="middle" font-weight="400" >raise PreventUpdate</text><line x1="534.0" y1="45.0" x2="594.0" y2="45.0" stroke="#B02F3B" stroke-width="1.6" /><path d="M600.0,45.0 L592.0,41.0 L592.0,49.0 z" fill="#B02F3B"/><rect x="604.0" y="20.0" width="180.0" height="50.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.8" /><text x="694.0" y="50.0" font-family="JetBrains Mono,monospace" font-size="15" fill="#B02F3B" text-anchor="middle" font-weight="700" >HTTP 204</text><line x1="784.0" y1="45.0" x2="840.0" y2="45.0" stroke="#C3CFD5" stroke-width="1.6" /><path d="M846.0,45.0 L838.0,41.0 L838.0,49.0 z" fill="#C3CFD5"/><rect x="850.0" y="20.0" width="250.0" height="50.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="975.0" y="42.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >search-out.children</text><text x="975.0" y="58.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >still &#x27;200 orders&#x27;</text></svg></div><div class="cols"><pre class="code xs"><span class="py-kw">from</span> dash.exceptions <span class="py-kw">import</span> PreventUpdate
+
+<span class="py-kw">def</span> search(text):
+    <span class="py-kw">if</span> not text:
+        raise PreventUpdate<span class="py-cm">      # write nothing</span>
+    n = df.Product.str.contains(text, case=<span class="py-kw">False</span>).sum()
+    <span class="py-kw">return</span> f<span class="py-str">&quot;{n} orders&quot;</span></pre><pre class="code xs">dcc.Loading(dcc.Graph(id=<span class="py-str">&#x27;by-month&#x27;</span>))
+<span class="py-cm"># spinner over the graph while its request is open</span></pre></div><div class="callout sm">Returning <code class="k">None</code> instead would write None and blank the output. PreventUpdate writes nothing at all.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Patterns">
+  <div class="eyebrow">Patterns &#183; the whole app</div>
+  <h1 class="t">The lecture app: 7 callbacks
+    <small>Four inputs the reader touches, seven functions, two of them chained behind others. Debug mode draws this graph live in the browser.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">the callback graph of the app used for every recording in this lecture</div><svg viewBox="0 0 1020 336" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="All seven callbacks of the lecture app"><rect x="0.0" y="20.0" width="220.0" height="40.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="110.0" y="44.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="middle" font-weight="700" >region.value</text><rect x="0.0" y="110.0" width="220.0" height="40.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="110.0" y="134.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="middle" font-weight="700" >category.value</text><rect x="0.0" y="200.0" width="220.0" height="40.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="110.0" y="224.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="middle" font-weight="700" >apply / reset n_clicks</text><rect x="0.0" y="290.0" width="220.0" height="40.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="110.0" y="314.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="middle" font-weight="700" >search.value</text><rect x="300.0" y="6.0" width="150.0" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="375.0" y="31.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >update()</text><rect x="300.0" y="52.0" width="150.0" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="375.0" y="77.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >store()</text><rect x="300.0" y="110.0" width="150.0" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="375.0" y="135.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >products()</text><rect x="300.0" y="200.0" width="150.0" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="375.0" y="225.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >apply()</text><rect x="300.0" y="290.0" width="150.0" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="375.0" y="315.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >search()</text><line x1="220.0" y1="40.0" x2="290.1" y2="27.1" stroke="#53666F" stroke-width="1.6" /><path d="M296.0,26.0 L287.4,23.5 L288.9,31.4 z" fill="#53666F"/><line x1="220.0" y1="40.0" x2="290.5" y2="69.7" stroke="#53666F" stroke-width="1.6" /><path d="M296.0,72.0 L290.2,65.2 L287.1,72.6 z" fill="#53666F"/><line x1="220.0" y1="130.0" x2="290.0" y2="130.0" stroke="#53666F" stroke-width="1.6" /><path d="M296.0,130.0 L288.0,126.0 L288.0,134.0 z" fill="#53666F"/><line x1="220.0" y1="220.0" x2="290.0" y2="220.0" stroke="#53666F" stroke-width="1.6" /><path d="M296.0,220.0 L288.0,216.0 L288.0,224.0 z" fill="#53666F"/><line x1="220.0" y1="310.0" x2="290.0" y2="310.0" stroke="#53666F" stroke-width="1.6" /><path d="M296.0,310.0 L288.0,306.0 L288.0,314.0 z" fill="#53666F"/><rect x="540.0" y="6.0" width="230.0" height="40.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="655.0" y="30.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >3 KPIs + 2 figures</text><rect x="540.0" y="52.0" width="230.0" height="40.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="655.0" y="76.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >filtered.data</text><rect x="540.0" y="110.0" width="230.0" height="40.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="655.0" y="134.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >product.options / value</text><rect x="540.0" y="200.0" width="230.0" height="40.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="655.0" y="224.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >applied, min-sales</text><rect x="540.0" y="290.0" width="230.0" height="40.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="655.0" y="314.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >search-out</text><line x1="450.0" y1="26.0" x2="530.0" y2="26.0" stroke="#0E7A55" stroke-width="1.6" /><path d="M536.0,26.0 L528.0,22.0 L528.0,30.0 z" fill="#0E7A55"/><line x1="450.0" y1="72.0" x2="530.0" y2="72.0" stroke="#0E7A55" stroke-width="1.6" /><path d="M536.0,72.0 L528.0,68.0 L528.0,76.0 z" fill="#0E7A55"/><line x1="450.0" y1="130.0" x2="530.0" y2="130.0" stroke="#0E7A55" stroke-width="1.6" /><path d="M536.0,130.0 L528.0,126.0 L528.0,134.0 z" fill="#0E7A55"/><line x1="450.0" y1="220.0" x2="530.0" y2="220.0" stroke="#0E7A55" stroke-width="1.6" /><path d="M536.0,220.0 L528.0,216.0 L528.0,224.0 z" fill="#0E7A55"/><line x1="450.0" y1="310.0" x2="530.0" y2="310.0" stroke="#0E7A55" stroke-width="1.6" /><path d="M536.0,310.0 L528.0,306.0 L528.0,314.0 z" fill="#0E7A55"/><rect x="860.0" y="52.0" width="150.0" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="935.0" y="77.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >store_size()</text><rect x="860.0" y="130.0" width="150.0" height="40.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="935.0" y="155.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >product_total()</text><line x1="770.0" y1="72.0" x2="850.0" y2="72.0" stroke="#0E7A55" stroke-width="1.6" /><path d="M856.0,72.0 L848.0,68.0 L848.0,76.0 z" fill="#0E7A55"/><line x1="770.0" y1="130.0" x2="850.1" y2="146.8" stroke="#0E7A55" stroke-width="1.6" /><path d="M856.0,148.0 L849.0,142.4 L847.4,150.3 z" fill="#0E7A55"/><text x="935.0" y="116.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >chained</text></svg></div><pre class="code sm">app.run(debug=<span class="py-kw">True</span>)<span class="py-cm">     # the debug menu, bottom right, opens the callback graph</span></pre>
+  </div>
+</section>
+
+<section class="slide" data-sec="Reference">
+  <div class="eyebrow">Reference &#183; the 2025 mini-dashboards</div>
+  <h1 class="t">The 22 practice apps, sorted into this lecture
+    <small>Each notebook app shows one component. This table says which idea from today it practises.</small></h1>
+  <div class="wrap">
+<div class="cols"><table class="d xs tight"><tr><th>inputs notebook</th><th>shape or pattern</th></tr><tr><td>1 Dropdown</td><td>one value</td></tr><tr><td>2 Slider</td><td>one value; 2 outputs</td></tr><tr><td>3 RangeSlider</td><td>a pair; 2 outputs</td></tr><tr><td>4 RadioItems</td><td>one value</td></tr><tr><td>5 Checklist</td><td>a list</td></tr><tr><td>6 Input (text)</td><td>one value; per keystroke</td></tr><tr><td>7 DatePickerSingle</td><td>one value, ISO string</td></tr><tr><td>8 DatePickerRange</td><td>a pair, two properties</td></tr><tr><td>9 Button</td><td>click count, State, Store</td></tr><tr><td>10 Tabs</td><td>one value: the tab name</td></tr></table><table class="d xs tight"><tr><th>outputs notebook</th><th>property written</th></tr><tr><td>1 Graph</td><td>figure</td></tr><tr><td>2 HTML content</td><td>children, a tree</td></tr><tr><td>3 Markdown</td><td>children, a string</td></tr><tr><td>4 DataTable</td><td>children holding a table</td></tr><tr><td>5 Dependent dropdown</td><td>options, value: chained</td></tr><tr><td>6 Multiple children</td><td>multiple outputs</td></tr><tr><td>7 Loading</td><td>wrapper, writes nothing</td></tr><tr><td>8 Alert · 9 Card · 10 Badge</td><td>children</td></tr><tr><td>11 Progress</td><td>value</td></tr><tr><td>12 Store</td><td>data, read by a 2nd callback</td></tr></table></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Summary">
+  <div class="eyebrow">Summary</div>
+  <h1 class="t">What a callback needs and what can go wrong
+    <small>One table for the whole lecture.</small></h1>
+  <div class="wrap">
+<table class="d sm free"><tr><th>idea</th><th>in code</th><th>recorded in our app</th></tr><tr><td>callback</td><td>Input(id, prop) → function → Output(id, prop)</td><td>one change, one POST, 14,884 bytes back for North</td></tr><tr><td>initial call</td><td>prevent_initial_call=True to skip</td><td>6 of 7 callbacks ran on page load</td></tr><tr><td>input shapes</td><td>value · list · pair · n_clicks</td><td>201, 194 and 59 orders for the three filters</td></tr><tr><td>multiple outputs</td><td>return a tuple in Output order</td><td>5 properties in 1 request</td></tr><tr><td>State</td><td>State(id, prop)</td><td>typing 4000: 0 requests</td></tr><tr><td>triggered_id</td><td>ctx.triggered_id == 'reset'</td><td>both buttons at 1 click, told apart</td></tr><tr><td>chained</td><td>an Output that is another Input</td><td>2 requests in sequence</td></tr><tr><td>Store</td><td>dcc.Store(id=...)</td><td>74,753 bytes out, 74,922 back</td></tr><tr><td>PreventUpdate</td><td>raise PreventUpdate</td><td>HTTP 204, output unchanged</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Practice
+    <small>Five exercises on the lecture 2 dashboard, plus the 22 mini-apps in practice/.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><ol class="n"><li>Connect the region dropdown to the three KPI cards and both charts with one callback. Check that North shows 328,414 sales over 123 orders.</li><li>Add a checklist of products. Make the charts show only the ticked products, and show a message instead of empty charts when none is ticked.</li><li>Add a min-sales box with Apply and Reset buttons. Use State and ctx.triggered_id.</li><li>Add a category dropdown that sets the options of a product dropdown.</li><li>Put the filtered rows in a dcc.Store and draw both charts from it. Measure the bytes sent in the browser's network tab, then store the two aggregates instead.</li></ol></div><div class="colstack fill"><div class="card b"><h3>practice/dash_inputs_practice.ipynb</h3><p>The 10 input apps from 2025. Run each one with app.run(jupyter_mode="inline").</p></div><div class="card g"><h3>practice/dash_outputs_practice.ipynb</h3><p>The 12 output apps from 2025. They generate their own data with a Profit column.</p></div><div class="card o"><h3>Next lecture</h3><p>SQLite: the same sales data in a database, queried from a callback.</p></div></div></div>
+  </div>
+</section>
+</div></div>
+<div id="nav"><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></div>
+<div id="hint">&#8592; &#8594; navigate &#183; F fullscreen &#183; P print</div>
+<script>
+/* ============================================================
+   deck mechanics — identical to the other decks in the module
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 &#183; Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 3 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  // ---- staged builds ------------------------------------------------
+  // A slide carrying .build holds its [data-at] pieces back. Arrow
+  // right releases the next one; only when they are all out does the
+  // deck advance. Entering backwards lands on the finished slide.
+  function maxStep(s){
+    let m=0;
+    s.querySelectorAll('[data-at]').forEach(e=>{ m=Math.max(m,+e.dataset.at||0); });
+    return m;
+  }
+  function paint(s){
+    const k=+s.dataset.step||0;
+    // data-to="k" retires a piece once the build moves past step k
+    s.querySelectorAll('[data-at]').forEach(e=>
+      e.classList.toggle('shown',(+e.dataset.at||0)<=k&&
+        (e.dataset.to===undefined||k<=+e.dataset.to)));
+    const d=s.querySelector('.bld');
+    if(d)[...d.children].forEach((c,n)=>c.classList.toggle('on',n<k));
+  }
+  function build(s,dir){
+    if(!s||!s.classList.contains('build'))return false;
+    const t=(+s.dataset.step||0)+dir;
+    if(t<0||t>maxStep(s))return false;
+    s.dataset.step=t; paint(s); return true;
+  }
+  function show(n){
+    const prev=i, back=n<i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    const cur=slides[i];
+    if(cur&&cur.classList.contains('build')){
+      cur.dataset.step=back?maxStep(cur):0; paint(cur);
+    }
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(cur) cur.dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>{ if(!build(slides[i],1))show(i+1); };
+  document.getElementById('prev').onclick=()=>{ if(!build(slides[i],-1))show(i-1); };
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){
+      if(!build(slides[i],1))show(i+1); e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){
+      if(!build(slides[i],-1))show(i-1); e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+
+
+(function(){
+  const el=document.getElementById('cb-data'); if(!el) return;
+  const D=JSON.parse(el.textContent), sel=document.getElementById('cb-region'),
+        box=document.getElementById('cb-dash'), rd=document.getElementById('cb-rd'),
+        flow=[...document.querySelectorAll('#cb-flow .cbn')];
+  const SH=['Head','Keyb','Lapt','Moni','Mous'], f=n=>n.toLocaleString('en-IN').replace(/,(?=\d{2},)/g,',');
+  const fmt=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  const T=(x,y,s,sz,fill,anc,fam,w)=>'<text x="'+x+'" y="'+y+'" font-size="'+sz+'" fill="'+fill+'" text-anchor="'+(anc||'start')+'" font-family="'+(fam||'JetBrains Mono,monospace')+'" font-weight="'+(w||400)+'">'+s+'</text>';
+  function draw(r){
+    const a=D.agg[r], W=760, H=330; let s='';
+    const kp=[['Total sales',fmt(a.sales)],['Orders',String(a.orders)],['Average order',fmt(a.avg)]], cw=(W-40)/3;
+    kp.forEach((k,i)=>{const x=i*(cw+20); s+='<rect x="'+x+'" y="0" width="'+cw+'" height="64" fill="#fff" stroke="#DCE4E8"/><rect x="'+x+'" y="0" width="'+cw+'" height="3" fill="#125F9E"/>'+
+      T(x+12,22,k[0],11,'#53666F')+T(x+12,52,k[1],22,'#14222B','start','Public Sans,sans-serif',700);});
+    const pw=(W-20)/2, top=80, ch=H-top;
+    s+='<rect x="0" y="'+top+'" width="'+pw+'" height="'+ch+'" fill="#fff" stroke="#DCE4E8"/>'+T(10,top+18,'Sales by product',11,'#53666F');
+    const mx=Math.max(...D.agg.All.prod)*1.0, bh=ch-60, bw=(pw-30)/5;
+    a.prod.forEach((v,i)=>{const h=bh*v/mx, x=15+i*bw; s+='<rect x="'+(x+bw*.18)+'" y="'+(top+30+bh-h)+'" width="'+(bw*.64)+'" height="'+h+'" fill="#125F9E"/>'+T(x+bw/2,top+30+bh+14,SH[i],10,'#53666F','middle');});
+    const mm=Math.max(...a.month), lx=pw+40, lw=pw-40, ly=top+32, lh=ch-62;
+    s+='<rect x="'+(pw+20)+'" y="'+top+'" width="'+pw+'" height="'+ch+'" fill="#fff" stroke="#DCE4E8"/>'+T(pw+30,top+18,'Sales by month',11,'#53666F');
+    const pts=a.month.map((v,i)=>(lx+i*lw/(a.month.length-1)).toFixed(1)+','+(ly+lh-lh*v/mm).toFixed(1)).join(' ');
+    s+='<polyline points="'+pts+'" fill="none" stroke="#0E7A55" stroke-width="2"/>'+T(lx,ly+lh+14,'2023-01',9.5,'#53666F')+T(lx+lw,ly+lh+14,'2024-12',9.5,'#53666F','end');
+    box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="dashboard for '+r+'">'+s+'</svg>';
+    rd.innerHTML='Region <b>'+r+'</b>: '+fmt(a.sales)+' in sales over '+a.orders+' orders. The product bars share one scale across regions; the month line rescales to its own peak.';
+  }
+  let timers=[];
+  function run(){
+    timers.forEach(clearTimeout); timers=[]; flow.forEach(n=>n.classList.remove('lit'));
+    flow.forEach((n,i)=>timers.push(setTimeout(()=>{flow.forEach(m=>m.classList.remove('lit')); n.classList.add('lit'); if(i===2) draw(sel.value);},i*380)));
+    timers.push(setTimeout(()=>flow.forEach(m=>m.classList.remove('lit')),1500));
+  }
+  sel.addEventListener('change',run); draw('All');
+})();
+
+</script>
+</body>
+</html>

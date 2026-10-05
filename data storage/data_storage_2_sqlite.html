@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Storage · Part 2: SQLite and SQL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d th.m,table.d td.m{font-family:var(--mono);text-align:right;white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d.tight th,table.d.tight td{padding:2.4px 7px}
+table.d.tight th{text-transform:none}
+table.d.tight tr.tot td{font-weight:700}
+
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- embedded demo ---------- */
+.demo-frame{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--line);
+  background:var(--paper)}
+.demo-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--t-cls);
+  text-decoration:none;border-bottom:1px solid currentColor;margin-left:8px;white-space:nowrap}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+<style>
+/* ================= additions for the Data Cleaning series =================
+   Vocabulary specific to this module. Everything above is the shared theme,
+   copied verbatim from the Data Collection decks.                          */
+
+/* ---------- the spine: symptom -> mechanisms -> what it permits ---------- */
+.spine{display:grid;grid-template-columns:150px 1fr 1fr;gap:0 12px;align-items:stretch}
+.spine .hd{font-family:var(--mono);font-size:9.3px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft);padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.spine .sym{background:var(--ink);color:#fff;padding:8px 11px;margin-bottom:7px;
+  display:flex;flex-direction:column;justify-content:center}
+.spine .sym b{font-family:var(--disp);font-size:13.5px;font-weight:700;display:block;line-height:1.15}
+.spine .sym i{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:#9BB4C0;margin-top:3px}
+.spine .mid,.spine .rgt{background:var(--card);border:1px solid var(--hair);padding:8px 11px;
+  margin-bottom:7px;font-size:11.7px;line-height:1.4;color:#31444F;display:flex;align-items:center}
+.spine .rgt{border-left:3px solid var(--t-grp)}
+.spine .mid{border-left:3px solid var(--t-anc)}
+.spine .now .sym{background:var(--t-asr)}
+.spine .now .mid,.spine .now .rgt{background:#FFF9F9}
+.spine b.q{font-weight:700;color:var(--ink)}
+
+/* ---------- three-mechanism cards ---------- */
+.mech{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;flex:1;min-height:0}
+.mech .m{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.mech .m.a{border-top-color:var(--t-grp)}
+.mech .m.b{border-top-color:var(--t-anc)}
+.mech .m.c{border-top-color:var(--t-asr)}
+.mech .m h3{font-family:var(--disp);font-size:15px;font-weight:700;line-height:1.1}
+.mech .m h3 span{display:block;font-family:var(--mono);font-size:9.2px;font-weight:400;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+.mech .m .def{font-size:12.2px;line-height:1.42;color:#31444F}
+.mech .m .def b{font-weight:700;color:var(--ink)}
+.mech .m .ex{font-size:11.4px;line-height:1.4;color:var(--soft);border-top:1px solid var(--hair);
+  padding-top:6px;margin-top:auto}
+.mech .m .ex b{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);display:block;margin-bottom:3px}
+
+/* ---------- figures (inline SVG, no image files) ---------- */
+.fig{background:var(--card);border:1px solid var(--hair);padding:10px 12px 8px;
+  display:flex;flex-direction:column;min-height:0}
+.fig .cap{font-family:var(--mono);font-size:9.3px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:7px}
+.fig .rd{font-size:11.6px;line-height:1.4;color:#31444F;margin-top:7px;
+  border-top:1px solid var(--hair);padding-top:6px}
+.fig .rd b{font-weight:700;color:var(--ink)}
+.fig svg{display:block;max-height:100%}
+.fig .rd{margin-top:auto}
+
+/* ---------- the cleaning log ---------- */
+table.log{width:100%;border-collapse:collapse;font-size:11.6px;background:var(--card)}
+table.log th,table.log td{border:1px solid var(--hair);padding:5px 9px;text-align:left;
+  vertical-align:top;line-height:1.38}
+table.log th{background:var(--ink);color:#fff;font-weight:600;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.log td:nth-child(1){font-family:var(--mono);font-size:10.6px;white-space:nowrap;color:#26404E}
+table.log td:nth-child(4){font-style:italic;color:var(--soft)}
+table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+/* ---------- the missingness lab (slides 6, 23 and 35) ---------- */
+.lab{display:grid;grid-template-columns:1.62fr 1fr;gap:15px;flex:1;min-height:0}
+.lab .plot{background:var(--card);border:1px solid var(--hair);padding:9px 11px 7px;
+  display:flex;flex-direction:column;min-height:0}
+.lab .plot svg{flex:1;min-height:0;display:block}
+.plotnote{font-size:10.6px;color:var(--soft);line-height:1.35;margin-top:5px;
+  border-top:1px solid var(--hair);padding-top:5px}
+.plotnote b{color:var(--ink)}
+.seg{display:flex;gap:6px;flex:none;margin-bottom:7px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.09em;padding:5px 13px;
+  border:1px solid var(--line);background:var(--paper);color:var(--soft);cursor:pointer;
+  border-radius:2px;transition:background .15s,color .15s,border-color .15s}
+.seg button:hover{background:#E2EBF0;color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.seg button.alt{margin-left:auto;font-size:10.4px;letter-spacing:.12em}
+.seg button:focus-visible{outline:2px solid var(--t-cls);outline-offset:1px}
+.meanbox{background:var(--card);border:1px solid var(--hair);padding:8px 10px;flex:none}
+.meanbox svg{display:block;width:100%}
+.pt{transition:fill .28s ease,stroke .28s ease,opacity .28s ease}
+g.knobpt{transition:transform .45s cubic-bezier(.4,0,.2,1)}
+@media (prefers-reduced-motion:reduce){g.knobpt{transition:none}}
+
+/* ---------- fill: let a short column spread over the stage instead of
+   piling its cards at the top. Cards grow and centre their own text; callouts,
+   tables and code keep their natural height.                                 */
+.colstack.fill{gap:12px}
+.colstack.fill > .card{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
+.colstack.fill > .callout,.colstack.fill > table,.colstack.fill > pre,
+.colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
+
+/* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
+table.d.roomy td,table.d.roomy th{padding:19px 10px}
+table.d.roomy.tall td,table.d.roomy.tall th{padding:27px 10px}
+table.log.roomy td,table.log.roomy th{padding:17px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:24px 12px;margin-bottom:10px}
+
+/* ---------- cover ornament: a wall of raw cells ---------- */
+.coverpat .c-miss{color:var(--t-asr);font-weight:700}
+.coverpat .c-val{color:var(--t-grp)}
+.coverpat .c-dim{color:#9BAAB3}
+.coverpat .c-hdr{color:var(--t-cls);font-weight:700}
+
+/* ---------- intuition-slide reveals: the figure arrives in the order the
+   lecturer speaks it, so the picture is not finished before the sentence is. */
+@media (prefers-reduced-motion:no-preference){
+  .slide.on .fig svg .hi{animation:hifade .55s ease .15s both}
+  .slide.on .fig svg .mk{animation:hifade .5s ease both}
+  .slide.on .fig svg .mk0{animation-delay:.55s}
+  .slide.on .fig svg .mk1{animation-delay:.95s}
+  .slide.on .fig svg .drawline{stroke-dasharray:900;stroke-dashoffset:900;
+    animation:drawin 1.15s .25s ease-out forwards}
+  @keyframes hifade{from{opacity:0}to{opacity:1}}
+  @keyframes drawin{to{stroke-dashoffset:0}}
+}
+
+.fig .expl{margin-top:auto;padding:12px 16px}
+.fig .expl p + p{margin-top:6px}
+/* ---------- staged builds: on a slide marked .build, one arrow press
+   reveals one more [data-at] piece before the deck moves to the next slide.
+   The lecturer speaks a term, then presses once, and that term appears. */
+.slide.build [data-at]{opacity:0}
+.slide.build [data-at].shown{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  .slide.build [data-at]{transition:opacity .34s ease}
+}
+.bld{position:absolute;right:58px;bottom:38px;display:flex;gap:5px;z-index:3}
+.bld i{width:17px;height:3px;background:var(--line);border-radius:2px;display:block;
+  transition:background .25s ease}
+.bld i.on{background:var(--t-asr)}
+</style>
+
+<style>
+/* storage L1 additions: column-read widget */
+.bwpick{display:flex;flex-direction:column;gap:7px}
+.bwrow{display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:center;margin:14px 0}
+.bwrow .k{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right}
+.bwtrack{position:relative;height:40px;background:var(--paper);border:1px solid var(--hair)}
+.bwbar{position:absolute;left:0;top:0;bottom:0;transition:width .3s ease}
+.bwbar.csv{background:#125F9E}.bwbar.pq{background:#0E7A55}
+.bwrow .v{font-family:var(--mono);font-size:12.5px;font-weight:700;margin-top:5px;color:var(--ink)}
+.bwrow .v i{font-style:normal;font-weight:400;color:var(--soft);margin-left:8px}
+</style>
+<style>
+/* storage L4 additions: join explorer */
+#jx-out td{font-family:var(--mono);font-size:11.5px}
+#jx-out td.nul{color:#B02F3B;font-style:italic}
+#jx-sql{margin-top:6px}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat">
+    <div><span class="h-mth">SELECT</span> <span class="h-hdr">c.place</span>, <span class="h-mth">COUNT</span>(*)</div>
+    <div><span class="h-mth">FROM</span> orders o <span class="h-mth">JOIN</span> customers c</div>
+    <div><span class="h-dim">  ON c.customer_id = o.customer_id</span></div>
+    <div><span class="h-mth">GROUP BY</span> c.place;</div>
+    <div>&#160;</div>
+    <div><span class="h-hdr">Chennai</span>    <span class="h-val">1041</span></div>
+    <div><span class="h-hdr">Bangalore</span>  <span class="h-val">884</span></div>
+    <div>&#160;</div>
+    <div><span class="h-mth">PRAGMA</span> foreign_keys = <span class="h-val">ON</span>;</div>
+    <div><span class="h-bad">FOREIGN KEY constraint failed</span></div>
+  </div>
+  <div class="kicker">DA2402 &#183; Data Curation and Visualization</div>
+  <h1>Data<br/>Storage</h1>
+  <div class="pt">Part 2 &#8212; SQLite and SQL</div>
+  <div class="rule"></div>
+  <p class="sub">Tables, keys and the rules a database checks on every write. Queries with WHERE, GROUP BY,
+  joins and window functions, a query feeding a Dash callback, and the governance of the data inside.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 &#183; BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data storage</td></tr>
+    <tr><td>Lecture</td><td>4 of 9 &#183; SQLite and SQL</td></tr>
+    <tr><td>Data</td><td>ecom.db &#183; customers, products, orders</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-sec="Storage">
+  <div class="eyebrow">Data storage &#183; where lecture 1 stopped</div>
+  <h1 class="t">From files to a database
+    <small>Lecture 1 sent two cases to a database: several people writing to the data, and tables joined to each other. A shop has both.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="fig"><div class="cap">the same shop data, two ways</div><svg viewBox="0 0 700 204" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Three CSV files beside one SQLite database file holding three tables"><rect x="0.0" y="8.0" width="210.0" height="46.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="28.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >customers.csv</text><text x="14.0" y="45.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >100 rows</text><rect x="0.0" y="66.0" width="210.0" height="46.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="86.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >products.csv</text><text x="14.0" y="103.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >50 rows</text><rect x="0.0" y="124.0" width="210.0" height="46.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="144.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >orders.csv</text><text x="14.0" y="161.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >4,000 rows</text><text x="105.0" y="196.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#B02F3B" text-anchor="middle" font-weight="700" >three files, checked by nobody</text><line x1="240.0" y1="92.0" x2="324.0" y2="92.0" stroke="#53666F" stroke-width="1.6" /><path d="M330.0,92.0 L322.0,88.0 L322.0,96.0 z" fill="#53666F"/><rect x="350.0" y="8.0" width="330.0" height="174.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.8" /><rect x="350.0" y="8.0" width="330.0" height="32.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="515.0" y="30.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#FFFFFF" text-anchor="middle" font-weight="700" >ecom.db</text><rect x="370.0" y="52.0" width="140.0" height="32.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="440.0" y="73.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >customers</text><rect x="370.0" y="94.0" width="140.0" height="32.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="440.0" y="115.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >products</text><rect x="370.0" y="136.0" width="140.0" height="32.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1" /><text x="440.0" y="157.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >orders</text><text x="528.0" y="73.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="400" >keys checked</text><text x="528.0" y="115.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="400" >on every write</text><text x="528.0" y="157.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="400" >queried in SQL</text><text x="515.0" y="196.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >one file, rules inside it</text></svg></div><div class="colstack fill"><div class="card g"><h3>Rules</h3><p>An order must point at a customer who exists. The database refuses a write that breaks a rule.</p></div><div class="card b"><h3>Joins</h3><p>Questions span tables: which city orders the most sweets.</p></div><div class="card o"><h3>SQLite</h3><p>The whole database is one file. Python ships with the sqlite3 module; there is no server to install.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Storage">
+  <div class="eyebrow">Data storage &#183; the data</div>
+  <h1 class="t">ecom.db: customers, products and orders
+    <small>100 customers in five cities, 50 products in four types and 4,000 orders over 2024 and 2025. make_ecom.py writes it with a fixed seed.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">import</span> sqlite3, pandas <span class="py-kw">as</span> pd
+con = sqlite3.connect(<span class="py-str">&#x27;ecom.db&#x27;</span>)
+pd.read_sql(<span class="py-str">&#x27;SELECT * FROM customers LIMIT 5&#x27;</span>, con)</pre><div class="outlbl">output</div><div class="out xs"> customer_id         name                     email     place
+           1   Imran Khan   imran.khan1@example.com   Chennai
+           2   Arjun Khan   arjun.khan2@example.com Bangalore
+           3   Meera Iyer   meera.iyer3@example.com    Mumbai
+           4 Harish Joshi harish.joshi4@example.com Bangalore
+           5  Sneha Gupta  sneha.gupta5@example.com     Delhi</div></div><div class="colstack"><table class="d sm free"><tr><th>table</th><th>rows</th><th>columns</th></tr><tr><td>customers</td><td>100</td><td>customer_id, name, email, place</td></tr><tr><td>products</td><td>50</td><td>product_id, product_name, price, description</td></tr><tr><td>orders</td><td>4,000</td><td>order_id, customer_id, product_id, order_date</td></tr></table><div class="callout sm">One row of orders is one item sold. The schema has no quantity column, so revenue is the sum of prices over order rows.</div><div class="callout warn sm">Ported from the 2025 MySQL lecture. Names and emails are invented and use the reserved example.com domain.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Keys">
+  <div class="eyebrow">Keys &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>A primary key names one row of a table. A foreign key in another table stores that name, which links the two rows.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">ecom.db, three tables and two links</div><svg viewBox="0 0 1030 210" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Schema of ecom.db: orders points to customers and products through foreign keys"><rect x="0.0" y="10.0" width="250.0" height="30.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="12.0" y="30.0" font-family="JetBrains Mono,monospace" font-size="13.5" fill="#FFFFFF" text-anchor="start" font-weight="700" >customers</text><rect x="0.0" y="40.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="12.0" y="59.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >customer_id</text><text x="238.0" y="59.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#0E7A55" text-anchor="end" font-weight="700" >PK</text><rect x="0.0" y="68.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="12.0" y="87.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >name</text><rect x="0.0" y="96.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="12.0" y="115.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >email</text><text x="238.0" y="115.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#125F9E" text-anchor="end" font-weight="700" >UNIQUE</text><rect x="0.0" y="124.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="12.0" y="143.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >place</text><rect x="780.0" y="10.0" width="250.0" height="30.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="792.0" y="30.0" font-family="JetBrains Mono,monospace" font-size="13.5" fill="#FFFFFF" text-anchor="start" font-weight="700" >products</text><rect x="780.0" y="40.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="792.0" y="59.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >product_id</text><text x="1018.0" y="59.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#0E7A55" text-anchor="end" font-weight="700" >PK</text><rect x="780.0" y="68.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="792.0" y="87.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >product_name</text><rect x="780.0" y="96.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="792.0" y="115.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >price</text><rect x="780.0" y="124.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="792.0" y="143.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >description</text><rect x="390.0" y="60.0" width="250.0" height="30.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="402.0" y="80.0" font-family="JetBrains Mono,monospace" font-size="13.5" fill="#FFFFFF" text-anchor="start" font-weight="700" >orders</text><rect x="390.0" y="90.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="402.0" y="109.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >order_id</text><text x="628.0" y="109.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#0E7A55" text-anchor="end" font-weight="700" >PK</text><rect x="390.0" y="118.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="402.0" y="137.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >customer_id</text><text x="628.0" y="137.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#125F9E" text-anchor="end" font-weight="700" >FK</text><rect x="390.0" y="146.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="402.0" y="165.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >product_id</text><text x="628.0" y="165.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#125F9E" text-anchor="end" font-weight="700" >FK</text><rect x="390.0" y="174.0" width="250.0" height="28.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="402.0" y="193.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >order_date</text><line x1="390.0" y1="133.0" x2="259.2" y2="57.0" stroke="#125F9E" stroke-width="1.8" /><path d="M254.0,54.0 L258.9,61.5 L262.9,54.6 z" fill="#125F9E"/><line x1="640.0" y1="161.0" x2="771.3" y2="57.7" stroke="#125F9E" stroke-width="1.8" /><path d="M776.0,54.0 L767.2,55.8 L772.2,62.1 z" fill="#125F9E"/><text x="300.0" y="112.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >many orders</text><text x="300.0" y="126.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >to one customer</text><text x="720.0" y="132.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >many orders</text><text x="720.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >to one product</text></svg></div><div class="cols3"><div class="card g"><h3>Primary key</h3><p>customer_id is unique and never empty. Every other table refers to a customer by it.</p></div><div class="card b"><h3>Foreign key</h3><p>orders.customer_id must hold a customer_id that exists in customers.</p></div><div class="card o"><h3>UNIQUE</h3><p>Two customers cannot share an email, even though email is not the key.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Keys">
+  <div class="eyebrow">Keys &#183; Example: the orders table</div>
+  <h1 class="t">Example
+    <small>The keys are part of the table definition. make_ecom.py creates orders with two foreign keys and what to do when a parent row changes.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><pre class="code sm"><span class="py-kw">CREATE</span> <span class="py-kw">TABLE</span> orders (
+  order_id    <span class="py-kw">INTEGER</span> <span class="py-kw">PRIMARY</span> <span class="py-kw">KEY</span> <span class="py-kw">AUTOINCREMENT</span>,
+  customer_id <span class="py-kw">INTEGER</span> <span class="py-kw">NOT</span> <span class="py-kw">NULL</span> <span class="py-kw">REFERENCES</span> customers(customer_id)
+              <span class="py-kw">ON</span> <span class="py-kw">DELETE</span> <span class="py-kw">RESTRICT</span> <span class="py-kw">ON</span> <span class="py-kw">UPDATE</span> <span class="py-kw">CASCADE</span>,
+  product_id  <span class="py-kw">INTEGER</span> <span class="py-kw">NOT</span> <span class="py-kw">NULL</span> <span class="py-kw">REFERENCES</span> products(product_id)
+              <span class="py-kw">ON</span> <span class="py-kw">DELETE</span> <span class="py-kw">RESTRICT</span> <span class="py-kw">ON</span> <span class="py-kw">UPDATE</span> <span class="py-kw">CASCADE</span>,
+  order_date  <span class="py-kw">TEXT</span> <span class="py-kw">NOT</span> <span class="py-kw">NULL</span>
+);</pre><table class="d sm"><tr><th>MySQL, 2025</th><th>SQLite, 2026</th></tr><tr><td>INT UNSIGNED</td><td>INTEGER</td></tr><tr><td>VARCHAR(100)</td><td>TEXT</td></tr><tr><td>float(6,2)</td><td>REAL</td></tr><tr><td>AUTO_INCREMENT</td><td>AUTOINCREMENT</td></tr><tr><td>DATE</td><td>TEXT, written as YYYY-MM-DD</td></tr><tr><td>CREATE USER, GRANT</td><td>none: no users</td></tr></table></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Keys">
+  <div class="eyebrow">Keys &#183; Test: three inserts that break a rule</div>
+  <h1 class="t">Test
+    <small>SQLite rejects a repeated email and a repeated customer_id. It accepts an order for customer 200, who does not exist.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code xs"><span class="py-kw">INSERT</span> <span class="py-kw">INTO</span> customers(customer_id, name, email, place)
+<span class="py-kw">VALUES</span> (<span class="py-num">101</span>, <span class="py-str">&#x27;Test User&#x27;</span>, <span class="py-str">&#x27;imran.khan1@example.com&#x27;</span>, <span class="py-str">&#x27;Delhi&#x27;</span>);</pre><div class="outlbl">output</div><div class="out xs">sqlite3.IntegrityError: UNIQUE constraint failed: customers.email</div><pre class="code xs"><span class="py-kw">INSERT</span> <span class="py-kw">INTO</span> customers(customer_id, name, email, place)
+<span class="py-kw">VALUES</span> (<span class="py-num">1</span>, <span class="py-str">&#x27;Test User&#x27;</span>, <span class="py-str">&#x27;t@example.com&#x27;</span>, <span class="py-str">&#x27;Delhi&#x27;</span>);</pre><div class="outlbl">output</div><div class="out xs">sqlite3.IntegrityError: UNIQUE constraint failed: customers.customer_id</div></div><div class="colstack"><pre class="code xs"><span class="py-kw">INSERT</span> <span class="py-kw">INTO</span> orders(customer_id, product_id, order_date)
+<span class="py-kw">VALUES</span> (<span class="py-num">200</span>, <span class="py-num">100</span>, <span class="py-str">&#x27;2025-01-01&#x27;</span>);</pre><div class="outlbl">output</div><div class="out xs">ok, 1 row(s)</div><pre class="code xs"><span class="py-kw">SELECT</span> <span class="py-kw">COUNT</span>(*) <span class="py-kw">FROM</span> orders o
+<span class="py-kw">LEFT</span> <span class="py-kw">JOIN</span> customers c <span class="py-kw">ON</span> c.customer_id = o.customer_id
+<span class="py-kw">WHERE</span> c.customer_id <span class="py-kw">IS</span> <span class="py-kw">NULL</span>;</pre><div class="outlbl">output</div><div class="out xs">1</div><div class="callout bad sm">The foreign key is declared in the table and the bad order went in anyway. The 2025 db.txt runs the same insert on MySQL, which refuses it.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Keys">
+  <div class="eyebrow">Keys &#183; Mechanism: PRAGMA foreign_keys</div>
+  <h1 class="t">Mechanism
+    <small>SQLite checks foreign keys only on a connection that has switched them on, and every new connection starts with them off.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">what happens to the insert</div><svg viewBox="0 0 1150 196" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="With foreign_keys off the insert is stored; with it on, SQLite looks up the parent and refuses"><rect x="0.0" y="70.0" width="190.0" height="56.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="95.0" y="94.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >INSERT INTO orders</text><text x="95.0" y="112.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="400" >customer_id = 200</text><rect x="250.0" y="70.0" width="230.0" height="56.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><text x="365.0" y="94.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >PRAGMA foreign_keys</text><text x="365.0" y="112.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="middle" font-weight="400" >on this connection?</text><line x1="190.0" y1="98.0" x2="240.0" y2="98.0" stroke="#53666F" stroke-width="1.6" /><path d="M246.0,98.0 L238.0,94.0 L238.0,102.0 z" fill="#53666F"/><line x1="480.0" y1="84.0" x2="555.0" y2="33.4" stroke="#53666F" stroke-width="1.6" /><path d="M560.0,30.0 L551.1,31.2 L555.6,37.8 z" fill="#53666F"/><text x="510.0" y="46.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >0, the default</text><rect x="564.0" y="6.0" width="280.0" height="46.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.6" /><text x="704.0" y="34.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#B02F3B" text-anchor="middle" font-weight="700" >stored without a check</text><line x1="480.0" y1="112.0" x2="555.0" y2="162.6" stroke="#53666F" stroke-width="1.6" /><path d="M560.0,166.0 L555.6,158.2 L551.1,164.8 z" fill="#53666F"/><text x="512.0" y="160.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >1</text><rect x="564.0" y="144.0" width="280.0" height="46.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.3" /><text x="704.0" y="172.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="middle" font-weight="700" >look up customer 200</text><line x1="844.0" y1="167.0" x2="884.0" y2="167.0" stroke="#53666F" stroke-width="1.6" /><path d="M890.0,167.0 L882.0,163.0 L882.0,171.0 z" fill="#53666F"/><rect x="894.0" y="144.0" width="250.0" height="46.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.6" /><text x="1019.0" y="172.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#B02F3B" text-anchor="middle" font-weight="700" >FOREIGN KEY constraint failed</text></svg></div><div class="cols"><pre class="code sm">con.execute(<span class="py-str">&#x27;PRAGMA foreign_keys&#x27;</span>).fetchone()</pre><div class="outlbl">output</div><div class="out xs">(0,)</div></div><div class="cols"><pre class="code xs">con.execute(<span class="py-str">&#x27;PRAGMA foreign_keys = ON&#x27;</span>)
+con.execute(<span class="py-str">&quot;INSERT INTO orders(customer_id, product_id, order_date) &quot;</span>
+            <span class="py-str">&quot;VALUES (200, 100, &#x27;2025-01-01&#x27;)&quot;</span>)</pre><div class="outlbl">output</div><div class="out xs">sqlite3.IntegrityError: FOREIGN KEY constraint failed</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Keys">
+  <div class="eyebrow">Keys &#183; Mechanism: RESTRICT and CASCADE</div>
+  <h1 class="t">Mechanism continued 1
+    <small>With foreign keys on, ON DELETE RESTRICT refuses to delete a product that has orders. ON UPDATE CASCADE rewrites the orders when a product id changes.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">three writes on a copy of ecom.db, foreign_keys = ON</div><svg viewBox="0 0 910 200" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="ON DELETE RESTRICT refuses deleting a product with orders; ON UPDATE CASCADE carries a changed id into orders"><rect x="0.0" y="6.0" width="300.0" height="52.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="28.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" >DELETE product 14</text><text x="14.0" y="47.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Gulab Jamun, 284 orders</text><line x1="300.0" y1="32.0" x2="374.0" y2="32.0" stroke="#53666F" stroke-width="1.6" /><path d="M380.0,32.0 L372.0,28.0 L372.0,36.0 z" fill="#53666F"/><rect x="384.0" y="6.0" width="520.0" height="52.0" fill="#FFFFFF" stroke="#B02F3B" stroke-width="1.8" /><text x="400.0" y="37.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#B02F3B" text-anchor="start" font-weight="700" >refused: FOREIGN KEY constraint failed</text><rect x="0.0" y="70.0" width="300.0" height="52.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="92.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" >DELETE product 29</text><text x="14.0" y="111.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >Lassi, 0 orders</text><line x1="300.0" y1="96.0" x2="374.0" y2="96.0" stroke="#53666F" stroke-width="1.6" /><path d="M380.0,96.0 L372.0,92.0 L372.0,100.0 z" fill="#53666F"/><rect x="384.0" y="70.0" width="520.0" height="52.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.8" /><text x="400.0" y="101.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#0E7A55" text-anchor="start" font-weight="700" >ok, 1 row deleted</text><rect x="0.0" y="134.0" width="300.0" height="52.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="14.0" y="156.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" >UPDATE product 14 → 114</text><text x="14.0" y="175.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >284 orders point at 14</text><line x1="300.0" y1="160.0" x2="374.0" y2="160.0" stroke="#53666F" stroke-width="1.6" /><path d="M380.0,160.0 L372.0,156.0 L372.0,164.0 z" fill="#53666F"/><rect x="384.0" y="134.0" width="520.0" height="52.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.8" /><text x="400.0" y="165.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#0E7A55" text-anchor="start" font-weight="700" >ok: all 284 orders now point at 114</text></svg></div><pre class="code sm"><span class="py-kw">DELETE</span> <span class="py-kw">FROM</span> products <span class="py-kw">WHERE</span> product_id = <span class="py-num">14</span>;<span class="py-cm">          -- refused</span>
+<span class="py-kw">UPDATE</span> products <span class="py-kw">SET</span> product_id = <span class="py-num">114</span> <span class="py-kw">WHERE</span> product_id = <span class="py-num">14</span>;
+<span class="py-kw">SELECT</span> <span class="py-kw">COUNT</span>(*) <span class="py-kw">FROM</span> orders <span class="py-kw">WHERE</span> product_id = <span class="py-num">114</span>;<span class="py-cm">   -- 284</span></pre>
+  </div>
+</section>
+
+<section class="slide" data-sec="Keys">
+  <div class="eyebrow">Keys &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>The keys protect the data only as far as these hold.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>the rule assumes</th><th>in ecom.db</th><th>when it fails</th></tr><tr><td>every connection runs PRAGMA foreign_keys = ON</td><td>make_ecom.py does not; pandas to_sql does not</td><td>orphan orders, as with customer 200</td></tr><tr><td>an id never needs to change</td><td>ON UPDATE CASCADE handles it when one does</td><td>without CASCADE the update is refused</td></tr><tr><td>history keeps its parent</td><td>RESTRICT: no deleting a customer with orders</td><td>erasing a person needs a decision, later in this lecture</td></tr><tr><td>email identifies a customer</td><td>UNIQUE on email</td><td>one person with two emails is two customers, as in data cleaning lecture 6</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Keys">
+  <div class="eyebrow">Keys &#183; Drawbacks: types are suggestions</div>
+  <h1 class="t">Drawbacks
+    <small>A column declared REAL accepted the text cheap. SQLite converts a value to the column type when it can and stores it as it is when it cannot.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">INSERT</span> <span class="py-kw">INTO</span> products <span class="py-kw">VALUES</span> (<span class="py-num">60</span>, <span class="py-str">&#x27;Test&#x27;</span>,  <span class="py-str">&#x27;cheap&#x27;</span>, <span class="py-str">&#x27;Snacks&#x27;</span>);
+<span class="py-kw">INSERT</span> <span class="py-kw">INTO</span> products <span class="py-kw">VALUES</span> (<span class="py-num">61</span>, <span class="py-str">&#x27;Test2&#x27;</span>, <span class="py-str">&#x27;45&#x27;</span>,    <span class="py-str">&#x27;Snacks&#x27;</span>);
+<span class="py-kw">SELECT</span> product_id, price, typeof(price) <span class="py-kw">FROM</span> products
+<span class="py-kw">WHERE</span> product_id <span class="py-kw">IN</span> (<span class="py-num">1</span>, <span class="py-num">60</span>, <span class="py-num">61</span>);</pre><div class="outlbl">output</div><div class="out ">(1, 90.0, &#x27;real&#x27;)
+(60, &#x27;cheap&#x27;, &#x27;text&#x27;)
+(61, 45.0, &#x27;real&#x27;)</div></div><div class="colstack fill"><div class="card r"><h3>Type affinity</h3><p>'45' looks like a number and is stored as 45.0. 'cheap' does not, and is stored as text in a REAL column.</p></div><div class="card o"><h3>After the read</h3><p>pd.read_sql on this column returns object, the same symptom as a CSV in lecture 1.</p></div><div class="card b"><h3>STRICT tables</h3><p>SQLite 3.37 added tables that refuse wrong types. The sqlite3 on the lecture laptop is 3.31.1.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Queries">
+  <div class="eyebrow">Queries &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>A query is written starting with SELECT and run starting with FROM. The run order explains which names each clause can use.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="fig"><div class="cap">the clauses of one SELECT</div><svg viewBox="0 0 800 268" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="SQL clauses in written order and in the order the database runs them"><text x="0.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >as written</text><text x="330.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >as run</text><rect x="0.0" y="24.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="75.0" y="43.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >SELECT</text><rect x="0.0" y="58.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="75.0" y="77.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >FROM</text><rect x="0.0" y="92.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="75.0" y="111.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >WHERE</text><rect x="0.0" y="126.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="75.0" y="145.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >GROUP BY</text><rect x="0.0" y="160.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="75.0" y="179.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >HAVING</text><rect x="0.0" y="194.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="75.0" y="213.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >ORDER BY</text><rect x="0.0" y="228.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="75.0" y="247.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="middle" font-weight="700" >LIMIT</text><rect x="330.0" y="24.0" width="150.0" height="28.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="405.0" y="43.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >1  FROM</text><text x="496.0" y="43.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >pick the table, do the joins</text><line x1="152.0" y1="72.0" x2="326.0" y2="38.0" stroke="#C3CFD5" stroke-width="1.2" /><rect x="330.0" y="58.0" width="150.0" height="28.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="405.0" y="77.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >2  WHERE</text><text x="496.0" y="77.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >drop rows</text><line x1="152.0" y1="106.0" x2="326.0" y2="72.0" stroke="#C3CFD5" stroke-width="1.2" /><rect x="330.0" y="92.0" width="150.0" height="28.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="405.0" y="111.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >3  GROUP BY</text><text x="496.0" y="111.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >form groups</text><line x1="152.0" y1="140.0" x2="326.0" y2="106.0" stroke="#C3CFD5" stroke-width="1.2" /><rect x="330.0" y="126.0" width="150.0" height="28.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="405.0" y="145.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >4  HAVING</text><text x="496.0" y="145.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >drop groups</text><line x1="152.0" y1="174.0" x2="326.0" y2="140.0" stroke="#C3CFD5" stroke-width="1.2" /><rect x="330.0" y="160.0" width="150.0" height="28.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="405.0" y="179.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >5  SELECT</text><text x="496.0" y="179.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >compute the output columns</text><line x1="152.0" y1="38.0" x2="326.0" y2="174.0" stroke="#C3CFD5" stroke-width="1.2" /><rect x="330.0" y="194.0" width="150.0" height="28.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="405.0" y="213.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >6  ORDER BY</text><text x="496.0" y="213.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >sort</text><line x1="152.0" y1="208.0" x2="326.0" y2="208.0" stroke="#C3CFD5" stroke-width="1.2" /><rect x="330.0" y="228.0" width="150.0" height="28.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="405.0" y="247.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >7  LIMIT</text><text x="496.0" y="247.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >keep the first n</text><line x1="152.0" y1="242.0" x2="326.0" y2="242.0" stroke="#C3CFD5" stroke-width="1.2" /></svg></div><div class="colstack fill"><div class="card b"><h3>WHERE runs before GROUP BY</h3><p>So WHERE filters rows and cannot test COUNT(*). HAVING runs after grouping and can.</p></div><div class="card o"><h3>SELECT runs late</h3><p>An alias made in SELECT, such as AS customers, is usable in ORDER BY and not in WHERE.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Queries">
+  <div class="eyebrow">Queries &#183; Example 1: one table</div>
+  <h1 class="t">Example
+    <small>WHERE keeps the Delhi rows, ORDER BY sorts them by name and LIMIT keeps 5. The 2025 lecture ran the same query on MySQL.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code "><span class="py-kw">SELECT</span> name, email <span class="py-kw">FROM</span> customers
+<span class="py-kw">WHERE</span> place = <span class="py-str">&#x27;Delhi&#x27;</span>
+<span class="py-kw">ORDER</span> <span class="py-kw">BY</span> name
+<span class="py-kw">LIMIT</span> <span class="py-num">5</span>;</pre><div class="outlbl">output</div><div class="out xs">        name                      email
+Ananya Gupta ananya.gupta48@example.com
+Ananya Joshi ananya.joshi42@example.com
+ Ananya Nair  ananya.nair32@example.com
+  Arjun Iyer   arjun.iyer56@example.com
+Arjun Pillai arjun.pillai24@example.com</div></div><div class="colstack"><pre class="code "><span class="py-kw">SELECT</span> product_id, product_name, price
+<span class="py-kw">FROM</span> products
+<span class="py-kw">WHERE</span> price <span class="py-kw">BETWEEN</span> <span class="py-num">200</span> <span class="py-kw">AND</span> <span class="py-num">400</span>
+<span class="py-kw">ORDER</span> <span class="py-kw">BY</span> price <span class="py-kw">DESC</span>;</pre><div class="outlbl">output</div><div class="out xs"> product_id product_name  price
+         25    Milk Cake  375.0
+         15     Rasgulla  355.0
+         17   Kaju Katli  230.0
+         18        Laddu  225.0</div><div class="callout warn sm">In the 2025 data every price was drawn around ₹1,000 with a spread of ₹50, so this query returned no rows. The prices in ecom.db run from ₹15 to ₹555.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grouping">
+  <div class="eyebrow">Grouping &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>GROUP BY splits the rows by a column, and each aggregate such as COUNT or SUM gives one number per group.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><div class="fig"><div class="cap">split, then aggregate</div><svg viewBox="0 0 700 166" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="GROUP BY splits rows by place and counts each group"><rect x="0.0" y="6.0" width="200.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="8.0" y="23.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="start" font-weight="400" >Imran Khan    Chennai</text><rect x="0.0" y="32.0" width="200.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="8.0" y="49.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="start" font-weight="400" >Arjun Khan    Bangalore</text><rect x="0.0" y="58.0" width="200.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="8.0" y="75.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="start" font-weight="400" >Meera Iyer    Mumbai</text><rect x="0.0" y="84.0" width="200.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="8.0" y="101.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="start" font-weight="400" >Harish Joshi  Bangalore</text><rect x="0.0" y="110.0" width="200.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="8.0" y="127.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="start" font-weight="400" >Sneha Gupta   Delhi</text><rect x="0.0" y="136.0" width="200.0" height="24.0" fill="#FFFFFF" stroke="#DCE4E8" stroke-width="1" /><text x="8.0" y="153.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="start" font-weight="400" >…             </text><line x1="206.0" y1="80.0" x2="256.0" y2="80.0" stroke="#53666F" stroke-width="1.6" /><path d="M262.0,80.0 L254.0,76.0 L254.0,84.0 z" fill="#53666F"/><text x="234.0" y="72.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >split</text><rect x="266.0" y="6.0" width="210.0" height="44.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.2" /><text x="276.0" y="24.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="start" font-weight="700" >Bangalore</text><text x="276.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="start" font-weight="400" >Arjun, Harish, …</text><rect x="266.0" y="58.0" width="210.0" height="44.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.2" /><text x="276.0" y="76.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="start" font-weight="700" >Chennai</text><text x="276.0" y="93.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="start" font-weight="400" >Imran, …</text><rect x="266.0" y="110.0" width="210.0" height="44.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.2" /><text x="276.0" y="128.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#0E7A55" text-anchor="start" font-weight="700" >Delhi</text><text x="276.0" y="145.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="start" font-weight="400" >Sneha, …</text><line x1="480.0" y1="80.0" x2="530.0" y2="80.0" stroke="#53666F" stroke-width="1.6" /><path d="M536.0,80.0 L528.0,76.0 L528.0,84.0 z" fill="#53666F"/><text x="508.0" y="72.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#53666F" text-anchor="middle" font-weight="400" >COUNT</text><rect x="540.0" y="18.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="552.0" y="37.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >Bangalore  20</text><rect x="540.0" y="52.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="552.0" y="71.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >Chennai    23</text><rect x="540.0" y="86.0" width="150.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="552.0" y="105.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >Delhi      25</text></svg></div><pre class="code sm"><span class="py-kw">SELECT</span> place, <span class="py-kw">COUNT</span>(*) <span class="py-kw">AS</span> customers
+<span class="py-kw">FROM</span> customers
+<span class="py-kw">GROUP</span> <span class="py-kw">BY</span> place
+<span class="py-kw">ORDER</span> <span class="py-kw">BY</span> customers <span class="py-kw">DESC</span>;</pre></div><div class="fig"><div class="cap">the result, customers per city</div><svg viewBox="0 0 520 186" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="customers per city"><text x="90.0" y="23.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Delhi</text><rect x="100.0" y="6.0" width="270.0" height="26.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="378.0" y="23.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">25</text><text x="90.0" y="59.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Chennai</text><rect x="100.0" y="42.0" width="248.4" height="26.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="356.4" y="59.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">23</text><text x="90.0" y="95.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Mumbai</text><rect x="100.0" y="78.0" width="216.0" height="26.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="324.0" y="95.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">20</text><text x="90.0" y="131.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Bangalore</text><rect x="100.0" y="114.0" width="216.0" height="26.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="324.0" y="131.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">20</text><text x="90.0" y="167.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Kolkata</text><rect x="100.0" y="150.0" width="129.6" height="26.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="237.6" y="167.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">12</text></svg><div class="rd">Kolkata has 12 customers, half of Delhi's 25.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grouping">
+  <div class="eyebrow">Grouping &#183; Example: orders over time</div>
+  <h1 class="t">Example
+    <small>Dates are stored as text in ISO form, and strftime cuts them into months or years. 2024 has 2,010 orders and 2025 has 1,990.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">SELECT</span> strftime(<span class="py-str">&#x27;%Y-%m&#x27;</span>, order_date) <span class="py-kw">AS</span> y_m,
+       <span class="py-kw">COUNT</span>(*) <span class="py-kw">AS</span> n
+<span class="py-kw">FROM</span> orders <span class="py-kw">GROUP</span> <span class="py-kw">BY</span> y_m <span class="py-kw">ORDER</span> <span class="py-kw">BY</span> y_m <span class="py-kw">LIMIT</span> <span class="py-num">4</span>;</pre><div class="outlbl">output</div><div class="out xs">    y_m   n
+2024-01 181
+2024-02 170
+2024-03 157
+2024-04 161</div><pre class="code sm"><span class="py-kw">SELECT</span> strftime(<span class="py-str">&#x27;%Y&#x27;</span>, order_date) <span class="py-kw">AS</span> yr, <span class="py-kw">COUNT</span>(*)
+<span class="py-kw">FROM</span> orders <span class="py-kw">GROUP</span> <span class="py-kw">BY</span> yr;</pre><div class="outlbl">output</div><div class="out xs">  yr  orders_in_year
+2024            2010
+2025            1990</div><div class="fig"><div class="cap">all 24 months: 135 to 189 orders</div><svg viewBox="0 0 540 152" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Orders per month, January 2024 to December 2025"><rect x="30.0" y="17.8" width="16.0" height="112.2" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="51.0" y="24.6" width="16.0" height="105.4" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="72.0" y="32.7" width="16.0" height="97.3" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="93.0" y="30.2" width="16.0" height="99.8" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="114.0" y="22.7" width="16.0" height="107.3" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="135.0" y="32.0" width="16.0" height="98.0" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="156.0" y="37.6" width="16.0" height="92.4" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="177.0" y="30.2" width="16.0" height="99.8" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="198.0" y="23.4" width="16.0" height="106.6" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="219.0" y="13.4" width="16.0" height="116.6" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="240.0" y="28.9" width="16.0" height="101.1" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="261.0" y="20.3" width="16.0" height="109.7" fill="#125F9E" stroke="none" stroke-width="1" /><rect x="282.0" y="15.9" width="16.0" height="114.1" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="303.0" y="46.3" width="16.0" height="83.7" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="324.0" y="22.1" width="16.0" height="107.9" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="345.0" y="24.6" width="16.0" height="105.4" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="366.0" y="36.4" width="16.0" height="93.6" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="387.0" y="12.8" width="16.0" height="117.2" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="408.0" y="23.4" width="16.0" height="106.6" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="429.0" y="20.9" width="16.0" height="109.1" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="450.0" y="20.3" width="16.0" height="109.7" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="471.0" y="41.3" width="16.0" height="88.7" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="492.0" y="27.7" width="16.0" height="102.3" fill="#0E7A55" stroke="none" stroke-width="1" /><rect x="513.0" y="34.5" width="16.0" height="95.5" fill="#0E7A55" stroke="none" stroke-width="1" /><line x1="26.0" y1="130.0" x2="534.0" y2="130.0" stroke="#53666F" stroke-width="1" /><text x="30.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="start" font-weight="400" >2024-01</text><text x="282.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="10" fill="#53666F" text-anchor="start" font-weight="400" >2025-01</text><text x="311.0" y="41.3" font-family="JetBrains Mono,monospace" font-size="10" fill="#14222B" text-anchor="middle" font-weight="700" >135</text><text x="395.0" y="7.8" font-family="JetBrains Mono,monospace" font-size="10" fill="#14222B" text-anchor="middle" font-weight="700" >189</text></svg></div></div><div class="colstack"><pre class="code sm"><span class="py-kw">SELECT</span> order_date, <span class="py-kw">COUNT</span>(*) <span class="py-kw">AS</span> orders_on_day
+<span class="py-kw">FROM</span> orders <span class="py-kw">GROUP</span> <span class="py-kw">BY</span> order_date
+<span class="py-kw">ORDER</span> <span class="py-kw">BY</span> orders_on_day <span class="py-kw">DESC</span>, order_date <span class="py-kw">DESC</span> <span class="py-kw">LIMIT</span> <span class="py-num">3</span>;</pre><div class="outlbl">output</div><div class="out xs">order_date  orders_on_day
+2025-06-29             13
+2025-05-28             13
+2024-09-06             13</div><div class="callout warn sm">Three days tie at 13 orders. The second sort key, order_date DESC, decides which one LIMIT 1 returns. Report the tie, or the answer depends on a sort you did not mean.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grouping">
+  <div class="eyebrow">Grouping &#183; Example continued: the same query in pandas</div>
+  <h1 class="t">Example continued 1
+    <small>The SQL and the pandas versions return the same counts. Bangalore and Mumbai tie at 20 and come out in different orders.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><h2 class="s xs">SQL, run inside the database</h2><pre class="code sm"><span class="py-kw">SELECT</span> place, <span class="py-kw">COUNT</span>(*) <span class="py-kw">AS</span> customers
+<span class="py-kw">FROM</span> customers
+<span class="py-kw">GROUP</span> <span class="py-kw">BY</span> place
+<span class="py-kw">ORDER</span> <span class="py-kw">BY</span> customers <span class="py-kw">DESC</span>;</pre><div class="outlbl">output</div><div class="out xs">    place  customers
+    Delhi         25
+  Chennai         23
+   Mumbai         20
+Bangalore         20
+  Kolkata         12</div></div><div class="colstack"><h2 class="s xs">pandas, after reading the table</h2><pre class="code sm">cu = pd.read_sql(<span class="py-str">&#x27;SELECT * FROM customers&#x27;</span>, con)
+cu.groupby(<span class="py-str">&#x27;place&#x27;</span>).size().sort_values(ascending=<span class="py-kw">False</span>)</pre><div class="outlbl">output</div><div class="out xs">place
+Delhi        25
+Chennai      23
+Bangalore    20
+Mumbai       20
+Kolkata      12</div></div></div><div class="callout sm">SQL moves the question to the data and returns 5 rows. pandas moves all 100 rows to Python first. On 4,000 orders the difference is nothing; on a database of millions it decides what fits in memory.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Joins">
+  <div class="eyebrow">Joins &#183; Intuition</div>
+  <h1 class="t">Intuition
+    <small>A join pairs each row of one table with the rows of another that share a key. Here every line is one output row.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">four customers and five of their recent orders</div><svg viewBox="0 0 870 222" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Customers linked to their orders by customer_id; two customers have no orders"><text x="0.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >customers</text><text x="560.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >orders</text><rect x="0.0" y="24.0" width="260.0" height="32.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="12.0" y="45.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" > 1  Imran Khan</text><rect x="0.0" y="64.0" width="260.0" height="32.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.2" /><text x="12.0" y="85.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" > 2  Arjun Khan</text><rect x="0.0" y="104.0" width="260.0" height="32.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.2" /><text x="12.0" y="125.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" > 5  Sneha Gupta</text><rect x="0.0" y="144.0" width="260.0" height="32.0" fill="#FFF5F5" stroke="#B02F3B" stroke-width="1.2" /><text x="12.0" y="165.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" >24  Arjun Pillai</text><rect x="560.0" y="24.0" width="300.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="572.0" y="43.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >3812  cust 2  Gulab Jamun</text><line x1="262.0" y1="80.0" x2="558.0" y2="38.0" stroke="#125F9E" stroke-width="1.4" /><rect x="560.0" y="58.0" width="300.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="572.0" y="77.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >3919  cust 1  Rasgulla</text><line x1="262.0" y1="40.0" x2="558.0" y2="72.0" stroke="#125F9E" stroke-width="1.4" /><rect x="560.0" y="92.0" width="300.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="572.0" y="111.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >3962  cust 1  Peanut Chikki</text><line x1="262.0" y1="40.0" x2="558.0" y2="106.0" stroke="#125F9E" stroke-width="1.4" /><rect x="560.0" y="126.0" width="300.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="572.0" y="145.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >3966  cust 1  Filter Coffee</text><line x1="262.0" y1="40.0" x2="558.0" y2="140.0" stroke="#125F9E" stroke-width="1.4" /><rect x="560.0" y="160.0" width="300.0" height="28.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><text x="572.0" y="179.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >3979  cust 1  Banana Chips</text><line x1="262.0" y1="40.0" x2="558.0" y2="174.0" stroke="#125F9E" stroke-width="1.4" /><text x="270.0" y="214.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#B02F3B" text-anchor="start" font-weight="700" >customers 5 and 24 have no line: no orders</text></svg><div class="rd">Customer 1 has four lines, so a join returns Imran Khan four times. Customers with no line drop out of an inner join.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Joins">
+  <div class="eyebrow">Joins &#183; Intuition: three joins on the same rows</div>
+  <h1 class="t">Intuition continued 1
+    <small>Pick a join. The four customers and five orders are the rows from the previous slide.</small></h1>
+  <div class="wrap">
+<div class="cols w4060"><div class="colstack"><div class="outlbl">join type</div><div id="jx-mode" class="bwpick"><label class="tgl on"><input type="radio" name="jx" value="inner" checked/><span><b>JOIN</b><i>rows with a match on both sides</i></span></label><label class="tgl"><input type="radio" name="jx" value="left"/><span><b>LEFT JOIN</b><i>all four customers; NULL in the order columns when unmatched</i></span></label><label class="tgl"><input type="radio" name="jx" value="anti"/><span><b>LEFT JOIN … WHERE o.order_id IS NULL</b><i>only the customers with no match</i></span></label></div><pre class="code xs" id="jx-sql"></pre></div><div class="colstack"><div class="fig" style="flex:1"><div class="cap">result <span class="jsbadge">browser JS on the slide's rows</span></div><table class="d sm" id="jx-out"></table><div class="rd" id="jx-rd"></div></div></div></div><script type="application/json" id="jx-data">{"c": [{"id": 1, "name": "Imran Khan"}, {"id": 2, "name": "Arjun Khan"}, {"id": 5, "name": "Sneha Gupta"}, {"id": 24, "name": "Arjun Pillai"}], "o": [{"oid": 3812, "cid": 2, "product": "Gulab Jamun"}, {"oid": 3919, "cid": 1, "product": "Rasgulla"}, {"oid": 3962, "cid": 1, "product": "Peanut Chikki"}, {"oid": 3966, "cid": 1, "product": "Filter Coffee"}, {"oid": 3979, "cid": 1, "product": "Banana Chips"}]}</script>
+  </div>
+</section>
+
+<section class="slide" data-sec="Joins">
+  <div class="eyebrow">Joins &#183; Example 1: most ordered products</div>
+  <h1 class="t">Example
+    <small>Joining orders to products gives each order a product name. Gulab Jamun was ordered 284 times, the most of the 50 products.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">SELECT</span> p.product_id, p.product_name,
+       <span class="py-kw">COUNT</span>(*) <span class="py-kw">AS</span> times_ordered
+<span class="py-kw">FROM</span> orders o
+<span class="py-kw">JOIN</span> products p <span class="py-kw">ON</span> p.product_id = o.product_id
+<span class="py-kw">GROUP</span> <span class="py-kw">BY</span> p.product_id
+<span class="py-kw">ORDER</span> <span class="py-kw">BY</span> times_ordered <span class="py-kw">DESC</span>, p.product_id
+<span class="py-kw">LIMIT</span> <span class="py-num">5</span>;</pre></div><div class="colstack"><div class="outlbl">output</div><div class="out xs"> product_id  product_name  times_ordered
+         14   Gulab Jamun            284
+         39 Filter Coffee            238
+          8        Nachos            230
+         28    Buttermilk            182
+          5 Peanut Chikki            178</div><div class="callout sm">COUNT(*) after a join counts joined rows. orders JOIN products has 4,000 rows, one per order, so the count per product is its number of orders.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Joins">
+  <div class="eyebrow">Joins &#183; Example 2: HAVING</div>
+  <h1 class="t">Example continued 1
+    <small>HAVING filters groups after GROUP BY. Three cities have at least 800 orders; Mumbai has 759 and Kolkata 499.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">SELECT</span> c.place, <span class="py-kw">COUNT</span>(*) <span class="py-kw">AS</span> orders_count
+<span class="py-kw">FROM</span> orders o
+<span class="py-kw">JOIN</span> customers c <span class="py-kw">ON</span> c.customer_id = o.customer_id
+<span class="py-kw">GROUP</span> <span class="py-kw">BY</span> c.place
+<span class="py-kw">HAVING</span> <span class="py-kw">COUNT</span>(*) &gt;= <span class="py-num">800</span>
+<span class="py-kw">ORDER</span> <span class="py-kw">BY</span> orders_count <span class="py-kw">DESC</span>;</pre><div class="outlbl">output</div><div class="out xs">    place  orders_count
+  Chennai          1041
+Bangalore           884
+    Delhi           817</div></div><div class="colstack"><pre class="code sm"><span class="py-cm">-- the same with WHERE</span>
+...
+<span class="py-kw">WHERE</span> <span class="py-kw">COUNT</span>(*) &gt;= <span class="py-num">800</span></pre><div class="outlbl">output</div><div class="out xs">sqlite3.OperationalError: misuse of aggregate: COUNT()</div><div class="callout warn sm">The 2025 query used 300 orders as the cut. With 4,000 orders over five cities every city passed it, so HAVING removed nothing.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Joins">
+  <div class="eyebrow">Joins &#183; Example 3: customers who never ordered</div>
+  <h1 class="t">Example continued 2
+    <small>A LEFT JOIN keeps all 100 customers and puts NULL in the order columns of the 6 without a match. Keeping those NULL rows finds them.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">SELECT</span> c.*
+<span class="py-kw">FROM</span> customers c
+<span class="py-kw">LEFT</span> <span class="py-kw">JOIN</span> orders o <span class="py-kw">ON</span> o.customer_id = c.customer_id
+<span class="py-kw">WHERE</span> o.order_id <span class="py-kw">IS</span> <span class="py-kw">NULL</span>;</pre><div class="outlbl">output</div><div class="out xs"> customer_id         name                      email   place
+           5  Sneha Gupta   sneha.gupta5@example.com   Delhi
+          24 Arjun Pillai arjun.pillai24@example.com   Delhi
+          29  Imran Reddy  imran.reddy29@example.com Chennai
+          32  Ananya Nair  ananya.nair32@example.com   Delhi
+          52  Aarav Menon  aarav.menon52@example.com  Mumbai
+          66  Naveen Bose  naveen.bose66@example.com  Mumbai</div></div><div class="colstack"><div class="fig"><div class="cap">rows returned</div><svg viewBox="0 0 560 102" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="rows returned by each join"><text x="90.0" y="22.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >JOIN</text><rect x="100.0" y="6.0" width="309.5" height="24.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="417.5" y="22.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4,000</text><text x="90.0" y="54.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >LEFT JOIN</text><rect x="100.0" y="38.0" width="310.0" height="24.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="418.0" y="54.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4,006<tspan fill="#53666F" font-family="Public Sans,system-ui,sans-serif" font-weight="400" font-size="11" dx="8">+6 NULL rows</tspan></text><text x="90.0" y="86.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >IS NULL</text><rect x="100.0" y="70.0" width="2.0" height="24.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="110.0" y="86.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">6</text></svg></div><pre class="code xs"><span class="py-cm">-- products never sold, same pattern</span>
+<span class="py-kw">SELECT</span> p.* <span class="py-kw">FROM</span> products p
+<span class="py-kw">LEFT</span> <span class="py-kw">JOIN</span> orders o <span class="py-kw">ON</span> o.product_id = p.product_id
+<span class="py-kw">WHERE</span> o.order_id <span class="py-kw">IS</span> <span class="py-kw">NULL</span>;</pre><div class="outlbl">output</div><div class="out xs"> product_id product_name  price description
+         29        Lassi   70.0 Cold Drinks
+         38    Aam Panna   25.0 Cold Drinks
+         44        Kahwa   15.0  Hot Drinks</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Joins">
+  <div class="eyebrow">Joins &#183; Mechanism: the join in pandas</div>
+  <h1 class="t">Mechanism
+    <small>pandas merge with how='left' is the LEFT JOIN, and indicator=True labels each row by where it matched. The same 6 customers come out.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm">od = pd.read_sql(<span class="py-str">&#x27;SELECT * FROM orders&#x27;</span>, con)
+m = cu.merge(od, on=<span class="py-str">&#x27;customer_id&#x27;</span>, how=<span class="py-str">&#x27;left&#x27;</span>,
+             indicator=<span class="py-kw">True</span>)
+len(m)</pre><div class="outlbl">output</div><div class="out xs">4006</div><pre class="code sm">m[m._merge == <span class="py-str">&#x27;left_only&#x27;</span>][[<span class="py-str">&#x27;customer_id&#x27;</span>, <span class="py-str">&#x27;name&#x27;</span>, <span class="py-str">&#x27;place&#x27;</span>]]</pre></div><div class="colstack"><div class="outlbl">output</div><div class="out xs">customer_id         name   place
+          5  Sneha Gupta   Delhi
+         24 Arjun Pillai   Delhi
+         29  Imran Reddy Chennai
+         32  Ananya Nair   Delhi
+         52  Aarav Menon  Mumbai
+         66  Naveen Bose  Mumbai</div><table class="d sm"><tr><th>SQL</th><th>pandas</th></tr><tr><td>JOIN</td><td>merge(how='inner')</td></tr><tr><td>LEFT JOIN</td><td>merge(how='left')</td></tr><tr><td>WHERE o.order_id IS NULL</td><td>_merge == 'left_only'</td></tr><tr><td>GROUP BY … COUNT(*)</td><td>groupby(…).size()</td></tr></table></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Joins">
+  <div class="eyebrow">Joins &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>A join multiplies rows: 100 customers joined to their orders become 4,000 rows. A count or sum taken after the join counts the joined rows.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">SELECT</span> <span class="py-kw">COUNT</span>(*) <span class="py-kw">FROM</span> customers c
+<span class="py-kw">JOIN</span> orders o <span class="py-kw">ON</span> o.customer_id = c.customer_id;</pre><div class="outlbl">output</div><div class="out xs">4000</div><pre class="code sm"><span class="py-kw">SELECT</span> <span class="py-kw">COUNT</span>(DISTINCT c.customer_id) <span class="py-kw">FROM</span> customers c
+<span class="py-kw">JOIN</span> orders o <span class="py-kw">ON</span> o.customer_id = c.customer_id;</pre><div class="outlbl">output</div><div class="out xs">94</div></div><div class="colstack fill"><div class="card r"><h3>Count what you mean</h3><p>Customers who ordered: 94, with DISTINCT. Rows after the join: 4,000.</p></div><div class="card o"><h3>No RIGHT or FULL JOIN here</h3><p>SQLite added them in 3.39. On 3.31, swap the tables and use LEFT JOIN.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Window">
+  <div class="eyebrow">Window functions &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>A window function computes over many rows without collapsing them. SUM(...) OVER () gives every product row the grand total beside its own.</small></h1>
+  <div class="wrap">
+<div class="cols w4060"><div class="colstack"><pre class="code xs"><span class="py-kw">SELECT</span> p.product_id, p.product_name,
+  <span class="py-kw">SUM</span>(p.price) <span class="py-kw">AS</span> revenue,
+  <span class="py-kw">ROUND</span>(<span class="py-num">100</span> * <span class="py-kw">SUM</span>(p.price)
+        / <span class="py-kw">SUM</span>(<span class="py-kw">SUM</span>(p.price)) <span class="py-kw">OVER</span> (), <span class="py-num">2</span>)
+    <span class="py-kw">AS</span> pct_of_total
+<span class="py-kw">FROM</span> orders o
+<span class="py-kw">JOIN</span> products p <span class="py-kw">ON</span> p.product_id = o.product_id
+<span class="py-kw">GROUP</span> <span class="py-kw">BY</span> p.product_id, p.product_name
+<span class="py-kw">ORDER</span> <span class="py-kw">BY</span> revenue <span class="py-kw">DESC</span>, p.product_id
+<span class="py-kw">LIMIT</span> <span class="py-num">5</span>;</pre></div><div class="colstack"><div class="fig"><div class="cap">share of all revenue, ₹550,240 over 4,000 orders</div><svg viewBox="0 0 640 196" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="share of total revenue, top five products"><text x="120.0" y="24.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Gulab Jamun</text><rect x="130.0" y="6.0" width="360.0" height="28.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="498.0" y="24.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">28.65%<tspan fill="#53666F" font-family="Public Sans,system-ui,sans-serif" font-weight="400" font-size="11" dx="8">₹157,620</tspan></text><text x="120.0" y="62.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Sandesh</text><rect x="130.0" y="44.0" width="59.3" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="197.3" y="62.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4.72%<tspan fill="#53666F" font-family="Public Sans,system-ui,sans-serif" font-weight="400" font-size="11" dx="8">₹25,970</tspan></text><text x="120.0" y="100.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Rasgulla</text><rect x="130.0" y="82.0" width="53.5" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="191.5" y="100.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4.26%<tspan fill="#53666F" font-family="Public Sans,system-ui,sans-serif" font-weight="400" font-size="11" dx="8">₹23,430</tspan></text><text x="120.0" y="138.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Nachos</text><rect x="130.0" y="120.0" width="52.5" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="190.5" y="138.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4.18%<tspan fill="#53666F" font-family="Public Sans,system-ui,sans-serif" font-weight="400" font-size="11" dx="8">₹23,000</tspan></text><text x="120.0" y="176.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Milk Cake</text><rect x="130.0" y="158.0" width="51.4" height="28.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="189.4" y="176.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">4.09%<tspan fill="#53666F" font-family="Public Sans,system-ui,sans-serif" font-weight="400" font-size="11" dx="8">₹22,500</tspan></text></svg></div><div class="outlbl">output</div><div class="out xs"> product_id product_name  revenue  pct_of_total
+         14  Gulab Jamun 157620.0         28.65
+         24      Sandesh  25970.0          4.72
+         15     Rasgulla  23430.0          4.26
+          8       Nachos  23000.0          4.18
+         25    Milk Cake  22500.0          4.09</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Window">
+  <div class="eyebrow">Window functions &#183; Mechanism</div>
+  <h1 class="t">Mechanism
+    <small>The inner SUM runs per product, inside GROUP BY. The outer SUM(...) OVER () then adds those 47 sums across the whole result.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>step</th><th>what it computes</th><th>Gulab Jamun</th></tr><tr><td>1  GROUP BY product</td><td>one row per product sold: 47 rows</td><td>284 orders at ₹555</td></tr><tr><td>2  SUM(p.price)</td><td>revenue of that product</td><td>₹157,620</td></tr><tr><td>3  SUM(SUM(p.price)) OVER ()</td><td>the sum of step 2 over all 47 rows, written on every row</td><td>₹550,240</td></tr><tr><td>4  100 × step 2 / step 3</td><td>share of total</td><td>28.65%</td></tr></table><div class="cols"><div class="card b"><h3>OVER ()</h3><p>Empty brackets mean one window: the whole result. OVER (PARTITION BY description) would give the total per product type instead.</p></div><div class="card o"><h3>NULLIF in 2025</h3><p>The MySQL query divided by NULLIF(total, 0) to avoid dividing by zero on an empty table. With 4,000 orders the guard never fires, and the slide drops it.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Window">
+  <div class="eyebrow">Window functions &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>SUM(p.price) is revenue only because one order row is one item at today's price.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>the query assumes</th><th>true in ecom.db?</th><th>if not</th></tr><tr><td>one order row is one item</td><td>yes: there is no quantity column</td><td>multiply by quantity</td></tr><tr><td>the price an order paid is today's price</td><td>yes: prices never change in the generator</td><td>store the price on the order row</td></tr><tr><td>every order joins to a product</td><td>yes, with foreign keys on</td><td>the inner join drops orphan orders from the total</td></tr></table><div class="callout warn sm">A real shop changes prices. Once that happens, products.price says what an item costs now, and the revenue query has to read a price stored on each order.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Dash">
+  <div class="eyebrow">SQL in Dash &#183; Example: a query behind a callback</div>
+  <h1 class="t">Example
+    <small>The callback from lecture 3 takes the city from a dropdown. A function runs one SQL query for that city and returns the figure.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code xs">SQL = <span class="py-str">&quot;&quot;</span><span class="py-str">&quot;SELECT p.description AS type, SUM(p.price) AS revenue</span>
+FROM orders o
+JOIN customers c ON c.customer_id = o.customer_id
+JOIN products  p ON p.product_id  = o.product_id
+WHERE c.place = ?
+GROUP BY p.description ORDER BY revenue DESC<span class="py-str">&quot;&quot;</span>&quot;
+
+<span class="py-kw">def</span> city_figure(city):
+    df = pd.read_sql(SQL, con, params=(city,))
+    <span class="py-kw">return</span> px.bar(df, x=<span class="py-str">&#x27;type&#x27;</span>, y=<span class="py-str">&#x27;revenue&#x27;</span>)
+
+@app.callback(Output(<span class="py-str">&#x27;bar&#x27;</span>, <span class="py-str">&#x27;figure&#x27;</span>),
+              Input(<span class="py-str">&#x27;city&#x27;</span>, <span class="py-str">&#x27;value&#x27;</span>))
+<span class="py-kw">def</span> update(city):
+    <span class="py-kw">return</span> city_figure(city)</pre></div><div class="colstack"><pre class="code xs">pd.read_sql(SQL, con, params=(<span class="py-str">&#x27;Chennai&#x27;</span>,))</pre><div class="outlbl">output</div><div class="out xs">       type  revenue
+     Sweets  80420.0
+     Snacks  26100.0
+ Hot Drinks  17270.0
+Cold Drinks  16905.0</div><div class="fig"><div class="cap">city_figure('Chennai'), drawn from those four rows</div><svg viewBox="0 0 560 158" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Chennai revenue by product type"><text x="110.0" y="24.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Sweets</text><rect x="120.0" y="6.0" width="290.0" height="28.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="418.0" y="24.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">₹80,420</text><text x="110.0" y="62.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Snacks</text><rect x="120.0" y="44.0" width="94.1" height="28.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="222.1" y="62.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">₹26,100</text><text x="110.0" y="100.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Hot Drinks</text><rect x="120.0" y="82.0" width="62.3" height="28.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="190.3" y="100.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">₹17,270</text><text x="110.0" y="138.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="end" font-weight="500" >Cold Drinks</text><rect x="120.0" y="120.0" width="61.0" height="28.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="189.0" y="138.5" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" font-weight="700">₹16,905</text></svg></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Dash">
+  <div class="eyebrow">SQL in Dash &#183; Drawbacks: SQL built from text</div>
+  <h1 class="t">Drawbacks
+    <small>Pasting the dropdown value into the SQL text lets a typed value rewrite the query. This one returns all 100 customers; with params= it returns 0.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><h2 class="s xs">f-string</h2><pre class="code xs">city = <span class="py-str">&quot;x&#x27; OR &#x27;1&#x27;=&#x27;1&quot;</span>
+q = f<span class="py-str">&quot;SELECT name, place FROM customers WHERE place = &#x27;{city}&#x27;&quot;</span>
+<span class="py-kw">print</span>(q)
+len(pd.read_sql(q, con))</pre><div class="outlbl">output</div><div class="out xs">SELECT name, place FROM customers WHERE place = &#x27;x&#x27; OR &#x27;1&#x27;=&#x27;1&#x27;
+100</div></div><div class="colstack"><h2 class="s xs">params=</h2><pre class="code xs">len(pd.read_sql(
+    <span class="py-str">&#x27;SELECT name, place FROM customers WHERE place = ?&#x27;</span>,
+    con, params=(city,)))</pre><div class="outlbl">output</div><div class="out xs">0</div><div class="callout good sm">With a ? placeholder, sqlite3 sends the value apart from the SQL text, and the database compares it as one string.</div></div></div><div class="callout bad sm">A dropdown limits what a careful user picks. A text box, or a request sent to the app without the page, can carry any string.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Governance">
+  <div class="eyebrow">Governance &#183; Concept: the data lifecycle</div>
+  <h1 class="t">Concept
+    <small>Data governance decides who may read and change data at each stage of its life, and when it must be deleted.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">the five stages of the IBM model in the 2025 deck, mapped to this course</div><svg viewBox="0 0 1112 118" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Data lifecycle: create, store, use, archive, delete"><rect x="0.0" y="8.0" width="196.0" height="104.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><rect x="0.0" y="8.0" width="196.0" height="30.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="98.0" y="28.0" font-family="JetBrains Mono,monospace" font-size="13.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >create</text><text x="98.0" y="66.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="middle" font-weight="600" >scraping, forms</text><text x="98.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >lectures on data collection</text><line x1="198.0" y1="60.0" x2="220.0" y2="60.0" stroke="#53666F" stroke-width="1.6" /><path d="M226.0,60.0 L218.0,56.0 L218.0,64.0 z" fill="#53666F"/><rect x="228.0" y="8.0" width="196.0" height="104.0" fill="#FFF9F9" stroke="#B02F3B" stroke-width="1.5" /><rect x="228.0" y="8.0" width="196.0" height="30.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="326.0" y="28.0" font-family="JetBrains Mono,monospace" font-size="13.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >store</text><text x="326.0" y="66.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="middle" font-weight="600" >files, ecom.db</text><text x="326.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >lecture 1 and this one</text><line x1="426.0" y1="60.0" x2="448.0" y2="60.0" stroke="#53666F" stroke-width="1.6" /><path d="M454.0,60.0 L446.0,56.0 L446.0,64.0 z" fill="#53666F"/><rect x="456.0" y="8.0" width="196.0" height="104.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><rect x="456.0" y="8.0" width="196.0" height="30.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="554.0" y="28.0" font-family="JetBrains Mono,monospace" font-size="13.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >use</text><text x="554.0" y="66.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="middle" font-weight="600" >queries, dashboards</text><text x="554.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >lectures 2, 3, 5, 6</text><line x1="654.0" y1="60.0" x2="676.0" y2="60.0" stroke="#53666F" stroke-width="1.6" /><path d="M682.0,60.0 L674.0,56.0 L674.0,64.0 z" fill="#53666F"/><rect x="684.0" y="8.0" width="196.0" height="104.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.1" /><rect x="684.0" y="8.0" width="196.0" height="30.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="782.0" y="28.0" font-family="JetBrains Mono,monospace" font-size="13.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >archive</text><text x="782.0" y="66.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="middle" font-weight="600" >old orders moved out</text><text x="782.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >kept, read seldom</text><line x1="882.0" y1="60.0" x2="904.0" y2="60.0" stroke="#53666F" stroke-width="1.6" /><path d="M910.0,60.0 L902.0,56.0 L902.0,64.0 z" fill="#53666F"/><rect x="912.0" y="8.0" width="196.0" height="104.0" fill="#FFF9F9" stroke="#B02F3B" stroke-width="1.5" /><rect x="912.0" y="8.0" width="196.0" height="30.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="1010.0" y="28.0" font-family="JetBrains Mono,monospace" font-size="13.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >delete</text><text x="1010.0" y="66.0" font-family="Public Sans,system-ui,sans-serif" font-size="12" fill="#14222B" text-anchor="middle" font-weight="600" >erasure, retention ends</text><text x="1010.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >this section</text></svg></div><div class="cols3"><div class="card b"><h3>Access</h3><p>Who can read ecom.db, and who can write to it.</p></div><div class="card o"><h3>Retention</h3><p>How long an order is kept, and what is kept after that.</p></div><div class="card r"><h3>Law</h3><p>India's Digital Personal Data Protection Act, 2023, for the names and emails in customers.</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Governance">
+  <div class="eyebrow">Governance &#183; Example 1: a read-only connection</div>
+  <h1 class="t">Example
+    <small>SQLite has no users or GRANT. An analyst's code can open the file read-only, and every write on that connection fails.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm">ro = sqlite3.connect(<span class="py-str">&#x27;file:ecom.db?mode=ro&#x27;</span>, uri=<span class="py-kw">True</span>)
+ro.execute(<span class="py-str">&#x27;SELECT COUNT(*) FROM customers&#x27;</span>).fetchone()</pre><div class="outlbl">output</div><div class="out xs">(100,)</div><pre class="code sm">ro.execute(<span class="py-str">&#x27;DELETE FROM orders WHERE customer_id = 1&#x27;</span>)</pre><div class="outlbl">output</div><div class="out xs">sqlite3.OperationalError: attempt to write a readonly database</div></div><div class="colstack fill"><div class="card o"><h3>2025, MySQL</h3><p>CREATE USER ecomuser1 and GRANT SELECT ON ecom.customers: the server refuses that user's writes.</p></div><div class="card b"><h3>2026, SQLite</h3><p>The refusal lives in the connection, which the code chooses. File permissions on ecom.db are the only lock the operating system enforces.</p></div><div class="fig"><div class="cap">two connections, one file</div><svg viewBox="0 0 590 124" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Two connections to the same file: one reads and writes, one only reads"><rect x="0.0" y="30.0" width="170.0" height="60.0" fill="#FFFFFF" stroke="#0E7A55" stroke-width="1.6" /><text x="85.0" y="56.0" font-family="JetBrains Mono,monospace" font-size="14" fill="#0E7A55" text-anchor="middle" font-weight="700" >ecom.db</text><text x="85.0" y="76.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="middle" font-weight="400" >one file</text><rect x="330.0" y="0.0" width="250.0" height="46.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="455.0" y="28.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >make_ecom.py: read-write</text><rect x="330.0" y="74.0" width="250.0" height="46.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="455.0" y="102.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="middle" font-weight="700" >dashboard: mode=ro</text><line x1="326.0" y1="23.0" x2="181.9" y2="48.9" stroke="#14222B" stroke-width="1.6" /><path d="M176.0,50.0 L184.6,52.5 L183.2,44.6 z" fill="#14222B"/><line x1="176.0" y1="58.0" x2="320.2" y2="24.4" stroke="#14222B" stroke-width="1.6" /><path d="M326.0,23.0 L317.3,20.9 L319.1,28.7 z" fill="#14222B"/><line x1="176.0" y1="72.0" x2="320.1" y2="96.0" stroke="#125F9E" stroke-width="1.6" /><path d="M326.0,97.0 L318.8,91.7 L317.5,99.6 z" fill="#125F9E"/><text x="250.0" y="112.0" font-family="JetBrains Mono,monospace" font-size="10.5" fill="#125F9E" text-anchor="middle" font-weight="400" >reads only</text></svg></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Governance">
+  <div class="eyebrow">Governance &#183; Example 2: erasing a customer</div>
+  <h1 class="t">Example continued 1
+    <small>Customer 1 asks to be erased. RESTRICT refuses the delete because of 73 orders, and the shop has to choose what happens to them.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><pre class="code sm"><span class="py-kw">DELETE</span> <span class="py-kw">FROM</span> customers <span class="py-kw">WHERE</span> customer_id = <span class="py-num">1</span>;</pre><div class="outlbl">output</div><div class="out xs">sqlite3.IntegrityError: FOREIGN KEY constraint failed</div><h2 class="s xs">Option 1: delete the orders too</h2><pre class="code xs"><span class="py-kw">DELETE</span> <span class="py-kw">FROM</span> orders    <span class="py-kw">WHERE</span> customer_id = <span class="py-num">1</span>;<span class="py-cm">   -- 73 rows</span>
+<span class="py-kw">DELETE</span> <span class="py-kw">FROM</span> customers <span class="py-kw">WHERE</span> customer_id = <span class="py-num">1</span>;<span class="py-cm">   -- 1 row</span></pre><h2 class="s xs">Option 2: keep the orders, remove the person</h2><pre class="code xs"><span class="py-kw">UPDATE</span> customers
+<span class="py-kw">SET</span> name = <span class="py-str">&#x27;erased&#x27;</span>, email = <span class="py-str">&#x27;erased-1@invalid&#x27;</span>, place = <span class="py-kw">NULL</span>
+<span class="py-kw">WHERE</span> customer_id = <span class="py-num">1</span>;</pre></div><div class="colstack fill"><div class="card r"><h3>Option 1 rewrites history</h3><p>Total revenue falls from ₹550,240 to ₹541,660. Every past report on 2024 and 2025 changes.</p></div><div class="card g"><h3>Option 2 keeps the sales</h3><p>The 73 orders stay, pointing at a row with the name, email and place removed.</p></div><div class="callout sm">RESTRICT turned a silent deletion into a decision someone had to make and write down.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Governance">
+  <div class="eyebrow">Governance &#183; the law: DPDP Act 2023</div>
+  <h1 class="t">India's Digital Personal Data Protection Act, 2023
+    <small>The Act covers digital personal data, data about a person who can be identified. In ecom.db that is name, email and place.</small></h1>
+  <div class="wrap">
+<table class="d sm free"><tr><th>term or duty</th><th>what the Act says</th><th>in ecom.db</th></tr><tr><td>Data Principal</td><td>the person the data is about</td><td>each customer</td></tr><tr><td>Data Fiduciary</td><td>whoever decides why and how the data is processed</td><td>the shop</td></tr><tr><td>consent and purpose</td><td>process for the purpose the person consented to</td><td>email collected to send order updates</td></tr><tr><td>erasure</td><td>erase once the purpose is served or consent is withdrawn, unless a law requires keeping it</td><td>the choice on the previous slide</td></tr><tr><td>security safeguards</td><td>take reasonable safeguards to prevent a breach; tell the Data Protection Board and the people affected if one happens</td><td>read-only connections, file permissions</td></tr><tr><td>penalties</td><td>up to ₹250 crore for failing to take reasonable safeguards</td><td></td></tr></table><div class="callout sm">The Act received assent in August 2023, and its Rules were notified in November 2025. The 2025 deck gave it one line among other countries' laws.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Governance">
+  <div class="eyebrow">Governance &#183; Verdict</div>
+  <h1 class="t">Verdict
+    <small>Each governance duty in this lecture became a line of code or a constraint in ecom.db.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>duty</th><th>mechanism</th><th>shown on</th></tr><tr><td>data stays consistent</td><td>primary, foreign and UNIQUE keys, PRAGMA foreign_keys = ON</td><td>the keys section</td></tr><tr><td>analysts cannot change data</td><td>sqlite3.connect('file:ecom.db?mode=ro', uri=True)</td><td>read-only connection</td></tr><tr><td>user input cannot rewrite a query</td><td>params= with ? placeholders</td><td>SQL in Dash</td></tr><tr><td>deleting a person is a decision</td><td>ON DELETE RESTRICT, then delete or anonymise</td><td>erasing a customer</td></tr><tr><td>the decision is recorded</td><td>a log, as the cleaning log in the data cleaning lectures</td><td>the practice</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Summary">
+  <div class="eyebrow">Summary</div>
+  <h1 class="t">What SQLite checks, and what the code has to do
+    <small>The database enforces some rules on its own. The rest depend on the code that opens it.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>topic</th><th>SQLite does</th><th>your code has to</th></tr><tr><td>keys</td><td>enforces PRIMARY KEY and UNIQUE</td><td>turn on foreign keys on every connection</td></tr><tr><td>types</td><td>converts values it can</td><td>check typeof() or the dtypes after read_sql</td></tr><tr><td>queries</td><td>runs FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY</td><td>pick WHERE or HAVING by when the filter applies</td></tr><tr><td>joins</td><td>pairs rows on the key</td><td>count the right thing after a join</td></tr><tr><td>Dash</td><td>compares a ? value as a value</td><td>pass params=, never paste text into SQL</td></tr><tr><td>governance</td><td>refuses writes on a read-only connection</td><td>decide and record what erasure means</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Practice
+    <small>Six exercises on ecom.db. make_ecom.py and ecom.db sit in data/ beside this deck.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><ol class="n"><li>Report revenue per city and product type in one query, then the share of each type within its city with OVER (PARTITION BY place).</li><li>Find the customers whose orders all fall in 2024. Write it once in SQL and once with pandas merge, and check the two agree.</li><li>Insert an order for product 999 with foreign keys off, then find it with a LEFT JOIN.</li><li>Add a quantity column to orders with a default of 1 and rewrite the revenue query to use it.</li><li>Build the Dash app from the city_figure slide, with a read-only connection.</li><li>Erase customer 2 by option 2, and write the decision as a row in a log table.</li></ol></div><div class="colstack fill"><div class="card b"><h3>For the project</h3><p>If your data has more than one table, store it in SQLite with keys, and state why in the report.</p></div><div class="card g"><h3>Next lecture</h3><p>Charts for one and two variables, built in Plotly.</p></div></div></div>
+  </div>
+</section>
+</div></div>
+<div id="nav"><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></div>
+<div id="hint">&#8592; &#8594; navigate &#183; F fullscreen &#183; P print</div>
+<script>
+/* ============================================================
+   deck mechanics — identical to the other decks in the module
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 &#183; Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 4 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  // ---- staged builds ------------------------------------------------
+  // A slide carrying .build holds its [data-at] pieces back. Arrow
+  // right releases the next one; only when they are all out does the
+  // deck advance. Entering backwards lands on the finished slide.
+  function maxStep(s){
+    let m=0;
+    s.querySelectorAll('[data-at]').forEach(e=>{ m=Math.max(m,+e.dataset.at||0); });
+    return m;
+  }
+  function paint(s){
+    const k=+s.dataset.step||0;
+    // data-to="k" retires a piece once the build moves past step k
+    s.querySelectorAll('[data-at]').forEach(e=>
+      e.classList.toggle('shown',(+e.dataset.at||0)<=k&&
+        (e.dataset.to===undefined||k<=+e.dataset.to)));
+    const d=s.querySelector('.bld');
+    if(d)[...d.children].forEach((c,n)=>c.classList.toggle('on',n<k));
+  }
+  function build(s,dir){
+    if(!s||!s.classList.contains('build'))return false;
+    const t=(+s.dataset.step||0)+dir;
+    if(t<0||t>maxStep(s))return false;
+    s.dataset.step=t; paint(s); return true;
+  }
+  function show(n){
+    const prev=i, back=n<i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    const cur=slides[i];
+    if(cur&&cur.classList.contains('build')){
+      cur.dataset.step=back?maxStep(cur):0; paint(cur);
+    }
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(cur) cur.dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>{ if(!build(slides[i],1))show(i+1); };
+  document.getElementById('prev').onclick=()=>{ if(!build(slides[i],-1))show(i-1); };
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){
+      if(!build(slides[i],1))show(i+1); e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){
+      if(!build(slides[i],-1))show(i-1); e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+
+
+
+(function(){
+  const el=document.getElementById('jx-data'); if(!el) return;
+  const D=JSON.parse(el.textContent), out=document.getElementById('jx-out'),
+        rd=document.getElementById('jx-rd'), sq=document.getElementById('jx-sql'),
+        box=document.getElementById('jx-mode');
+  const SQL={
+    inner:'SELECT c.customer_id, c.name, o.order_id, o.product\nFROM customers c\nJOIN orders o ON o.customer_id = c.customer_id;',
+    left:'SELECT c.customer_id, c.name, o.order_id, o.product\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.customer_id;',
+    anti:'SELECT c.customer_id, c.name\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.customer_id\nWHERE o.order_id IS NULL;'};
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  function run(){
+    const mode=box.querySelector('input:checked').value;
+    box.querySelectorAll('label').forEach(l=>l.classList.toggle('on',l.querySelector('input').checked));
+    let rows=[];
+    D.c.forEach(c=>{
+      const m=D.o.filter(o=>o.cid===c.id);
+      if(m.length){ if(mode!=='anti') m.forEach(o=>rows.push([c.id,c.name,o.oid,o.product])); }
+      else if(mode!=='inner') rows.push([c.id,c.name,null,null]);
+    });
+    const head=mode==='anti'?['customer_id','name']:['customer_id','name','order_id','product'];
+    out.innerHTML='<tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+
+      r.slice(0,head.length).map(v=>v===null?'<td class="nul">NULL</td>':'<td>'+esc(v)+'</td>').join('')+'</tr>').join('');
+    sq.textContent=SQL[mode];
+    rd.innerHTML='<b>'+rows.length+' rows</b> from 4 customers and 5 orders. '+
+      ({inner:'Customers 5 and 24 have no order and drop out.',
+        left:'Customers 5 and 24 stay, with NULL in the order columns.',
+        anti:'Only the customers with no order: the anti-join.'})[mode];
+  }
+  box.addEventListener('change',run); run();
+})();
+
+</script>
+</body>
+</html>
