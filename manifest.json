@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-05 12:30 UTC",
+ "generated": "2026-10-05 12:32 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -247,6 +247,24 @@
    "updated": "2026-10-05"
   },
   {
+   "path": "data visualisation/dash_input_types.ipynb",
+   "name": "dash_input_types.ipynb",
+   "folder": "data visualisation",
+   "section": "Data Visualisation",
+   "kind": "notebook",
+   "size": 82335,
+   "updated": "2026-10-05"
+  },
+  {
+   "path": "data visualisation/dash_output_types.ipynb",
+   "name": "dash_output_types.ipynb",
+   "folder": "data visualisation",
+   "section": "Data Visualisation",
+   "kind": "notebook",
+   "size": 90115,
+   "updated": "2026-10-05"
+  },
+  {
    "path": "data visualisation/data_vis_1_plotly_dash_layout.html",
    "name": "data_vis_1_plotly_dash_layout.html",
    "folder": "data visualisation",
@@ -280,24 +298,6 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 665369,
-   "updated": "2026-10-05"
-  },
-  {
-   "path": "data visualisation/practice/dash_inputs_practice.ipynb",
-   "name": "dash_inputs_practice.ipynb",
-   "folder": "data visualisation/practice",
-   "section": "Data Visualisation/Practice",
-   "kind": "notebook",
-   "size": 82335,
-   "updated": "2026-10-05"
-  },
-  {
-   "path": "data visualisation/practice/dash_outputs_practice.ipynb",
-   "name": "dash_outputs_practice.ipynb",
-   "folder": "data visualisation/practice",
-   "section": "Data Visualisation/Practice",
-   "kind": "notebook",
-   "size": 90115,
    "updated": "2026-10-05"
   },
   {
