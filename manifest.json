@@ -229,6 +229,15 @@
    "updated": "2026-09-21"
   },
   {
+   "path": "data storage/data_storage_1_file_formats.html",
+   "name": "data_storage_1_file_formats.html",
+   "folder": "data storage",
+   "section": "Data Storage",
+   "kind": "deck",
+   "size": 139473,
+   "updated": "2026-10-05"
+  },
+  {
    "path": "intro/pandas1.ipynb",
    "name": "pandas1.ipynb",
    "folder": "intro",
