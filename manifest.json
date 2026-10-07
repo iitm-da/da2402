@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-07 06:53 UTC",
+ "generated": "2026-10-07 06:57 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -63,8 +63,8 @@
    "folder": "data cleaning",
    "section": "Data cleaning",
    "kind": "deck",
-   "size": 268754,
-   "updated": "2026-10-05"
+   "size": 288154,
+   "updated": "2026-10-07"
   },
   {
    "path": "data cleaning/imputation_methods.ipynb",
