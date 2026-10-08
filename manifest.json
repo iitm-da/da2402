@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-08 07:52 UTC",
+ "generated": "2026-10-08 08:10 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -63,7 +63,7 @@
    "folder": "data cleaning",
    "section": "Data cleaning",
    "kind": "deck",
-   "size": 322945,
+   "size": 328920,
    "updated": "2026-10-08"
   },
   {
