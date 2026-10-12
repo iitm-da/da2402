@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-12 10:04 UTC",
+ "generated": "2026-10-12 10:11 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -243,8 +243,8 @@
    "folder": "data storage",
    "section": "Data Storage",
    "kind": "deck",
-   "size": 139518,
-   "updated": "2026-10-05"
+   "size": 139760,
+   "updated": "2026-10-12"
   },
   {
    "path": "data storage/data_storage_2_sqlite.html",
