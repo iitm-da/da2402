@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-13 17:13 UTC",
+ "generated": "2026-10-14 06:12 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -243,8 +243,8 @@
    "folder": "data storage",
    "section": "Data Storage",
    "kind": "deck",
-   "size": 139760,
-   "updated": "2026-10-12"
+   "size": 139761,
+   "updated": "2026-10-14"
   },
   {
    "path": "data storage/data_storage_2_sqlite.html",
@@ -252,8 +252,8 @@
    "folder": "data storage",
    "section": "Data Storage",
    "kind": "deck",
-   "size": 124292,
-   "updated": "2026-10-05"
+   "size": 124293,
+   "updated": "2026-10-14"
   },
   {
    "path": "data visualisation/dash_input_types.ipynb",
@@ -274,67 +274,76 @@
    "updated": "2026-10-05"
   },
   {
-   "path": "data visualisation/data_vis_1_plotly_dash_layout.html",
-   "name": "data_vis_1_plotly_dash_layout.html",
+   "path": "data visualisation/data_vis_1_html_css_layout.html",
+   "name": "data_vis_1_html_css_layout.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 193149,
-   "updated": "2026-10-05"
+   "size": 165379,
+   "updated": "2026-10-14"
   },
   {
-   "path": "data visualisation/data_vis_2_dash_callbacks.html",
-   "name": "data_vis_2_dash_callbacks.html",
+   "path": "data visualisation/data_vis_2_plotly_dash_layout.html",
+   "name": "data_vis_2_plotly_dash_layout.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 99179,
-   "updated": "2026-10-05"
+   "size": 179671,
+   "updated": "2026-10-14"
   },
   {
-   "path": "data visualisation/data_vis_3_one_two_variables.html",
-   "name": "data_vis_3_one_two_variables.html",
+   "path": "data visualisation/data_vis_3_dash_callbacks.html",
+   "name": "data_vis_3_dash_callbacks.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 438646,
-   "updated": "2026-10-05"
+   "size": 99180,
+   "updated": "2026-10-14"
   },
   {
-   "path": "data visualisation/data_vis_4_many_variables.html",
-   "name": "data_vis_4_many_variables.html",
+   "path": "data visualisation/data_vis_4_one_two_variables.html",
+   "name": "data_vis_4_one_two_variables.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 665369,
-   "updated": "2026-10-05"
+   "size": 438648,
+   "updated": "2026-10-14"
   },
   {
-   "path": "data visualisation/data_vis_5_gestalt.html",
-   "name": "data_vis_5_gestalt.html",
+   "path": "data visualisation/data_vis_5_many_variables.html",
+   "name": "data_vis_5_many_variables.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 219549,
-   "updated": "2026-10-05"
+   "size": 665370,
+   "updated": "2026-10-14"
   },
   {
-   "path": "data visualisation/data_vis_6_perception.html",
-   "name": "data_vis_6_perception.html",
+   "path": "data visualisation/data_vis_6_gestalt.html",
+   "name": "data_vis_6_gestalt.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 132113,
-   "updated": "2026-10-05"
+   "size": 219552,
+   "updated": "2026-10-14"
   },
   {
-   "path": "data visualisation/data_vis_7_colour_honest_charts.html",
-   "name": "data_vis_7_colour_honest_charts.html",
+   "path": "data visualisation/data_vis_7_perception.html",
+   "name": "data_vis_7_perception.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 250137,
-   "updated": "2026-10-05"
+   "size": 132116,
+   "updated": "2026-10-14"
+  },
+  {
+   "path": "data visualisation/data_vis_8_colour_honest_charts.html",
+   "name": "data_vis_8_colour_honest_charts.html",
+   "folder": "data visualisation",
+   "section": "Data Visualisation",
+   "kind": "deck",
+   "size": 250143,
+   "updated": "2026-10-14"
   },
   {
    "path": "data visualisation/plotly_dash_layout.ipynb",
@@ -343,7 +352,7 @@
    "section": "Data Visualisation",
    "kind": "notebook",
    "size": 86026,
-   "updated": "2026-10-13"
+   "updated": "2026-10-14"
   },
   {
    "path": "intro/pandas1.ipynb",
