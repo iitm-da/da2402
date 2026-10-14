@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>DA2402 — Data Visualisation · Part 6: Perception</title>
+<title>DA2402 — Data Visualisation · Part 7: Perception</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
@@ -483,15 +483,15 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
   </div>
   <div class="kicker">DA2402 &#183; Data Curation and Visualization</div>
   <h1>Data<br/>Visualisation</h1>
-  <div class="pt">Part 6 &#8212; Perception</div>
+  <div class="pt">Part 7 &#8212; Perception</div>
   <div class="rule"></div>
   <p class="sub">Which visual features the eye picks out before attention arrives, which encodings it reads
-  accurately, and what that means for the charts built in lectures 2 to 6.</p>
+  accurately, and what that means for the charts built in lectures 3 to 7.</p>
   <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
   <table class="meta">
     <tr><td>Course</td><td>DA2402 &#183; BTech DSAI</td></tr>
     <tr><td>Module</td><td>Data visualisation</td></tr>
-    <tr><td>Lecture</td><td>8 of 9 &#183; Perception</td></tr>
+    <tr><td>Lecture</td><td>9 of 10 &#183; Perception</td></tr>
     <tr><td>Data</td><td>gapminder &#183; sales.parquet</td></tr>
   </table>
 </section>
@@ -550,7 +550,7 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
 <section class="slide" data-sec="Preattentive">
   <div class="eyebrow">Preattentive attributes &#183; Example: one country in 142</div>
   <h1 class="t">Example continued 1
-    <small>India in the 2007 scatter of lecture 5: GDP per capita 2,452, life expectancy 64.7. Mark it by one feature at a time and time your own search.</small></h1>
+    <small>India in the 2007 scatter of lecture 6: GDP per capita 2,452, life expectancy 64.7. Mark it by one feature at a time and time your own search.</small></h1>
   <div class="wrap">
 <div class="cols w3070" style="flex:1;min-height:0"><div class="colstack"><div class="outlbl">mark India by</div><div class="seg" id="in-m" style="flex-direction:column;align-items:stretch"><button data-m="none">nothing</button><button data-m="colour" class="on">colour</button><button data-m="size">size</button><button data-m="shape">shape</button><button data-m="both">colour + shape, mixed distractors</button></div><div class="callout sm">Switch and look for India each time. Colour and size are found at once; shape and the conjunction need a search.</div></div><div class="fig" style="flex:1;padding:6px"><div class="cap">gapminder 2007, life expectancy against GDP per capita <span class="jsbadge">browser JS</span></div><svg id="in-svg" viewBox="0 0 740 340" width="100%" style="display:block"></svg></div></div><script type="application/json" id="in-data">[[2.9888, 43.828, "Afghanistan"], [3.7736, 76.423, "Albania"], [3.794, 72.301, "Algeria"], [3.681, 42.731, "Angola"], [4.1065, 75.32, "Argentina"], [4.537, 81.235, "Australia"], [4.5578, 79.829, "Austria"], [4.4742, 75.635, "Bahrain"], [3.1434, 64.062, "Bangladesh"], [4.5275, 79.441, "Belgium"], [3.1587, 56.728, "Benin"], [3.5823, 65.554, "Bolivia"], [3.8719, 74.852, "Bosnia and Herzegovina"], [4.0993, 50.728, "Botswana"], [3.9574, 72.39, "Brazil"], [4.0286, 73.005, "Bulgaria"], [3.0853, 52.295, "Burkina Faso"], [2.6335, 49.58, "Burundi"], [3.234, 59.723, "Cambodia"], [3.3101, 50.43, "Cameroon"], [4.5601, 80.653, "Canada"], [2.8488, 44.741, "Central African Republic"], [3.2315, 50.651, "Chad"], [4.1196, 78.553, "Chile"], [3.6954, 72.961, "China"], [3.8455, 72.889, "Colombia"], [2.9939, 65.152, "Comoros"], [2.4433, 46.462, "Congo, Dem. Rep."], [3.5602, 55.322, "Congo, Rep."], [3.9843, 78.782, "Costa Rica"], [3.1889, 48.328, "Cote d'Ivoire"], [4.1649, 75.748, "Croatia"], [3.9517, 78.273, "Cuba"], [4.3586, 76.486, "Czech Republic"], [4.5475, 78.332, "Denmark"], [3.3186, 54.791, "Djibouti"], [3.78, 72.235, "Dominican Republic"], [3.8372, 74.994, "Ecuador"], [3.7467, 71.338, "Egypt"], [3.758, 71.878, "El Salvador"], [4.0847, 51.579, "Equatorial Guinea"], [2.8071, 58.04, "Eritrea"], [2.8394, 52.947, "Ethiopia"], [4.5212, 79.313, "Finland"], [4.4839, 80.657, "France"], [4.1208, 56.735, "Gabon"], [2.8767, 59.448, "Gambia"], [4.5075, 79.406, "Germany"], [3.1231, 60.022, "Ghana"], [4.4399, 79.483, "Greece"], [3.7148, 70.259, "Guatemala"], [2.9744, 56.007, "Guinea"], [2.7629, 46.388, "Guinea-Bissau"], [3.0798, 60.916, "Haiti"], [3.55, 70.198, "Honduras"], [4.5991, 82.208, "Hong Kong, China"], [4.2555, 73.338, "Hungary"], [4.5585, 81.757, "Iceland"], [3.3896, 64.698, "India"], [3.5491, 70.65, "Indonesia"], [4.0647, 70.964, "Iran"], [3.6504, 59.545, "Iraq"], [4.6093, 78.885, "Ireland"], [4.4069, 80.745, "Israel"], [4.4559, 80.546, "Italy"], [3.8646, 72.567, "Jamaica"], [4.5005, 82.603, "Japan"], [3.6551, 72.535, "Jordan"], [3.1653, 54.11, "Kenya"], [3.2022, 67.297, "Korea, Dem. Rep."], [4.3683, 78.623, "Korea, Rep."], [4.6749, 77.588, "Kuwait"], [4.0196, 71.993, "Lebanon"], [3.1957, 42.592, "Lesotho"], [2.6175, 45.678, "Liberia"], [4.0813, 73.952, "Libya"], [3.019, 59.443, "Madagascar"], [2.8804, 48.303, "Malawi"], [4.0952, 74.241, "Malaysia"], [3.0181, 54.467, "Mali"], [3.256, 64.164, "Mauritania"], [4.0397, 72.801, "Mauritius"], [4.0784, 76.195, "Mexico"], [3.4908, 66.803, "Mongolia"], [3.9663, 74.543, "Montenegro"], [3.5821, 71.164, "Morocco"], [2.9158, 42.082, "Mozambique"], [2.975, 62.069, "Myanmar"], [3.6822, 52.906, "Namibia"], [3.038, 63.785, "Nepal"], [4.5658, 79.762, "Netherlands"], [4.4011, 80.204, "New Zealand"], [3.4392, 72.899, "Nicaragua"], [2.7922, 56.867, "Niger"], [3.3041, 46.859, "Nigeria"], [4.6934, 80.196, "Norway"], [4.3486, 75.64, "Oman"], [3.416, 65.483, "Pakistan"], [3.9916, 75.537, "Panama"], [3.6204, 71.752, "Paraguay"], [3.8698, 71.421, "Peru"], [3.5039, 71.688, "Philippines"], [4.1872, 75.563, "Poland"], [4.312, 78.098, "Portugal"], [4.2862, 78.746, "Puerto Rico"], [3.8848, 76.442, "Reunion"], [4.0338, 72.476, "Romania"], [2.9361, 46.242, "Rwanda"], [3.2037, 65.528, "Sao Tome and Principe"], [4.3356, 72.777, "Saudi Arabia"], [3.2336, 63.062, "Senegal"], [3.9906, 74.002, "Serbia"], [2.9358, 42.568, "Sierra Leone"], [4.6734, 79.972, "Singapore"], [4.2713, 74.663, "Slovak Republic"], [4.4111, 77.926, "Slovenia"], [2.9667, 48.159, "Somalia"], [3.9671, 49.339, "South Africa"], [4.4597, 80.941, "Spain"], [3.5988, 72.396, "Sri Lanka"], [3.4154, 58.556, "Sudan"], [3.6545, 39.613, "Swaziland"], [4.5297, 80.884, "Sweden"], [4.5741, 81.701, "Switzerland"], [3.6216, 74.143, "Syria"], [4.4582, 78.4, "Taiwan"], [3.0443, 52.517, "Tanzania"], [3.8726, 70.616, "Thailand"], [2.9459, 58.42, "Togo"], [4.2555, 69.819, "Trinidad and Tobago"], [3.8508, 73.923, "Tunisia"], [3.9273, 71.777, "Turkey"], [3.0238, 51.542, "Uganda"], [4.5212, 79.425, "United Kingdom"], [4.633, 78.242, "United States"], [4.0258, 76.384, "Uruguay"], [4.0575, 73.747, "Venezuela"], [3.3877, 74.249, "Vietnam"], [3.4808, 73.422, "West Bank and Gaza"], [3.3581, 62.698, "Yemen, Rep."], [3.1042, 42.384, "Zambia"], [2.6718, 43.487, "Zimbabwe"]]</script>
   </div>
@@ -561,7 +561,7 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
   <h1 class="t">Drawbacks
     <small>A preattentive feature marks one thing. Using two of them for two variables puts the reader back into a conjunction search.</small></h1>
   <div class="wrap">
-<div class="cols3"><div class="card o"><h3>One highlight per chart</h3><p>Colour India, and India pops out. Colour India and Brazil and China in three hues, and each needs a legend lookup.</p></div><div class="card r"><h3>Features compete</h3><p>Colour by continent and shape by income group on one scatter: finding "rich Asian countries" is a colour + shape conjunction.</p></div><div class="card o"><h3>Hues run out</h3><p>Each extra category needs a hue the reader can tell apart. Palettes and colour blindness are lecture 9.</p></div></div><div class="callout sm">Lecture 7 uses the same features for grouping: similarity of colour and shape makes items read as one group.</div>
+<div class="cols3"><div class="card o"><h3>One highlight per chart</h3><p>Colour India, and India pops out. Colour India and Brazil and China in three hues, and each needs a legend lookup.</p></div><div class="card r"><h3>Features compete</h3><p>Colour by continent and shape by income group on one scatter: finding "rich Asian countries" is a colour + shape conjunction.</p></div><div class="card o"><h3>Hues run out</h3><p>Each extra category needs a hue the reader can tell apart. Palettes and colour blindness are lecture 10.</p></div></div><div class="callout sm">Lecture 8 uses the same features for grouping: similarity of colour and shape makes items read as one group.</div>
   </div>
 </section>
 
@@ -657,7 +657,7 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
   <h1 class="t">Drawbacks
     <small>Position is the best channel and there are two of them, x and y. Every further variable goes to a channel lower down the ranking.</small></h1>
   <div class="wrap">
-<div class="cols"><div class="colstack fill"><div class="card o"><h3>The bubble chart of lecture 6</h3><p>x = GDP per capita (position), y = life expectancy (position), size = population (area, rank 4), colour = continent (hue). Two variables get accurate channels; two do not.</p></div><div class="card g"><h3>Small multiples reuse position</h3><p>Facets by continent give each panel its own x and y. Comparing across panels drops to rank 2, non-aligned scales.</p></div></div><div class="colstack fill"><div class="card b"><h3>Silent on grouping</h3><p>The ranking does not say which items read as one group. That is gestalt, lecture 7.</p></div><div class="card b"><h3>Silent on colour choice</h3><p>Saturation ranks last for reading values; which palette to use is lecture 9.</p></div></div></div>
+<div class="cols"><div class="colstack fill"><div class="card o"><h3>The bubble chart of lecture 7</h3><p>x = GDP per capita (position), y = life expectancy (position), size = population (area, rank 4), colour = continent (hue). Two variables get accurate channels; two do not.</p></div><div class="card g"><h3>Small multiples reuse position</h3><p>Facets by continent give each panel its own x and y. Comparing across panels drops to rank 2, non-aligned scales.</p></div></div><div class="colstack fill"><div class="card b"><h3>Silent on grouping</h3><p>The ranking does not say which items read as one group. That is gestalt, lecture 8.</p></div><div class="card b"><h3>Silent on colour choice</h3><p>Saturation ranks last for reading values; which palette to use is lecture 10.</p></div></div></div>
   </div>
 </section>
 
@@ -709,7 +709,7 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
 <section class="slide" data-sec="Applied">
   <div class="eyebrow">Applied to our charts &#183; Verdict</div>
   <h1 class="t">Verdict
-    <small>The charts from lectures 2 to 6, by the encoding that carries the number the reader is asked to compare.</small></h1>
+    <small>The charts from lectures 3 to 7, by the encoding that carries the number the reader is asked to compare.</small></h1>
   <div class="wrap">
 <table class="d roomy free"><tr><th>chart (lecture)</th><th>number read from</th><th>rank</th><th>higher-ranked alternative</th></tr><tr><td>bar chart of sales (2)</td><td>position and length, common baseline</td><td>1</td><td>sort the bars</td></tr><tr><td>scatter, GDP against life expectancy (5)</td><td>position, common scale</td><td>1</td><td>already at the top</td></tr><tr><td>small multiples by continent (6)</td><td>position, non-aligned scales</td><td>2</td><td>one panel with shared axes when comparing across</td></tr><tr><td>pie of continent population (5)</td><td>angle</td><td>3</td><td>sorted bar or dot plot</td></tr><tr><td>stacked bar, middle segments (5, 6)</td><td>length, floating</td><td>3</td><td>grouped bars or small multiples</td></tr><tr><td>bubble size, population (5, 6)</td><td>area</td><td>4</td><td>label the value, or a separate bar</td></tr><tr><td>choropleth, life expectancy (6)</td><td>colour saturation</td><td>6</td><td>dot plot by country, map for location only</td></tr></table>
   </div>
@@ -748,7 +748,7 @@ table.log.roomy td,table.log.roomy th{padding:17px 10px}
     r.innerHTML='<div class="a">DA2402 &#183; Data Curation and Visualization</div>'+
       '<div class="n">Dr. Arun B Ayyar</div>'+
       '<div class="b">'+(s.dataset.sec||'')+'</div>'+
-      '<div class="c">Lecture 8 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+      '<div class="c">Lecture 9 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
     s.appendChild(r);
   });
   // ---- staged builds ------------------------------------------------

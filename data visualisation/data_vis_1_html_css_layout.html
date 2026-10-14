@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>DA2402 — Data Visualisation · Part 1: HTML, CSS and page layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#E9EDEF; --card:#FFFFFF; --ink:#14222B; --soft:#53666F;
+  --line:#C3CFD5; --hair:#DCE4E8; --surround:#0E1A21;
+  --code-bg:#122029; --code-ink:#D9E4E9;
+  --t-cls:#125F9E; --t-qnt:#9B2C7E; --t-grp:#0E7A55; --t-anc:#8F5D0A;
+  --t-asr:#B02F3B; --t-alt:#4B5A87; --t-dot:#6A4CA8; --t-ref:#0E7A55;
+  --sw:1280px; --sh:720px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ligatures OFF: a deck full of ->, =>, != and <= must show them as typed */
+*,*::before,*::after{font-variant-ligatures:none;
+  font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0}
+html,body{height:100%;background:var(--surround);overflow:hidden;
+  font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{width:var(--sw);height:var(--sh);position:relative;transform-origin:center center;
+  box-shadow:0 20px 70px rgba(0,0,0,.5)}
+.slide{position:absolute;inset:0;background:var(--paper);padding:44px 58px 62px;
+  display:none;flex-direction:column}
+.slide.on{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .slide.on{animation:fi .22s ease}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+/* ---------- headings ---------- */
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--soft);margin-bottom:9px;display:flex;gap:10px;align-items:center}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1.t{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.1;
+  letter-spacing:-.018em;margin-bottom:4px}
+h1.t.sm{font-size:29px}
+h1.t small{display:block;font-family:var(--body);font-weight:400;font-size:15px;
+  color:var(--soft);letter-spacing:0;margin-top:6px;line-height:1.42}
+h1.t small.tight{font-size:13.5px;line-height:1.4}
+h2.s{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:-.005em;margin-bottom:7px}
+h2.s.xs{font-size:14px;margin-bottom:5px}
+.body{font-size:14.5px;line-height:1.5}
+.wrap{flex:1;min-height:0;margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.cols.w6040{grid-template-columns:1.5fr 1fr}
+.cols.w4060{grid-template-columns:1fr 1.5fr}
+.cols.w7030{grid-template-columns:2.2fr 1fr}
+.cols.w3070{grid-template-columns:1fr 2.2fr}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.colstack{display:flex;flex-direction:column;gap:10px;min-height:0}
+ul.b{list-style:none;font-size:14px;line-height:1.46}
+ul.b li{position:relative;padding-left:15px;margin-bottom:8px}
+ul.b li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;
+  background:var(--line);border:1px solid var(--soft)}
+ul.b li strong{font-weight:600}
+ul.b.sm{font-size:12.6px;line-height:1.44}
+ul.b.sm li{margin-bottom:6px;padding-left:13px}
+ul.b.sm li::before{top:7px;width:5px;height:5px}
+ol.n{list-style:none;counter-reset:st;font-size:13px;line-height:1.45}
+ol.n li{position:relative;padding-left:26px;margin-bottom:9px;counter-increment:st}
+ol.n li::before{content:counter(st);position:absolute;left:0;top:1px;width:18px;height:18px;
+  background:var(--ink);color:#fff;font-family:var(--mono);font-size:10px;
+  display:flex;align-items:center;justify-content:center;border-radius:2px}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;padding:12px 14px;overflow:hidden;
+  border-left:3px solid #2C4A5C;white-space:pre;tab-size:4}
+pre.code.sm{font-size:11.5px;line-height:1.5}
+pre.code.xs{font-size:10.5px;line-height:1.45}
+pre.code.xxs{font-size:9.6px;line-height:1.4}
+.out{background:var(--card);border:1px solid var(--hair);border-left:3px solid #7E9AA8;
+  font-family:var(--mono);font-size:11.5px;line-height:1.5;padding:10px 13px;
+  white-space:pre;overflow:hidden;color:#26404E}
+.out.xs{font-size:10.3px;line-height:1.42}
+.out.xxs{font-size:9.5px;line-height:1.38}
+.outlbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:4px}
+/* text-transform:none is load-bearing — .outlbl and .eyebrow are uppercase,
+   and an uppercased code token is a different token */
+code.k{font-family:var(--mono);font-size:.94em;background:var(--card);
+  border:1px solid var(--hair);padding:1px 5px;border-radius:2px;white-space:nowrap;
+  text-transform:none}
+/* python token colours, dark ground */
+pre.code .py-kw{color:#8FB8FF}
+pre.code .py-str{color:#B7E39B}
+pre.code .py-cm{color:#6F8896;font-style:italic}
+pre.code .py-fn{color:#F0C46B}
+pre.code .py-num{color:#F58ACE}
+pre.code .py-bi{color:#C0A6F5}
+/* http token colours */
+pre.code .h-mth{color:#F0C46B;font-weight:700}
+pre.code .h-url{color:#E9F2F6}
+pre.code .h-hdr{color:#6FB6F0}
+pre.code .h-val{color:#B7E39B}
+pre.code .h-ok{color:#55D6A2;font-weight:700}
+pre.code .h-bad{color:#FF9090;font-weight:700}
+pre.code .h-dim{color:#6F8896}
+/* json token colours */
+pre.code .j-key{color:#6FB6F0}
+pre.code .j-str{color:#B7E39B}
+pre.code .j-num{color:#F58ACE}
+pre.code .j-pun{color:#8CA3AF}
+/* light-ground variants for .out blocks */
+.out .h-hdr{color:#125F9E;font-weight:500}
+.out .h-ok{color:#0E7A55;font-weight:700}
+.out .h-bad{color:#B02F3B;font-weight:700}
+.out .h-dim{color:#8FA0A9}
+.out .j-key{color:#125F9E}
+.out .j-str{color:#0E7A55}
+.out .j-num{color:#9B2C7E}
+/* ---------- tables ---------- */
+table.d{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card)}
+table.d th,table.d td{border:1px solid var(--hair);padding:5.5px 9px;text-align:left;vertical-align:top}
+table.d th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.d td:first-child{font-family:var(--mono);white-space:nowrap}
+table.d th.m,table.d td.m{font-family:var(--mono);text-align:right;white-space:nowrap}
+table.d.sm{font-size:11.5px}
+table.d.sm th,table.d.sm td{padding:4px 8px}
+table.d.xs{font-size:10.6px}
+table.d.xs th,table.d.xs td{padding:3.5px 7px}
+table.d tr.hl td{background:#FFF3F3}
+table.d.tight th,table.d.tight td{padding:2.4px 7px}
+table.d.tight th{text-transform:none}
+table.d.tight tr.tot td{font-weight:700}
+
+table.d tr.ok td{background:#F3FBF7}
+table.d tr.wr td{background:#FFFBF2}
+table.d.free td:first-child{white-space:normal;font-family:var(--body)}
+table.d td.m{font-family:var(--mono)}
+table.d td.o{font-family:var(--mono);font-size:10.8px;color:#26404E;white-space:nowrap}
+table.d td.c{text-align:center;font-family:var(--mono)}
+/* ---------- cards & callouts ---------- */
+.card{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px}
+.card h3{font-family:var(--disp);font-size:14.5px;font-weight:700;margin-bottom:5px}
+.card h3 .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-right:7px}
+.card p{font-size:12.5px;line-height:1.45;color:#31444F}
+.card.sm{padding:9px 11px}
+.card.sm h3{font-size:13px}
+.card.sm p{font-size:11.6px;line-height:1.42}
+.card.b{border-top-color:var(--t-cls)}
+.card.g{border-top-color:var(--t-grp)}
+.card.r{border-top-color:var(--t-asr)}
+.card.o{border-top-color:var(--t-anc)}
+.card.p{border-top-color:var(--t-qnt)}
+.callout{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--t-cls);
+  padding:10px 14px;font-size:13.5px;line-height:1.46}
+.callout.sm{font-size:12.3px;padding:8px 12px;line-height:1.44}
+.callout.warn{border-left-color:var(--t-anc);background:#FFFBF2}
+.callout.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+.callout.good{border-left-color:var(--t-grp);background:#F3FBF7}
+.callout b{font-weight:700}
+.tag{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;border-radius:2px;
+  vertical-align:2px;margin-right:7px}
+.tag.r{color:var(--t-asr)}.tag.g{color:var(--t-grp)}.tag.b{color:var(--t-cls)}
+.tag.o{color:var(--t-anc)}.tag.p{color:var(--t-qnt)}
+.jsbadge{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--t-anc);color:#fff;padding:2px 6px;border-radius:2px}
+.hit{background:#BFE3F2;border-radius:2px;padding:1px 0;
+  box-shadow:0 1px 0 #12556F inset,0 -2px 0 #12556F inset}
+.hit.bad{background:#F8D3D7;box-shadow:0 1px 0 #B02F3B inset,0 -2px 0 #B02F3B inset}
+.hit.wrn{background:#FBE6C0;box-shadow:0 1px 0 #8F5D0A inset,0 -2px 0 #8F5D0A inset}
+/* ---------- the route ladder (recurs in all four lectures) ---------- */
+.ladder{display:grid;grid-template-columns:38px 1fr;gap:0 12px}
+.ladder .rung{display:contents}
+.ladder .num{font-family:var(--mono);font-size:11px;color:#fff;background:var(--soft);
+  display:flex;align-items:center;justify-content:center;height:100%;border-radius:2px}
+.ladder .num.on{background:var(--t-asr)}
+.ladder .txt{background:var(--card);border:1px solid var(--hair);padding:8px 12px;margin-bottom:8px}
+.ladder .txt.on{border-left:3px solid var(--t-asr);background:#FFF9F9}
+.ladder .txt h4{font-family:var(--disp);font-size:13.5px;font-weight:700;margin-bottom:2px}
+.ladder .txt p{font-size:11.8px;line-height:1.42;color:#31444F}
+/* ---------- motivation rows ---------- */
+.mrow{display:grid;grid-template-columns:118px 1fr 250px;gap:13px;align-items:center;
+  background:var(--card);border:1px solid var(--hair);border-left:3px solid var(--line);
+  padding:9px 13px}
+.mrow>.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);line-height:1.5}
+.mrow>.v{font-family:var(--mono);font-size:10.4px;line-height:1.55;white-space:pre;
+  overflow:hidden;color:#26404E}
+.mrow>.n{font-size:11.6px;line-height:1.4;color:#31444F;border-left:1px solid var(--hair);
+  padding-left:13px;align-self:stretch;display:grid;align-content:center}
+.mrow>.n b{font-weight:700;color:var(--ink)}
+/* ---------- request/response wire diagram ---------- */
+.wire{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:0}
+.wire .box{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:10px 13px}
+.wire .box h4{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px}
+.wire .arrows{display:flex;flex-direction:column;gap:16px;padding:0 6px}
+.wire .ar{position:relative;height:2px;background:var(--t-cls)}
+.wire .ar::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--t-cls);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.wire .ar.back{background:var(--t-grp)}
+.wire .ar.back::after{right:auto;left:-1px;border-left:none;border-right:8px solid var(--t-grp)}
+.wire .ar b{position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);white-space:nowrap;background:var(--paper);padding:0 5px}
+/* ---------- widget: request inspector ---------- */
+.insp{display:grid;grid-template-columns:250px 1fr;gap:14px;flex:1;min-height:0}
+.insp .ctl{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:auto}
+.insp .ctl .hdr{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft);margin-top:4px}
+.tgl{display:flex;align-items:flex-start;gap:8px;background:var(--card);border:1px solid var(--hair);
+  padding:6px 9px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.tgl:hover{background:#EAF4FA}
+.tgl input{margin-top:2px;accent-color:var(--t-cls);flex:none}
+.tgl b{font-family:var(--mono);font-size:11px;font-weight:500;display:block}
+.tgl i{font-style:normal;color:var(--soft);font-size:10.4px;display:block;line-height:1.3}
+.tgl.on{border-left:3px solid var(--t-grp)}
+.insp .res{display:flex;flex-direction:column;gap:9px;min-height:0}
+#wire{flex:none}
+#verdict{flex:none;background:var(--card);border:1px solid var(--hair);
+  border-left:4px solid var(--soft);padding:11px 14px;font-size:12.6px;line-height:1.46}
+#verdict.ok{border-left-color:var(--t-grp);background:#F3FBF7}
+#verdict.bad{border-left-color:var(--t-asr);background:#FFF5F5}
+#verdict .st{font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:-.01em;
+  display:block;margin-bottom:5px}
+#verdict.ok .st{color:var(--t-grp)}
+#verdict.bad .st{color:var(--t-asr)}
+#verdict .why{color:#31444F}
+#verdict .why em{font-style:normal;font-family:var(--mono);font-size:11.6px;color:var(--ink)}
+/* ---------- cover ---------- */
+.cover{justify-content:center;padding:0 68px 70px}
+.cover .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--t-asr);margin-bottom:20px}
+.cover h1{font-family:var(--disp);font-weight:800;font-size:78px;line-height:.96;
+  letter-spacing:-.035em}
+.cover .pt{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--soft);
+  letter-spacing:-.02em;margin-top:10px}
+.cover .rule{width:96px;height:4px;background:var(--ink);margin:24px 0 22px}
+.cover .sub{font-size:16.5px;color:#31444F;max-width:640px;line-height:1.5}
+.cover .by{margin-top:26px;font-family:var(--disp);font-weight:700;font-size:19px;
+  color:var(--ink);letter-spacing:-.01em}
+.cover .by span{display:block;font-family:var(--mono);font-size:10px;font-weight:400;
+  letter-spacing:.2em;text-transform:uppercase;color:#8FA0A9;margin-bottom:5px}
+.meta{margin-top:30px;font-family:var(--mono);font-size:11.5px;color:var(--soft)}
+.meta td{padding:4px 40px 4px 0;text-transform:uppercase;letter-spacing:.1em}
+.meta td:first-child{color:#8FA0A9}
+.coverpat{position:absolute;right:0;top:0;bottom:0;width:430px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;gap:3px;opacity:.45;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);
+  mask-image:linear-gradient(90deg,transparent,#000 45%)}
+.coverpat div{font-family:var(--mono);font-size:12.5px;white-space:nowrap;letter-spacing:.02em}
+.coverpat .h-mth{color:var(--t-anc);font-weight:700}
+.coverpat .h-hdr{color:var(--t-cls)}
+.coverpat .h-val{color:var(--t-grp)}
+.coverpat .h-bad{color:var(--t-asr);font-weight:700}
+.coverpat .h-dim{color:#9BAAB3}
+/* ---------- embedded demo ---------- */
+.demo-frame{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--line);
+  background:var(--paper)}
+.demo-link{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--t-cls);
+  text-decoration:none;border-bottom:1px solid currentColor;margin-left:8px;white-space:nowrap}
+/* ---------- rail ---------- */
+.rail{position:absolute;left:0;right:0;bottom:0;height:30px;background:var(--card);
+  border-top:1.5px solid var(--ink);display:flex;align-items:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft)}
+.rail .a{padding:0 16px;flex:1}
+.rail .n{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);white-space:nowrap}
+.rail .b{padding:0 16px;border-left:1px solid var(--hair);color:var(--ink);font-weight:500;
+  max-width:340px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rail .c{padding:0 16px;border-left:1px solid var(--hair);width:186px;text-align:right;
+  white-space:nowrap}
+#pbar{position:absolute;left:0;top:0;height:3px;background:var(--t-asr);z-index:20;transition:width .2s}
+/* ---------- nav ---------- */
+#nav{position:fixed;right:16px;bottom:12px;display:flex;gap:7px;z-index:40}
+#nav button{width:36px;height:36px;border:1px solid #46606E;background:#1B2E39;color:#CFDDE3;
+  font-size:16px;cursor:pointer;border-radius:3px}
+#nav button:hover{background:#26414F}
+#nav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#hint{position:fixed;left:16px;bottom:15px;color:#6D8593;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.1em;z-index:40}
+@media print{
+  html,body{background:#fff;overflow:visible}
+  #stage{position:static;display:block}
+  #deck{width:auto;height:auto;transform:none!important;box-shadow:none}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always}
+  #nav,#hint,#pbar{display:none}
+}
+</style>
+<style>
+/* ================= additions for the Data Cleaning series =================
+   Vocabulary specific to this module. Everything above is the shared theme,
+   copied verbatim from the Data Collection decks.                          */
+
+/* ---------- the spine: symptom -> mechanisms -> what it permits ---------- */
+.spine{display:grid;grid-template-columns:150px 1fr 1fr;gap:0 12px;align-items:stretch}
+.spine .hd{font-family:var(--mono);font-size:9.3px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft);padding-bottom:5px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.spine .sym{background:var(--ink);color:#fff;padding:8px 11px;margin-bottom:7px;
+  display:flex;flex-direction:column;justify-content:center}
+.spine .sym b{font-family:var(--disp);font-size:13.5px;font-weight:700;display:block;line-height:1.15}
+.spine .sym i{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.13em;
+  text-transform:uppercase;color:#9BB4C0;margin-top:3px}
+.spine .mid,.spine .rgt{background:var(--card);border:1px solid var(--hair);padding:8px 11px;
+  margin-bottom:7px;font-size:11.7px;line-height:1.4;color:#31444F;display:flex;align-items:center}
+.spine .rgt{border-left:3px solid var(--t-grp)}
+.spine .mid{border-left:3px solid var(--t-anc)}
+.spine .now .sym{background:var(--t-asr)}
+.spine .now .mid,.spine .now .rgt{background:#FFF9F9}
+.spine b.q{font-weight:700;color:var(--ink)}
+
+/* ---------- three-mechanism cards ---------- */
+.mech{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;flex:1;min-height:0}
+.mech .m{background:var(--card);border:1px solid var(--hair);border-top:3px solid var(--ink);
+  padding:11px 13px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.mech .m.a{border-top-color:var(--t-grp)}
+.mech .m.b{border-top-color:var(--t-anc)}
+.mech .m.c{border-top-color:var(--t-asr)}
+.mech .m h3{font-family:var(--disp);font-size:15px;font-weight:700;line-height:1.1}
+.mech .m h3 span{display:block;font-family:var(--mono);font-size:9.2px;font-weight:400;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--soft);margin-bottom:3px}
+.mech .m .def{font-size:12.2px;line-height:1.42;color:#31444F}
+.mech .m .def b{font-weight:700;color:var(--ink)}
+.mech .m .ex{font-size:11.4px;line-height:1.4;color:var(--soft);border-top:1px solid var(--hair);
+  padding-top:6px;margin-top:auto}
+.mech .m .ex b{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--soft);display:block;margin-bottom:3px}
+
+/* ---------- figures (inline SVG, no image files) ---------- */
+.fig{background:var(--card);border:1px solid var(--hair);padding:10px 12px 8px;
+  display:flex;flex-direction:column;min-height:0}
+.fig .cap{font-family:var(--mono);font-size:9.3px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--soft);margin-bottom:7px}
+.fig .rd{font-size:11.6px;line-height:1.4;color:#31444F;margin-top:7px;
+  border-top:1px solid var(--hair);padding-top:6px}
+.fig .rd b{font-weight:700;color:var(--ink)}
+.fig svg{display:block;max-height:100%}
+.fig .rd{margin-top:auto}
+
+/* ---------- the cleaning log ---------- */
+table.log{width:100%;border-collapse:collapse;font-size:11.6px;background:var(--card)}
+table.log th,table.log td{border:1px solid var(--hair);padding:5px 9px;text-align:left;
+  vertical-align:top;line-height:1.38}
+table.log th{background:var(--ink);color:#fff;font-weight:600;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase}
+table.log td:nth-child(1){font-family:var(--mono);font-size:10.6px;white-space:nowrap;color:#26404E}
+table.log td:nth-child(4){font-style:italic;color:var(--soft)}
+table.log td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+
+/* ---------- the missingness lab (slides 6, 23 and 35) ---------- */
+.lab{display:grid;grid-template-columns:1.62fr 1fr;gap:15px;flex:1;min-height:0}
+.lab .plot{background:var(--card);border:1px solid var(--hair);padding:9px 11px 7px;
+  display:flex;flex-direction:column;min-height:0}
+.lab .plot svg{flex:1;min-height:0;display:block}
+.plotnote{font-size:10.6px;color:var(--soft);line-height:1.35;margin-top:5px;
+  border-top:1px solid var(--hair);padding-top:5px}
+.plotnote b{color:var(--ink)}
+.seg{display:flex;gap:6px;flex:none;margin-bottom:7px}
+.seg button{font-family:var(--mono);font-size:11px;letter-spacing:.09em;padding:5px 13px;
+  border:1px solid var(--line);background:var(--paper);color:var(--soft);cursor:pointer;
+  border-radius:2px;transition:background .15s,color .15s,border-color .15s}
+.seg button:hover{background:#E2EBF0;color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+.seg button.alt{margin-left:auto;font-size:10.4px;letter-spacing:.12em}
+.seg button:focus-visible{outline:2px solid var(--t-cls);outline-offset:1px}
+.meanbox{background:var(--card);border:1px solid var(--hair);padding:8px 10px;flex:none}
+.meanbox svg{display:block;width:100%}
+.pt{transition:fill .28s ease,stroke .28s ease,opacity .28s ease}
+g.knobpt{transition:transform .45s cubic-bezier(.4,0,.2,1)}
+@media (prefers-reduced-motion:reduce){g.knobpt{transition:none}}
+
+/* ---------- fill: let a short column spread over the stage instead of
+   piling its cards at the top. Cards grow and centre their own text; callouts,
+   tables and code keep their natural height.                                 */
+.colstack.fill{gap:12px}
+.colstack.fill > .card{flex:1 1 0;display:flex;flex-direction:column;justify-content:center}
+.colstack.fill > .callout,.colstack.fill > table,.colstack.fill > pre,
+.colstack.fill > .out,.colstack.fill > .outlbl,.colstack.fill > h2{flex:0 0 auto}
+
+/* ---------- roomy: table-dominant slides that would otherwise underfill ---------- */
+table.d.roomy td,table.d.roomy th{padding:19px 10px}
+table.d.roomy.tall td,table.d.roomy.tall th{padding:27px 10px}
+table.log.roomy td,table.log.roomy th{padding:17px 10px}
+.spine.roomy .sym,.spine.roomy .mid,.spine.roomy .rgt{padding:24px 12px;margin-bottom:10px}
+
+/* ---------- cover ornament: a wall of raw cells ---------- */
+.coverpat .c-miss{color:var(--t-asr);font-weight:700}
+.coverpat .c-val{color:var(--t-grp)}
+.coverpat .c-dim{color:#9BAAB3}
+.coverpat .c-hdr{color:var(--t-cls);font-weight:700}
+
+/* ---------- intuition-slide reveals: the figure arrives in the order the
+   lecturer speaks it, so the picture is not finished before the sentence is. */
+@media (prefers-reduced-motion:no-preference){
+  .slide.on .fig svg .hi{animation:hifade .55s ease .15s both}
+  .slide.on .fig svg .mk{animation:hifade .5s ease both}
+  .slide.on .fig svg .mk0{animation-delay:.55s}
+  .slide.on .fig svg .mk1{animation-delay:.95s}
+  .slide.on .fig svg .drawline{stroke-dasharray:900;stroke-dashoffset:900;
+    animation:drawin 1.15s .25s ease-out forwards}
+  @keyframes hifade{from{opacity:0}to{opacity:1}}
+  @keyframes drawin{to{stroke-dashoffset:0}}
+}
+
+.fig .expl{margin-top:auto;padding:12px 16px}
+.fig .expl p + p{margin-top:6px}
+/* ---------- staged builds: on a slide marked .build, one arrow press
+   reveals one more [data-at] piece before the deck moves to the next slide.
+   The lecturer speaks a term, then presses once, and that term appears. */
+.slide.build [data-at]{opacity:0}
+.slide.build [data-at].shown{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  .slide.build [data-at]{transition:opacity .34s ease}
+}
+.bld{position:absolute;right:58px;bottom:38px;display:flex;gap:5px;z-index:3}
+.bld i{width:17px;height:3px;background:var(--line);border-radius:2px;display:block;
+  transition:background .25s ease}
+.bld i.on{background:var(--t-asr)}
+</style>
+
+<style>
+/* L9 additions: palette widget */
+.seg{flex-wrap:wrap}
+.seg button{text-transform:none}
+#cw-min{font-size:11px;line-height:1.5}
+.wctl{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.wctl .out{padding:6px 10px}
+input[type=range]{width:100%;accent-color:#B02F3B}
+.lf{font-family:var(--mono);font-size:24px;font-weight:700;padding:8px 12px;background:var(--card);
+  border:1px solid var(--hair);border-left:4px solid var(--soft);line-height:1.2}
+.lf small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);font-weight:500}
+.lf.bad{color:#B02F3B;border-left-color:#B02F3B}.lf.ok{color:#0E7A55;border-left-color:#0E7A55}
+@media (prefers-reduced-motion:no-preference){.hm,.hmt{transition:fill .7s ease}}
+</style>
+<style>
+/* layout lecture additions */
+.stepcaps{display:flex;flex-direction:column;gap:3px;min-height:0}
+.stepcap{font-size:12.4px;line-height:1.38;color:#31444F}
+.stepcap b{font-family:var(--mono);color:var(--t-asr);margin-right:7px}
+.w4555{grid-template-columns:1fr 1.22fr}.w5545{grid-template-columns:1.22fr 1fr}
+.w3565{grid-template-columns:1fr 1.85fr}.w5050{grid-template-columns:1fr 1fr}
+.vrow>*,.cols>*,.colstack>*{min-width:0}
+.bf{border:1px solid var(--line);background:#fff;box-shadow:0 1px 3px rgba(20,34,43,.12);flex:none;max-width:100%}
+.bfbar{display:flex;align-items:center;gap:5px;height:22px;padding:0 8px;background:#E4EAED;border-bottom:1px solid var(--line)}
+.bfbar i{width:8px;height:8px;border-radius:50%;background:#B9C6CD;display:block}
+.bfbar span{font-family:var(--mono);font-size:9.5px;color:var(--soft);margin-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bfbar .bfw{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--ink)}
+.bfvp{position:relative;overflow:hidden}
+.bfvp iframe{border:0;display:block;transform-origin:0 0;background:#fff}
+.vrow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
+.vthumb{display:flex;flex-direction:column;gap:5px}
+.vthumb .bf{width:100%!important}
+.vnote{font-family:var(--mono);font-size:11px;color:var(--ink);font-weight:700}
+.ed3{grid-template-columns:1fr 1fr 1fr;flex:1;min-height:0}
+.edsrc{flex:1;min-height:300px;font-family:var(--mono);font-size:11px;line-height:1.5;padding:10px;border:1px solid var(--line);
+  background:var(--code-bg);color:var(--code-ink);resize:none;font-variant-ligatures:none;white-space:pre;overflow:auto}
+.edtree{flex:1;min-height:300px;white-space:pre;overflow:auto}
+.gpin{display:flex;flex-direction:column;gap:7px}
+.gpin label{justify-content:space-between;align-items:center}
+.gpin select{font-family:var(--mono);font-size:13px;padding:3px 6px;border:1px solid var(--line);background:#fff}
+input[type=range]{width:100%;accent-color:#B02F3B}
+.ctl .outlbl b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+<div id="pbar"></div>
+
+<section class="slide cover" data-sec="Cover">
+  <div class="coverpat">
+    <div><span class="h-dim">&lt;div class=</span><span class="h-val">"row"</span><span class="h-dim">&gt;</span></div>
+    <div><span class="h-dim">  &lt;div class=</span><span class="h-val">"col-12 col-lg-</span><span class="h-bad">8</span><span class="h-val">"</span><span class="h-dim">&gt;</span><span class="h-hdr">Sales by month</span><span class="h-dim">&lt;/div&gt;</span></div>
+    <div><span class="h-dim">  &lt;div class=</span><span class="h-val">"col-12 col-lg-</span><span class="h-bad">4</span><span class="h-val">"</span><span class="h-dim">&gt;</span><span class="h-hdr">Sales by region</span><span class="h-dim">&lt;/div&gt;</span></div>
+    <div><span class="h-dim">&lt;/div&gt;</span></div>
+    <div>&#160;</div>
+    <div><span class="h-mth">.row</span><span class="h-dim"> { display: flex; flex-wrap: wrap; }</span></div>
+    <div><span class="h-mth">.col-8</span><span class="h-dim"> { flex: 0 0 auto; width: </span><span class="h-val">66.66666667%</span><span class="h-dim">; }</span></div>
+  </div>
+  <div class="kicker">DA2402 &#183; Data Curation and Visualization</div>
+  <h1>Data<br/>Visualisation</h1>
+  <div class="pt">Part 1 &#8212; HTML, CSS and page layout</div>
+  <div class="rule"></div>
+  <p class="sub">How a browser turns text into boxes, how CSS sizes and places them, and how flexbox and
+  the Bootstrap grid put a dashboard's cards and charts side by side. Dash writes this HTML from lecture 3 on.</p>
+  <div class="by"><span>Instructor</span>Dr. Arun B Ayyar</div>
+  <table class="meta">
+    <tr><td>Course</td><td>DA2402 &#183; BTech DSAI</td></tr>
+    <tr><td>Module</td><td>Data visualisation</td></tr>
+    <tr><td>Lecture</td><td>2 of 10 &#183; HTML, CSS and page layout</td></tr>
+    <tr><td>Data</td><td>sales.parquet, from lecture 1</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-sec="Start">
+  <div class="eyebrow">Start &#183; where the lecture ends</div>
+  <h1 class="t">The sales dashboard as a web page
+    <small>A header, four KPI cards and two charts from sales.parquet. One HTML file and 4,486 bytes of Bootstrap's grid CSS draw it.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><div class="bf " style="width:640px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:280px"><iframe data-pg="v4" title="dashboard.html" style="width:1280px;height:560px;transform:scale(0.5)"></iframe></div></div></div><div class="colstack fill"><div class="card b"><h3>1,316,165 in sales</h3><p>500 orders, 13,700 units, an average order of 2,632. The same numbers as lecture 1.</p></div><div class="card g"><h3>Written by hand</h3><p>Every tag and every rule on this page is typed in this lecture. Nothing is generated.</p></div><div class="card o"><h3>Lecture 3</h3><p>Dash writes the same HTML from Python, and Plotly draws the charts.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide build" data-sec="Start">
+  <div class="eyebrow">Start &#183; the plan</div>
+  <h1 class="t">The dashboard page, version 1 to version 4
+    <small>Each version adds one layer to the one before. The page heights are measured in Chrome at a 1280 px wide window.</small></h1>
+  <div class="wrap">
+<div class="vrow"><div class="vthumb" data-at="1"><div class="outlbl">version 1 &#183; HTML only</div><div class="bf " style="width:269px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:294px"><iframe data-pg="v1" title="dashboard.html" style="width:1280px;height:1400px;transform:scale(0.21)"></iframe></div></div><div class="vnote">1,911 px tall, all stacked</div></div><div class="vthumb" data-at="2"><div class="outlbl">version 2 &#183; + CSS</div><div class="bf " style="width:269px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:294px"><iframe data-pg="v2" title="dashboard.html" style="width:1280px;height:1400px;transform:scale(0.21)"></iframe></div></div><div class="vnote">1,962 px tall, styled, still stacked</div></div><div class="vthumb" data-at="3"><div class="outlbl">version 3 &#183; + flexbox</div><div class="bf " style="width:269px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:294px"><iframe data-pg="v3" title="dashboard.html" style="width:1280px;height:1400px;transform:scale(0.21)"></iframe></div></div><div class="vnote">568 px tall, side by side</div></div><div class="vthumb" data-at="4"><div class="outlbl">version 4 &#183; + Bootstrap grid</div><div class="bf " style="width:269px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:294px"><iframe data-pg="v4" title="dashboard.html" style="width:1280px;height:1400px;transform:scale(0.21)"></iframe></div></div><div class="vnote">542 px tall, also fits a phone</div></div></div><div class="stepcaps"><div class="stepcap" data-at="1"><b>1</b>The HTML says what is on the page and in what order.</div><div class="stepcap" data-at="2"><b>2</b>CSS sets colours, borders and spacing. The boxes stay in one column.</div><div class="stepcap" data-at="3"><b>3</b>Flexbox puts the cards in a row and the two charts beside each other.</div><div class="stepcap" data-at="4"><b>4</b>The Bootstrap grid gives every row the same 12 columns and adapts to the screen width.</div></div><div class="bld"><i></i><i></i><i></i><i></i></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="HTML">
+  <div class="eyebrow">HTML &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>An element is an opening tag, its content and a closing tag. Attributes in the opening tag name and label it.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">one KPI card of the dashboard</div><svg viewBox="0 0 830 252" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Anatomy of an HTML element and how elements nest"><text x="10.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="26" fill="#125F9E" text-anchor="start" font-weight="700" >&lt;div</text><text x="95.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="26" fill="#0E7A55" text-anchor="start" font-weight="700" >class=&quot;kpi&quot;</text><text x="282.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="26" fill="#125F9E" text-anchor="start" font-weight="700" >&gt;</text><text x="305.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="26" fill="#14222B" text-anchor="start" font-weight="500" >&lt;p&gt;Orders&lt;/p&gt;&lt;h3&gt;500&lt;/h3&gt;</text><text x="706.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="26" fill="#125F9E" text-anchor="start" font-weight="700" >&lt;/div&gt;</text><path d="M10,56 v10 H298 v-10" fill="none" stroke="#125F9E" stroke-width="1.6"/><text x="154.0" y="88.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#125F9E" text-anchor="middle" font-weight="700" >opening tag</text><text x="154.0" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >element name, then attributes</text><path d="M305,56 v10 H700 v-10" fill="none" stroke="#14222B" stroke-width="1.6"/><text x="502.5" y="88.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="middle" font-weight="700" >content</text><text x="502.5" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >text, or more elements</text><path d="M706,56 v10 H806 v-10" fill="none" stroke="#125F9E" stroke-width="1.6"/><text x="756.0" y="88.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#125F9E" text-anchor="middle" font-weight="700" >closing tag</text><text x="756.0" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >the name after a slash</text><path d="M95,4 v-0 H280" stroke="#0E7A55" stroke-width="0"/><text x="188.0" y="8.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#0E7A55" text-anchor="middle" font-weight="600" >attribute: name=&quot;value&quot;</text><rect x="10.0" y="136.0" width="480.0" height="110.0" fill="#FFFFFF" stroke="#125F9E" stroke-width="1.6" /><text x="22.0" y="156.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="start" font-weight="700" >div.kpi</text><rect x="30.0" y="168.0" width="440.0" height="30.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.2" /><text x="42.0" y="188.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >p  Orders</text><rect x="30.0" y="204.0" width="440.0" height="34.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.2" /><text x="42.0" y="226.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="700" >h3  500</text><text x="520.0" y="166.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#14222B" text-anchor="start" font-weight="600" >Elements inside elements nest.</text><text x="520.0" y="188.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#53666F" text-anchor="start" font-weight="400" >The div is the parent; p and h3 are its children.</text><text x="520.0" y="210.0" font-family="Public Sans,system-ui,sans-serif" font-size="12.5" fill="#53666F" text-anchor="start" font-weight="400" >Each element is drawn as a box inside its parent&#x27;s box.</text></svg></div><table class="d sm free"><tr><th>tag</th><th>what it marks</th><th>on the dashboard</th></tr><tr><td>&lt;h1&gt; &#8230; &lt;h6&gt;</td><td>headings, largest first</td><td>the title; chart titles are h2</td></tr><tr><td>&lt;p&gt;</td><td>a paragraph</td><td>the label on a KPI card</td></tr><tr><td>&lt;div&gt;</td><td>a box with no meaning of its own</td><td>every card and every row</td></tr><tr><td>&lt;span&gt;</td><td>a run of text inside a line</td><td>&#8212;</td></tr><tr><td>&lt;svg&gt;</td><td>a drawing made of shapes</td><td>the two charts</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="HTML">
+  <div class="eyebrow">HTML &#183; Example: version 1</div>
+  <h1 class="t">Example
+    <small>Version 1 of the dashboard is 21 elements and no CSS. The browser draws them top to bottom, 1,911 px tall.</small></h1>
+  <div class="wrap">
+<div class="cols w4555"><div class="colstack"><pre class="code xs">&lt;<span class="py-kw">h1</span>&gt;Sales 2023-2024&lt;/<span class="py-kw">h1</span>&gt;
+&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpis&quot;</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Total sales&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;1,316,165&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Orders&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;500&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Units&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;13,700&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Average order&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;2,632&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+&lt;/<span class="py-kw">div</span>&gt;
+&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;charts&quot;</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;chart wide&quot;</span>&gt;&lt;<span class="py-kw">h2</span>&gt;Sales by month&lt;/<span class="py-kw">h2</span>&gt;&lt;<span class="py-kw">svg</span>&gt;LINE&lt;/<span class="py-kw">svg</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;chart narrow&quot;</span>&gt;&lt;<span class="py-kw">h2</span>&gt;Sales by region&lt;/<span class="py-kw">h2</span>&gt;&lt;<span class="py-kw">svg</span>&gt;BAR&lt;/<span class="py-kw">svg</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+&lt;/<span class="py-kw">div</span>&gt;</pre><div class="callout sm">The class attribute names a box so that CSS can find it later. In version 1 it changes nothing on screen.</div></div><div class="colstack"><div class="bf " style="width:550px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:430px"><iframe data-pg="v1" title="dashboard.html" style="width:1280px;height:1000px;transform:scale(0.43)"></iframe></div></div><div class="rd">Every KPI card is 1,264 px wide: the full window less the 8 px margin the browser puts on each side of the body.</div></div></div>
+  </div>
+</section>
+
+<section class="slide build" data-sec="HTML">
+  <div class="eyebrow">HTML &#183; Mechanism: from text to a tree</div>
+  <h1 class="t">Mechanism
+    <small>The parser reads the text once and builds a tree of elements, the DOM. CSS, JavaScript and Dash all work on this tree, never on the text.</small></h1>
+  <div class="wrap">
+<div class="cols w5545"><div class="colstack"><pre class="code xs">&lt;<span class="py-kw">h1</span>&gt;Sales 2023-2024&lt;/<span class="py-kw">h1</span>&gt;
+&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpis&quot;</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Total sales&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;1,316,165&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Orders&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;500&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Units&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;13,700&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Average order&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;2,632&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+&lt;/<span class="py-kw">div</span>&gt;
+&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;charts&quot;</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;chart wide&quot;</span>&gt;&lt;<span class="py-kw">h2</span>&gt;Sales by month&lt;/<span class="py-kw">h2</span>&gt;&lt;<span class="py-kw">svg</span>&gt;LINE&lt;/<span class="py-kw">svg</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;chart narrow&quot;</span>&gt;&lt;<span class="py-kw">h2</span>&gt;Sales by region&lt;/<span class="py-kw">h2</span>&gt;&lt;<span class="py-kw">svg</span>&gt;BAR&lt;/<span class="py-kw">svg</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+&lt;/<span class="py-kw">div</span>&gt;</pre></div><div class="colstack"><div class="fig"><div class="cap">document.body as Chrome builds it</div><svg viewBox="0 0 560 250" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="The DOM tree of version 1"><rect x="10.0" y="6.0" width="14.0" height="17.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="32.0" y="19.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="600" >body</text><g data-at="1"><line x1="18.0" y1="23.0" x2="18.0" y2="37.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="18.0" y1="37.0" x2="52.0" y2="37.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="54.0" y="28.0" width="14.0" height="17.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="76.0" y="41.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="600" >h1</text></g><g data-at="2"><line x1="18.0" y1="23.0" x2="18.0" y2="59.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="18.0" y1="59.0" x2="52.0" y2="59.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="54.0" y="50.0" width="14.0" height="17.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="76.0" y="63.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="600" >div.kpis</text></g><g data-at="2"><line x1="62.0" y1="67.0" x2="62.0" y2="81.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="62.0" y1="81.0" x2="96.0" y2="81.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="98.0" y="72.0" width="14.0" height="17.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="120.0" y="85.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >div.kpi</text></g><g data-at="3"><line x1="106.0" y1="89.0" x2="106.0" y2="103.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="106.0" y1="103.0" x2="140.0" y2="103.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="142.0" y="94.0" width="14.0" height="17.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="164.0" y="107.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >p  ·  h3</text></g><g data-at="2"><line x1="62.0" y1="67.0" x2="62.0" y2="125.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="62.0" y1="125.0" x2="96.0" y2="125.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="98.0" y="116.0" width="14.0" height="17.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="120.0" y="129.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >div.kpi  ×3 more</text></g><g data-at="4"><line x1="18.0" y1="23.0" x2="18.0" y2="147.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="18.0" y1="147.0" x2="52.0" y2="147.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="54.0" y="138.0" width="14.0" height="17.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="76.0" y="151.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="600" >div.charts</text></g><g data-at="4"><line x1="62.0" y1="155.0" x2="62.0" y2="169.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="62.0" y1="169.0" x2="96.0" y2="169.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="98.0" y="160.0" width="14.0" height="17.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="120.0" y="173.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >div.chart.wide</text></g><g data-at="4"><line x1="106.0" y1="177.0" x2="106.0" y2="191.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="106.0" y1="191.0" x2="140.0" y2="191.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="142.0" y="182.0" width="14.0" height="17.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="164.0" y="195.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >h2  ·  svg</text></g><g data-at="4"><line x1="62.0" y1="155.0" x2="62.0" y2="213.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="62.0" y1="213.0" x2="96.0" y2="213.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="98.0" y="204.0" width="14.0" height="17.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="120.0" y="217.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >div.chart.narrow</text></g><g data-at="4"><line x1="106.0" y1="221.0" x2="106.0" y2="235.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><line x1="106.0" y1="235.0" x2="140.0" y2="235.0" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.3" /><rect x="142.0" y="226.0" width="14.0" height="17.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="164.0" y="239.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="400" >h2  ·  svg</text></g></svg></div><div class="stepcaps"><div class="stepcap" data-at="1"><b>1</b>h1 and div.kpis are children of body: siblings, drawn one after the other.</div><div class="stepcap" data-at="2"><b>2</b>Each div.kpi is a child of div.kpis. Its p and h3 are its own children.</div><div class="stepcap" data-at="3"><b>3</b>div.charts holds two chart boxes, each with a heading and a drawing. 21 elements in all.</div></div><div class="bld"><i></i><i></i><i></i></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="HTML">
+  <div class="eyebrow">HTML &#183; Mechanism: the parser, live</div>
+  <h1 class="t">Mechanism continued 1
+    <small>Edit the HTML on the left. The tree is Chrome's own parse of the text, redrawn after every keystroke.</small></h1>
+  <div class="wrap">
+<div class="cols3 ed3"><div class="colstack"><div class="outlbl">HTML you type</div><textarea id="ed-src" class="edsrc" spellcheck="false">&lt;h1&gt;Sales 2023-2024&lt;/h1&gt;
+&lt;div class=&quot;kpis&quot;&gt;
+  &lt;div class=&quot;kpi&quot;&gt;&lt;p&gt;Orders&lt;/p&gt;&lt;h3&gt;500&lt;/h3&gt;&lt;/div&gt;
+  &lt;div class=&quot;kpi&quot;&gt;&lt;p&gt;Units&lt;/p&gt;&lt;h3&gt;13,700&lt;/h3&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;p&gt;Delete a closing tag and watch the tree</textarea></div><div class="colstack"><div class="outlbl">the DOM the parser built <span class="jsbadge">browser JS</span></div><div id="ed-tree" class="out xs edtree"></div></div><div class="colstack"><div class="outlbl">what it draws</div><div class="bf" style="width:100%"><div class="bfbar"><i></i><i></i><i></i><span>scratch.html</span></div><div class="bfvp" style="height:330px"><iframe id="ed-out" title="live render" style="width:200%;height:660px;transform:scale(.5)"></iframe></div></div><div class="rd" id="ed-rd"></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="HTML">
+  <div class="eyebrow">HTML &#183; Mechanism: block and inline</div>
+  <h1 class="t">Mechanism continued 2
+    <small>A block element starts on a new line and fills its parent's width. An inline element sits in the line, as wide as its text.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">measured in Chrome: div, span and p inside an 800 px body</div><svg viewBox="0 0 830 152" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Block elements fill the width; inline elements are as wide as their text"><rect x="0.0" y="0.0" width="820.0" height="150.0" fill="#FFFFFF" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.2" stroke-dasharray="5 4"/><text x="8.0" y="16.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#53666F" text-anchor="start" font-weight="400" >body  ·  800 px</text><rect x="10.0" y="26.0" width="800.0" height="34.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.5" /><text x="20.0" y="48.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="600" >&lt;div&gt;Orders&lt;/div&gt;</text><text x="800.0" y="48.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="end" font-weight="700" >block · 800 px</text><rect x="10.0" y="70.0" width="46.0" height="30.0" fill="#FBF3E6" stroke="#8F5D0A" stroke-width="1.5" /><text x="14.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#14222B" text-anchor="start" font-weight="400" >Orders</text><text x="66.0" y="90.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#8F5D0A" text-anchor="start" font-weight="700" >&lt;span&gt;: inline · 44 px, as wide as its text</text><rect x="10.0" y="110.0" width="800.0" height="30.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.5" /><text x="20.0" y="130.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#14222B" text-anchor="start" font-weight="600" >&lt;p&gt;x&lt;/p&gt;</text><text x="800.0" y="130.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#125F9E" text-anchor="end" font-weight="700" >block · 800 px</text></svg></div><div class="cols"><table class="d sm"><tr><th>display</th><th>elements</th><th>width</th></tr><tr><td>block</td><td>div, p, h1 to h6, ul, table</td><td>the parent's full width</td></tr><tr><td>inline</td><td>span, a, b, i, code, img</td><td>the width of the content</td></tr></table><div class="callout sm">Every element on the dashboard is a block, so version 1 is one column. Side by side needs a different <code class="k">display</code>, which flexbox supplies.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="HTML">
+  <div class="eyebrow">HTML &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>The parser assumes you meant valid HTML and repairs whatever you wrote. It reports no error; the repaired tree is the one drawn.</small></h1>
+  <div class="wrap">
+<table class="d sm free"><tr><th>you wrote</th><th>the parser built (DOMParser in Chrome)</th><th>the repair</th></tr><tr><td><code>&lt;p&gt;one&lt;p&gt;two</code></td><td><code>&lt;p&gt;one&lt;/p&gt;&lt;p&gt;two&lt;/p&gt;</code></td><td>a new p closes the open one</td></tr><tr><td><code>&lt;div&gt;&lt;p&gt;a&lt;/div&gt;b</code></td><td><code>&lt;div&gt;&lt;p&gt;a&lt;/p&gt;&lt;/div&gt;b</code></td><td>&lt;/div&gt; closes the p inside it first</td></tr><tr><td><code>&lt;p&gt;a&lt;div&gt;b&lt;/div&gt;c&lt;/p&gt;</code></td><td><code>&lt;p&gt;a&lt;/p&gt;&lt;div&gt;b&lt;/div&gt;c&lt;p&gt;&lt;/p&gt;</code></td><td>a div ends the p; the stray &lt;/p&gt; becomes an empty p</td></tr><tr><td><code>&lt;h1&gt;Sales&lt;h1&gt;</code></td><td><code>&lt;h1&gt;Sales&lt;/h1&gt;&lt;h1&gt;&lt;/h1&gt;</code></td><td>a typo for &lt;/h1&gt; becomes a second, empty heading</td></tr><tr><td><code>&lt;b&gt;&lt;i&gt;x&lt;/b&gt;&lt;/i&gt;</code></td><td><code>&lt;b&gt;&lt;i&gt;x&lt;/i&gt;&lt;/b&gt;</code></td><td>crossed tags are uncrossed</td></tr></table><div class="callout warn sm">Row 3 is the one that bites: a box placed inside a paragraph ends up beside it, and the page shows an extra empty paragraph.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="HTML">
+  <div class="eyebrow">HTML &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>HTML fixes what is on the page and its order. Version 1 is 1,911 px tall because every box is a block in one column.</small></h1>
+  <div class="wrap">
+<div class="cols3"><div class="card r"><h3>No placement</h3><p>HTML has no way to say that two boxes sit side by side.</p></div><div class="card r"><h3>No look</h3><p>Colours, borders, spacing and font sizes are the browser's defaults.</p></div><div class="card o"><h3>Order fixed</h3><p>Boxes are drawn in the order they appear in the text.</p></div></div><div class="callout sm">CSS handles the look. Flexbox and the grid, both written in CSS, handle the placement.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSS">
+  <div class="eyebrow">CSS &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>A CSS rule is a selector and a list of property: value pairs. The selector picks elements out of the DOM tree; the pairs change how those elements are drawn.</small></h1>
+  <div class="wrap">
+<div class="cols w5545"><div class="colstack"><div class="fig"><div class="cap">one rule of version 2</div><svg viewBox="0 0 640 120" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Anatomy of a CSS rule"><text x="10.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="28" fill="#125F9E" text-anchor="start" font-weight="700" >.kpi</text><text x="96.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="28" fill="#14222B" text-anchor="start" font-weight="400" >{</text><text x="130.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="28" fill="#0E7A55" text-anchor="start" font-weight="700" >border</text><text x="246.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="28" fill="#14222B" text-anchor="start" font-weight="400" >:</text><text x="272.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="28" fill="#8F5D0A" text-anchor="start" font-weight="700" >1px solid #C3CFD5</text><text x="570.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="28" fill="#14222B" text-anchor="start" font-weight="400" >;</text><text x="596.0" y="40.0" font-family="JetBrains Mono,monospace" font-size="28" fill="#14222B" text-anchor="start" font-weight="400" >}</text><path d="M10,56 v10 H88 v-10" fill="none" stroke="#125F9E" stroke-width="1.6"/><text x="49.0" y="88.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#125F9E" text-anchor="middle" font-weight="700" >selector</text><text x="49.0" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >which elements</text><path d="M130,56 v10 H240 v-10" fill="none" stroke="#0E7A55" stroke-width="1.6"/><text x="185.0" y="88.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#0E7A55" text-anchor="middle" font-weight="700" >property</text><text x="185.0" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >what to set</text><path d="M272,56 v10 H566 v-10" fill="none" stroke="#8F5D0A" stroke-width="1.6"/><text x="419.0" y="88.0" font-family="Public Sans,system-ui,sans-serif" font-size="13" fill="#8F5D0A" text-anchor="middle" font-weight="700" >value</text><text x="419.0" y="106.0" font-family="Public Sans,system-ui,sans-serif" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >what to set it to</text></svg></div><div class="callout sm">Rules live in a &lt;style&gt; element or a separate .css file, or in a style attribute on one element.</div></div><table class="d sm free"><tr><th>selector</th><th>picks</th><th>example</th></tr><tr><td>h1</td><td>every h1 element</td><td>the page title</td></tr><tr><td>.kpi</td><td>every element with class="kpi"</td><td>the 4 KPI cards</td></tr><tr><td>#total</td><td>the one element with id="total"</td><td>one card</td></tr><tr><td>.kpi p</td><td>every p inside a .kpi</td><td>the 4 card labels</td></tr><tr><td>.kpi, .chart</td><td>both lists</td><td>all 6 cards</td></tr></table></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSS">
+  <div class="eyebrow">CSS &#183; Example: version 2, rule by rule</div>
+  <h1 class="t">Example
+    <small>Version 2 adds 5 rules to the same HTML. Switch them on one at a time: each changes how boxes look, and every box stays in the one column.</small></h1>
+  <div class="wrap">
+<div class="cols w3565"><div class="colstack"><div class="outlbl">rules in the &lt;style&gt; element</div><div id="cs-in" class="ctl"><label class="tgl on"><input type="checkbox" data-i="0" checked/><span><b>body { font-family: sans-serif; margin: 24px; }</b><i>body font</i></span></label><label class="tgl on"><input type="checkbox" data-i="1" checked/><span><b>h1 { background: #14222B; color: white; padding: 12px 16px; }</b><i>header band</i></span></label><label class="tgl on"><input type="checkbox" data-i="2" checked/><span><b>.kpi, .chart { border: 1px solid #C3CFD5; padding: 8px 14px; }</b><i>card border</i></span></label><label class="tgl on"><input type="checkbox" data-i="3" checked/><span><b>.kpi, .chart { margin-bottom: 12px; }</b><i>card spacing</i></span></label><label class="tgl on"><input type="checkbox" data-i="4" checked/><span><b>.kpi p, .chart h2 { margin: 0; font-size: 14px; color: #53666F; }</b><i>small labels</i></span></label></div><span class="jsbadge">browser JS</span></div><div class="colstack"><div class="bf " id="cs-frame" style="width:640px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:440px"><iframe data-pg="v2" title="dashboard.html" style="width:1280px;height:880px;transform:scale(0.5)"></iframe></div></div><div class="rd" id="cs-rd"></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSS">
+  <div class="eyebrow">CSS &#183; Mechanism: the box model</div>
+  <h1 class="t">Mechanism
+    <small>Every element is drawn as four nested boxes: content, padding, border, margin. By default width sets only the content, so padding and border add to it.</small></h1>
+  <div class="wrap">
+<div class="cols w3565"><div class="colstack ctl" id="bx-in"><div class="outlbl">width <b id="bx-wv">300</b> px</div><input type="range" id="bx-w" min="100" max="400" value="300"/><div class="outlbl">padding <b id="bx-pv">20</b> px</div><input type="range" id="bx-p" min="0" max="60" value="20"/><div class="outlbl">border <b id="bx-bv">5</b> px</div><input type="range" id="bx-b" min="0" max="30" value="5"/><div class="outlbl">margin <b id="bx-mv">10</b> px</div><input type="range" id="bx-m" min="0" max="60" value="10"/><div class="seg" id="bx-bs"><button data-v="content-box" class="on">content-box</button><button data-v="border-box">border-box</button></div><div class="out" id="bx-out" style="white-space:pre"></div><span class="jsbadge">browser JS</span></div><div class="colstack"><div class="bf" style="width:100%"><div class="bfbar"><i></i><i></i><i></i><span>box.html</span></div><div class="bfvp" style="height:330px"><iframe id="bx-frame" title="box model" style="width:100%;height:330px"></iframe></div></div><div class="rd">The offsetWidth in the box is read back from Chrome. With width 300, padding 20 and border 5 it is 350: 300 + 2 &#215; 20 + 2 &#215; 5.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSS">
+  <div class="eyebrow">CSS &#183; Mechanism: which rule wins</div>
+  <h1 class="t">Mechanism continued 1
+    <small>When two rules set the same property on one element, the more specific selector wins: an id beats a class, a class beats a tag. Between equals, the later rule wins.</small></h1>
+  <div class="wrap">
+<div class="cols w4060"><div class="colstack"><div class="outlbl">rules that match &lt;p id="total" class="kpi"&gt;</div><div id="sp-in" class="ctl"><label class="tgl on"><input type="checkbox" data-i="0" checked/><span><b>p { color: grey; }</b><i>tag · 0-0-1</i></span></label><label class="tgl on"><input type="checkbox" data-i="1" checked/><span><b>.kpi { color: blue; }</b><i>class · 0-1-0</i></span></label><label class="tgl on"><input type="checkbox" data-i="2" checked/><span><b>#total { color: red; }</b><i>id · 1-0-0</i></span></label><label class="tgl on"><input type="checkbox" data-i="3" checked/><span><b>style=&quot;color: green&quot;</b><i>on the element itself</i></span></label></div><span class="jsbadge">browser JS</span></div><div class="colstack"><div class="bf" style="width:100%"><div class="bfbar"><i></i><i></i><i></i><span>which.html</span></div><div class="bfvp" style="height:120px"><iframe id="sp-frame" title="specificity" style="width:100%;height:120px"></iframe></div></div><div class="out" id="sp-out"></div><table class="d sm"><tr><th>three p elements, all four tag/class/id rules on, a second p rule last</th><th>colour Chrome computed</th></tr><tr><td>&lt;p id="total" class="kpi"&gt;</td><td>rgb(3, 3, 3): the #total rule</td></tr><tr><td>&lt;p class="kpi"&gt;</td><td>rgb(2, 2, 2): the .kpi rule</td></tr><tr><td>&lt;p&gt;</td><td>rgb(4, 4, 4): the later of the two p rules</td></tr></table></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSS">
+  <div class="eyebrow">CSS &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>width: 50% assumes the padding goes inside the box. By default it goes outside, so two halves with 12 px padding come to 848 px in an 800 px row.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">two boxes, width: 50% and padding: 12px, in an 800 px wrapping row; measured in Chrome</div><svg viewBox="0 0 820 198" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Two 50% boxes with padding wrap under content-box and fit under border-box"><text x="0.0" y="14.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#B02F3B" text-anchor="start" font-weight="700" >box-sizing: content-box  (the default)</text><rect x="0.0" y="24.0" width="800.0" height="2.0" fill="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke="none" stroke-width="1" /><rect x="0.0" y="32.0" width="424.0" height="34.0" fill="#FBEFF0" stroke="#B02F3B" stroke-width="1.5" /><text x="212.0" y="54.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="400" >width: 50% → 424 px wide</text><rect x="0.0" y="74.0" width="424.0" height="34.0" fill="#FBEFF0" stroke="#B02F3B" stroke-width="1.5" /><text x="212.0" y="96.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="400" >424 px: no room left, wraps</text><rect x="424.0" y="32.0" width="376.0" height="34.0" fill="none" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.2" stroke-dasharray="5 4"/><text x="612.0" y="54.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="middle" font-weight="400" >376 px left</text><text x="0.0" y="140.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="start" font-weight="700" >box-sizing: border-box  (Bootstrap sets it on every element)</text><rect x="0.0" y="150.0" width="800.0" height="2.0" fill="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke="none" stroke-width="1" /><rect x="0.0" y="158.0" width="400.0" height="34.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.5" /><text x="200.0" y="180.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="400" >400 px, padding inside</text><rect x="400.0" y="158.0" width="400.0" height="34.0" fill="#F3FBF7" stroke="#0E7A55" stroke-width="1.5" /><text x="600.0" y="180.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="middle" font-weight="400" >400 px, padding inside</text></svg></div><div class="cols"><pre class="code sm"><span class="py-kw">*, ::after, ::before </span>{ <span class="py-str">box-sizing</span>: border-box; }</pre><div class="callout sm">This rule is copied from Bootstrap 5.3.6. With it, width is the width you see, padding and border included.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="CSS">
+  <div class="eyebrow">CSS &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>Version 2 styles every box and moves none of them. It is 1,962 px tall, 51 px taller than version 1 because of the new padding and margins.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><div class="bf " style="width:538px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:420px"><iframe data-pg="v2" title="dashboard.html" style="width:1280px;height:1000px;transform:scale(0.42)"></iframe></div></div></div><div class="colstack fill"><div class="card r"><h3>Every card 1,232 px wide</h3><p>The body margin is now 24 px, and each block still fills the width.</p></div><div class="card b"><h3>Placement is a property of the parent</h3><p>Putting the KPI cards in a row means telling div.kpis how to lay out its children. That is display: flex.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Flexbox">
+  <div class="eyebrow">Flexbox &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>display: flex on a parent lays its children out along a line, the main axis. The children stop being blocks and become flex items.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">div.kpis as a flex container</div><svg viewBox="0 0 850 200" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="A flex container lays its children along the main axis"><rect x="0.0" y="0.0" width="760.0" height="150.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.6" /><text x="10.0" y="18.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" >.kpis { display: flex; }</text><rect x="16.0" y="34.0" width="168.0" height="96.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.5" /><text x="100.0" y="88.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#125F9E" text-anchor="middle" font-weight="700" >.kpi 1</text><rect x="198.0" y="34.0" width="168.0" height="96.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.5" /><text x="282.0" y="88.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#125F9E" text-anchor="middle" font-weight="700" >.kpi 2</text><rect x="380.0" y="34.0" width="168.0" height="96.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.5" /><text x="464.0" y="88.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#125F9E" text-anchor="middle" font-weight="700" >.kpi 3</text><rect x="562.0" y="34.0" width="168.0" height="96.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.5" /><text x="646.0" y="88.0" font-family="JetBrains Mono,monospace" font-size="13" fill="#125F9E" text-anchor="middle" font-weight="700" >.kpi 4</text><line x1="16.0" y1="172.0" x2="738.0" y2="172.0" stroke="#0E7A55" stroke-width="2.2" /><path d="M744.0,172.0 L736.0,168.0 L736.0,176.0 z" fill="#0E7A55"/><text x="380.0" y="194.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#0E7A55" text-anchor="middle" font-weight="700" >main axis: flex-direction: row</text><line x1="782.0" y1="34.0" x2="782.0" y2="124.0" stroke="#8F5D0A" stroke-width="2.2" /><path d="M782.0,130.0 L786.0,122.0 L778.0,122.0 z" fill="#8F5D0A"/><text x="796.0" y="86.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#8F5D0A" text-anchor="start" font-weight="700" >cross</text><text x="796.0" y="102.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#8F5D0A" text-anchor="start" font-weight="700" >axis</text></svg></div><table class="d sm"><tr><th>property, on the parent</th><th>sets</th></tr><tr><td>flex-direction: row | column</td><td>the direction of the main axis</td></tr><tr><td>justify-content</td><td>where free space goes along the main axis</td></tr><tr><td>align-items</td><td>where items sit across it</td></tr><tr><td>flex-wrap: wrap</td><td>lets items run onto a new line</td></tr><tr><td>gap</td><td>space between items</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Flexbox">
+  <div class="eyebrow">Flexbox &#183; Example: version 3</div>
+  <h1 class="t">Example
+    <small>Four rules put the KPI cards in a row and the charts side by side. Version 3 is 568 px tall.</small></h1>
+  <div class="wrap">
+<div class="cols w4060"><div class="colstack"><pre class="code sm"><span class="py-kw">.kpis </span>{ <span class="py-str">display</span>: flex; <span class="py-str">gap</span>: 16px; }
+<span class="py-kw">.kpi </span>{ <span class="py-str">flex</span>: 1; }
+<span class="py-kw">.charts </span>{ <span class="py-str">display</span>: flex; <span class="py-str">gap</span>: 16px; }
+<span class="py-kw">.wide </span>{ <span class="py-str">flex</span>: 2; } .narrow { <span class="py-str">flex</span>: 1; }</pre><table class="d sm"><tr><th>box</th><th>measured width</th></tr><tr><td>each .kpi</td><td>296 px</td></tr><tr><td>.wide</td><td>800.7 px</td></tr><tr><td>.narrow</td><td>415.3 px</td></tr></table><div class="callout sm">flex: 1 means "share the free space equally". flex: 2 takes twice the share of flex: 1.</div></div><div class="colstack"><div class="bf " style="width:640px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:300px"><iframe data-pg="v3" title="dashboard.html" style="width:1280px;height:600px;transform:scale(0.5)"></iframe></div></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Flexbox">
+  <div class="eyebrow">Flexbox &#183; Mechanism: the container properties</div>
+  <h1 class="t">Mechanism
+    <small>The parent decides the layout. Change one property at a time and watch the four cards move; the cards have different heights so align-items shows.</small></h1>
+  <div class="wrap">
+<div class="cols w3565"><div class="colstack ctl"><div class="outlbl">flex-direction</div><div class="seg" id="fx-dir"><button data-v="row" class=on>row</button><button data-v="column">column</button></div><div class="outlbl">justify-content</div><div class="seg" id="fx-jc"><button data-v="flex-start" class=on>flex-start</button><button data-v="center">center</button><button data-v="space-between">space-between</button><button data-v="space-around">space-around</button></div><div class="outlbl">align-items</div><div class="seg" id="fx-ai"><button data-v="stretch" class=on>stretch</button><button data-v="flex-start">flex-start</button><button data-v="center">center</button><button data-v="flex-end">flex-end</button></div><div class="outlbl">flex-wrap</div><div class="seg" id="fx-wr"><button data-v="nowrap" class=on>nowrap</button><button data-v="wrap">wrap</button></div><div class="outlbl">gap <b id="fx-gv">16</b> px</div><input type="range" id="fx-gap" min="0" max="48" value="16"/><div class="outlbl">container width <b id="fx-wv">700</b> px</div><input type="range" id="fx-w" min="240" max="760" value="700"/><span class="jsbadge">browser JS</span></div><div class="colstack"><div class="bf" style="width:100%"><div class="bfbar"><i></i><i></i><i></i><span>flex.html</span></div><div class="bfvp" style="height:350px"><iframe id="fx-frame" title="flex playground" style="width:100%;height:350px"></iframe></div></div><div class="out xs" id="fx-out" style="white-space:pre-wrap"></div></div></div>
+  </div>
+</section>
+
+<section class="slide build" data-sec="Flexbox">
+  <div class="eyebrow">Flexbox &#183; Mechanism: how free space is shared</div>
+  <h1 class="t">Mechanism continued 1
+    <small>Each item starts at its flex-basis. Whatever room is left over is cut into shares in proportion to flex-grow.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><div class="fig"><div class="cap">three items in a 600 px flex row</div><svg viewBox="0 0 620 262" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="flex-grow shares the free space in proportion"><rect x="0.0" y="0.0" width="600.0" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><text x="0.0" y="26.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#53666F" text-anchor="start" font-weight="400" >container: 600 px</text><g data-at="0"><text x="0.0" y="54.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" >flex-basis 100 px each</text><rect x="0.0" y="62.0" width="100.0" height="40.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="50.0" y="87.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >100</text><rect x="100.0" y="62.0" width="100.0" height="40.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="150.0" y="87.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >100</text><rect x="200.0" y="62.0" width="100.0" height="40.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="250.0" y="87.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >100</text><rect x="300.0" y="62.0" width="300.0" height="40.0" fill="none" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.2" stroke-dasharray="5 4"/><text x="450.0" y="87.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#53666F" text-anchor="middle" font-weight="400" >300 px free</text></g><g data-at="1"><text x="0.0" y="132.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" >flex-grow 1 : 1 : 2, so the 300 px is cut into 4 shares of 75</text><rect x="0.0" y="140.0" width="75.0" height="40.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="37.5" y="165.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >+75</text><rect x="75.0" y="140.0" width="75.0" height="40.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="112.5" y="165.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >+75</text><rect x="150.0" y="140.0" width="150.0" height="40.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="225.0" y="165.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >+150</text></g><g data-at="2"><text x="0.0" y="210.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#14222B" text-anchor="start" font-weight="700" >final widths: basis + share</text><rect x="0.0" y="218.0" width="175.0" height="40.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="87.5" y="243.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >175</text><rect x="175.0" y="218.0" width="175.0" height="40.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="262.5" y="243.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >175</text><rect x="350.0" y="218.0" width="250.0" height="40.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="475.0" y="243.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >250</text></g></svg></div></div><div class="colstack"><pre class="code sm"><span class="py-kw">.a, .b </span>{ <span class="py-str">flex</span>: 1 1 100px; }
+<span class="py-kw">.c    </span>{ <span class="py-str">flex</span>: 2 1 100px; }
+/* <span class="py-str">flex</span>: grow shrink basis */</pre><div class="stepcaps"><div class="stepcap" data-at="1"><b>1</b>Three bases of 100 px leave 300 px free.</div><div class="stepcap" data-at="2"><b>2</b>Grow factors 1, 1 and 2 add to 4, so one share is 75 px.</div><div class="stepcap" data-at="3"><b>3</b>Chrome measures 175, 175 and 250 px. flex: 1 on the KPI cards is this rule with a basis of 0.</div></div><div class="bld"><i></i><i></i><i></i></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Flexbox">
+  <div class="eyebrow">Flexbox &#183; Mechanism: flex-grow, live</div>
+  <h1 class="t">Mechanism continued 2
+    <small>Set each item's flex-grow and the container width. The panel shows the arithmetic and the widths Chrome measured, which agree to the pixel.</small></h1>
+  <div class="wrap">
+<div class="cols w3565"><div class="colstack ctl" id="fg-in"><div class="outlbl">.a flex-grow</div><div class="seg" id="fg-a"><button data-v="0">0</button><button data-v="1" class=on>1</button><button data-v="2">2</button><button data-v="3">3</button></div><div class="outlbl">.b flex-grow</div><div class="seg" id="fg-b"><button data-v="0">0</button><button data-v="1" class=on>1</button><button data-v="2">2</button><button data-v="3">3</button></div><div class="outlbl">.c flex-grow</div><div class="seg" id="fg-c"><button data-v="0">0</button><button data-v="1">1</button><button data-v="2" class=on>2</button><button data-v="3">3</button></div><div class="outlbl">container width <b id="fg-wv">600</b> px</div><input type="range" id="fg-w" min="200" max="760" value="600"/><span class="jsbadge">browser JS</span></div><div class="colstack"><div class="bf" style="width:100%"><div class="bfbar"><i></i><i></i><i></i><span>grow.html</span></div><div class="bfvp" style="height:120px"><iframe id="fg-frame" title="flex-grow" style="width:100%;height:120px"></iframe></div></div><div class="out" id="fg-out" style="white-space:pre"></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Flexbox">
+  <div class="eyebrow">Flexbox &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>Flexbox assumes items may shrink. Six cards set to width: 300px in a 1000 px row come out 166.67 px each; none keeps its width.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">measured in Chrome</div><svg viewBox="0 0 910 172" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="flex-shrink squeezes items; flex-shrink 0 overflows"><rect x="0.0" y="0.0" width="500.0" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><text x="0.0" y="24.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#53666F" text-anchor="start" font-weight="400" >container: 1000 px (drawn at half size)</text><text x="0.0" y="48.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#B02F3B" text-anchor="start" font-weight="700" >flex-shrink: 1 (default): six 300 px cards squeezed</text><rect x="0.0" y="56.0" width="81.3" height="34.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="41.7" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >167</text><rect x="83.3" y="56.0" width="81.3" height="34.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="125.0" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >167</text><rect x="166.7" y="56.0" width="81.3" height="34.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="208.3" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >167</text><rect x="250.0" y="56.0" width="81.3" height="34.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="291.7" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >167</text><rect x="333.3" y="56.0" width="81.3" height="34.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="375.0" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >167</text><rect x="416.7" y="56.0" width="81.3" height="34.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="458.3" y="78.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >167</text><text x="0.0" y="120.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#8F5D0A" text-anchor="start" font-weight="700" >flex-shrink: 0: they keep 300 px and run past the edge to 1,800 px</text><rect x="0.0" y="128.0" width="148.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="74.0" y="150.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >300</text><rect x="150.0" y="128.0" width="148.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="224.0" y="150.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >300</text><rect x="300.0" y="128.0" width="148.0" height="34.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="374.0" y="150.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >300</text><rect x="450.0" y="128.0" width="148.0" height="34.0" fill="#E9C98F" stroke="none" stroke-width="1" /><text x="524.0" y="150.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >300</text><rect x="600.0" y="128.0" width="148.0" height="34.0" fill="#E9C98F" stroke="none" stroke-width="1" /><text x="674.0" y="150.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >300</text><rect x="750.0" y="128.0" width="148.0" height="34.0" fill="#E9C98F" stroke="none" stroke-width="1" /><text x="824.0" y="150.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" >300</text><line x1="500.0" y1="110.0" x2="500.0" y2="170.0" stroke="#14222B" stroke-width="1.6" stroke-dasharray="4 3"/></svg></div><div class="cols"><pre class="code sm"><span class="py-kw">.row &gt; * </span>{ <span class="py-str">flex-shrink</span>: 0; <span class="py-str">width</span>: 100%; }</pre><div class="callout sm">Bootstrap turns shrinking off for every column and lets the row wrap instead. Too many columns then move to a new line.</div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Flexbox">
+  <div class="eyebrow">Flexbox &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>At 400 px the flex:1 cards stop being equal: 113, 73, 87, 82 px. The page is 427 px wide and scrolls sideways.</small></h1>
+  <div class="wrap">
+<div class="cols w4060"><div class="colstack"><div class="bf " style="width:248px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html, version 3</span><b class="bfw">400 px</b></div><div class="bfvp" style="height:322px"><iframe data-pg="v3" title="dashboard.html, version 3" style="width:400px;height:520px;transform:scale(0.62)"></iframe></div></div></div><div class="colstack fill"><div class="card r"><h3>Content sets a floor</h3><p>A card cannot shrink below its widest word. 1,316,165 is wider than Orders, so the first card stays wider.</p></div><div class="card r"><h3>Charts 214 and 122 px</h3><p>The 2 : 1 split survives at 400 px and leaves 122 px for a bar chart of four regions.</p></div><div class="card o"><h3>A rule per row</h3><p>Each row has its own flex rules. Changing the layout for phones means writing them again for narrow screens.</p></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>Bootstrap splits every row into 12 equal columns, and a box is given a width from 1 to 12. 12 divides evenly into halves, thirds and quarters.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">common rows, each adding to 12</div><svg viewBox="0 0 1060 234" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Five rows of the 12-column grid"><rect x="0.0" y="4.0" width="1060.0" height="36.0" fill="#14222B" stroke="none" stroke-width="1" /><text x="530.0" y="27.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-12</text><rect x="0.0" y="50.0" width="525.0" height="36.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="262.5" y="73.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-6</text><rect x="535.0" y="50.0" width="525.0" height="36.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="797.5" y="73.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-6</text><rect x="0.0" y="96.0" width="346.7" height="36.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="173.3" y="119.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-4</text><rect x="356.7" y="96.0" width="346.7" height="36.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="530.0" y="119.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-4</text><rect x="713.3" y="96.0" width="346.7" height="36.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="886.7" y="119.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-4</text><rect x="0.0" y="142.0" width="257.5" height="36.0" fill="#9B2C7E" stroke="none" stroke-width="1" /><text x="128.8" y="165.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-3</text><rect x="267.5" y="142.0" width="257.5" height="36.0" fill="#9B2C7E" stroke="none" stroke-width="1" /><text x="396.2" y="165.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-3</text><rect x="535.0" y="142.0" width="257.5" height="36.0" fill="#9B2C7E" stroke="none" stroke-width="1" /><text x="663.8" y="165.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-3</text><rect x="802.5" y="142.0" width="257.5" height="36.0" fill="#9B2C7E" stroke="none" stroke-width="1" /><text x="931.2" y="165.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-3</text><rect x="0.0" y="188.0" width="703.3" height="36.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="351.7" y="211.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-8</text><rect x="713.3" y="188.0" width="346.7" height="36.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="886.7" y="211.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-4</text></svg><div class="rd">The last row is the dashboard's chart row: a wide chart over 8 columns, a narrow one over 4.</div></div><pre class="code xs">&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;container&quot;</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;row&quot;</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-8&quot;</span>&gt;wide chart&lt;/<span class="py-kw">div</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-4&quot;</span>&gt;narrow chart&lt;/<span class="py-kw">div</span>&gt;
+  &lt;/<span class="py-kw">div</span>&gt;
+&lt;/<span class="py-kw">div</span>&gt;</pre>
+  </div>
+</section>
+
+<section class="slide build" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Mechanism: the rules behind the classes</div>
+  <h1 class="t">Mechanism
+    <small>The grid is a few dozen flexbox rules. A row is a wrapping flex line, a col-8 is two-thirds of it, and padding on every column makes the gutters.</small></h1>
+  <div class="wrap">
+<div class="cols w5545"><div class="colstack"><div class="fig"><div class="cap">at a 1280 px window, measured in Chrome</div><svg viewBox="0 0 800 152" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Container padding, row negative margin and column padding make the gutters"><rect x="0.0" y="0.0" width="798.0" height="150.0" fill="#FFFFFF" stroke="#14222B" stroke-width="1.6" /><text x="6.0" y="16.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#14222B" text-anchor="start" font-weight="700" >.container  1140 px, padding 12 each side</text><g data-at="1"><rect x="0.0" y="26.0" width="798.0" height="110.0" fill="#F3F6FB" stroke="#4B5A87" stroke-width="1.4" stroke-dasharray="6 3"/><text x="6.0" y="42.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#4B5A87" text-anchor="start" font-weight="700" >.row  margin -12 each side: back out to the container edge</text></g><g data-at="2"><rect x="0.0" y="52.0" width="532.0" height="76.0" fill="#EAF2FA" stroke="#125F9E" stroke-width="1.5" /><text x="6.0" y="68.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#125F9E" text-anchor="start" font-weight="700" >.col-8  760 px = 66.67% of 1140</text><rect x="532.0" y="52.0" width="266.0" height="76.0" fill="#FBF3E6" stroke="#8F5D0A" stroke-width="1.5" /><text x="538.0" y="68.0" font-family="JetBrains Mono,monospace" font-size="11.5" fill="#8F5D0A" text-anchor="start" font-weight="700" >.col-4  380 px</text></g><g data-at="3"><rect x="8.4" y="80.0" width="515.2" height="40.0" fill="#125F9E" stroke="none" stroke-width="1" /><text x="266.0" y="105.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >content 736 px</text><rect x="540.4" y="80.0" width="249.2" height="40.0" fill="#8F5D0A" stroke="none" stroke-width="1" /><text x="665.0" y="105.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#FFFFFF" text-anchor="middle" font-weight="700" >content 356 px</text><text x="532.0" y="146.0" font-family="JetBrains Mono,monospace" font-size="11" fill="#B02F3B" text-anchor="middle" font-weight="700" >24 px gutter</text></g></svg></div><div class="stepcaps"><div class="stepcap" data-at="1"><b>1</b>The row's negative margins cancel the container's padding, so columns start at the container edge.</div><div class="stepcap" data-at="2"><b>2</b>col-8 takes 66.67% of the row: 760 of 1,140 px.</div><div class="stepcap" data-at="3"><b>3</b>Each column pads 12 px on each side. Two neighbours make a 24 px gutter.</div></div><div class="bld"><i></i><i></i><i></i></div></div><div class="colstack"><pre class="code xs"><span class="py-kw">.row </span>{
+  <span class="py-str">--bs-gutter-x</span>: 1.5rem;
+  <span class="py-str">display</span>: flex; <span class="py-str">flex-wrap</span>: wrap;
+  <span class="py-str">margin-right</span>: calc(-.5 * var(--bs-gutter-x));
+  <span class="py-str">margin-left</span>:  calc(-.5 * var(--bs-gutter-x));
+}
+<span class="py-kw">.row &gt; * </span>{
+  <span class="py-str">flex-shrink</span>: 0; <span class="py-str">width</span>: 100%; <span class="py-str">max-width</span>: 100%;
+  <span class="py-str">padding-right</span>: calc(var(--bs-gutter-x) * .5);
+  <span class="py-str">padding-left</span>:  calc(var(--bs-gutter-x) * .5);
+}
+<span class="py-kw">.col-8 </span>{ <span class="py-str">flex</span>: 0 0 auto; <span class="py-str">width</span>: 66.66666667%; }</pre><div class="outlbl">copied from bootstrap 5.3.6, the version dbc.themes.BOOTSTRAP loads</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Example: version 4</div>
+  <h1 class="t">Example
+    <small>Version 4 wraps the same cards in container, row and col classes. Each KPI card is 261 px and the charts 736 and 356 px.</small></h1>
+  <div class="wrap">
+<div class="cols" style="grid-template-columns:1.32fr 1fr"><div class="colstack"><pre class="code xxs">&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;container&quot;</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;row&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-12&quot;</span>&gt;&lt;<span class="py-kw">h1</span>&gt;Sales 2023-2024&lt;/<span class="py-kw">h1</span>&gt;&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;row&quot;</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-6 col-lg-3&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Total sales&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;1,316,165&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-6 col-lg-3&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Orders&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;500&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-6 col-lg-3&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Units&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;13,700&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-6 col-lg-3&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;&lt;<span class="py-kw">p</span>&gt;Average order&lt;/<span class="py-kw">p</span>&gt;&lt;<span class="py-kw">h3</span>&gt;2,632&lt;/<span class="py-kw">h3</span>&gt;&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;row&quot;</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-12 col-lg-8&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;chart&quot;</span>&gt;&lt;<span class="py-kw">h2</span>&gt;Sales by month&lt;/<span class="py-kw">h2</span>&gt;&lt;<span class="py-kw">svg</span>&gt;LINE&lt;/<span class="py-kw">svg</span>&gt;&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-12 col-lg-4&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;chart&quot;</span>&gt;&lt;<span class="py-kw">h2</span>&gt;Sales by region&lt;/<span class="py-kw">h2</span>&gt;&lt;<span class="py-kw">svg</span>&gt;BAR&lt;/<span class="py-kw">svg</span>&gt;&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;/<span class="py-kw">div</span>&gt;
+&lt;/<span class="py-kw">div</span>&gt;</pre></div><div class="colstack"><div class="bf " style="width:486px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:228px"><iframe data-pg="v4" title="dashboard.html" style="width:1280px;height:600px;transform:scale(0.38)"></iframe></div></div><div class="callout sm">No flex rules of our own. The four columns of 3 and the 8 + 4 chart row come from the class names.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Mechanism: when widths do not add to 12</div>
+  <h1 class="t">Mechanism continued 1
+    <small>Columns that add to less than 12 leave empty space. A column that would pass 12 moves to a new line, because the row wraps and columns never shrink.</small></h1>
+  <div class="wrap">
+<div class="fig"><div class="cap">the top strip marks the 12 columns</div><svg viewBox="0 0 1060 210" width="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Rows that add to less than 12 leave a gap; rows over 12 wrap"><rect x="0.0" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="89.2" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="178.3" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="267.5" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="356.7" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="445.8" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="535.0" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="624.2" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="713.3" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="802.5" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="891.7" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><rect x="980.8" y="0.0" width="79.2" height="8.0" fill="#DCE4E8" stroke="none" stroke-width="1" /><text x="0.0" y="32.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >4 + 4 = 8: the last 4 columns stay empty</text><rect x="0.0" y="40.0" width="346.7" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="173.3" y="62.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-4</text><rect x="356.7" y="40.0" width="346.7" height="34.0" fill="#0E7A55" stroke="none" stroke-width="1" /><text x="530.0" y="62.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-4</text><rect x="713.3" y="40.0" width="346.7" height="34.0" fill="none" stroke="<svg viewBox="0 0 600 220" width="100%"><polyline fill="none" stroke="#125F9E" stroke-width="3" points="20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108"/><line x1="20" y1="200" x2="580" y2="200" stroke="#888"/></svg>" stroke-width="1.2" stroke-dasharray="5 4"/><text x="0.0" y="110.0" font-family="JetBrains Mono,monospace" font-size="12" fill="#14222B" text-anchor="start" font-weight="700" >8 + 6 = 14: the 6 does not fit and wraps onto a new line</text><rect x="0.0" y="118.0" width="703.3" height="34.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="351.7" y="140.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-8</text><rect x="0.0" y="160.0" width="525.0" height="34.0" fill="#B02F3B" stroke="none" stroke-width="1" /><text x="262.5" y="182.0" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#FFFFFF" text-anchor="middle" font-weight="700" >col-6</text></svg></div><div class="callout sm">Widths need not add to 12. A row of col-8 and col-6 is legal: it draws as two lines, 8 on the first and 6 on the second.</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Mechanism: the grid, live</div>
+  <h1 class="t">Mechanism continued 2
+    <small>Pick a class for up to four columns. The page uses Bootstrap's own grid rules, and the panel reports the widths and lines Chrome drew.</small></h1>
+  <div class="wrap">
+<div class="cols w3565"><div class="colstack ctl"><div class="outlbl">column classes in one row</div><div id="gp-in" class="gpin"><label class="tgl on"><span><b>column 1</b></span><select data-i="0"><option value="0">none</option><option value="1">col-1</option><option value="2">col-2</option><option value="3">col-3</option><option value="4">col-4</option><option value="5">col-5</option><option value="6">col-6</option><option value="7">col-7</option><option value="8" selected>col-8</option><option value="9">col-9</option><option value="10">col-10</option><option value="11">col-11</option><option value="12">col-12</option></select></label><label class="tgl on"><span><b>column 2</b></span><select data-i="1"><option value="0">none</option><option value="1">col-1</option><option value="2">col-2</option><option value="3">col-3</option><option value="4" selected>col-4</option><option value="5">col-5</option><option value="6">col-6</option><option value="7">col-7</option><option value="8">col-8</option><option value="9">col-9</option><option value="10">col-10</option><option value="11">col-11</option><option value="12">col-12</option></select></label><label class="tgl on"><span><b>column 3</b></span><select data-i="2"><option value="0" selected>none</option><option value="1">col-1</option><option value="2">col-2</option><option value="3">col-3</option><option value="4">col-4</option><option value="5">col-5</option><option value="6">col-6</option><option value="7">col-7</option><option value="8">col-8</option><option value="9">col-9</option><option value="10">col-10</option><option value="11">col-11</option><option value="12">col-12</option></select></label><label class="tgl on"><span><b>column 4</b></span><select data-i="3"><option value="0" selected>none</option><option value="1">col-1</option><option value="2">col-2</option><option value="3">col-3</option><option value="4">col-4</option><option value="5">col-5</option><option value="6">col-6</option><option value="7">col-7</option><option value="8">col-8</option><option value="9">col-9</option><option value="10">col-10</option><option value="11">col-11</option><option value="12">col-12</option></select></label></div><div id="gp-code" class="out xs"></div><span class="jsbadge">browser JS</span></div><div class="colstack"><div class="bf" style="width:717px"><div class="bfbar"><i></i><i></i><i></i><span>grid.html &#183; Bootstrap 5.3.6 grid rules</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:174px"><iframe id="gp-frame" title="grid playground" style="width:1280px;height:310px;transform:scale(.56)"></iframe></div></div><div class="out" id="gp-out" style="white-space:pre"></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Example: widths by screen size</div>
+  <h1 class="t">Example continued 1
+    <small>col-8 applies at every width. col-lg-8 applies from 992 px up; below that the box falls back to the next smaller class, here col-12.</small></h1>
+  <div class="wrap">
+<div class="cols"><table class="d sm"><tr><th>infix</th><th>class applies from</th><th>container max-width</th></tr><tr><td>none: col-8</td><td>0 px</td><td>100% of the window</td></tr><tr><td>sm: col-sm-8</td><td>576 px</td><td>540 px</td></tr><tr><td>md: col-md-8</td><td>768 px</td><td>720 px</td></tr><tr><td>lg: col-lg-8</td><td>992 px</td><td>960 px</td></tr><tr><td>xl: col-xl-8</td><td>1200 px</td><td>1,140 px</td></tr><tr><td>xxl: col-xxl-8</td><td>1400 px</td><td>1,320 px</td></tr></table><div class="colstack"><pre class="code xs">&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-12 col-lg-8&quot;</span>&gt;Sales by month&lt;/<span class="py-kw">div</span>&gt;
+&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-12 col-lg-4&quot;</span>&gt;Sales by region&lt;/<span class="py-kw">div</span>&gt;</pre><pre class="code xs"><span class="py-kw">@media (<span class="py-str">min-width</span>: 992px) </span>{
+<span class="py-kw">  .col-lg-8 </span>{ <span class="py-str">flex</span>: 0 0 auto; <span class="py-str">width</span>: 66.66666667%; }
+}</pre><div class="callout sm">A media query wraps rules that hold only from a window width up. Bootstrap writes one per tier for every class.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Mechanism: drag the window</div>
+  <h1 class="t">Mechanism continued 3
+    <small>Drag the window width. The page is version 4 with real media queries, so the cards go 2 + 2 and the charts stack below 992 px.</small></h1>
+  <div class="wrap">
+<div class="cols" style="grid-template-columns:250px 1fr"><div class="colstack ctl"><div class="outlbl">window width <b id="bp-wv">1280</b> px</div><input type="range" id="bp-w" min="360" max="1400" value="1280"/><div class="out" id="bp-out" style="white-space:pre"></div><table class="d xs"><tr><th>window</th><th>container</th><th>chart cols</th></tr><tr><td>400</td><td>400</td><td>400 / 400 stacked</td></tr><tr><td>700</td><td>540</td><td>540 / 540 stacked</td></tr><tr><td>900</td><td>720</td><td>720 / 720 stacked</td></tr><tr><td>1000</td><td>960</td><td>640 / 320</td></tr><tr><td>1280</td><td>1140</td><td>760 / 380</td></tr></table><span class="jsbadge">browser JS</span></div><div class="colstack" id="bp-box"><div class="bf " id="bp-frame" style="width:640px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:450px"><iframe data-pg="v4" title="dashboard.html" style="width:1280px;height:900px;transform:scale(0.5)"></iframe></div></div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Assumptions</div>
+  <h1 class="t">Assumptions
+    <small>The grid works when the stylesheet is loaded and the three classes nest container, row, col.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>the grid assumes</th><th>what Chrome draws when it is wrong</th></tr><tr><td>the Bootstrap CSS is loaded</td><td>no columns: col-8 and col-4 are plain blocks, both 1264 px wide and stacked</td></tr><tr><td>every col-* is a direct child of a row</td><td>the col keeps its width, but with no flex row round it the next col stacks below</td></tr><tr><td>every row sits inside a container</td><td>the row's −12 px margins push it past the window: the page is 1292 px wide in a 1280 px window</td></tr><tr><td>a box inside a column fills it</td><td>a block does; an element given a fixed width in px ignores the column</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Grid">
+  <div class="eyebrow">Bootstrap grid &#183; Drawbacks</div>
+  <h1 class="t">Drawbacks
+    <small>12 has no fifth. Five equal cards need the col class, which shares the row by flex-grow: 228 px each in a 1,140 px container.</small></h1>
+  <div class="wrap">
+<div class="cols3"><div class="card o"><h3>Fixed fractions</h3><p>col-* gives twelfths. Five, seven or eleven equal parts need col, which is flex: 1 0 0.</p></div><div class="card r"><h3>Layout in the markup</h3><p>The widths live in class names on every box. Changing the chart split means editing the HTML.</p></div><div class="card r"><h3>232,018 bytes</h3><p>The full bootstrap.min.css. This page uses the grid rules alone, 4,486 bytes of it.</p></div></div><pre class="code xs">&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;row&quot;</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col&quot;</span>&gt;…&lt;/<span class="py-kw">div</span>&gt;   &lt;!-- ×5: 228 px each --&gt;
+&lt;/<span class="py-kw">div</span>&gt;</pre>
+  </div>
+</section>
+
+<section class="slide" data-sec="Dash">
+  <div class="eyebrow">Dash &#183; Concept</div>
+  <h1 class="t">Concept
+    <small>Dash writes this HTML from Python. Each html.* component is one tag, className is the class attribute, and style takes CSS as a dict with camelCase names.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><div class="outlbl">Python</div><pre class="code sm">html.H1(<span class="py-str">&#x27;Sales 2023-2024&#x27;</span>,
+        style={<span class="py-str">&#x27;marginBottom&#x27;</span>: <span class="py-str">&#x27;16px&#x27;</span>,
+               <span class="py-str">&#x27;backgroundColor&#x27;</span>: &#x27;<span class="py-cm">#14222B&#x27;})</span>
+
+html.Div([html.Div(<span class="py-str">&#x27;chart&#x27;</span>, className=<span class="py-str">&#x27;col-8&#x27;</span>),
+          html.Div(<span class="py-str">&#x27;chart&#x27;</span>, className=<span class="py-str">&#x27;col-4&#x27;</span>)],
+         className=<span class="py-str">&#x27;row&#x27;</span>)</pre></div><div class="colstack"><div class="outlbl">HTML in the page, read back from Chrome</div><div class="out xs">&lt;h1 style=&quot;margin-bottom: 16px; background-color: rgb(20, 34, 43);&quot;&gt;Sales 2023-2024&lt;/h1&gt;</div><div class="out xs">&lt;div class=&quot;row&quot;&gt;
+&lt;div class=&quot;col-8&quot;&gt;chart&lt;/div&gt;
+&lt;div class=&quot;col-4&quot;&gt;chart&lt;/div&gt;
+&lt;/div&gt;</div><div class="callout sm">CSS margin-bottom is marginBottom in Dash: a dash is not allowed in a Python keyword, so each word after the first starts with a capital.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Dash">
+  <div class="eyebrow">Dash &#183; Example: dash-bootstrap-components</div>
+  <h1 class="t">Example
+    <small>dbc.Row and dbc.Col write the grid classes. width=8 becomes col-8, and width=12, lg=4 becomes col-lg-4 col-12.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><div class="outlbl">Python</div><pre class="code sm"><span class="py-kw">import</span> dash_bootstrap_components <span class="py-kw">as</span> dbc
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+dbc.Row([dbc.Col(<span class="py-str">&#x27;a&#x27;</span>, width=<span class="py-num">8</span>),
+         dbc.Col(<span class="py-str">&#x27;b&#x27;</span>, width=<span class="py-num">12</span>, lg=<span class="py-num">4</span>)])
+dbc.Col(dbc.Card(dbc.CardBody([html.P(<span class="py-str">&#x27;Orders&#x27;</span>),
+                               html.H3(<span class="py-str">&#x27;500&#x27;</span>)])), width=<span class="py-num">3</span>)</pre><div class="callout sm">dbc.themes.BOOTSTRAP is a link to bootstrap@5.3.6 on cdn.jsdelivr.net. Without external_stylesheets the classes are written and nothing styles them.</div></div><div class="colstack"><div class="outlbl">HTML in the page, read back from Chrome (dash 3.4.0, dbc 2.0.4)</div><div class="out xs">&lt;div class=&quot;row&quot;&gt;
+&lt;div class=&quot;col-8&quot;&gt;a&lt;/div&gt;
+&lt;div class=&quot;col-lg-4 col-12&quot;&gt;b&lt;/div&gt;
+&lt;/div&gt;</div><div class="out xs">&lt;div class=&quot;col-3&quot;&gt;
+&lt;div class=&quot;card&quot;&gt;
+&lt;div class=&quot;card-body&quot;&gt;
+&lt;p&gt;Orders&lt;/p&gt;
+&lt;h3&gt;500&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Dash">
+  <div class="eyebrow">Dash &#183; Example: version 4 in Python</div>
+  <h1 class="t">Example continued 1
+    <small>Version 4 written with dbc. Each line of Python is one element of the HTML on the right.</small></h1>
+  <div class="wrap">
+<div class="cols"><div class="colstack"><div class="outlbl">dbc</div><pre class="code xs">dbc.Container([
+    dbc.Row(dbc.Col(html.H1(<span class="py-str">&#x27;Sales 2023-2024&#x27;</span>), width=<span class="py-num">12</span>)),
+    dbc.Row([dbc.Col(kpi(<span class="py-str">&#x27;Total sales&#x27;</span>, <span class="py-str">&#x27;1,316,165&#x27;</span>), width=<span class="py-num">6</span>, lg=<span class="py-num">3</span>),
+             dbc.Col(kpi(<span class="py-str">&#x27;Orders&#x27;</span>, <span class="py-str">&#x27;500&#x27;</span>),            width=<span class="py-num">6</span>, lg=<span class="py-num">3</span>),
+             dbc.Col(kpi(<span class="py-str">&#x27;Units&#x27;</span>, <span class="py-str">&#x27;13,700&#x27;</span>),          width=<span class="py-num">6</span>, lg=<span class="py-num">3</span>),
+             dbc.Col(kpi(<span class="py-str">&#x27;Average order&#x27;</span>, <span class="py-str">&#x27;2,632&#x27;</span>),   width=<span class="py-num">6</span>, lg=<span class="py-num">3</span>)]),
+    dbc.Row([dbc.Col(chart(<span class="py-str">&#x27;Sales by month&#x27;</span>),  width=<span class="py-num">12</span>, lg=<span class="py-num">8</span>),
+             dbc.Col(chart(<span class="py-str">&#x27;Sales by region&#x27;</span>), width=<span class="py-num">12</span>, lg=<span class="py-num">4</span>)]),
+])</pre></div><div class="colstack"><div class="outlbl">HTML, version 4</div><pre class="code xs">&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;container&quot;</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;row&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-12&quot;</span>&gt;&lt;<span class="py-kw">h1</span>&gt;…&lt;/<span class="py-kw">h1</span>&gt;&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;row&quot;</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-6 col-lg-3&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;kpi&quot;</span>&gt;…&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;  ×4
+  &lt;/<span class="py-kw">div</span>&gt;
+  &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;row&quot;</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-12 col-lg-8&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;chart&quot;</span>&gt;…&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+    &lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;col-12 col-lg-4&quot;</span>&gt;&lt;<span class="py-kw">div</span> class=<span class="py-str">&quot;chart&quot;</span>&gt;…&lt;/<span class="py-kw">div</span>&gt;&lt;/<span class="py-kw">div</span>&gt;
+  &lt;/<span class="py-kw">div</span>&gt;
+&lt;/<span class="py-kw">div</span>&gt;</pre><div class="callout sm">kpi() and chart() are Python functions returning components. Lecture 3 writes them and puts Plotly figures in the chart boxes.</div></div></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="Summary">
+  <div class="eyebrow">Summary</div>
+  <h1 class="t">How a page is laid out
+    <small>One line per idea from today.</small></h1>
+  <div class="wrap">
+<table class="d roomy free"><tr><th>idea</th><th>in code</th><th>remember</th></tr><tr><td>element</td><td>&lt;div class="kpi"&gt;&#8230;&lt;/div&gt;</td><td>the parser repairs bad HTML without a word</td></tr><tr><td>block and inline</td><td>div, p, h1 · span, a</td><td>blocks stack and fill the width</td></tr><tr><td>CSS rule</td><td>.kpi { border: 1px solid; }</td><td>id beats class beats tag; later beats earlier</td></tr><tr><td>box model</td><td>width + padding + border</td><td>border-box keeps padding inside the width</td></tr><tr><td>flexbox</td><td>display: flex; flex: 1</td><td>free space is shared by flex-grow</td></tr><tr><td>grid</td><td>container · row · col-8</td><td>past 12, a column wraps</td></tr><tr><td>breakpoints</td><td>col-12 col-lg-8</td><td>lg applies from 992 px up</td></tr><tr><td>Dash</td><td>className=, style={'marginBottom': …}, dbc.Col(width=8)</td><td>writes the same HTML</td></tr></table>
+  </div>
+</section>
+
+<section class="slide" data-sec="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1 class="t">Practice
+    <small>Five exercises. Save each page as a .html file and open it in a browser; use the inspector (F12) to read the sizes.</small></h1>
+  <div class="wrap">
+<div class="cols w6040"><div class="colstack"><ol class="n"><li>Write version 1 of the dashboard from memory. Count its elements with document.body.querySelectorAll('*').length in the console.</li><li>Give one KPI card padding: 20px and border: 5px solid. Report its offsetWidth with and without box-sizing: border-box.</li><li>In version 3, set flex: 2 on the Total sales card. Predict the four widths at 1280 px, then measure them.</li><li>Add a fifth KPI card to version 4 and make all five fit one line at 1280 px and two lines below 992 px.</li><li>Remove the container div from version 4 and measure document.documentElement.scrollWidth. Explain the number.</li></ol></div><div class="colstack fill"><div class="card b"><h3>Hint for 4</h3><p>col-lg is equal sharing from 992 px up; col-6 below it gives 2 + 2 + 1.</p></div><div class="card g"><h3>Next lecture</h3><p>Plotly figures, and the same dashboard written in Dash.</p></div></div></div>
+  </div>
+</section>
+</div></div>
+<div id="nav"><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></div>
+<div id="hint">&#8592; &#8594; navigate &#183; F fullscreen &#183; P print</div>
+<script type="application/json" id="lay-data">{"pages": {"v1": "<!doctype html><html><head><meta charset=\"utf-8\"><style>\n<\/style><\/head><body><h1>Sales 2023-2024<\/h1>\n<div class=\"kpis\">\n  <div class=\"kpi\"><p>Total sales<\/p><h3>1,316,165<\/h3><\/div>\n  <div class=\"kpi\"><p>Orders<\/p><h3>500<\/h3><\/div>\n  <div class=\"kpi\"><p>Units<\/p><h3>13,700<\/h3><\/div>\n  <div class=\"kpi\"><p>Average order<\/p><h3>2,632<\/h3><\/div>\n<\/div>\n<div class=\"charts\">\n  <div class=\"chart wide\"><h2>Sales by month<\/h2><svg viewBox=\"0 0 600 220\" width=\"100%\"><polyline fill=\"none\" stroke=\"#125F9E\" stroke-width=\"3\" points=\"20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108\"/><line x1=\"20\" y1=\"200\" x2=\"580\" y2=\"200\" stroke=\"#888\"/><\/svg><\/div>\n  <div class=\"chart narrow\"><h2>Sales by region<\/h2><svg viewBox=\"0 0 300 220\" width=\"100%\"><rect x=\"30\" y=\"72\" width=\"46\" height=\"118\" fill=\"#125F9E\"/><text x=\"52\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">East<\/text><rect x=\"95\" y=\"49\" width=\"46\" height=\"141\" fill=\"#125F9E\"/><text x=\"118\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">North<\/text><rect x=\"160\" y=\"37\" width=\"46\" height=\"153\" fill=\"#125F9E\"/><text x=\"182\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">South<\/text><rect x=\"225\" y=\"35\" width=\"46\" height=\"155\" fill=\"#125F9E\"/><text x=\"248\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">West<\/text><line x1=\"20\" y1=\"190\" x2=\"280\" y2=\"190\" stroke=\"#888\"/><\/svg><\/div>\n<\/div><\/body><\/html>", "v2": "<!doctype html><html><head><meta charset=\"utf-8\"><style>\nbody { font-family: sans-serif; margin: 24px; }\nh1 { background: #14222B; color: white; padding: 12px 16px; }\n.kpi, .chart { border: 1px solid #C3CFD5; padding: 8px 14px; }\n.kpi, .chart { margin-bottom: 12px; }\n.kpi p, .chart h2 { margin: 0; font-size: 14px; color: #53666F; }<\/style><\/head><body><h1>Sales 2023-2024<\/h1>\n<div class=\"kpis\">\n  <div class=\"kpi\"><p>Total sales<\/p><h3>1,316,165<\/h3><\/div>\n  <div class=\"kpi\"><p>Orders<\/p><h3>500<\/h3><\/div>\n  <div class=\"kpi\"><p>Units<\/p><h3>13,700<\/h3><\/div>\n  <div class=\"kpi\"><p>Average order<\/p><h3>2,632<\/h3><\/div>\n<\/div>\n<div class=\"charts\">\n  <div class=\"chart wide\"><h2>Sales by month<\/h2><svg viewBox=\"0 0 600 220\" width=\"100%\"><polyline fill=\"none\" stroke=\"#125F9E\" stroke-width=\"3\" points=\"20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108\"/><line x1=\"20\" y1=\"200\" x2=\"580\" y2=\"200\" stroke=\"#888\"/><\/svg><\/div>\n  <div class=\"chart narrow\"><h2>Sales by region<\/h2><svg viewBox=\"0 0 300 220\" width=\"100%\"><rect x=\"30\" y=\"72\" width=\"46\" height=\"118\" fill=\"#125F9E\"/><text x=\"52\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">East<\/text><rect x=\"95\" y=\"49\" width=\"46\" height=\"141\" fill=\"#125F9E\"/><text x=\"118\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">North<\/text><rect x=\"160\" y=\"37\" width=\"46\" height=\"153\" fill=\"#125F9E\"/><text x=\"182\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">South<\/text><rect x=\"225\" y=\"35\" width=\"46\" height=\"155\" fill=\"#125F9E\"/><text x=\"248\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">West<\/text><line x1=\"20\" y1=\"190\" x2=\"280\" y2=\"190\" stroke=\"#888\"/><\/svg><\/div>\n<\/div><\/body><\/html>", "v3": "<!doctype html><html><head><meta charset=\"utf-8\"><style>\nbody { font-family: sans-serif; margin: 24px; }\nh1 { background: #14222B; color: white; padding: 12px 16px; }\n.kpi, .chart { border: 1px solid #C3CFD5; padding: 8px 14px; }\n.kpi, .chart { margin-bottom: 12px; }\n.kpi p, .chart h2 { margin: 0; font-size: 14px; color: #53666F; }\n.kpis { display: flex; gap: 16px; }\n.kpi { flex: 1; }\n.charts { display: flex; gap: 16px; }\n.wide { flex: 2; } .narrow { flex: 1; }<\/style><\/head><body><h1>Sales 2023-2024<\/h1>\n<div class=\"kpis\">\n  <div class=\"kpi\"><p>Total sales<\/p><h3>1,316,165<\/h3><\/div>\n  <div class=\"kpi\"><p>Orders<\/p><h3>500<\/h3><\/div>\n  <div class=\"kpi\"><p>Units<\/p><h3>13,700<\/h3><\/div>\n  <div class=\"kpi\"><p>Average order<\/p><h3>2,632<\/h3><\/div>\n<\/div>\n<div class=\"charts\">\n  <div class=\"chart wide\"><h2>Sales by month<\/h2><svg viewBox=\"0 0 600 220\" width=\"100%\"><polyline fill=\"none\" stroke=\"#125F9E\" stroke-width=\"3\" points=\"20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108\"/><line x1=\"20\" y1=\"200\" x2=\"580\" y2=\"200\" stroke=\"#888\"/><\/svg><\/div>\n  <div class=\"chart narrow\"><h2>Sales by region<\/h2><svg viewBox=\"0 0 300 220\" width=\"100%\"><rect x=\"30\" y=\"72\" width=\"46\" height=\"118\" fill=\"#125F9E\"/><text x=\"52\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">East<\/text><rect x=\"95\" y=\"49\" width=\"46\" height=\"141\" fill=\"#125F9E\"/><text x=\"118\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">North<\/text><rect x=\"160\" y=\"37\" width=\"46\" height=\"153\" fill=\"#125F9E\"/><text x=\"182\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">South<\/text><rect x=\"225\" y=\"35\" width=\"46\" height=\"155\" fill=\"#125F9E\"/><text x=\"248\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">West<\/text><line x1=\"20\" y1=\"190\" x2=\"280\" y2=\"190\" stroke=\"#888\"/><\/svg><\/div>\n<\/div><\/body><\/html>", "v4": "<!doctype html><html><head><meta charset=\"utf-8\"><style>*,::after,::before{box-sizing:border-box}\n.container,.container-fluid,.container-lg,.container-md,.container-sm,.container-xl,.container-xxl{--bs-gutter-x:1.5rem;--bs-gutter-y:0;width:100%;padding-right:calc(var(--bs-gutter-x) * .5);padding-left:calc(var(--bs-gutter-x) * .5);margin-right:auto;margin-left:auto}\n@media (min-width:576px){.container,.container-sm{max-width:540px}}\n@media (min-width:768px){.container,.container-md,.container-sm{max-width:720px}}\n@media (min-width:992px){.container,.container-lg,.container-md,.container-sm{max-width:960px}}\n@media (min-width:1200px){.container,.container-lg,.container-md,.container-sm,.container-xl{max-width:1140px}}\n@media (min-width:1400px){.container,.container-lg,.container-md,.container-sm,.container-xl,.container-xxl{max-width:1320px}}\n.row{--bs-gutter-x:1.5rem;--bs-gutter-y:0;display:flex;flex-wrap:wrap;margin-top:calc(-1 * var(--bs-gutter-y));margin-right:calc(-.5 * var(--bs-gutter-x));margin-left:calc(-.5 * var(--bs-gutter-x))}\n.row>*{flex-shrink:0;width:100%;max-width:100%;padding-right:calc(var(--bs-gutter-x) * .5);padding-left:calc(var(--bs-gutter-x) * .5);margin-top:var(--bs-gutter-y)}\n.col{flex:1 0 0}\n.col-1{flex:0 0 auto;width:8.33333333%}\n.col-2{flex:0 0 auto;width:16.66666667%}\n.col-3{flex:0 0 auto;width:25%}\n.col-4{flex:0 0 auto;width:33.33333333%}\n.col-5{flex:0 0 auto;width:41.66666667%}\n.col-6{flex:0 0 auto;width:50%}\n.col-7{flex:0 0 auto;width:58.33333333%}\n.col-8{flex:0 0 auto;width:66.66666667%}\n.col-9{flex:0 0 auto;width:75%}\n.col-10{flex:0 0 auto;width:83.33333333%}\n.col-11{flex:0 0 auto;width:91.66666667%}\n.col-12{flex:0 0 auto;width:100%}\n.g-0,.gx-0{--bs-gutter-x:0}\n.g-1,.gx-1{--bs-gutter-x:0.25rem}\n.g-2,.gx-2{--bs-gutter-x:0.5rem}\n.g-3,.gx-3{--bs-gutter-x:1rem}\n.g-4,.gx-4{--bs-gutter-x:1.5rem}\n.g-5,.gx-5{--bs-gutter-x:3rem}\n@media (min-width:576px){.col-sm{flex:1 0 0}.col-sm-1{flex:0 0 auto;width:8.33333333%}.col-sm-2{flex:0 0 auto;width:16.66666667%}.col-sm-3{flex:0 0 auto;width:25%}.col-sm-4{flex:0 0 auto;width:33.33333333%}.col-sm-5{flex:0 0 auto;width:41.66666667%}.col-sm-6{flex:0 0 auto;width:50%}.col-sm-7{flex:0 0 auto;width:58.33333333%}.col-sm-8{flex:0 0 auto;width:66.66666667%}.col-sm-9{flex:0 0 auto;width:75%}.col-sm-10{flex:0 0 auto;width:83.33333333%}.col-sm-11{flex:0 0 auto;width:91.66666667%}.col-sm-12{flex:0 0 auto;width:100%}}\n@media (min-width:768px){.col-md{flex:1 0 0}.col-md-1{flex:0 0 auto;width:8.33333333%}.col-md-2{flex:0 0 auto;width:16.66666667%}.col-md-3{flex:0 0 auto;width:25%}.col-md-4{flex:0 0 auto;width:33.33333333%}.col-md-5{flex:0 0 auto;width:41.66666667%}.col-md-6{flex:0 0 auto;width:50%}.col-md-7{flex:0 0 auto;width:58.33333333%}.col-md-8{flex:0 0 auto;width:66.66666667%}.col-md-9{flex:0 0 auto;width:75%}.col-md-10{flex:0 0 auto;width:83.33333333%}.col-md-11{flex:0 0 auto;width:91.66666667%}.col-md-12{flex:0 0 auto;width:100%}}\n@media (min-width:992px){.col-lg{flex:1 0 0}.col-lg-1{flex:0 0 auto;width:8.33333333%}.col-lg-2{flex:0 0 auto;width:16.66666667%}.col-lg-3{flex:0 0 auto;width:25%}.col-lg-4{flex:0 0 auto;width:33.33333333%}.col-lg-5{flex:0 0 auto;width:41.66666667%}.col-lg-6{flex:0 0 auto;width:50%}.col-lg-7{flex:0 0 auto;width:58.33333333%}.col-lg-8{flex:0 0 auto;width:66.66666667%}.col-lg-9{flex:0 0 auto;width:75%}.col-lg-10{flex:0 0 auto;width:83.33333333%}.col-lg-11{flex:0 0 auto;width:91.66666667%}.col-lg-12{flex:0 0 auto;width:100%}}\n@media (min-width:1200px){.col-xl{flex:1 0 0}.col-xl-1{flex:0 0 auto;width:8.33333333%}.col-xl-2{flex:0 0 auto;width:16.66666667%}.col-xl-3{flex:0 0 auto;width:25%}.col-xl-4{flex:0 0 auto;width:33.33333333%}.col-xl-5{flex:0 0 auto;width:41.66666667%}.col-xl-6{flex:0 0 auto;width:50%}.col-xl-7{flex:0 0 auto;width:58.33333333%}.col-xl-8{flex:0 0 auto;width:66.66666667%}.col-xl-9{flex:0 0 auto;width:75%}.col-xl-10{flex:0 0 auto;width:83.33333333%}.col-xl-11{flex:0 0 auto;width:91.66666667%}.col-xl-12{flex:0 0 auto;width:100%}}\n@media (min-width:1400px){.col-xxl{flex:1 0 0}.col-xxl-1{flex:0 0 auto;width:8.33333333%}.col-xxl-2{flex:0 0 auto;width:16.66666667%}.col-xxl-3{flex:0 0 auto;width:25%}.col-xxl-4{flex:0 0 auto;width:33.33333333%}.col-xxl-5{flex:0 0 auto;width:41.66666667%}.col-xxl-6{flex:0 0 auto;width:50%}.col-xxl-7{flex:0 0 auto;width:58.33333333%}.col-xxl-8{flex:0 0 auto;width:66.66666667%}.col-xxl-9{flex:0 0 auto;width:75%}.col-xxl-10{flex:0 0 auto;width:83.33333333%}.col-xxl-11{flex:0 0 auto;width:91.66666667%}.col-xxl-12{flex:0 0 auto;width:100%}}\nbody { font-family: sans-serif; margin: 24px; }\nh1 { background: #14222B; color: white; padding: 12px 16px; }\n.kpi, .chart { border: 1px solid #C3CFD5; padding: 8px 14px; }\n.kpi, .chart { margin-bottom: 12px; }\n.kpi p, .chart h2 { margin: 0; font-size: 14px; color: #53666F; }\nbody { margin: 0; } .container { margin-top: 24px; }<\/style><\/head><body><div class=\"container\">\n  <div class=\"row\"><div class=\"col-12\"><h1>Sales 2023-2024<\/h1><\/div><\/div>\n  <div class=\"row\">\n    <div class=\"col-6 col-lg-3\"><div class=\"kpi\"><p>Total sales<\/p><h3>1,316,165<\/h3><\/div><\/div>\n    <div class=\"col-6 col-lg-3\"><div class=\"kpi\"><p>Orders<\/p><h3>500<\/h3><\/div><\/div>\n    <div class=\"col-6 col-lg-3\"><div class=\"kpi\"><p>Units<\/p><h3>13,700<\/h3><\/div><\/div>\n    <div class=\"col-6 col-lg-3\"><div class=\"kpi\"><p>Average order<\/p><h3>2,632<\/h3><\/div><\/div>\n  <\/div>\n  <div class=\"row\">\n    <div class=\"col-12 col-lg-8\"><div class=\"chart\"><h2>Sales by month<\/h2><svg viewBox=\"0 0 600 220\" width=\"100%\"><polyline fill=\"none\" stroke=\"#125F9E\" stroke-width=\"3\" points=\"20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108\"/><line x1=\"20\" y1=\"200\" x2=\"580\" y2=\"200\" stroke=\"#888\"/><\/svg><\/div><\/div>\n    <div class=\"col-12 col-lg-4\"><div class=\"chart\"><h2>Sales by region<\/h2><svg viewBox=\"0 0 300 220\" width=\"100%\"><rect x=\"30\" y=\"72\" width=\"46\" height=\"118\" fill=\"#125F9E\"/><text x=\"52\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">East<\/text><rect x=\"95\" y=\"49\" width=\"46\" height=\"141\" fill=\"#125F9E\"/><text x=\"118\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">North<\/text><rect x=\"160\" y=\"37\" width=\"46\" height=\"153\" fill=\"#125F9E\"/><text x=\"182\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">South<\/text><rect x=\"225\" y=\"35\" width=\"46\" height=\"155\" fill=\"#125F9E\"/><text x=\"248\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">West<\/text><line x1=\"20\" y1=\"190\" x2=\"280\" y2=\"190\" stroke=\"#888\"/><\/svg><\/div><\/div>\n  <\/div>\n<\/div><\/body><\/html>"}, "grid": "*,::after,::before{box-sizing:border-box}\n.container,.container-fluid,.container-lg,.container-md,.container-sm,.container-xl,.container-xxl{--bs-gutter-x:1.5rem;--bs-gutter-y:0;width:100%;padding-right:calc(var(--bs-gutter-x) * .5);padding-left:calc(var(--bs-gutter-x) * .5);margin-right:auto;margin-left:auto}\n@media (min-width:576px){.container,.container-sm{max-width:540px}}\n@media (min-width:768px){.container,.container-md,.container-sm{max-width:720px}}\n@media (min-width:992px){.container,.container-lg,.container-md,.container-sm{max-width:960px}}\n@media (min-width:1200px){.container,.container-lg,.container-md,.container-sm,.container-xl{max-width:1140px}}\n@media (min-width:1400px){.container,.container-lg,.container-md,.container-sm,.container-xl,.container-xxl{max-width:1320px}}\n.row{--bs-gutter-x:1.5rem;--bs-gutter-y:0;display:flex;flex-wrap:wrap;margin-top:calc(-1 * var(--bs-gutter-y));margin-right:calc(-.5 * var(--bs-gutter-x));margin-left:calc(-.5 * var(--bs-gutter-x))}\n.row>*{flex-shrink:0;width:100%;max-width:100%;padding-right:calc(var(--bs-gutter-x) * .5);padding-left:calc(var(--bs-gutter-x) * .5);margin-top:var(--bs-gutter-y)}\n.col{flex:1 0 0}\n.col-1{flex:0 0 auto;width:8.33333333%}\n.col-2{flex:0 0 auto;width:16.66666667%}\n.col-3{flex:0 0 auto;width:25%}\n.col-4{flex:0 0 auto;width:33.33333333%}\n.col-5{flex:0 0 auto;width:41.66666667%}\n.col-6{flex:0 0 auto;width:50%}\n.col-7{flex:0 0 auto;width:58.33333333%}\n.col-8{flex:0 0 auto;width:66.66666667%}\n.col-9{flex:0 0 auto;width:75%}\n.col-10{flex:0 0 auto;width:83.33333333%}\n.col-11{flex:0 0 auto;width:91.66666667%}\n.col-12{flex:0 0 auto;width:100%}\n.g-0,.gx-0{--bs-gutter-x:0}\n.g-1,.gx-1{--bs-gutter-x:0.25rem}\n.g-2,.gx-2{--bs-gutter-x:0.5rem}\n.g-3,.gx-3{--bs-gutter-x:1rem}\n.g-4,.gx-4{--bs-gutter-x:1.5rem}\n.g-5,.gx-5{--bs-gutter-x:3rem}\n@media (min-width:576px){.col-sm{flex:1 0 0}.col-sm-1{flex:0 0 auto;width:8.33333333%}.col-sm-2{flex:0 0 auto;width:16.66666667%}.col-sm-3{flex:0 0 auto;width:25%}.col-sm-4{flex:0 0 auto;width:33.33333333%}.col-sm-5{flex:0 0 auto;width:41.66666667%}.col-sm-6{flex:0 0 auto;width:50%}.col-sm-7{flex:0 0 auto;width:58.33333333%}.col-sm-8{flex:0 0 auto;width:66.66666667%}.col-sm-9{flex:0 0 auto;width:75%}.col-sm-10{flex:0 0 auto;width:83.33333333%}.col-sm-11{flex:0 0 auto;width:91.66666667%}.col-sm-12{flex:0 0 auto;width:100%}}\n@media (min-width:768px){.col-md{flex:1 0 0}.col-md-1{flex:0 0 auto;width:8.33333333%}.col-md-2{flex:0 0 auto;width:16.66666667%}.col-md-3{flex:0 0 auto;width:25%}.col-md-4{flex:0 0 auto;width:33.33333333%}.col-md-5{flex:0 0 auto;width:41.66666667%}.col-md-6{flex:0 0 auto;width:50%}.col-md-7{flex:0 0 auto;width:58.33333333%}.col-md-8{flex:0 0 auto;width:66.66666667%}.col-md-9{flex:0 0 auto;width:75%}.col-md-10{flex:0 0 auto;width:83.33333333%}.col-md-11{flex:0 0 auto;width:91.66666667%}.col-md-12{flex:0 0 auto;width:100%}}\n@media (min-width:992px){.col-lg{flex:1 0 0}.col-lg-1{flex:0 0 auto;width:8.33333333%}.col-lg-2{flex:0 0 auto;width:16.66666667%}.col-lg-3{flex:0 0 auto;width:25%}.col-lg-4{flex:0 0 auto;width:33.33333333%}.col-lg-5{flex:0 0 auto;width:41.66666667%}.col-lg-6{flex:0 0 auto;width:50%}.col-lg-7{flex:0 0 auto;width:58.33333333%}.col-lg-8{flex:0 0 auto;width:66.66666667%}.col-lg-9{flex:0 0 auto;width:75%}.col-lg-10{flex:0 0 auto;width:83.33333333%}.col-lg-11{flex:0 0 auto;width:91.66666667%}.col-lg-12{flex:0 0 auto;width:100%}}\n@media (min-width:1200px){.col-xl{flex:1 0 0}.col-xl-1{flex:0 0 auto;width:8.33333333%}.col-xl-2{flex:0 0 auto;width:16.66666667%}.col-xl-3{flex:0 0 auto;width:25%}.col-xl-4{flex:0 0 auto;width:33.33333333%}.col-xl-5{flex:0 0 auto;width:41.66666667%}.col-xl-6{flex:0 0 auto;width:50%}.col-xl-7{flex:0 0 auto;width:58.33333333%}.col-xl-8{flex:0 0 auto;width:66.66666667%}.col-xl-9{flex:0 0 auto;width:75%}.col-xl-10{flex:0 0 auto;width:83.33333333%}.col-xl-11{flex:0 0 auto;width:91.66666667%}.col-xl-12{flex:0 0 auto;width:100%}}\n@media (min-width:1400px){.col-xxl{flex:1 0 0}.col-xxl-1{flex:0 0 auto;width:8.33333333%}.col-xxl-2{flex:0 0 auto;width:16.66666667%}.col-xxl-3{flex:0 0 auto;width:25%}.col-xxl-4{flex:0 0 auto;width:33.33333333%}.col-xxl-5{flex:0 0 auto;width:41.66666667%}.col-xxl-6{flex:0 0 auto;width:50%}.col-xxl-7{flex:0 0 auto;width:58.33333333%}.col-xxl-8{flex:0 0 auto;width:66.66666667%}.col-xxl-9{flex:0 0 auto;width:75%}.col-xxl-10{flex:0 0 auto;width:83.33333333%}.col-xxl-11{flex:0 0 auto;width:91.66666667%}.col-xxl-12{flex:0 0 auto;width:100%}}", "v1": "<h1>Sales 2023-2024<\/h1>\n<div class=\"kpis\">\n  <div class=\"kpi\"><p>Total sales<\/p><h3>1,316,165<\/h3><\/div>\n  <div class=\"kpi\"><p>Orders<\/p><h3>500<\/h3><\/div>\n  <div class=\"kpi\"><p>Units<\/p><h3>13,700<\/h3><\/div>\n  <div class=\"kpi\"><p>Average order<\/p><h3>2,632<\/h3><\/div>\n<\/div>\n<div class=\"charts\">\n  <div class=\"chart wide\"><h2>Sales by month<\/h2><svg viewBox=\"0 0 600 220\" width=\"100%\"><polyline fill=\"none\" stroke=\"#125F9E\" stroke-width=\"3\" points=\"20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108\"/><line x1=\"20\" y1=\"200\" x2=\"580\" y2=\"200\" stroke=\"#888\"/><\/svg><\/div>\n  <div class=\"chart narrow\"><h2>Sales by region<\/h2><svg viewBox=\"0 0 300 220\" width=\"100%\"><rect x=\"30\" y=\"72\" width=\"46\" height=\"118\" fill=\"#125F9E\"/><text x=\"52\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">East<\/text><rect x=\"95\" y=\"49\" width=\"46\" height=\"141\" fill=\"#125F9E\"/><text x=\"118\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">North<\/text><rect x=\"160\" y=\"37\" width=\"46\" height=\"153\" fill=\"#125F9E\"/><text x=\"182\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">South<\/text><rect x=\"225\" y=\"35\" width=\"46\" height=\"155\" fill=\"#125F9E\"/><text x=\"248\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">West<\/text><line x1=\"20\" y1=\"190\" x2=\"280\" y2=\"190\" stroke=\"#888\"/><\/svg><\/div>\n<\/div>", "css2": ["body { font-family: sans-serif; margin: 24px; }", "h1 { background: #14222B; color: white; padding: 12px 16px; }", ".kpi, .chart { border: 1px solid #C3CFD5; padding: 8px 14px; }", ".kpi, .chart { margin-bottom: 12px; }", ".kpi p, .chart h2 { margin: 0; font-size: 14px; color: #53666F; }"], "line": "<svg viewBox=\"0 0 600 220\" width=\"100%\"><polyline fill=\"none\" stroke=\"#125F9E\" stroke-width=\"3\" points=\"20,42 44,94 69,79 93,89 117,78 142,56 166,96 190,49 215,72 239,74 263,106 288,36 312,55 337,126 361,101 385,85 410,58 434,93 458,124 483,102 507,131 531,92 556,85 580,108\"/><line x1=\"20\" y1=\"200\" x2=\"580\" y2=\"200\" stroke=\"#888\"/><\/svg>", "bar": "<svg viewBox=\"0 0 300 220\" width=\"100%\"><rect x=\"30\" y=\"72\" width=\"46\" height=\"118\" fill=\"#125F9E\"/><text x=\"52\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">East<\/text><rect x=\"95\" y=\"49\" width=\"46\" height=\"141\" fill=\"#125F9E\"/><text x=\"118\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">North<\/text><rect x=\"160\" y=\"37\" width=\"46\" height=\"153\" fill=\"#125F9E\"/><text x=\"182\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">South<\/text><rect x=\"225\" y=\"35\" width=\"46\" height=\"155\" fill=\"#125F9E\"/><text x=\"248\" y=\"210\" font-size=\"14\" text-anchor=\"middle\" font-family=\"sans-serif\">West<\/text><line x1=\"20\" y1=\"190\" x2=\"280\" y2=\"190\" stroke=\"#888\"/><\/svg>"}</script>
+<script>
+/* ============================================================
+   deck mechanics — identical to the other decks in the module
+   ============================================================ */
+(function(){
+  const slides=[...document.querySelectorAll('.slide')],
+        deck=document.getElementById('deck'), pbar=document.getElementById('pbar');
+  let i=0;
+  slides.forEach((s,idx)=>{
+    const r=document.createElement('div'); r.className='rail';
+    r.innerHTML='<div class="a">DA2402 &#183; Data Curation and Visualization</div>'+
+      '<div class="n">Dr. Arun B Ayyar</div>'+
+      '<div class="b">'+(s.dataset.sec||'')+'</div>'+
+      '<div class="c">Lecture 2 &#183; '+String(idx+1).padStart(2,'0')+' / '+slides.length+'</div>';
+    s.appendChild(r);
+  });
+  // ---- staged builds ------------------------------------------------
+  // A slide carrying .build holds its [data-at] pieces back. Arrow
+  // right releases the next one; only when they are all out does the
+  // deck advance. Entering backwards lands on the finished slide.
+  function maxStep(s){
+    let m=0;
+    s.querySelectorAll('[data-at]').forEach(e=>{ m=Math.max(m,+e.dataset.at||0); });
+    return m;
+  }
+  function paint(s){
+    const k=+s.dataset.step||0;
+    // data-to="k" retires a piece once the build moves past step k
+    s.querySelectorAll('[data-at]').forEach(e=>
+      e.classList.toggle('shown',(+e.dataset.at||0)<=k&&
+        (e.dataset.to===undefined||k<=+e.dataset.to)));
+    const d=s.querySelector('.bld');
+    if(d)[...d.children].forEach((c,n)=>c.classList.toggle('on',n<k));
+  }
+  function build(s,dir){
+    if(!s||!s.classList.contains('build'))return false;
+    const t=(+s.dataset.step||0)+dir;
+    if(t<0||t>maxStep(s))return false;
+    s.dataset.step=t; paint(s); return true;
+  }
+  function show(n){
+    const prev=i, back=n<i;
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    pbar.style.width=(i/(slides.length-1)*100)+'%';
+    history.replaceState(null,'','#/'+(i+1));
+    const cur=slides[i];
+    if(cur&&cur.classList.contains('build')){
+      cur.dataset.step=back?maxStep(cur):0; paint(cur);
+    }
+    if(prev!==i && slides[prev]) slides[prev].dispatchEvent(new CustomEvent('hidden'));
+    if(cur) cur.dispatchEvent(new CustomEvent('shown'));
+  }
+  function fit(){ deck.style.transform='scale('+Math.min(innerWidth/1330,innerHeight/770)+')'; }
+  addEventListener('resize',fit); fit();
+  document.getElementById('next').onclick=()=>{ if(!build(slides[i],1))show(i+1); };
+  document.getElementById('prev').onclick=()=>{ if(!build(slides[i],-1))show(i-1); };
+  addEventListener('keydown',e=>{
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){
+      if(!build(slides[i],1))show(i+1); e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){
+      if(!build(slides[i],-1))show(i-1); e.preventDefault();}
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+    else if(e.key==='p'||e.key==='P')print();
+  });
+  const m=location.hash.match(/#\/(\d+)/); show(m?+m[1]-1:0);
+})();
+
+
+
+
+/* ============================================================
+   layout lecture widgets: every demo draws inside an iframe, so the
+   page under test has its own CSS and the deck's styles cannot leak in
+   ============================================================ */
+(function(){
+  const el=document.getElementById('lay-data'); if(!el) return;
+  const D=JSON.parse(el.textContent);
+  const $=id=>document.getElementById(id);
+  const r1=v=>Math.round(v*10)/10;
+  const fmt=v=>(Math.round(v*10)/10).toLocaleString('en-US');
+  // iframes on hidden slides have no layout: re-measure when the slide is shown
+  function onShown(e,fn){ const s=e.closest('.slide'); if(s) s.addEventListener('shown',()=>requestAnimationFrame(fn)); }
+  function live(f,html,cb){ f.onload=()=>{ if(cb) cb(f.contentDocument); }; f.srcdoc=html; }
+  function seg(id,cb){ const b=$(id); if(!b) return; b.querySelectorAll('button').forEach(x=>x.onclick=()=>{
+      b.querySelectorAll('button').forEach(y=>y.classList.toggle('on',y===x)); cb(x.dataset.v); }); }
+  const segv=id=>$(id).querySelector('button.on').dataset.v;
+
+  // ---- static pages: the four versions of the dashboard
+  document.querySelectorAll('iframe[data-pg]').forEach(f=>{ if(!f.closest('#cs-frame')) f.srcdoc=D.pages[f.dataset.pg]; });
+
+  // ---- 1 the parser, live
+  const es=$('ed-src');
+  if(es){
+    const fr=$('ed-out'), tr=$('ed-tree'), rd=$('ed-rd');
+    const base='<!doctype html><style>body{font-family:sans-serif;margin:12px}.kpi{border:1px solid #C3CFD5;padding:4px 10px;margin:6px 0}</style>';
+    function tree(e,d){
+      let s='';
+      for(const c of e.children){
+        let n=c.tagName.toLowerCase()+(c.id?'#'+c.id:'');
+        if(typeof c.className==='string'&&c.className.trim()) n+='.'+c.className.trim().split(/\s+/).join('.');
+        const t=[...c.childNodes].filter(x=>x.nodeType===3&&x.textContent.trim()).map(x=>x.textContent.trim()).join(' ');
+        s+='  '.repeat(d)+n+(t?'   "'+(t.length>22?t.slice(0,22)+'…':t)+'"':'')+'\n'+tree(c,d+1);
+      }
+      return s;
+    }
+    let tm=0;
+    function upd(){
+      const doc=new DOMParser().parseFromString(es.value,'text/html');
+      const all=[...doc.body.querySelectorAll('*')];
+      const empty=all.filter(e=>!e.childNodes.length&&!/^(BR|IMG|HR|INPUT)$/.test(e.tagName)).length;
+      tr.textContent='body\n'+tree(doc.body,1);
+      rd.textContent=all.length+' elements in body'+(empty?', '+empty+' of them empty: a sign the parser repaired something.':'.');
+      clearTimeout(tm); tm=setTimeout(()=>{ fr.srcdoc=base+es.value; },120);
+    }
+    es.addEventListener('input',upd); upd();
+  }
+
+  // ---- 2 CSS rule toggles on version 1
+  const csIn=$('cs-in');
+  if(csIn){
+    const fr=$('cs-frame').querySelector('iframe'), rd=$('cs-rd');
+    live(fr,'<!doctype html><html><head><style id="tg"></style></head><body>'+D.v1+'</body></html>',doc=>{
+      function upd(){
+        const on=[...csIn.querySelectorAll('input')].filter(x=>x.checked).map(x=>+x.dataset.i);
+        csIn.querySelectorAll('label').forEach((l,i)=>l.classList.toggle('on',on.includes(i)));
+        doc.getElementById('tg').textContent=on.map(i=>D.css2[i]).join('\n');
+        const k=doc.querySelector('.kpi').getBoundingClientRect();
+        rd.innerHTML='<b>'+on.length+' of 5</b> rules on. Page <b>'+doc.documentElement.scrollHeight.toLocaleString('en-US')+
+          ' px</b> tall; each KPI card <b>'+fmt(k.width)+' px</b> wide and still one under another.';
+      }
+      csIn.addEventListener('change',upd); onShown(csIn,upd); upd();
+    });
+  }
+
+  // ---- 3 the box model
+  const bxF=$('bx-frame');
+  if(bxF){
+    let bs='content-box';
+    live(bxF,'<!doctype html><html><head><style>body{margin:16px;font-family:monospace;font-size:12px}'+
+      '#m{display:inline-block;background:repeating-linear-gradient(45deg,#FBF3E6,#FBF3E6 5px,#F3E2C4 5px,#F3E2C4 10px)}'+
+      '#b{background:#DDEFE6;border-style:solid;border-color:#14222B}#c{background:#125F9E;color:#fff;height:70px;display:flex;align-items:center;justify-content:center}'+
+      '.lg{margin-top:14px;display:flex;gap:14px}.lg span{display:flex;align-items:center;gap:5px}.lg i{width:12px;height:12px;display:inline-block}</style></head><body>'+
+      '<div id="m"><div id="b"><div id="c">content</div></div></div>'+
+      '<div class="lg"><span><i style="background:#125F9E"></i>content</span><span><i style="background:#DDEFE6"></i>padding</span>'+
+      '<span><i style="background:#14222B"></i>border</span><span><i style="background:#F3E2C4"></i>margin</span></div></body></html>',doc=>{
+      const b=doc.getElementById('b'), c=doc.getElementById('c');
+      function upd(){
+        const w=+$('bx-w').value,p=+$('bx-p').value,br=+$('bx-b').value,m=+$('bx-m').value;
+        ['w','p','b','m'].forEach(k=>$('bx-'+k+'v').textContent=$('bx-'+k).value);
+        Object.assign(b.style,{width:w+'px',padding:p+'px',borderWidth:br+'px',margin:m+'px',boxSizing:bs});
+        const ow=b.offsetWidth, cw=c.getBoundingClientRect().width;
+        const L=(a,v)=>a.padEnd(16)+String(v).padStart(6);
+        $('bx-out').textContent=(bs==='content-box'
+          ? [L('content',cw),L('+ padding 2×'+p,2*p),L('+ border 2×'+br,2*br),L('offsetWidth',ow)]
+          : [L('width',w),L('− padding 2×'+p,2*p),L('− border 2×'+br,2*br),L('content',cw),L('offsetWidth',ow)])
+          .concat([L('+ margin 2×'+m,2*m),L('space taken',ow+2*m)]).join('\n');
+      }
+      $('bx-in').addEventListener('input',upd);
+      seg('bx-bs',v=>{bs=v;upd();}); onShown(bxF,upd); upd();
+    });
+  }
+
+  // ---- 4 which rule wins
+  const spIn=$('sp-in');
+  if(spIn){
+    const R=['p { color: grey; }','.kpi { color: blue; }','#total { color: red; }'];
+    const NM=['p','.kpi','#total','style attribute'];
+    live($('sp-frame'),'<!doctype html><html><head><style id="tg"></style></head><body style="margin:14px;font-family:sans-serif">'+
+      '<p id="total" class="kpi" style="font-size:30px;font-weight:700;margin:0">Total sales 1,316,165</p></body></html>',doc=>{
+      const p=doc.getElementById('total');
+      function upd(){
+        const on=[...spIn.querySelectorAll('input')].map(x=>x.checked);
+        spIn.querySelectorAll('label').forEach((l,i)=>l.classList.toggle('on',on[i]));
+        doc.getElementById('tg').textContent=R.filter((_,i)=>on[i]).join('\n');
+        p.style.color=on[3]?'green':'';
+        const col=doc.defaultView.getComputedStyle(p).color;
+        let w=-1; on.forEach((v,i)=>{ if(v) w=i; });
+        $('sp-out').textContent='computed color: '+col+'   ← '+(w<0?'no rule: the browser default':'won by '+NM[w]);
+      }
+      spIn.addEventListener('change',upd); upd();
+    });
+  }
+
+  // ---- 5 flex container playground
+  const fxF=$('fx-frame');
+  if(fxF){
+    const lines=[1,3,2,1];
+    live(fxF,'<!doctype html><html><head><style>*{box-sizing:border-box}body{margin:12px;font-family:sans-serif;font-size:12px}'+
+      '#c{border:2px dashed #53666F;min-height:200px;background:#F7F9FA}.k{width:120px;background:#125F9E;color:#fff;padding:6px 8px;line-height:1.35}'+
+      '.k:nth-child(2){background:#0E7A55}.k:nth-child(3){background:#8F5D0A}.k:nth-child(4){background:#9B2C7E}</style></head><body><div id="c">'+
+      lines.map((n,i)=>'<div class="k"><b>card '+(i+1)+'</b>'+'<br>line'.repeat(n-1)+'</div>').join('')+'</div></body></html>',doc=>{
+      const c=doc.getElementById('c');
+      function upd(){
+        const g=$('fx-gap').value,w=$('fx-w').value; $('fx-gv').textContent=g; $('fx-wv').textContent=w;
+        Object.assign(c.style,{display:'flex',flexDirection:segv('fx-dir'),justifyContent:segv('fx-jc'),alignItems:segv('fx-ai'),
+          flexWrap:segv('fx-wr'),gap:g+'px',width:w+'px'});
+        const o=c.getBoundingClientRect();
+        $('fx-out').textContent='.c { display:flex; flex-direction:'+segv('fx-dir')+'; justify-content:'+segv('fx-jc')+'; align-items:'+segv('fx-ai')+'; flex-wrap:'+segv('fx-wr')+'; gap:'+g+'px }\n'+
+          [...c.children].map((k,i)=>{const r=k.getBoundingClientRect();return 'card '+(i+1)+': x '+fmt(r.left-o.left-2)+', y '+fmt(r.top-o.top-2)+', '+fmt(r.width)+' × '+fmt(r.height);}).join('   ');
+      }
+      ['fx-dir','fx-jc','fx-ai','fx-wr'].forEach(id=>seg(id,upd));
+      $('fx-gap').oninput=upd; $('fx-w').oninput=upd; onShown(fxF,upd); upd();
+    });
+  }
+
+  // ---- 6 flex-grow, live
+  const fgF=$('fg-frame');
+  if(fgF){
+    live(fgF,'<!doctype html><html><head><style>body{margin:12px;font-family:monospace;font-size:13px}#c{display:flex;background:#F7F9FA;outline:2px dashed #53666F}'+
+      '#c div{flex-basis:100px;flex-shrink:1;height:56px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;min-width:0}'+
+      '#a{background:#125F9E}#b{background:#0E7A55}#d{background:#8F5D0A}</style></head><body><div id="c"><div id="a">a</div><div id="b">b</div><div id="d">c</div></div></body></html>',doc=>{
+      const c=doc.getElementById('c'), it=['a','b','d'].map(i=>doc.getElementById(i));
+      function upd(){
+        const W=+$('fg-w').value; $('fg-wv').textContent=W;
+        const g=['a','b','c'].map(n=>+segv('fg-'+n));
+        c.style.width=W+'px'; it.forEach((e,i)=>e.style.flexGrow=g[i]);
+        const m=it.map(e=>e.getBoundingClientRect().width);
+        it.forEach((e,i)=>e.textContent=['a','b','c'][i]+' · '+fmt(m[i]));
+        const free=W-300, G=g[0]+g[1]+g[2];
+        let s='free space   = '+W+' − 3 × 100 = '+free+' px\n';
+        if(free<0) s+='negative: no growing. Each item shrinks by '+fmt(-free/3)+' px\n(equal flex-shrink and basis)\n';
+        else if(!G) s+='grow factors all 0: the '+free+' px stays empty\n';
+        else s+='grow factors = '+g.join(' + ')+' = '+G+',  one share = '+fmt(free/G)+' px\n';
+        s+='\nitem  predicted  measured\n'+['a','b','c'].map((n,i)=>{
+          const p=free<0?100+free/3:(G?100+g[i]*free/G:100);
+          return ' '+n+'    '+fmt(p).padStart(7)+'   '+fmt(m[i]).padStart(7);}).join('\n');
+        $('fg-out').textContent=s;
+      }
+      ['fg-a','fg-b','fg-c'].forEach(id=>seg(id,upd)); $('fg-w').oninput=upd; onShown(fgF,upd); upd();
+    });
+  }
+
+  // ---- 7 the grid, live (real Bootstrap grid rules)
+  const gpIn=$('gp-in');
+  if(gpIn){
+    const C=['#125F9E','#0E7A55','#8F5D0A','#9B2C7E'];
+    live($('gp-frame'),'<!doctype html><html><head><style>'+D.grid+'\nbody{margin:0;font-family:monospace;font-size:20px}.container{margin-top:16px}'+
+      '.row>*>div{height:64px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:10px}'+
+      '.rule{display:grid;grid-template-columns:repeat(12,1fr);gap:0;margin-bottom:12px}.rule i{height:10px;border-left:2px solid #fff;background:#DCE4E8}</style></head>'+
+      '<body><div class="container"><div class="rule">'+'<i></i>'.repeat(12)+'</div><div class="row" id="r"></div></div></body></html>',doc=>{
+      const row=doc.getElementById('r');
+      function upd(){
+        const ws=[...gpIn.querySelectorAll('select')].map(s=>+s.value);
+        const cols=ws.map((w,i)=>({w,i})).filter(c=>c.w>0);
+        row.innerHTML=cols.map(c=>'<div class="col-'+c.w+'"><div style="background:'+C[c.i]+'">col-'+c.w+'</div></div>').join('');
+        const els=[...row.children], tops=[...new Set(els.map(e=>Math.round(e.getBoundingClientRect().top)))];
+        $('gp-code').textContent='<div class="row">\n'+cols.map(c=>'  <div class="col-'+c.w+'">…</div>').join('\n')+'\n</div>';
+        const tot=cols.reduce((a,c)=>a+c.w,0);
+        $('gp-out').textContent=!cols.length?'Pick at least one column.':
+          'widths add to '+tot+'   →   '+tops.length+' line'+(tops.length>1?'s':'')+'\n'+
+          els.map((e,k)=>'col-'+cols[k].w+': '+fmt(e.getBoundingClientRect().width)+' px, line '+(tops.indexOf(Math.round(e.getBoundingClientRect().top))+1)).join('\n')+
+          (tot<12?'\n'+(12-tot)+' of 12 columns empty':'');
+      }
+      gpIn.addEventListener('change',upd); onShown(gpIn,upd); upd();
+    });
+  }
+
+  // ---- 8 drag the window
+  const bpW=$('bp-w');
+  if(bpW){
+    const box=$('bp-frame'), fr=box.querySelector('iframe'), sc=0.5;
+    fr.style.transform='scale('+sc+')';
+    const tier=w=>w>=1400?'xxl':w>=1200?'xl':w>=992?'lg':w>=768?'md':w>=576?'sm':'none';
+    function meas(){
+      const doc=fr.contentDocument; if(!doc||!doc.querySelector('.container')) return;
+      const k=[...doc.querySelectorAll('.kpi')].map(e=>e.getBoundingClientRect()), ch=[...doc.querySelectorAll('.chart')].map(e=>e.getBoundingClientRect());
+      const kl=new Set(k.map(r=>Math.round(r.top))).size;
+      $('bp-out').textContent='tier        '+tier(+bpW.value)+'\ncontainer   '+fmt(doc.querySelector('.container').getBoundingClientRect().width)+' px\n'+
+        'KPI cards   '+fmt(k[0].width)+' px, '+kl+' line'+(kl>1?'s':'')+'\ncharts      '+fmt(ch[0].width)+' / '+fmt(ch[1].width)+' px\n            '+
+        (Math.round(ch[1].top)>Math.round(ch[0].top)?'stacked':'side by side');
+    }
+    function upd(){
+      const w=+bpW.value; $('bp-wv').textContent=w;
+      fr.style.width=w+'px'; box.style.width=Math.round(w*sc)+'px'; box.querySelector('.bfw').textContent=w+' px';
+      requestAnimationFrame(()=>requestAnimationFrame(meas));
+    }
+    fr.addEventListener('load',()=>upd());
+    bpW.oninput=upd; onShown(bpW,upd);
+  }
+})();
+
+</script>
+</body>
+</html>
