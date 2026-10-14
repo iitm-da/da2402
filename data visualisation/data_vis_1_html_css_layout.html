@@ -458,6 +458,10 @@ input[type=range]{width:100%;accent-color:#B02F3B}
 .vhead{display:flex;gap:14px;align-items:baseline;width:845px}
 .vhead b{font-family:var(--mono);font-size:14px;color:var(--t-asr);white-space:nowrap}
 .vhead span{font-size:13.5px;color:var(--ink)}
+.vbody{display:flex;gap:10px;align-items:stretch}
+.vsc{display:flex;flex-direction:column;align-items:center;gap:6px;width:46px}
+.vscroll{writing-mode:vertical-lr;width:22px!important;flex:1;margin:0;cursor:pointer}
+.vsv{font-family:var(--mono);font-size:10px;color:var(--soft);white-space:nowrap}
 .vrow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
 .vthumb{display:flex;flex-direction:column;gap:5px}
 .vthumb .bf{width:100%!important}
@@ -516,7 +520,7 @@ input[type=range]{width:100%;accent-color:#B02F3B}
   <h1 class="t">The dashboard page, version 1 to version 4
     <small>Each version adds one layer to the one before. Heights measured in Chrome at a 1280 px wide window.</small></h1>
   <div class="wrap">
-<div class="vstack"><div class="vfull" data-at="0" data-to="0"><div class="vhead"><b>Version 1 &#183; HTML only</b><span>1,911 px tall. The HTML says what is on the page and in what order; every box is stacked.</span></div><div class="bf " style="width:845px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:378px"><iframe data-pg="v1" title="dashboard.html" style="width:1280px;height:572px;transform:scale(0.66)"></iframe></div></div></div><div class="vfull" data-at="1" data-to="1"><div class="vhead"><b>Version 2 &#183; + CSS</b><span>1,962 px tall. CSS sets colours, borders and spacing; the boxes stay in one column.</span></div><div class="bf " style="width:845px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:378px"><iframe data-pg="v2" title="dashboard.html" style="width:1280px;height:572px;transform:scale(0.66)"></iframe></div></div></div><div class="vfull" data-at="2" data-to="2"><div class="vhead"><b>Version 3 &#183; + flexbox</b><span>568 px tall. Flexbox puts the cards in a row and the two charts side by side.</span></div><div class="bf " style="width:845px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:378px"><iframe data-pg="v3" title="dashboard.html" style="width:1280px;height:572px;transform:scale(0.66)"></iframe></div></div></div><div class="vfull" data-at="3" data-to="3"><div class="vhead"><b>Version 4 &#183; + Bootstrap grid</b><span>542 px tall. Every row shares the same 12 columns, and the page adapts to a phone.</span></div><div class="bf " style="width:845px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:378px"><iframe data-pg="v4" title="dashboard.html" style="width:1280px;height:572px;transform:scale(0.66)"></iframe></div></div></div></div><div class="bld"><i></i><i></i><i></i></div>
+<div class="vstack"><div class="vfull" data-at="0" data-to="0"><div class="vhead"><b>Version 1 &#183; HTML only</b><span>1,911 px tall. The HTML says what is on the page and in what order; every box is stacked.</span></div><div class="vbody"><div class="bf " style="width:845px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:378px"><iframe data-pg="v1" title="dashboard.html" style="width:1280px;height:572px;transform:scale(0.66)"></iframe></div></div><div class="vsc"><input type="range" class="vscroll" min="0" max="1000" value="0" aria-label="scroll version 1"/><b class="vsv">0 px</b></div></div></div><div class="vfull" data-at="1" data-to="1"><div class="vhead"><b>Version 2 &#183; + CSS</b><span>1,962 px tall. CSS sets colours, borders and spacing; the boxes stay in one column.</span></div><div class="vbody"><div class="bf " style="width:845px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:378px"><iframe data-pg="v2" title="dashboard.html" style="width:1280px;height:572px;transform:scale(0.66)"></iframe></div></div><div class="vsc"><input type="range" class="vscroll" min="0" max="1000" value="0" aria-label="scroll version 2"/><b class="vsv">0 px</b></div></div></div><div class="vfull" data-at="2" data-to="2"><div class="vhead"><b>Version 3 &#183; + flexbox</b><span>568 px tall. Flexbox puts the cards in a row and the two charts side by side.</span></div><div class="vbody"><div class="bf " style="width:845px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:378px"><iframe data-pg="v3" title="dashboard.html" style="width:1280px;height:572px;transform:scale(0.66)"></iframe></div></div></div></div><div class="vfull" data-at="3" data-to="3"><div class="vhead"><b>Version 4 &#183; + Bootstrap grid</b><span>542 px tall. Every row shares the same 12 columns, and the page adapts to a phone.</span></div><div class="vbody"><div class="bf " style="width:845px"><div class="bfbar"><i></i><i></i><i></i><span>dashboard.html</span><b class="bfw">1280 px</b></div><div class="bfvp" style="height:378px"><iframe data-pg="v4" title="dashboard.html" style="width:1280px;height:572px;transform:scale(0.66)"></iframe></div></div></div></div></div><div class="bld"><i></i><i></i><i></i></div>
   </div>
 </section>
 
@@ -1017,6 +1021,15 @@ dbc.Col(dbc.Card(dbc.CardBody([html.P(<span class="py-str">&#x27;Orders&#x27;</s
 
   // ---- static pages: the four versions of the dashboard
   document.querySelectorAll('iframe[data-pg]').forEach(f=>{ if(!f.closest('#cs-frame')) f.srcdoc=D.pages[f.dataset.pg]; });
+
+  // ---- version frames on slide 3: a slider scrolls the tall pages (scaled iframes scroll unreliably)
+  document.querySelectorAll('.vscroll').forEach(r=>{
+    const f=r.closest('.vbody').querySelector('iframe'), lab=r.parentNode.querySelector('.vsv');
+    const span=()=>{ const d=f.contentDocument; return d?Math.max(0,d.documentElement.scrollHeight-f.contentWindow.innerHeight):0; };
+    r.oninput=()=>{ const y=Math.round(+r.value/1000*span()); f.contentWindow.scrollTo(0,y); lab.textContent=y.toLocaleString('en-US')+' px'; };
+    f.addEventListener('load',()=>f.contentWindow.addEventListener('scroll',()=>{
+      const sp=span(), y=f.contentWindow.scrollY; if(sp) r.value=Math.round(y/sp*1000); lab.textContent=Math.round(y).toLocaleString('en-US')+' px'; }));
+  });
 
   // ---- 1 the parser, live
   const es=$('ed-src');
