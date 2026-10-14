@@ -634,7 +634,7 @@ input[type=range]{width:100%;accent-color:#B02F3B}
   <h1 class="t">Mechanism continued 1
     <small>When two rules set the same property on one element, the more specific selector wins: an id beats a class, a class beats a tag. Between equals, the later rule wins.</small></h1>
   <div class="wrap">
-<div class="cols w4060"><div class="colstack"><div class="outlbl">rules that match &lt;p id="total" class="kpi"&gt;</div><div id="sp-in" class="ctl"><label class="tgl on"><input type="checkbox" data-i="0" checked/><span><b>p { color: grey; }</b><i>tag · 0-0-1</i></span></label><label class="tgl on"><input type="checkbox" data-i="1" checked/><span><b>.kpi { color: blue; }</b><i>class · 0-1-0</i></span></label><label class="tgl on"><input type="checkbox" data-i="2" checked/><span><b>#total { color: red; }</b><i>id · 1-0-0</i></span></label><label class="tgl on"><input type="checkbox" data-i="3" checked/><span><b>style=&quot;color: green&quot;</b><i>on the element itself</i></span></label></div><span class="jsbadge">browser JS</span></div><div class="colstack"><div class="bf" style="width:100%"><div class="bfbar"><i></i><i></i><i></i><span>which.html</span></div><div class="bfvp" style="height:120px"><iframe id="sp-frame" title="specificity" style="width:100%;height:120px"></iframe></div></div><div class="out" id="sp-out"></div><table class="d sm"><tr><th>three p elements, all four tag/class/id rules on, a second p rule last</th><th>colour Chrome computed</th></tr><tr><td>&lt;p id="total" class="kpi"&gt;</td><td>rgb(3, 3, 3): the #total rule</td></tr><tr><td>&lt;p class="kpi"&gt;</td><td>rgb(2, 2, 2): the .kpi rule</td></tr><tr><td>&lt;p&gt;</td><td>rgb(4, 4, 4): the later of the two p rules</td></tr></table></div></div>
+<div class="cols w4060"><div class="colstack"><div class="outlbl">switch rules on and off</div><div id="sp-in" class="ctl"><label class="tgl on"><input type="checkbox" data-i="0" checked/><span><b>p { color: grey; }</b><i>tag · 0-0-1</i></span></label><label class="tgl on"><input type="checkbox" data-i="1" checked/><span><b>.kpi { color: blue; }</b><i>class · 0-1-0</i></span></label><label class="tgl on"><input type="checkbox" data-i="2" checked/><span><b>#total { color: red; }</b><i>id · 1-0-0</i></span></label><label class="tgl"><input type="checkbox" data-i="3"/><span><b>p { color: orange; }</b><i>tag · 0-0-1, written after the first p rule</i></span></label><label class="tgl"><input type="checkbox" data-i="4"/><span><b>style=&quot;color: green&quot;</b><i>on the element itself</i></span></label></div><span class="jsbadge">browser JS</span></div><div class="colstack"><div class="outlbl">which.html, the whole file</div><pre class="code sm" id="sp-src"></pre><div class="bf" style="width:100%"><div class="bfbar"><i></i><i></i><i></i><span>which.html</span></div><div class="bfvp" style="height:110px"><iframe id="sp-frame" title="specificity" style="width:100%;height:110px"></iframe></div></div><div class="out" id="sp-out" style="white-space:pre-wrap"></div></div></div>
   </div>
 </section>
 
@@ -1106,19 +1106,31 @@ dbc.Col(dbc.Card(dbc.CardBody([html.P(<span class="py-str">&#x27;Orders&#x27;</s
   // ---- 4 which rule wins
   const spIn=$('sp-in');
   if(spIn){
-    const R=['p { color: grey; }','.kpi { color: blue; }','#total { color: red; }'];
-    const NM=['p','.kpi','#total','style attribute'];
-    live($('sp-frame'),'<!doctype html><html><head><style id="tg"></style></head><body style="margin:14px;font-family:sans-serif">'+
-      '<p id="total" class="kpi" style="font-size:30px;font-weight:700;margin:0">Total sales 1,316,165</p></body></html>',doc=>{
+    const R=['p { color: grey; }','.kpi { color: blue; }','#total { color: red; }','p { color: orange; }'];
+    const NM=['p (first)','.kpi','#total','p (second)','the style attribute'], SPEC=[1,10,100,1,1000];
+    const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const BODY='body { font: bold 30px sans-serif; }';
+    live($('sp-frame'),'<!doctype html><html><head><style>'+BODY+'</style><style id="tg"></style></head><body>'+
+      '<p id="total" class="kpi">Total sales 1,316,165</p></body></html>',doc=>{
       const p=doc.getElementById('total');
       function upd(){
         const on=[...spIn.querySelectorAll('input')].map(x=>x.checked);
         spIn.querySelectorAll('label').forEach((l,i)=>l.classList.toggle('on',on[i]));
-        doc.getElementById('tg').textContent=R.filter((_,i)=>on[i]).join('\n');
-        p.style.color=on[3]?'green':'';
+        const css=R.filter((_,i)=>on[i]);
+        doc.getElementById('tg').textContent=css.join('\n');
+        p.style.cssText=on[4]?'color:green':'';
+        const kw=s=>'<span class="py-kw">'+s+'</span>', st=s=>'<span class="py-str">'+s+'</span>';
+        $('sp-src').innerHTML=esc('<style>')+'\n  '+esc(BODY)+'\n'+css.map(r=>'  '+esc(r)+'\n').join('')+esc('</style>')+'\n\n'+
+          esc('<p id=')+st('"total"')+' class='+st('"kpi"')+(on[4]?' style='+st('"color: green"'):'')+esc('>Total sales 1,316,165</p>');
         const col=doc.defaultView.getComputedStyle(p).color;
-        let w=-1; on.forEach((v,i)=>{ if(v) w=i; });
-        $('sp-out').textContent='computed color: '+col+'   ← '+(w<0?'no rule: the browser default':'won by '+NM[w]);
+        // the winner: highest specificity, and among equals the later rule
+        let w=-1; on.forEach((v,i)=>{ if(v&&(w<0||SPEC[i]>=SPEC[w])) w=i; });
+        let why='';
+        if(w<0) why='no rule sets color: the browser default, black';
+        else if(w===3&&on[0]) why='won by the second p rule: both p rules are 0-0-1, and it comes later';
+        else { const beat=on.map((v,i)=>v&&i!==w?NM[i]:null).filter(Boolean);
+          why='won by '+NM[w]+(beat.length?', which beats '+beat.join(', '):''); }
+        $('sp-out').textContent='Chrome computed color: '+col+'\n'+why;
       }
       spIn.addEventListener('change',upd); upd();
     });
