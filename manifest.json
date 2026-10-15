@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-15 07:59 UTC",
+ "generated": "2026-10-15 08:09 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -297,8 +297,8 @@
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 99180,
-   "updated": "2026-10-14"
+   "size": 247684,
+   "updated": "2026-10-15"
   },
   {
    "path": "data visualisation/data_vis_4_one_two_variables.html",
