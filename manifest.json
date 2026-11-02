@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-10-29 08:27 UTC",
+ "generated": "2026-11-02 09:34 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -244,7 +244,7 @@
    "section": "Data Storage",
    "kind": "deck",
    "size": 139761,
-   "updated": "2026-10-14"
+   "updated": "2026-11-02"
   },
   {
    "path": "data storage/data_storage_2_sqlite.html",
@@ -253,7 +253,7 @@
    "section": "Data Storage",
    "kind": "deck",
    "size": 124293,
-   "updated": "2026-10-14"
+   "updated": "2026-11-02"
   },
   {
    "path": "data visualisation/dash_input_types.ipynb",
@@ -280,7 +280,7 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 159952,
-   "updated": "2026-10-14"
+   "updated": "2026-11-02"
   },
   {
    "path": "data visualisation/data_vis_2_plotly_dash_layout.html",
@@ -289,7 +289,7 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 674866,
-   "updated": "2026-10-15"
+   "updated": "2026-11-02"
   },
   {
    "path": "data visualisation/data_vis_3_dash_callbacks.html",
@@ -298,7 +298,7 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 247684,
-   "updated": "2026-10-15"
+   "updated": "2026-11-02"
   },
   {
    "path": "data visualisation/data_vis_4_one_two_variables.html",
@@ -307,7 +307,7 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 438648,
-   "updated": "2026-10-14"
+   "updated": "2026-11-02"
   },
   {
    "path": "data visualisation/data_vis_5_many_variables.html",
@@ -316,7 +316,7 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 665370,
-   "updated": "2026-10-14"
+   "updated": "2026-11-02"
   },
   {
    "path": "data visualisation/data_vis_6_gestalt.html",
@@ -325,7 +325,7 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 331023,
-   "updated": "2026-10-29"
+   "updated": "2026-11-02"
   },
   {
    "path": "data visualisation/data_vis_7_perception.html",
@@ -334,16 +334,25 @@
    "section": "Data Visualisation",
    "kind": "deck",
    "size": 258949,
-   "updated": "2026-10-29"
+   "updated": "2026-11-02"
   },
   {
-   "path": "data visualisation/data_vis_8_colour_honest_charts.html",
-   "name": "data_vis_8_colour_honest_charts.html",
+   "path": "data visualisation/data_vis_8_colour.html",
+   "name": "data_vis_8_colour.html",
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 246534,
-   "updated": "2026-10-29"
+   "size": 205922,
+   "updated": "2026-11-02"
+  },
+  {
+   "path": "data visualisation/data_vis_9_misleading_charts.html",
+   "name": "data_vis_9_misleading_charts.html",
+   "folder": "data visualisation",
+   "section": "Data Visualisation",
+   "kind": "deck",
+   "size": 333180,
+   "updated": "2026-11-02"
   },
   {
    "path": "data visualisation/html_bootstrap_layouts_tutorial.ipynb",
