@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-11-02 09:34 UTC",
+ "generated": "2026-11-02 10:05 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -351,7 +351,7 @@
    "folder": "data visualisation",
    "section": "Data Visualisation",
    "kind": "deck",
-   "size": 333180,
+   "size": 349562,
    "updated": "2026-11-02"
   },
   {
