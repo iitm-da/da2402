@@ -1,7 +1,7 @@
 {
  "repo": "iitm-da/da2402",
  "branch": "master",
- "generated": "2026-11-07 12:38 UTC",
+ "generated": "2026-11-07 13:00 UTC",
  "items": [
   {
    "path": "DA2402_intro.pdf",
@@ -379,6 +379,15 @@
    "section": "Endsem/Practice",
    "kind": "notebook",
    "size": 45143,
+   "updated": "2026-11-07"
+  },
+  {
+   "path": "endsem/practice/endsem_practice_2.ipynb",
+   "name": "endsem_practice_2.ipynb",
+   "folder": "endsem/practice",
+   "section": "Endsem/Practice",
+   "kind": "notebook",
+   "size": 45759,
    "updated": "2026-11-07"
   },
   {
