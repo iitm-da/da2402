@@ -16,10 +16,12 @@ def code(src):
     return {"cell_type": "code", "id": _id(src), "execution_count": None, "metadata": {},
             "outputs": [], "source": src.splitlines(True)}
 
-def reveal(sol, out):
+def reveal(sol, out, written=None):
     block = "<details>\n<summary><b>Answer</b></summary>\n\n```python\n" + sol.rstrip() + "\n```\n"
     if out is not None and out.strip():
         block += "\n```\n" + out.rstrip() + "\n```\n"
+    if written:
+        block += "\n" + written.strip() + "\n"
     return block + "\n</details>"
 
 def build(spec, outpath):
@@ -31,7 +33,7 @@ def build(spec, outpath):
         head = f"### Q{i}  {q['title']}\n\n{q['task'].rstrip()}\n\nAnswer variable `{var}`: {q['shape']}"
         cells.append(md(head))
         cells.append(code(q.get("stub", f"{var} = ...   # your answer\n{var}")))
-        cells.append(md(reveal(q["solution"], q.get("output"))))
+        cells.append(md(reveal(q["solution"], q.get("output"), q.get("written"))))
     if spec.get("closing"):
         cells.append(md(spec["closing"]))
     nb = {"cells": cells,

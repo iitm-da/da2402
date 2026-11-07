@@ -25,7 +25,7 @@ def first_question(cells):
     return len(cells)
 
 
-ns = {}
+ns = {"__name__": "__main__"}   # Dash needs a real module name
 for c in cells[:first_question(cells)]:
     if c["cell_type"] == "code":
         body = "".join(c["source"]).replace(remote, local)

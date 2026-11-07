@@ -1,0 +1,59 @@
+@@q1
+{'orders': 1200, 'inner_merge_rows': 1202, 'duplicated_customer': 42, 'orphan_orders': 9, 'orphan_revenue': 6518.69, 'top_city': 'Chennai', 'top_city_Q4': 73436.91}
+@@end
+@@q2
+{'deliveries': 60, 'total_amount': 78948.09, 'by_month': {'August': 21, 'October': 20, 'September': 19}, 'top_city_prefix': '682'}
+@@end
+@@q3
+(34, 32, 2, 1550.4)
+@@end
+@@q4
+          readings  mean_temp  rain_missing  rain_total
+name                                                   
+Adyar            8      28.09             0        22.4
+Ennore           5      29.00             1        14.1
+Guindy           8      28.45             0        23.9
+Tambaram         8      26.66             3        17.0
+@@end
+@@q5
+             missing  perm_diff_age  perm_p  LR_chi2          LR_p
+cholesterol    142.0         12.882  0.0002    74.16  5.470000e-16
+sleep_hours     48.0          1.990  0.3979     1.68  6.420000e-01
+@@end
+@@q6
+            rmse_filled     mean      sd  corr_age
+truth             0.000  191.896  32.605     0.682
+mean             35.754  186.364  27.018     0.546
+regression       21.218  191.405  30.113     0.724
+knn              24.871  190.662  30.196     0.705
+@@end
+@@q7
+{'z > 3': 13, 'IQR 1.5': 20, 'modified z > 3.5': 19, 'mean, sd': (37.13, 23.23), 'z misses (slow side)': [54.0, 89.9, 90.3, 92.6, 97.9, 105.0]}
+@@end
+@@q8
+{'mahalanobis': [41, 131, 194, 240, 241, 266, 270], 'lof_top5': [143, 240, 241, 80, 27]}
+@@end
+@@q9
+(30135, 7474, 105,                                 predicted  true_pos  precision  recall
+raw phone equal                       5.0       5.0      1.000   0.048
+clean phone equal                    92.0      92.0      1.000   0.876
+name jw >= 0.93                     125.0     105.0      0.840   1.000
+clean phone or name jw >= 0.97      110.0     104.0      0.945   0.990)
+@@end
+@@q10
+                    csv         parquet
+meter_id          int64          object
+read_on          object  datetime64[ns]
+zone             object        category
+units           float64         float64
+first meter_id    20770          020770
+@@end
+@@q11
+{'top_city': 'Pune', 'top_revenue': 731216, 'never_ordered': [7, 23, 51, 64, 78], 'unsold': ['Item L', 'Item Q']}
+@@end
+@@q12
+('Africa: median life expectancy 52.9 years in 2007', [38.8, 40.6, 42.6], 12)
+@@end
+@@q13
+{'shown_change_%': 195.2, 'actual_change_%': 4.0, 'lie_factor': 48.6, 'top_by_count': 'Tamil Nadu', 'top_per_1000': 'Goa', 'per_1000': {'Tamil Nadu': 13.7, 'Kerala': 12.7, 'Karnataka': 13.3, 'Telangana': 16.4, 'Goa': 21.2}}
+@@end
