@@ -1,0 +1,300 @@
+{
+ "page": 1,
+ "count": 20,
+ "results": [
+  {
+   "id": 5001,
+   "title": "Listing 1",
+   "price": {
+    "amount": 52000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "AutoHub",
+    "verified": true
+   },
+   "tags": [
+    "first-owner"
+   ]
+  },
+  {
+   "id": 5002,
+   "title": "Listing 2",
+   "price": {
+    "amount": 80000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "Ravi Motors",
+    "verified": true
+   },
+   "tags": []
+  },
+  {
+   "id": 5003,
+   "title": "Listing 3",
+   "price": {
+    "amount": 19000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "Ravi Motors",
+    "verified": true
+   },
+   "tags": [
+    "petrol"
+   ]
+  },
+  {
+   "id": 5004,
+   "title": "Listing 4",
+   "price": {
+    "amount": 39000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "AutoHub",
+    "verified": false
+   },
+   "tags": [
+    "automatic",
+    "cng"
+   ]
+  },
+  {
+   "id": 5005,
+   "title": "Listing 5",
+   "price": {
+    "amount": 44000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "City Cars",
+    "verified": false
+   },
+   "tags": [
+    "diesel",
+    "first-owner"
+   ]
+  },
+  {
+   "id": 5006,
+   "title": "Listing 6",
+   "price": {
+    "amount": 44000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "AutoHub",
+    "verified": true
+   },
+   "tags": []
+  },
+  {
+   "id": 5007,
+   "title": "Listing 7",
+   "price": {
+    "amount": 50000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "AutoHub",
+    "verified": true
+   },
+   "tags": [
+    "petrol"
+   ]
+  },
+  {
+   "id": 5008,
+   "title": "Listing 8",
+   "price": {
+    "amount": 48000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "City Cars",
+    "verified": true
+   },
+   "tags": [
+    "automatic",
+    "petrol"
+   ]
+  },
+  {
+   "id": 5009,
+   "title": "Listing 9",
+   "price": {
+    "amount": 18000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "City Cars",
+    "verified": false
+   },
+   "tags": [
+    "petrol"
+   ]
+  },
+  {
+   "id": 5010,
+   "title": "Listing 10",
+   "price": {
+    "amount": 33000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "Ravi Motors",
+    "verified": true
+   },
+   "tags": []
+  },
+  {
+   "id": 5011,
+   "title": "Listing 11",
+   "price": {
+    "amount": 10000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "Ravi Motors",
+    "verified": false
+   },
+   "tags": [
+    "first-owner",
+    "automatic"
+   ]
+  },
+  {
+   "id": 5012,
+   "title": "Listing 12",
+   "price": {
+    "amount": 64000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "Ravi Motors",
+    "verified": true
+   },
+   "tags": [
+    "first-owner"
+   ]
+  },
+  {
+   "id": 5013,
+   "title": "Listing 13",
+   "price": {
+    "amount": 15000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "Ravi Motors",
+    "verified": false
+   },
+   "tags": [
+    "diesel"
+   ]
+  },
+  {
+   "id": 5014,
+   "title": "Listing 14",
+   "price": {
+    "amount": 13000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "City Cars",
+    "verified": false
+   },
+   "tags": []
+  },
+  {
+   "id": 5015,
+   "title": "Listing 15",
+   "price": {
+    "amount": 36000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "City Cars",
+    "verified": true
+   },
+   "tags": []
+  },
+  {
+   "id": 5016,
+   "title": "Listing 16",
+   "price": {
+    "amount": 58000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "AutoHub",
+    "verified": true
+   },
+   "tags": [
+    "cng",
+    "first-owner"
+   ]
+  },
+  {
+   "id": 5017,
+   "title": "Listing 17",
+   "price": {
+    "amount": 87000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "Ravi Motors",
+    "verified": true
+   },
+   "tags": [
+    "cng"
+   ]
+  },
+  {
+   "id": 5018,
+   "title": "Listing 18",
+   "price": {
+    "amount": 37000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "City Cars",
+    "verified": true
+   },
+   "tags": [
+    "automatic"
+   ]
+  },
+  {
+   "id": 5019,
+   "title": "Listing 19",
+   "price": {
+    "amount": 72000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "City Cars",
+    "verified": false
+   },
+   "tags": []
+  },
+  {
+   "id": 5020,
+   "title": "Listing 20",
+   "price": {
+    "amount": 60000,
+    "currency": "INR"
+   },
+   "seller": {
+    "name": "AutoHub",
+    "verified": true
+   },
+   "tags": [
+    "diesel"
+   ]
+  }
+ ],
+ "next_cursor": "p2_listings_2.json"
+}

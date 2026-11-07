@@ -1,0 +1,10 @@
+# robots.txt for shop.example
+User-agent: *
+Disallow: /cart/
+Disallow: /account
+Allow: /account/help
+Disallow: /*?sort=
+Crawl-delay: 5
+
+User-agent: BadBot
+Disallow: /

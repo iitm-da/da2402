@@ -1,0 +1,57 @@
+@@q1
+{'object_columns': ['Jan', 'Feb', 'Mar'], 'missing_after_coerce': 3, 'fixed_cell': ('OMR', 'Jul'), 'total_lakh': 1387.14, 'top_share_Dec': ['Adyar', 0.154], 'best_month': {'Adyar': 'Jun', 'Anna Nagar': 'Aug', 'Mylapore': 'Jun', 'OMR': 'Jul', 'Porur': 'May', 'T Nagar': 'Jun', 'Tambaram': 'Jun', 'Velachery': 'Aug'}}
+@@end
+@@q2
+{'records': 80, 'invalid_per_field': {'pan': 8, 'mobile': 5, 'email': 8, 'pin': 5}, 'fully_valid': 59}
+@@end
+@@q3
+{'seats': 12, 'footnote_marks_left': 0, 'not_contested': ['Arakkonam'], 'totals_match': True, 'seats_won': {'Party A': 7, 'Party B': 5}}
+@@end
+@@q4
+{'can_fetch': {'/products/kettle': True, '/cart/checkout': False, '/account/orders': False, '/account/help/returns': False, '/products?sort=price': True, '/accounts': False}, 'crawl_delay': 5, 'badbot_home': False}
+@@end
+@@q5
+{'pages': 3, 'records_received': 58, 'duplicates': 1, 'unique': 57, 'columns': ['id', 'price.amount', 'price.currency', 'seller.name', 'seller.verified', 'tags', 'title'], 'median_price_by_seller': {'AutoHub': 42000.0, 'City Cars': 37000.0, 'Ravi Motors': 58000.0}, 'verified_share': 0.702, 'no_tags': 15, 'top_tag': 'automatic'}
+@@end
+@@q6
+{'patterns': 4, 'little_d2': 28.64, 'df': 8, 'little_p': 0.000367, 'income_LR_p': 4.49e-05, 'income_wald_p': {'age': 0.615, 'tenure_yrs': 0.000782}}
+@@end
+@@q7
+                     rmse_single_gaps  rmse_12h_outage
+mean                            2.664            2.617
+ffill                           0.780            4.428
+linear                          0.153            0.680
+same hour yesterday             0.719            0.513
+@@end
+@@q8
+                  flagged  planted_caught  clean_flagged
+IQR raw                20               3             17
+IQR log10               6               5              1
+modified z raw         12               3              9
+modified z log10        5               5              0
+@@end
+@@q9
+                  flagged  true_pos  precision  recall
+isolation forest     13.0      11.0      0.846   0.917
+DBSCAN noise         20.0      12.0      0.600   1.000
+@@end
+@@q10
+(         agree  disagree
+surname  4.248    -4.248
+dob      8.229    -3.318
+pincode  3.087    -2.585
+phone    9.644    -2.320,            flagged  precision  recall
+> 0 bits     133.0      0.887   0.983
+> 5 bits     129.0      0.907   0.975
+> 10 bits    115.0      0.896   0.858
+> 14 bits     74.0      1.000   0.617)
+@@end
+@@q11
+{'cells_saved': 1464, 'months_over_1.5_lakh': ['2025-07', '2025-08', '2025-10'], 'top_per_category': {'Electronics': 'Earphones', 'Kitchen': 'Tawa', 'Stationery': 'Planner'}}
+@@end
+@@q12
+(['Australia', 'New Zealand'], 'Australia', True, 'India, 2007: life expectancy 64.7 years', 'No Gapminder row for India in 2005 (data runs 1952-2007 in steps of 5).')
+@@end
+@@q13
+{'overall': {'City Hospital': 0.85, 'Town Clinic': 0.888}, 'by_severity': {'City Hospital': {'mild': 0.95, 'severe': 0.7}, 'Town Clinic': {'mild': 0.92, 'severe': 0.6}}, 'standardised': {'City Hospital': 0.888, 'Town Clinic': 0.84}, 'area_ratio_if_radius_scaled_for_2x': 4}
+@@end

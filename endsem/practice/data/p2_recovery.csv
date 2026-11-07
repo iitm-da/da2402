@@ -1,0 +1,5 @@
+hospital,severity,patients,recovered
+City Hospital,mild,600,570
+City Hospital,severe,400,280
+Town Clinic,mild,900,828
+Town Clinic,severe,100,60
